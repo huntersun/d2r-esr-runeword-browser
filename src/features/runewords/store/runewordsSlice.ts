@@ -78,6 +78,12 @@ const runewordsSlice = createSlice({
     setMaxTierPoints(state, action: PayloadAction<{ tierKey: string; value: number | null }>) {
       state.maxTierPoints[action.payload.tierKey] = action.payload.value;
     },
+    toggleItemTypeGroup(state, action: PayloadAction<{ itemTypes: readonly string[]; selected: boolean }>) {
+      const { itemTypes, selected } = action.payload;
+      for (const itemType of itemTypes) {
+        state.selectedItemTypes[itemType] = selected;
+      }
+    },
     clearAllTierPoints(state) {
       state.maxTierPoints = {};
     },
@@ -97,6 +103,7 @@ export const {
   selectAllRunes,
   deselectAllRunes,
   toggleRuneGroup,
+  toggleItemTypeGroup,
   setMaxTierPoints,
   clearAllTierPoints,
 } = runewordsSlice.actions;

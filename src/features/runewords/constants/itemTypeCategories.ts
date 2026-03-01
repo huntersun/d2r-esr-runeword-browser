@@ -45,7 +45,7 @@ const ITEM_TYPE_CATEGORIES: readonly ItemTypeCategory[] = [
 
 const KNOWN_ITEM_TYPES = new Set(ITEM_TYPE_CATEGORIES.flatMap((c) => c.itemTypes));
 
-interface GroupedItemTypes {
+export interface GroupedItemTypes {
   readonly label: string;
   readonly itemTypes: readonly string[];
 }
