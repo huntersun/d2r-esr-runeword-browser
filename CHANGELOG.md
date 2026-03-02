@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.1.0...v1.2.0) (2026-03-02)
+
+
+### Features
+
+* add a clear all button to clear all the runepoints tier filters with one click ([1655377](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/16553776048ef295dda8c0766279f7263338df08))
+* add item count label also in the title ([66b1012](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/66b10123df64d1fc92c2a6cf726ce4fd570ec0a0))
+* add Only highest gem / crystal to socketables page ([ae3bcaf](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/ae3bcaf689c3d23deccc2d4d03f0499c3d7bb497))
+* add scroll to top FAB on screens / bottom right corner ([3ed2503](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/3ed25036ca79e020641b9f833f56f3cc23ef1716))
+* show the number of shown items on runewords and uniques ([550e12b](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/550e12b0b89671281723f50894655f6ebf35b611))
+
+
+### Chores
+
+* update the search help descriptions for the pages ([d7d436e](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/d7d436eb497bba8584c0ff329f6935e75679bf81))
+
 ## [1.1.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.0.0...v1.1.0) (2026-03-01)
 
 
