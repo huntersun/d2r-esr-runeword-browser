@@ -6,6 +6,7 @@ import { initializeFromUrl, type EnabledCategories } from '../store/socketablesS
 const URL_PARAM_KEYS = {
   SEARCH: 'search',
   CATEGORIES: 'categories',
+  ONLY_HIGHEST: 'onlyHighest',
 } as const;
 
 /**
@@ -27,8 +28,9 @@ export function useUrlInitialize(): void {
 
     const urlSearch = searchParams.get(URL_PARAM_KEYS.SEARCH);
     const urlCategories = searchParams.get(URL_PARAM_KEYS.CATEGORIES);
+    const urlOnlyHighest = searchParams.get(URL_PARAM_KEYS.ONLY_HIGHEST);
 
-    const hasUrlParams = urlSearch !== null || urlCategories !== null;
+    const hasUrlParams = urlSearch !== null || urlCategories !== null || urlOnlyHighest !== null;
 
     if (hasUrlParams) {
       const categoriesFromUrl = urlCategories ? new Set(urlCategories.split(',')) : null;
@@ -45,6 +47,7 @@ export function useUrlInitialize(): void {
         initializeFromUrl({
           searchText: urlSearch ?? '',
           enabledCategories: decodedCategories,
+          onlyHighestQuality: urlOnlyHighest !== null ? urlOnlyHighest !== 'false' : undefined,
         })
       );
 

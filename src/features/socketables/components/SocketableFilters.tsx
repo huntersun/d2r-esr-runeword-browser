@@ -12,8 +12,10 @@ import {
   toggleCategory,
   setSearchText,
   selectAllCategories,
+  toggleOnlyHighestQuality,
   selectEnabledCategories,
   selectSearchText,
+  selectOnlyHighestQuality,
   type EnabledCategories,
 } from '../store/socketablesSlice';
 
@@ -31,6 +33,7 @@ export function SocketableFilters() {
   const dispatch = useDispatch();
   const enabledCategories = useSelector(selectEnabledCategories);
   const searchText = useSelector(selectSearchText);
+  const onlyHighestQuality = useSelector(selectOnlyHighestQuality);
   const getShareUrl = useShareUrl();
 
   // Local state for immediate input feedback
@@ -91,6 +94,15 @@ export function SocketableFilters() {
         <Button variant="outline" size="sm" onClick={handleSelectAll} disabled={allSelected}>
           All
         </Button>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <Checkbox
+            checked={onlyHighestQuality}
+            onCheckedChange={() => {
+              dispatch(toggleOnlyHighestQuality());
+            }}
+          />
+          <span className="text-sm">Only highest gem / crystal</span>
+        </label>
         <CopyLinkButton getShareUrl={getShareUrl} />
       </div>
 

@@ -1,9 +1,10 @@
 import { useSelector } from 'react-redux';
-import { selectSearchText, selectEnabledCategories, type EnabledCategories } from '../store/socketablesSlice';
+import { selectSearchText, selectEnabledCategories, selectOnlyHighestQuality, type EnabledCategories } from '../store/socketablesSlice';
 
 const URL_PARAM_KEYS = {
   SEARCH: 'search',
   CATEGORIES: 'categories',
+  ONLY_HIGHEST: 'onlyHighest',
 } as const;
 
 const ALL_CATEGORIES: (keyof EnabledCategories)[] = ['gems', 'esrRunes', 'lodRunes', 'kanjiRunes', 'crystals'];
@@ -15,6 +16,7 @@ const ALL_CATEGORIES: (keyof EnabledCategories)[] = ['gems', 'esrRunes', 'lodRun
 export function useShareUrl(): () => string {
   const searchText = useSelector(selectSearchText);
   const enabledCategories = useSelector(selectEnabledCategories);
+  const onlyHighestQuality = useSelector(selectOnlyHighestQuality);
 
   return () => {
     const params = new URLSearchParams();
@@ -31,6 +33,11 @@ export function useShareUrl(): () => string {
       if (enabledList.length > 0) {
         params.set(URL_PARAM_KEYS.CATEGORIES, enabledList.join(','));
       }
+    }
+
+    // Only highest quality: add if disabled (default is true)
+    if (!onlyHighestQuality) {
+      params.set(URL_PARAM_KEYS.ONLY_HIGHEST, 'false');
     }
 
     const base = `${window.location.origin}${import.meta.env.BASE_URL}socketables`;

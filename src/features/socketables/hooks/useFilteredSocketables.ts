@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useSelector } from 'react-redux';
 import { db } from '@/core/db';
-import { selectEnabledCategories, selectSearchText } from '../store/socketablesSlice';
+import { selectEnabledCategories, selectSearchText, selectOnlyHighestQuality } from '../store/socketablesSlice';
 import type { UnifiedSocketable, SocketableCategory } from '../types';
 import { parseSearchTerms } from '@/features/runewords/utils/filteringHelpers';
 import { matchesSearch } from '../utils/filteringHelpers';
@@ -35,6 +35,7 @@ const CRYSTAL_QUALITY_ORDER: Record<string, number> = {
 export function useFilteredSocketables(): readonly UnifiedSocketable[] | undefined {
   const enabledCategories = useSelector(selectEnabledCategories);
   const searchText = useSelector(selectSearchText);
+  const onlyHighestQuality = useSelector(selectOnlyHighestQuality);
 
   // Fetch all socketables from IndexedDB
   const allSocketables = useLiveQuery(async () => {
@@ -63,6 +64,7 @@ export function useFilteredSocketables(): readonly UnifiedSocketable[] | undefin
           reqLevel: gem.reqLevel,
           bonuses: gem.bonuses,
           sortOrder: CATEGORY_ORDER.gems * 1000 + index,
+          quality: gem.quality,
         });
       });
 
@@ -123,6 +125,7 @@ export function useFilteredSocketables(): readonly UnifiedSocketable[] | undefin
           reqLevel: crystal.reqLevel,
           bonuses: crystal.bonuses,
           sortOrder: CATEGORY_ORDER.crystals * 1000 + index,
+          quality: crystal.quality,
         });
       });
 
@@ -137,6 +140,12 @@ export function useFilteredSocketables(): readonly UnifiedSocketable[] | undefin
   return allSocketables.filter((item) => {
     // Check category filter
     if (!enabledCategories[item.category]) return false;
+
+    // Check highest quality filter (gems: Perfect only, crystals: Standard only)
+    if (onlyHighestQuality && item.quality !== undefined) {
+      if (item.category === 'gems' && item.quality !== 'Perfect') return false;
+      if (item.category === 'crystals' && item.quality !== 'Standard') return false;
+    }
 
     // Check search filter
     return matchesSearch(item, searchTerms);

@@ -10,4 +10,5 @@ export interface UnifiedSocketable {
   readonly bonuses: SocketableBonuses;
   readonly sortOrder: number;
   readonly points?: number; // Rune points (ESR and LoD runes only)
+  readonly quality?: string; // Gem/Crystal quality (e.g., 'Perfect', 'Standard')
 }
