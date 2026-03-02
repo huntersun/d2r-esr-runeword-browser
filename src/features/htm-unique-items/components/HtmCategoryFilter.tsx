@@ -15,12 +15,11 @@ import type { HtmFilterGroup } from '../types';
 
 type GroupState = 'all' | 'some' | 'none';
 
-function getGroupState(groupCategories: readonly string[], selectedCategories: readonly string[], isAllSelected: boolean): GroupState {
+function getGroupState(groupCategories: readonly string[], selectedSet: ReadonlySet<string>, isAllSelected: boolean): GroupState {
   if (isAllSelected) {
     return 'all';
   }
 
-  const selectedSet = new Set(selectedCategories);
   const selectedCount = groupCategories.filter((cat) => selectedSet.has(cat)).length;
 
   if (selectedCount === 0) return 'none';
@@ -38,7 +37,8 @@ function CategoryGroupSection({ group, allCategories }: CategoryGroupSectionProp
   const selectedCategories = useSelector(selectSelectedCategoriesRaw);
   const isAllSelected = useSelector(selectIsAllCategoriesSelected);
 
-  const groupState = getGroupState(group.categories, selectedCategories, isAllSelected);
+  const selectedSet = new Set(selectedCategories);
+  const groupState = getGroupState(group.categories, selectedSet, isAllSelected);
 
   const handleGroupToggle = () => {
     const newSelected = groupState !== 'all';
@@ -53,7 +53,7 @@ function CategoryGroupSection({ group, allCategories }: CategoryGroupSectionProp
 
   const isCategorySelected = (category: string) => {
     if (isAllSelected) return true;
-    return new Set(selectedCategories).has(category);
+    return selectedSet.has(category);
   };
 
   const handleCategoryToggle = (category: string) => {
@@ -104,7 +104,7 @@ export function HtmCategoryFilter() {
   }
 
   const allCategories = getAllCategoriesFromGroups(filterGroups);
-  const noneSelected = selectedCategories.includes('__none__') || (!isAllSelected && selectedCategories.length === 0);
+  const noneSelected = selectedCategories.includes('__none__');
 
   return (
     <div className="space-y-2">

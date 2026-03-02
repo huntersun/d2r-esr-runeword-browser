@@ -131,7 +131,7 @@ function parseNameCell(cell: Element): ParsedNameCell {
     // Extract the gamble item name (clean up whitespace)
     const gambleText = gambleMatch[1].replace(/\s+/g, ' ').trim();
     // Remove trailing code in parens if present: "Hand Axe (hax)" -> "Hand Axe"
-    const gambleNameMatch = /^(.+?)\s*\(\w+\)\s*$/.exec(gambleText);
+    const gambleNameMatch = /^(.+?)\s*\([^)]+\)\s*$/.exec(gambleText);
     result.gambleItem = gambleNameMatch ? gambleNameMatch[1].trim() : gambleText;
   }
 

@@ -264,3 +264,54 @@ describe('Data snapshot counts', () => {
     expect(allCategories.size).toBeGreaterThanOrEqual(20);
   });
 });
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 10: Edge cases (synthetic HTML)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe('Edge cases', () => {
+  it('should return empty array for empty HTML', () => {
+    expect(parseHtmUniqueItems('', 'weapons')).toEqual([]);
+  });
+
+  it('should return empty array for HTML with no tables', () => {
+    expect(parseHtmUniqueItems('<html><body><p>No tables here</p></body></html>', 'weapons')).toEqual([]);
+  });
+
+  it('should skip rows with fewer than 3 cells', () => {
+    const html = `
+      <table>
+        <tr><td colspan="3" bgcolor="#402040"><b>TestCategory</b></td></tr>
+        <tr><td>Name</td><td>Stats</td><td>Properties</td></tr>
+        <tr><td>Only one cell</td></tr>
+        <tr><td><b>Valid Item<br>Base (code)</b></td><td>Item Level: 10<br>Required Level: 5</td><td>+1 to All Skills</td></tr>
+      </table>`;
+    const items = parseHtmUniqueItems(html, 'weapons');
+    expect(items).toHaveLength(1);
+    expect(items[0].name).toBe('Valid Item');
+  });
+
+  it('should skip rows where name cell has no <b> tag', () => {
+    const html = `
+      <table>
+        <tr><td colspan="3" bgcolor="#402040"><b>TestCategory</b></td></tr>
+        <tr><td>Name</td><td>Stats</td><td>Properties</td></tr>
+        <tr><td>No bold tag here</td><td>Item Level: 1</td><td>+1 to Life</td></tr>
+      </table>`;
+    const items = parseHtmUniqueItems(html, 'armors');
+    expect(items).toHaveLength(0);
+  });
+
+  it('should default levels to 0 for non-numeric values', () => {
+    const html = `
+      <table>
+        <tr><td colspan="3" bgcolor="#402040"><b>TestCategory</b></td></tr>
+        <tr><td>Name</td><td>Stats</td><td>Properties</td></tr>
+        <tr><td><b>Test Item<br>Base (abc)</b></td><td>Item Level: N/A<br>Required Level: ???</td><td>+1 to All Skills</td></tr>
+      </table>`;
+    const items = parseHtmUniqueItems(html, 'other');
+    expect(items).toHaveLength(1);
+    expect(items[0].itemLevel).toBe(0);
+    expect(items[0].reqLevel).toBe(0);
+  });
+});

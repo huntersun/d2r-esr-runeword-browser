@@ -65,7 +65,8 @@ const htmUniqueItemsSlice = createSlice({
       }>
     ) {
       const { groupCategories, selected, allCategories } = action.payload;
-      const currentSet = new Set(state.selectedCategories.length === 0 ? allCategories : state.selectedCategories);
+      const isNoneMarker = state.selectedCategories.length === 1 && state.selectedCategories[0] === '__none__';
+      const currentSet = new Set(state.selectedCategories.length === 0 ? allCategories : isNoneMarker ? [] : state.selectedCategories);
 
       if (selected) {
         for (const cat of groupCategories) {
@@ -79,6 +80,8 @@ const htmUniqueItemsSlice = createSlice({
 
       if (currentSet.size === allCategories.length) {
         state.selectedCategories = [];
+      } else if (currentSet.size === 0) {
+        state.selectedCategories = ['__none__'];
       } else {
         state.selectedCategories = Array.from(currentSet);
       }

@@ -95,7 +95,7 @@ describe('Parse → Store → Query round-trip', () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 describe('Name uniqueness', () => {
-  it('item names should be unique across all pages', () => {
+  it('should have bounded duplicate names across pages (normal + coupon variants)', () => {
     const names = new Set<string>();
     const duplicates: string[] = [];
 
@@ -106,16 +106,13 @@ describe('Name uniqueness', () => {
       names.add(item.name);
     }
 
-    // Log duplicates if any (some may exist legitimately)
+    // Some items legitimately share names across pages (e.g., normal + Ancient Coupon variants)
     if (duplicates.length > 0) {
-      console.log('[Test] Duplicate names found:', duplicates);
+      console.log('[Test] Duplicate names (expected for coupon variants):', duplicates);
     }
 
-    // We use name as primary key, so Dexie deduplicates automatically.
-    // The DB count should match unique names.
-    const dbCount = allParsedItems.length;
-    const uniqueCount = names.size;
-    console.log('[Test] Total parsed:', dbCount, 'Unique names:', uniqueCount);
+    // Duplicates should be bounded — if this grows significantly, investigate
+    expect(duplicates.length).toBeLessThanOrEqual(20);
   });
 });
 

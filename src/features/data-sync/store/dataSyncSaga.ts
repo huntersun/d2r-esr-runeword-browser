@@ -206,7 +206,7 @@ function* handleStoreData(action: PayloadAction<ParsedData>) {
       call(() => db.kanjiRunes.bulkPut(kanjiRunes)),
       call(() => db.crystals.bulkPut(crystals)),
       call(() => db.runewords.bulkPut(runewords)),
-      call(() => db.htmUniqueItems.bulkAdd(htmUniqueItems)),
+      call(() => db.htmUniqueItems.bulkPut(htmUniqueItems)),
     ]);
     console.log('[HTML] Stored all data tables');
 
