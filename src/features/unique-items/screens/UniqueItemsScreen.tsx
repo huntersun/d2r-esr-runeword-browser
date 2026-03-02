@@ -5,6 +5,7 @@ import { UniqueItemDetailModal } from '../modals';
 import { useFilteredUniqueItems } from '../hooks/useFilteredUniqueItems';
 import { useUrlInitialize } from '../hooks/useUrlInitialize';
 import { Spinner } from '@/components/ui/spinner';
+import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 import type { DisplayUniqueItem } from '../types';
 
 export function UniqueItemsScreen() {
@@ -51,6 +52,8 @@ export function UniqueItemsScreen() {
       )}
 
       <UniqueItemDetailModal item={selectedItem} open={isModalOpen} onOpenChange={setIsModalOpen} />
+
+      <ScrollToTopButton />
     </div>
   );
 }

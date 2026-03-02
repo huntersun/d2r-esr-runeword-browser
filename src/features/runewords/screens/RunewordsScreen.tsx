@@ -3,6 +3,7 @@ import { RunewordCard } from '../components/RunewordCard';
 import { useFilteredRunewords } from '../hooks/useFilteredRunewords';
 import { useUrlInitialize } from '../hooks/useUrlInitialize';
 import { Spinner } from '@/components/ui/spinner';
+import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 
 export function RunewordsScreen() {
   useUrlInitialize();
@@ -33,6 +34,8 @@ export function RunewordsScreen() {
           ))}
         </div>
       )}
+
+      <ScrollToTopButton />
     </div>
   );
 }

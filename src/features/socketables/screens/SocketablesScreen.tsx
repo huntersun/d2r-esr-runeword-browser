@@ -3,6 +3,7 @@ import { SocketableCard } from '../components/SocketableCard';
 import { useFilteredSocketables } from '../hooks/useFilteredSocketables';
 import { useUrlInitialize } from '../hooks/useUrlInitialize';
 import { Spinner } from '@/components/ui/spinner';
+import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 
 export function SocketablesScreen() {
   useUrlInitialize();
@@ -31,6 +32,8 @@ export function SocketablesScreen() {
           ))}
         </div>
       )}
+
+      <ScrollToTopButton />
     </div>
   );
 }
