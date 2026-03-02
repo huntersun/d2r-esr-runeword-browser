@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.3.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.2.1...v1.3.0) (2026-03-02)
+
+
+### Features
+
+* add HTM based unique items ([727e54b](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/727e54b050da19cd1c9ca6d1adc8aa16e4fe0058))
+
+
+### Refactoring
+
+* delete the old d2r-esr-txt-data indexeddb ([a3b8cdf](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/a3b8cdfe7b80c83bda36209ec283c1c150bd0360))
+* performance related refactors after code review ([b9ca00c](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/b9ca00c3eee1eb4eab773c81395e1e4fcf53a406))
+* purge the old TXT file based uniques page ([fe143f1](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/fe143f1c0b0ebcfeb8d93470e8f841822d6a5d8d))
+
 ## [1.2.1](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.2.0...v1.2.1) (2026-03-02)
 
 
