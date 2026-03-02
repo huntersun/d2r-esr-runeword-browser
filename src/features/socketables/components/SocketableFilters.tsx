@@ -29,6 +29,12 @@ const CATEGORY_LABELS: Record<keyof EnabledCategories, string> = {
 
 const SEARCH_DEBOUNCE_MS = 300;
 
+const SEARCH_EXAMPLES = [
+  { query: 'resist', description: 'items with "resist"' },
+  { query: '"chance of blocking"', description: 'exact phrase' },
+  { query: '"all resistances" mana', description: 'combines phrase + word' },
+];
+
 export function SocketableFilters() {
   const dispatch = useDispatch();
   const enabledCategories = useSelector(selectEnabledCategories);
@@ -112,7 +118,7 @@ export function SocketableFilters() {
           <p className="text-xs text-muted-foreground">
             Search by words or <code className="bg-muted px-1 rounded">"exact phrases"</code>
           </p>
-          <SearchHelpButton />
+          <SearchHelpButton examples={SEARCH_EXAMPLES} />
         </div>
         <Label htmlFor="search" className="sr-only">
           Search

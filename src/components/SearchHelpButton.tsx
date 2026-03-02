@@ -2,10 +2,26 @@ import { HelpCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 
+interface SearchExample {
+  readonly query: string;
+  readonly description: string;
+}
+
+interface SearchHelpButtonProps {
+  readonly examples?: readonly SearchExample[];
+}
+
+const DEFAULT_EXAMPLES: readonly SearchExample[] = [
+  { query: 'life fire', description: 'items with both "life" and "fire"' },
+  { query: '"maximum life"', description: 'exact phrase "maximum life"' },
+  { query: '"life on striking"', description: 'exact phrase' },
+  { query: '"aura when" mana', description: 'combines phrase + word' },
+];
+
 /**
  * A help button that shows search syntax explanation in a popover
  */
-export function SearchHelpButton() {
+export function SearchHelpButton({ examples = DEFAULT_EXAMPLES }: SearchHelpButtonProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -32,18 +48,11 @@ export function SearchHelpButton() {
           <div>
             <h4 className="font-medium mb-1">Examples</h4>
             <ul className="text-sm space-y-1 text-muted-foreground">
-              <li>
-                <code className="bg-muted px-1 rounded">life fire</code> - items with both "life" and "fire"
-              </li>
-              <li>
-                <code className="bg-muted px-1 rounded">"maximum life"</code> - exact phrase "maximum life"
-              </li>
-              <li>
-                <code className="bg-muted px-1 rounded">"life on striking"</code> - exact phrase
-              </li>
-              <li>
-                <code className="bg-muted px-1 rounded">"aura when" paladin</code> - combines phrase + word
-              </li>
+              {examples.map((example) => (
+                <li key={example.query}>
+                  <code className="bg-muted px-1 rounded">{example.query}</code> - {example.description}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
