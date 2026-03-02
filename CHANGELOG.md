@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.1](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.2.0...v1.2.1) (2026-03-02)
+
+
+### Chores
+
+* update some min-widths for the checkbox groups ([dc2145e](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/dc2145ee965c281d2c8501e20a35f071b96fc4e9))
+
 ## [1.2.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.1.0...v1.2.0) (2026-03-02)
 
 
