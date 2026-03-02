@@ -123,7 +123,7 @@ export function HtmCategoryFilter() {
               dispatch(setIncludeCouponItems(checked === true));
             }}
           />
-          <span className="text-sm">Include Coupon Items</span>
+          <span className="text-sm text-purple-600 dark:text-purple-400">Include Coupon Items</span>
         </label>
       </div>
       <div className="space-y-4">

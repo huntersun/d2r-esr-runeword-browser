@@ -5,20 +5,16 @@ import { SettingsDrawer } from '@/core/components/SettingsDrawer';
 import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
 import { selectIsInitialized, selectError, startupCheck } from '@/core/store';
-import { selectTxtDataIsInitialized, startupTxtCheck } from '@/features/txt-data';
 
 export function AppLayout() {
   const dispatch = useDispatch();
-  const isHtmInitialized = useSelector(selectIsInitialized);
-  const isTxtInitialized = useSelector(selectTxtDataIsInitialized);
-  const isInitialized = isHtmInitialized && isTxtInitialized;
+  const isInitialized = useSelector(selectIsInitialized);
   const error = useSelector(selectError);
 
   // Fatal error state - error occurred and app is not initialized
   if (error && !isInitialized) {
     const handleRetry = () => {
       dispatch(startupCheck());
-      dispatch(startupTxtCheck());
     };
 
     return (

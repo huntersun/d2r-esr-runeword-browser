@@ -20,7 +20,7 @@ export function HtmUniqueItemsScreen() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">HTM Unique Items ({items.length})</h1>
+      <h1 className="text-2xl font-bold mb-4">Unique Items ({items.length})</h1>
       <HtmUniqueItemFilters />
 
       <p className="text-sm text-muted-foreground mb-4">Showing {items.length} unique items</p>

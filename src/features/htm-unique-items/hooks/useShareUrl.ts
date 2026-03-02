@@ -36,7 +36,7 @@ export function useShareUrl(): () => string {
       params.set(URL_PARAM_KEYS.COUPON, '0');
     }
 
-    const base = `${window.location.origin}${import.meta.env.BASE_URL}htm-uniques`;
+    const base = `${window.location.origin}${import.meta.env.BASE_URL}uniques`;
     return params.toString() ? `${base}?${params.toString()}` : base;
   };
 }
