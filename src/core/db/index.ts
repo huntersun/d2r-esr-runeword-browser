@@ -15,6 +15,8 @@ export type {
   Runeword,
   RuneCategory,
   TierPointTotal,
+  HtmUniqueItem,
+  HtmUniqueItemPage,
   Metadata,
 } from './models';
 

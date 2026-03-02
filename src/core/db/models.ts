@@ -114,6 +114,24 @@ export interface Runeword {
   readonly tierPointTotals: readonly TierPointTotal[]; // Pre-calculated tier point totals
 }
 
+// HTM Unique Items
+
+export type HtmUniqueItemPage = 'weapons' | 'armors' | 'other';
+
+export interface HtmUniqueItem {
+  readonly id?: number; // Auto-increment primary key
+  readonly name: string;
+  readonly baseItem: string;
+  readonly baseItemCode: string;
+  readonly page: HtmUniqueItemPage;
+  readonly category: string;
+  readonly itemLevel: number;
+  readonly reqLevel: number;
+  readonly properties: readonly string[];
+  readonly isAncientCoupon: boolean;
+  readonly gambleItem: string;
+}
+
 // Metadata
 
 export interface Metadata {

@@ -147,6 +147,16 @@ export function* handleStartupCheck() {
         return;
       }
 
+      // Check if htmUniqueItems table is empty (new table migration)
+      const htmUniqueItemsCount: number = (yield call(() => db.htmUniqueItems.count())) as number;
+
+      if (htmUniqueItemsCount === 0) {
+        console.log('[HTML] Migration needed: htmUniqueItems table empty, refetching...');
+        yield put(startupNeedsFetch());
+        yield put(initDataLoad({ force: false }));
+        return;
+      }
+
       // Check if app version changed (catches data logic fixes like sortKey algorithm changes)
       const storedAppVersion = (yield call(() => db.metadata.get('appVersion'))) as Metadata | undefined;
       const currentVersion = appVersion.version;

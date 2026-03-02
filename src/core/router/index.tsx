@@ -3,6 +3,7 @@ import { AppLayout } from '@/core/layouts/AppLayout';
 import { SocketablesScreen } from '@/features/socketables';
 import { RunewordsScreen } from '@/features/runewords';
 import { UniqueItemsScreen } from '@/features/unique-items';
+import { HtmUniqueItemsScreen } from '@/features/htm-unique-items';
 
 export const router = createBrowserRouter(
   [
@@ -13,6 +14,7 @@ export const router = createBrowserRouter(
         { index: true, element: <RunewordsScreen /> },
         { path: 'socketables', element: <SocketablesScreen /> },
         { path: 'uniques', element: <UniqueItemsScreen /> },
+        { path: 'htm-uniques', element: <HtmUniqueItemsScreen /> },
       ],
     },
   ],

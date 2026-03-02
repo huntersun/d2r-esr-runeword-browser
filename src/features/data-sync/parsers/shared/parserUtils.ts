@@ -153,7 +153,7 @@ function normalizeWhitespace(text: string): string {
  * Decodes common HTML entities that remain after stripping HTML tags from innerHTML.
  * When using innerHTML to split on <br> tags, entities like &amp; stay encoded.
  */
-function decodeHtmlEntities(text: string): string {
+export function decodeHtmlEntities(text: string): string {
   return text
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')

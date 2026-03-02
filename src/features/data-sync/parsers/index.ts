@@ -11,3 +11,4 @@ export {
   type RuneReqLevelLookup,
   type RunePriorityLookup,
 } from './runewordsParser';
+export { parseHtmUniqueItems } from './htmUniqueItemsParser';

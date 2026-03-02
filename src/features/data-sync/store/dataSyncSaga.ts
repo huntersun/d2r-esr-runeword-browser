@@ -1,6 +1,14 @@
 import { all, call, put, takeLatest } from 'redux-saga/effects';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import { fetchGemsHtml, fetchRunewordsHtml, fetchLatestVersion, type ChangelogVersion } from '@/core/api';
+import {
+  fetchGemsHtml,
+  fetchRunewordsHtml,
+  fetchUniqueWeaponsHtml,
+  fetchUniqueArmorsHtml,
+  fetchUniqueOthersHtml,
+  fetchLatestVersion,
+  type ChangelogVersion,
+} from '@/core/api';
 import { db } from '@/core/db';
 import appVersion from '@/assets/version.json';
 import {
@@ -10,6 +18,7 @@ import {
   parseKanjiRunesHtml,
   parseCrystalsHtml,
   parseRunewordsHtml,
+  parseHtmUniqueItems,
   type RunePointsLookup,
   type RuneReqLevelLookup,
   type RunePriorityLookup,
@@ -38,12 +47,21 @@ import type { ParsedData } from '../interfaces';
 function* handleFetchHtml(action: PayloadAction<{ force?: boolean } | undefined>) {
   try {
     console.log('[HTML] Fetching HTML files...', { force: action.payload?.force ?? false });
-    const [gemsHtml, runewordsHtml] = (yield all([call(fetchGemsHtml), call(fetchRunewordsHtml)])) as [string, string];
+    const [gemsHtml, runewordsHtml, uniqueWeaponsHtml, uniqueArmorsHtml, uniqueOthersHtml] = (yield all([
+      call(fetchGemsHtml),
+      call(fetchRunewordsHtml),
+      call(fetchUniqueWeaponsHtml),
+      call(fetchUniqueArmorsHtml),
+      call(fetchUniqueOthersHtml),
+    ])) as [string, string, string, string, string];
     console.log('[HTML] Fetched HTML files', {
       gemsHtmlLength: gemsHtml.length,
       runewordsHtmlLength: runewordsHtml.length,
+      uniqueWeaponsHtmlLength: uniqueWeaponsHtml.length,
+      uniqueArmorsHtmlLength: uniqueArmorsHtml.length,
+      uniqueOthersHtmlLength: uniqueOthersHtml.length,
     });
-    yield put(fetchHtmlSuccess({ gemsHtml, runewordsHtml }));
+    yield put(fetchHtmlSuccess({ gemsHtml, runewordsHtml, uniqueWeaponsHtml, uniqueArmorsHtml, uniqueOthersHtml }));
   } catch (error) {
     console.error('[HTML] Fetch error:', error);
     // Check if we have cached data to fall back to
@@ -69,7 +87,7 @@ function* handleFetchHtml(action: PayloadAction<{ force?: boolean } | undefined>
 function* handleParseData(action: PayloadAction<FetchedHtmlData>) {
   try {
     console.log('[HTML] Parsing HTML data...');
-    const { gemsHtml, runewordsHtml } = action.payload;
+    const { gemsHtml, runewordsHtml, uniqueWeaponsHtml, uniqueArmorsHtml, uniqueOthersHtml } = action.payload;
     const gems = parseGemsHtml(gemsHtml);
     console.log('[HTML] Parsed gems:', gems.length);
     const esrRunes = parseEsrRunesHtml(gemsHtml);
@@ -153,7 +171,17 @@ function* handleParseData(action: PayloadAction<FetchedHtmlData>) {
 
     const runewords = parseRunewordsHtml(runewordsHtml, runePointsLookup, runeReqLevelLookup, runePriorityLookup);
     console.log('[HTML] Parsed runewords:', runewords.length);
-    yield put(parseDataSuccess({ gems, esrRunes, lodRunes, kanjiRunes, crystals, runewords }));
+
+    const htmUniqueWeapons = parseHtmUniqueItems(uniqueWeaponsHtml, 'weapons');
+    console.log('[HTML] Parsed HTM unique weapons:', htmUniqueWeapons.length);
+    const htmUniqueArmors = parseHtmUniqueItems(uniqueArmorsHtml, 'armors');
+    console.log('[HTML] Parsed HTM unique armors:', htmUniqueArmors.length);
+    const htmUniqueOthers = parseHtmUniqueItems(uniqueOthersHtml, 'other');
+    console.log('[HTML] Parsed HTM unique others:', htmUniqueOthers.length);
+    const htmUniqueItems = [...htmUniqueWeapons, ...htmUniqueArmors, ...htmUniqueOthers];
+    console.log('[HTML] Parsed HTM unique items total:', htmUniqueItems.length);
+
+    yield put(parseDataSuccess({ gems, esrRunes, lodRunes, kanjiRunes, crystals, runewords, htmUniqueItems }));
   } catch (error) {
     console.error('[HTML] Parse error:', error);
     yield put(parseDataError(error instanceof Error ? error.message : 'Parse error'));
@@ -162,7 +190,7 @@ function* handleParseData(action: PayloadAction<FetchedHtmlData>) {
 
 function* handleStoreData(action: PayloadAction<ParsedData>) {
   try {
-    const { gems, esrRunes, lodRunes, kanjiRunes, crystals, runewords } = action.payload;
+    const { gems, esrRunes, lodRunes, kanjiRunes, crystals, runewords, htmUniqueItems } = action.payload;
 
     console.log('[HTML] Storing data to IndexedDB...');
 
@@ -178,6 +206,7 @@ function* handleStoreData(action: PayloadAction<ParsedData>) {
       call(() => db.kanjiRunes.bulkPut(kanjiRunes)),
       call(() => db.crystals.bulkPut(crystals)),
       call(() => db.runewords.bulkPut(runewords)),
+      call(() => db.htmUniqueItems.bulkAdd(htmUniqueItems)),
     ]);
     console.log('[HTML] Stored all data tables');
 
@@ -202,6 +231,7 @@ function* handleStoreData(action: PayloadAction<ParsedData>) {
       kanjiRunes: kanjiRunes.length,
       crystals: crystals.length,
       runewords: runewords.length,
+      htmUniqueItems: htmUniqueItems.length,
     });
 
     yield put(storeDataSuccess());

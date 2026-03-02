@@ -5,6 +5,9 @@ import type { ParsedData } from '../interfaces';
 export interface FetchedHtmlData {
   readonly gemsHtml: string;
   readonly runewordsHtml: string;
+  readonly uniqueWeaponsHtml: string;
+  readonly uniqueArmorsHtml: string;
+  readonly uniqueOthersHtml: string;
 }
 
 interface DataSyncState {

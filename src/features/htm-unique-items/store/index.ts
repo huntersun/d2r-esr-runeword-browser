@@ -1,0 +1,17 @@
+export {
+  default as htmUniqueItemsReducer,
+  setSearchText,
+  setMaxReqLevel,
+  toggleCategory,
+  toggleGroup,
+  selectAllCategories,
+  deselectAllCategories,
+  setSelectedCategories,
+  setIncludeCouponItems,
+  selectSearchText,
+  selectMaxReqLevel,
+  selectSelectedCategories,
+  selectSelectedCategoriesRaw,
+  selectIsAllCategoriesSelected,
+  selectIncludeCouponItems,
+} from './htmUniqueItemsSlice';
