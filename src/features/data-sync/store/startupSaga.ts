@@ -1,6 +1,6 @@
 import { call, put } from 'redux-saga/effects';
 import { db } from '@/core/db';
-import type { Metadata, Runeword } from '@/core/db';
+import type { Metadata } from '@/core/db';
 import { fetchLatestVersion, type ChangelogVersion } from '@/core/api';
 import { isVersionDifferent } from '@/core/utils';
 import { startupUseCached, startupNeedsFetch, setNetworkWarning, fatalError, initDataLoad } from './dataSyncSlice';
@@ -30,55 +30,6 @@ function* checkCachedData(): Generator<unknown, CachedDataCheck, unknown> {
     hasData: count > 0,
     storedVersion: versionMeta?.value ?? null,
   };
-}
-
-/**
- * Checks if cached runewords need migration for tierPointTotals.
- * Returns true if any runeword is missing the tierPointTotals field.
- */
-function* checkNeedsTierPointsMigration(): Generator<unknown, boolean, unknown> {
-  // Sample one runeword to check if it has tierPointTotals
-  const runewords: Runeword[] = (yield call(() => db.runewords.limit(1).toArray())) as Runeword[];
-
-  if (runewords.length === 0) {
-    return false; // No data, no migration needed
-  }
-
-  // Check if tierPointTotals field exists (old cached data may not have it)
-  // Use 'in' operator to avoid TypeScript's strict type checking
-  return !('tierPointTotals' in runewords[0]);
-}
-
-/**
- * Checks if cached runewords need migration for reqLevel.
- * Returns true if any runeword is missing the reqLevel field.
- */
-function* checkNeedsReqLevelMigration(): Generator<unknown, boolean, unknown> {
-  // Sample one runeword to check if it has reqLevel
-  const runewords: Runeword[] = (yield call(() => db.runewords.limit(1).toArray())) as Runeword[];
-
-  if (runewords.length === 0) {
-    return false; // No data, no migration needed
-  }
-
-  // Check if reqLevel field exists (old cached data may not have it)
-  return !('reqLevel' in runewords[0]);
-}
-
-/**
- * Checks if cached runewords need migration for sortKey.
- * Returns true if any runeword is missing the sortKey field.
- */
-function* checkNeedsSortKeyMigration(): Generator<unknown, boolean, unknown> {
-  // Sample one runeword to check if it has sortKey
-  const runewords: Runeword[] = (yield call(() => db.runewords.limit(1).toArray())) as Runeword[];
-
-  if (runewords.length === 0) {
-    return false; // No data, no migration needed
-  }
-
-  // Check if sortKey field exists (old cached data may not have it)
-  return !('sortKey' in runewords[0]);
 }
 
 export function* handleStartupCheck() {
@@ -117,36 +68,6 @@ export function* handleStartupCheck() {
     console.log('[HTML] Startup check - stored:', cached.storedVersion, 'remote:', remoteVersion.version, 'needsFetch:', needsFetch);
 
     if (!needsFetch && cached.hasData) {
-      // Check if we need to migrate for tierPointTotals
-      const needsTierPointsMigration: boolean = (yield call(checkNeedsTierPointsMigration)) as boolean;
-
-      if (needsTierPointsMigration) {
-        console.log('[HTML] Migration needed: runewords missing tierPointTotals, refetching...');
-        yield put(startupNeedsFetch());
-        yield put(initDataLoad({ force: false }));
-        return;
-      }
-
-      // Check if we need to migrate for reqLevel
-      const needsReqLevelMigration: boolean = (yield call(checkNeedsReqLevelMigration)) as boolean;
-
-      if (needsReqLevelMigration) {
-        console.log('[HTML] Migration needed: runewords missing reqLevel, refetching...');
-        yield put(startupNeedsFetch());
-        yield put(initDataLoad({ force: false }));
-        return;
-      }
-
-      // Check if we need to migrate for sortKey
-      const needsSortKeyMigration: boolean = (yield call(checkNeedsSortKeyMigration)) as boolean;
-
-      if (needsSortKeyMigration) {
-        console.log('[HTML] Migration needed: runewords missing sortKey, refetching...');
-        yield put(startupNeedsFetch());
-        yield put(initDataLoad({ force: false }));
-        return;
-      }
-
       // Check if htmUniqueItems table is empty (new table migration)
       const htmUniqueItemsCount: number = (yield call(() => db.htmUniqueItems.count())) as number;
 
@@ -157,7 +78,7 @@ export function* handleStartupCheck() {
         return;
       }
 
-      // Check if app version changed (catches data logic fixes like sortKey algorithm changes)
+      // Check if app version changed (catches data model changes and logic fixes)
       const storedAppVersion = (yield call(() => db.metadata.get('appVersion'))) as Metadata | undefined;
       const currentVersion = appVersion.version;
 

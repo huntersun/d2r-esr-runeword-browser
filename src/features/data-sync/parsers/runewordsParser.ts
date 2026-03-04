@@ -1,5 +1,6 @@
 import type { Runeword, Affix, SocketableBonuses, TierPointTotal, RuneCategory } from '@/core/db';
 import { parseRunewordAffixes } from './shared/parserUtils';
+import { isGemName } from './gemsParser';
 
 export interface RunePointInfo {
   points: number;
@@ -25,6 +26,8 @@ interface RawRuneword {
   reqLevel: number;
   sortKey: number;
   runes: string[];
+  gems: string[];
+  ingredients: string[];
   allowedItems: string[];
   excludedItems: string[];
   affixes: Affix[];
@@ -60,30 +63,46 @@ export function extractSockets(cell: Element): number {
   return match ? parseInt(match[1], 10) : 0;
 }
 
+export interface ExtractedIngredients {
+  runes: string[];
+  gems: string[];
+  ingredients: string[];
+}
+
 /**
- * Extracts rune names from the ingredients cell.
+ * Extracts all ingredients (runes and gems) from the ingredients cell, preserving original order.
  *
  * Two formats exist:
- * 1. ESR format: Each rune is in its own <FONT COLOR="...">X Rune</FONT> tag
- * 2. LoD format: Runes are plain text separated by <br> inside a wrapper font
+ * 1. ESR format: Each item is in its own <FONT COLOR="...">X Rune</FONT> or <FONT COLOR="...">Perfect Topaz</FONT> tag
+ * 2. LoD format: Items are plain text separated by <br> inside a wrapper font
  *
- * We first try to extract from nested FONT tags (ESR format).
- * If that yields no results, we fall back to parsing br-separated text (LoD format).
- * Normalizes whitespace to handle rune names split across lines in HTML.
+ * Items are classified as runes (ending with " Rune") or gems (matching isGemName).
  */
-export function extractRunes(cell: Element): string[] {
+export function extractIngredients(cell: Element): ExtractedIngredients {
   const fontTags = cell.querySelectorAll('FONT[color], font[color]');
   const runes: string[] = [];
+  const gems: string[] = [];
+  const ingredients: string[] = [];
+
+  const classifyAndAdd = (text: string): void => {
+    if (text.endsWith(' Rune')) {
+      runes.push(text);
+      ingredients.push(text);
+    } else if (isGemName(text)) {
+      gems.push(text);
+      ingredients.push(text);
+    }
+  };
 
   for (const tag of fontTags) {
     // Skip wrapper elements that contain child FONT tags (ESR format)
     if (tag.querySelector('FONT, font')) continue;
 
-    // Check if this is a wrapper with br-separated runes (LoD format)
+    // Check if this is a wrapper with br-separated items (LoD format)
     // by looking for <br> in innerHTML
     const innerHTML = tag.innerHTML;
     if (innerHTML.includes('<br>') || innerHTML.includes('<BR>')) {
-      // LoD format: split by <br> and extract rune names
+      // LoD format: split by <br> and extract item names
       const parts = innerHTML.split(/<br\s*\/?>/i);
       for (const part of parts) {
         // Strip any remaining HTML tags and normalize whitespace
@@ -91,24 +110,28 @@ export function extractRunes(cell: Element): string[] {
           .replace(/<[^>]*>/g, '')
           .replace(/\s+/g, ' ')
           .trim();
-        if (text.endsWith(' Rune')) {
-          runes.push(text);
-        }
+        if (text) classifyAndAdd(text);
       }
     } else {
-      // ESR format: single rune in this FONT tag
+      // ESR format: single item in this FONT tag
       const rawText = tag.textContent;
       if (!rawText) continue;
 
-      // Normalize whitespace (handles rune names split across lines like "Ist\n  Rune")
-      const runeName = rawText.replace(/\s+/g, ' ').trim();
-      if (runeName.endsWith(' Rune')) {
-        runes.push(runeName);
-      }
+      // Normalize whitespace (handles names split across lines like "Ist\n  Rune")
+      const itemName = rawText.replace(/\s+/g, ' ').trim();
+      if (itemName) classifyAndAdd(itemName);
     }
   }
 
-  return runes;
+  return { runes, gems, ingredients };
+}
+
+/**
+ * Extracts rune names from the ingredients cell (backward-compatible wrapper).
+ * @see extractIngredients for full extraction including gems.
+ */
+export function extractRunes(cell: Element): string[] {
+  return extractIngredients(cell).runes;
 }
 
 /**
@@ -212,16 +235,32 @@ export function calculateTierPointTotals(runes: string[], runePointsLookup: Rune
   });
 }
 
+// Maps gem name to its required level
+export type GemReqLevelLookup = Map<string, number>;
+
 /**
  * Calculates the required level for a runeword.
- * Returns the highest required level among all runes in the runeword.
+ * Returns the highest required level among all runes and gems in the runeword.
  */
-export function calculateReqLevel(runes: string[], runeReqLevelLookup: RuneReqLevelLookup): number {
+export function calculateReqLevel(
+  runes: string[],
+  runeReqLevelLookup: RuneReqLevelLookup,
+  gems?: string[],
+  gemReqLevelLookup?: GemReqLevelLookup
+): number {
   let maxReqLevel = 0;
   for (const runeName of runes) {
     const reqLevel = runeReqLevelLookup.get(runeName);
     if (reqLevel !== undefined && reqLevel > maxReqLevel) {
       maxReqLevel = reqLevel;
+    }
+  }
+  if (gems && gemReqLevelLookup) {
+    for (const gemName of gems) {
+      const reqLevel = gemReqLevelLookup.get(gemName);
+      if (reqLevel !== undefined && reqLevel > maxReqLevel) {
+        maxReqLevel = reqLevel;
+      }
     }
   }
   return maxReqLevel;
@@ -266,12 +305,14 @@ export function calculateSortKey(runes: string[], reqLevel: number, runePriority
  * @param runePointsLookup Optional lookup map for calculating tier point totals
  * @param runeReqLevelLookup Optional lookup map for calculating required level
  * @param runePriorityLookup Optional lookup map for calculating sort key
+ * @param gemReqLevelLookup Optional lookup map for gem required levels
  */
 export function parseRunewordsHtml(
   html: string,
   runePointsLookup?: RunePointsLookup,
   runeReqLevelLookup?: RuneReqLevelLookup,
-  runePriorityLookup?: RunePriorityLookup
+  runePriorityLookup?: RunePriorityLookup,
+  gemReqLevelLookup?: GemReqLevelLookup
 ): Runeword[] {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
@@ -297,12 +338,12 @@ export function parseRunewordsHtml(
     variantCounters.set(name, variantNum);
 
     const sockets = extractSockets(nameCell);
-    const runes = extractRunes(ingredientsCell);
+    const { runes, gems, ingredients } = extractIngredients(ingredientsCell);
     const { allowedItems, excludedItems } = extractAllowedItems(allowedItemsCell);
     const { affixes, columnAffixes } = extractAffixes(cells);
 
-    // Calculate required level (highest reqLevel among all runes)
-    const reqLevel = runeReqLevelLookup ? calculateReqLevel(runes, runeReqLevelLookup) : 0;
+    // Calculate required level (highest reqLevel among all runes and gems)
+    const reqLevel = runeReqLevelLookup ? calculateReqLevel(runes, runeReqLevelLookup, gems, gemReqLevelLookup) : 0;
 
     // Calculate sort key (ESR/Kanji: 0-9999, LoD: 10000+)
     const sortKey = runePriorityLookup ? calculateSortKey(runes, reqLevel, runePriorityLookup) : reqLevel;
@@ -319,6 +360,8 @@ export function parseRunewordsHtml(
       reqLevel,
       sortKey,
       runes,
+      gems,
+      ingredients,
       allowedItems,
       excludedItems,
       affixes,
@@ -335,6 +378,8 @@ export function parseRunewordsHtml(
     reqLevel: rw.reqLevel,
     sortKey: rw.sortKey,
     runes: rw.runes as readonly string[],
+    gems: rw.gems as readonly string[],
+    ingredients: rw.ingredients as readonly string[],
     allowedItems: rw.allowedItems as readonly string[],
     excludedItems: rw.excludedItems as readonly string[],
     affixes: rw.affixes as readonly Affix[],

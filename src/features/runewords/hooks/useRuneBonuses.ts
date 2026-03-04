@@ -25,10 +25,10 @@ async function fetchRune(runeName: string): Promise<SocketableBonuses | null> {
 }
 
 /**
- * Hook that fetches and aggregates bonuses from all runes in a runeword.
+ * Hook that fetches and aggregates bonuses from all runes and gems in a runeword.
  * Returns aggregated bonus texts for each category.
  */
-export function useRuneBonuses(runes: readonly string[]): AggregatedBonuses | undefined {
+export function useRuneBonuses(runes: readonly string[], gems?: readonly string[]): AggregatedBonuses | undefined {
   return useLiveQuery(async () => {
     const weaponsGloves: string[] = [];
     const helmsBoots: string[] = [];
@@ -49,6 +49,23 @@ export function useRuneBonuses(runes: readonly string[]): AggregatedBonuses | un
       }
     }
 
+    if (gems) {
+      for (const gemName of gems) {
+        const gem = await db.gems.get(gemName);
+        if (gem) {
+          for (const affix of gem.bonuses.weaponsGloves) {
+            weaponsGloves.push(affix.rawText);
+          }
+          for (const affix of gem.bonuses.helmsBoots) {
+            helmsBoots.push(affix.rawText);
+          }
+          for (const affix of gem.bonuses.armorShieldsBelts) {
+            armorShieldsBelts.push(affix.rawText);
+          }
+        }
+      }
+    }
+
     return { weaponsGloves, helmsBoots, armorShieldsBelts };
-  }, [runes]);
+  }, [runes, gems]);
 }

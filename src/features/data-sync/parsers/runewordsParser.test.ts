@@ -5,6 +5,7 @@ import {
   extractName,
   extractSockets,
   extractRunes,
+  extractIngredients,
   extractAllowedItems,
   extractAffixes,
   parseRunewordsHtml,
@@ -14,6 +15,7 @@ import {
   type RuneReqLevelLookup,
   type RunePointsLookup,
   type RunePriorityLookup,
+  type GemReqLevelLookup,
 } from './runewordsParser';
 import { parseEsrRunesHtml } from './esrRunesParser';
 import { parseLodRunesHtml } from './lodRunesParser';
@@ -141,6 +143,60 @@ describe('extractRunes', () => {
   it('should return empty array for cell without runes', () => {
     const cell = createElementFromHtml('<td>No runes</td>');
     expect(extractRunes(cell)).toEqual([]);
+  });
+});
+
+describe('extractIngredients', () => {
+  it('should extract runes only when no gems present', () => {
+    const cell = createElementFromHtml(`
+      <td class="ingredients">
+        <font color="#908858">
+          <FONT COLOR="WHITE">I Rune</FONT><br>
+          <FONT COLOR="WHITE">Shi Rune</FONT><br>
+        </font>
+      </td>
+    `);
+    const result = extractIngredients(cell);
+    expect(result.runes).toEqual(['I Rune', 'Shi Rune']);
+    expect(result.gems).toEqual([]);
+    expect(result.ingredients).toEqual(['I Rune', 'Shi Rune']);
+  });
+
+  it('should extract gems and runes in original order (Richesdotcom pattern)', () => {
+    const cell = createElementFromHtml(`
+      <td class="ingredients">
+        <font color="#908858">
+          <FONT COLOR="YELLOW">Perfect Topaz</FONT><br>
+          <FONT COLOR="ORANGE">Ru Rune</FONT><br>
+          <FONT COLOR="YELLOW">Perfect Topaz</FONT><br>
+        </font>
+      </td>
+    `);
+    const result = extractIngredients(cell);
+    expect(result.runes).toEqual(['Ru Rune']);
+    expect(result.gems).toEqual(['Perfect Topaz', 'Perfect Topaz']);
+    expect(result.ingredients).toEqual(['Perfect Topaz', 'Ru Rune', 'Perfect Topaz']);
+  });
+
+  it('should return empty arrays for cell without ingredients', () => {
+    const cell = createElementFromHtml('<td>No ingredients</td>');
+    const result = extractIngredients(cell);
+    expect(result.runes).toEqual([]);
+    expect(result.gems).toEqual([]);
+    expect(result.ingredients).toEqual([]);
+  });
+
+  it('extractRunes wrapper should return only runes', () => {
+    const cell = createElementFromHtml(`
+      <td class="ingredients">
+        <font color="#908858">
+          <FONT COLOR="YELLOW">Perfect Topaz</FONT><br>
+          <FONT COLOR="ORANGE">Ru Rune</FONT><br>
+          <FONT COLOR="YELLOW">Perfect Topaz</FONT><br>
+        </font>
+      </td>
+    `);
+    expect(extractRunes(cell)).toEqual(['Ru Rune']);
   });
 });
 
@@ -317,6 +373,18 @@ describe('calculateReqLevel', () => {
       ['Zod Rune', 69],
     ]);
     expect(calculateReqLevel(['Zod Rune', 'El Rune'], lookup)).toBe(69);
+  });
+
+  it('should consider gem reqLevel when provided', () => {
+    const runeReqLevel: RuneReqLevelLookup = new Map([['Ru Rune', 10]]);
+    const gemReqLevel: GemReqLevelLookup = new Map([['Perfect Topaz', 25]]);
+    expect(calculateReqLevel(['Ru Rune'], runeReqLevel, ['Perfect Topaz', 'Perfect Topaz'], gemReqLevel)).toBe(25);
+  });
+
+  it('should return rune reqLevel when it is higher than gem reqLevel', () => {
+    const runeReqLevel: RuneReqLevelLookup = new Map([['Ru Rune', 50]]);
+    const gemReqLevel: GemReqLevelLookup = new Map([['Perfect Topaz', 25]]);
+    expect(calculateReqLevel(['Ru Rune'], runeReqLevel, ['Perfect Topaz'], gemReqLevel)).toBe(50);
   });
 });
 

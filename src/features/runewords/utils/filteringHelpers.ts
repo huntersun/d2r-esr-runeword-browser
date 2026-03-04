@@ -1,7 +1,8 @@
-import type { Runeword, EsrRune, LodRune, KanjiRune, SocketableBonuses } from '@/core/db/models';
+import type { Runeword, EsrRune, LodRune, KanjiRune, Gem, SocketableBonuses } from '@/core/db/models';
 import { getRelevantCategories, getItemCategory } from './itemCategoryMapping';
 
 export type RuneBonusMap = Map<string, SocketableBonuses>;
+export type GemBonusMap = Map<string, SocketableBonuses>;
 export type RuneCategoryMap = Map<string, string[]>;
 export type RunePriorityMap = Map<string, number>;
 
@@ -61,9 +62,49 @@ export function getRuneBonusesText(runeword: Runeword, runeBonusMap: RuneBonusMa
 }
 
 /**
+ * Build searchable text from gem bonuses for a runeword.
+ */
+export function getGemBonusesText(runeword: Runeword, gemBonusMap: GemBonusMap): string {
+  const gems = 'gems' in runeword ? (runeword.gems) : [];
+  if (gems.length === 0) return '';
+
+  const relevantCategories = getRelevantCategories(runeword.allowedItems);
+  const bonusTexts: string[] = [];
+
+  for (const gemName of gems) {
+    const bonuses = gemBonusMap.get(gemName);
+    if (bonuses) {
+      for (const category of relevantCategories) {
+        for (const affix of bonuses[category]) {
+          bonusTexts.push(affix.rawText);
+        }
+      }
+    }
+  }
+
+  return bonusTexts.join(' ');
+}
+
+/**
+ * Build a map of gem names to their bonuses for search.
+ */
+export function buildGemBonusMap(gems: readonly Gem[]): GemBonusMap {
+  const map = new Map<string, SocketableBonuses>();
+  for (const gem of gems) {
+    map.set(gem.name, gem.bonuses);
+  }
+  return map;
+}
+
+/**
  * Check if a runeword matches the search terms (AND logic).
  */
-export function matchesSearch(runeword: Runeword, searchTerms: readonly string[], runeBonusMap: RuneBonusMap): boolean {
+export function matchesSearch(
+  runeword: Runeword,
+  searchTerms: readonly string[],
+  runeBonusMap: RuneBonusMap,
+  gemBonusMap?: GemBonusMap
+): boolean {
   if (searchTerms.length === 0) return true;
 
   // Search all column affixes to catch column-specific bonuses, fall back to legacy affixes if columns are empty
@@ -72,7 +113,8 @@ export function matchesSearch(runeword: Runeword, searchTerms: readonly string[]
   const affixText =
     allColumnAffixes.length > 0 ? allColumnAffixes.map((a) => a.rawText).join(' ') : runeword.affixes.map((a) => a.rawText).join(' ');
   const runeBonusText = getRuneBonusesText(runeword, runeBonusMap);
-  const searchableText = `${runeword.name} ${affixText} ${runeBonusText}`.toLowerCase();
+  const gemBonusText = gemBonusMap ? getGemBonusesText(runeword, gemBonusMap) : '';
+  const searchableText = `${runeword.name} ${affixText} ${runeBonusText} ${gemBonusText}`.toLowerCase();
 
   return searchTerms.every((term) => searchableText.includes(term));
 }

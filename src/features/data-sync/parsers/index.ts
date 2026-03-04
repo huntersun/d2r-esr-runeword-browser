@@ -10,5 +10,6 @@ export {
   type RunePointInfo,
   type RuneReqLevelLookup,
   type RunePriorityLookup,
+  type GemReqLevelLookup,
 } from './runewordsParser';
 export { parseHtmUniqueItems } from './htmUniqueItemsParser';

@@ -104,9 +104,11 @@ export interface Runeword {
   readonly name: string;
   readonly variant: number; // 1, 2, 3... for multi-variant runewords
   readonly sockets: number;
-  readonly reqLevel: number; // Highest required level among all runes
+  readonly reqLevel: number; // Highest required level among all runes and gems
   readonly sortKey: number; // Pre-calculated sort key: ESR/Kanji (0-9999) or LoD (10000+) + reqLevel
   readonly runes: readonly string[];
+  readonly gems: readonly string[]; // Gem names in the recipe (e.g. ["Perfect Topaz", "Perfect Topaz"])
+  readonly ingredients: readonly string[]; // All items in original order (runes + gems interleaved)
   readonly allowedItems: readonly string[];
   readonly excludedItems: readonly string[]; // Items excluded from this variant
   readonly affixes: readonly Affix[]; // Runeword bonuses from first non-empty column (backward compat)

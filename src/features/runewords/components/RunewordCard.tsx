@@ -1,9 +1,11 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RuneBadge } from './RuneBadge';
+import { GemBadge } from './GemBadge';
 import { RunewordPointsDisplay } from './RunewordPointsDisplay';
 import { useRuneBonuses } from '../hooks/useRuneBonuses';
 import { getRelevantCategories, getCategoryLabel, type BonusCategory } from '../utils/itemCategoryMapping';
+import { isGemName } from '@/features/data-sync/parsers/gemsParser';
 import type { Runeword } from '@/core/db/models';
 
 interface RunewordCardProps {
@@ -18,7 +20,9 @@ export function RunewordCard({ runeword }: RunewordCardProps) {
   // Handle backwards compatibility for cached runewords without reqLevel
   const reqLevel = 'reqLevel' in runeword ? runeword.reqLevel : undefined;
   const isLod = 'sortKey' in runeword && runeword.sortKey >= LOD_SORT_KEY_OFFSET;
-  const runeBonuses = useRuneBonuses(runes);
+  const gems = 'gems' in runeword ? runeword.gems : undefined;
+  const ingredientsList = 'ingredients' in runeword && runeword.ingredients.length > 0 ? runeword.ingredients : runes;
+  const runeBonuses = useRuneBonuses(runes, gems);
   const relevantCategories = getRelevantCategories(allowedItems);
 
   // Check if runeword bonuses differ across relevant columns
@@ -55,11 +59,15 @@ export function RunewordCard({ runeword }: RunewordCardProps) {
       </CardHeader>
 
       <CardContent className="space-y-3">
-        {/* Rune sequence */}
+        {/* Ingredient sequence (runes + gems in original order) */}
         <div className="flex flex-wrap gap-1">
-          {runes.map((rune, index) => (
-            <RuneBadge key={`${rune}-${String(index)}`} runeName={rune} isLod={isLod} />
-          ))}
+          {ingredientsList.map((item, index) =>
+            isGemName(item) ? (
+              <GemBadge key={`${item}-${String(index)}`} gemName={item} />
+            ) : (
+              <RuneBadge key={`${item}-${String(index)}`} runeName={item} isLod={isLod} />
+            )
+          )}
         </div>
 
         {/* Tier point totals - check with 'in' for backwards compatibility with old cached data */}
@@ -106,7 +114,7 @@ export function RunewordCard({ runeword }: RunewordCardProps) {
         {/* Rune Bonuses */}
         {hasRuneBonuses && (
           <div className="border-t pt-3">
-            <p className="font-medium text-muted-foreground mb-2 text-center">Rune Bonuses:</p>
+            <p className="font-medium text-muted-foreground mb-2 text-center">Socketable Bonuses:</p>
             {relevantCategories.length === 1 ? (
               // Single category - centered list
               <ul className="space-y-0.5 text-[#8080E6] text-center">

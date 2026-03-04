@@ -20,6 +20,7 @@ import {
   matchesTierPoints,
   buildRuneCategoryMap,
   buildRuneBonusMap,
+  buildGemBonusMap,
   expandRunewordsByColumn,
 } from '../utils/filteringHelpers';
 
@@ -33,19 +34,21 @@ export function useFilteredRunewords(): readonly Runeword[] | undefined {
 
   // Fetch runewords pre-sorted by sortKey from IndexedDB (ESR/Kanji first by reqLevel, then LoD by reqLevel)
   const data = useLiveQuery(async () => {
-    const [runewords, esrRunes, lodRunes, kanjiRunes] = await Promise.all([
+    const [runewords, esrRunes, lodRunes, kanjiRunes, gems] = await Promise.all([
       db.runewords.orderBy('sortKey').toArray(),
       db.esrRunes.toArray(),
       db.lodRunes.toArray(),
       db.kanjiRunes.toArray(),
+      db.gems.toArray(),
     ]);
-    return { runewords, esrRunes, lodRunes, kanjiRunes };
+    return { runewords, esrRunes, lodRunes, kanjiRunes, gems };
   }, []);
 
   if (!data) return undefined;
 
-  const { runewords, esrRunes, lodRunes, kanjiRunes } = data;
+  const { runewords, esrRunes, lodRunes, kanjiRunes, gems } = data;
   const runeBonusMap = buildRuneBonusMap(esrRunes, lodRunes, kanjiRunes);
+  const gemBonusMap = buildGemBonusMap(gems);
   const runeCategoryMap = buildRuneCategoryMap(esrRunes, lodRunes, kanjiRunes);
 
   // Expand runewords with different column bonuses into separate entries per item category
@@ -55,7 +58,7 @@ export function useFilteredRunewords(): readonly Runeword[] | undefined {
 
   // Filter preserves the pre-sorted order from IndexedDB
   return expandedRunewords.filter((runeword) => {
-    if (!matchesSearch(runeword, searchTerms, runeBonusMap)) return false;
+    if (!matchesSearch(runeword, searchTerms, runeBonusMap, gemBonusMap)) return false;
     if (!matchesSockets(runeword, socketCount)) return false;
     if (!matchesMaxReqLevel(runeword, maxReqLevel)) return false;
     if (!matchesItemTypes(runeword, selectedItemTypes)) return false;

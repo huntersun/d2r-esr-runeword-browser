@@ -22,6 +22,7 @@ import {
   type RunePointsLookup,
   type RuneReqLevelLookup,
   type RunePriorityLookup,
+  type GemReqLevelLookup,
 } from '../parsers';
 import { DEFAULT_ESR_RUNE_POINTS, DEFAULT_LOD_RUNE_POINTS } from '../constants/defaultRunePoints';
 import {
@@ -169,7 +170,14 @@ function* handleParseData(action: PayloadAction<FetchedHtmlData>) {
     }
     console.log('[HTML] Built rune priority lookup with', runePriorityLookup.size, 'entries');
 
-    const runewords = parseRunewordsHtml(runewordsHtml, runePointsLookup, runeReqLevelLookup, runePriorityLookup);
+    // Build gem required level lookup for runeword reqLevel calculation
+    const gemReqLevelLookup: GemReqLevelLookup = new Map();
+    for (const gem of gems) {
+      gemReqLevelLookup.set(gem.name, gem.reqLevel);
+    }
+    console.log('[HTML] Built gem reqLevel lookup with', gemReqLevelLookup.size, 'entries');
+
+    const runewords = parseRunewordsHtml(runewordsHtml, runePointsLookup, runeReqLevelLookup, runePriorityLookup, gemReqLevelLookup);
     console.log('[HTML] Parsed runewords:', runewords.length);
 
     const htmUniqueWeapons = parseHtmUniqueItems(uniqueWeaponsHtml, 'weapons');

@@ -46,6 +46,8 @@ function createRuneword(overrides: Partial<Runeword> = {}): Runeword {
     reqLevel: 11,
     sortKey: 11, // ESR/Kanji runeword, sortKey = reqLevel
     runes: ['El Rune', 'Eld Rune', 'Tir Rune'],
+    gems: [],
+    ingredients: ['El Rune', 'Eld Rune', 'Tir Rune'],
     allowedItems: ['All Weapons'],
     excludedItems: [],
     affixes: [],
@@ -479,6 +481,19 @@ describe('matchesSearch', () => {
       allowedItems: ['All Weapons'],
     });
     expect(matchesSearch(runeword, ['fire damage'], runeBonusMap)).toBe(true);
+  });
+
+  it('should not match gem or rune names in search', () => {
+    const runeword = createRuneword({
+      name: 'Richesdotcom',
+      runes: ['Ru Rune'],
+      gems: ['Perfect Topaz', 'Perfect Topaz'],
+      ingredients: ['Perfect Topaz', 'Ru Rune', 'Perfect Topaz'],
+      sockets: 3,
+      allowedItems: ['Helm'],
+    });
+    expect(matchesSearch(runeword, ['topaz'], emptyBonusMap)).toBe(false);
+    expect(matchesSearch(runeword, ['ru rune'], emptyBonusMap)).toBe(false);
   });
 });
 

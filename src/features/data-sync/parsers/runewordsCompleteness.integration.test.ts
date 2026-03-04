@@ -22,10 +22,17 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import { parseRunewordsHtml, type RunePointsLookup, type RuneReqLevelLookup, type RunePriorityLookup } from './runewordsParser';
+import {
+  parseRunewordsHtml,
+  type RunePointsLookup,
+  type RuneReqLevelLookup,
+  type RunePriorityLookup,
+  type GemReqLevelLookup,
+} from './runewordsParser';
 import { parseEsrRunesHtml } from './esrRunesParser';
 import { parseLodRunesHtml } from './lodRunesParser';
 import { parseKanjiRunesHtml } from './kanjiRunesParser';
+import { parseGemsHtml, isGemName } from './gemsParser';
 import { extractValue, detectValueType } from './shared/parserUtils';
 import { DEFAULT_ESR_RUNE_POINTS, DEFAULT_LOD_RUNE_POINTS } from '../constants/defaultRunePoints';
 import { getRelevantCategories, getItemCategory } from '@/features/runewords/utils/itemCategoryMapping';
@@ -42,6 +49,7 @@ const gemsHtml = readFileSync(resolve(__dirname, '../../../../test-fixtures/gems
 const esrRunes = parseEsrRunesHtml(gemsHtml);
 const lodRunes = parseLodRunesHtml(gemsHtml);
 const kanjiRunes = parseKanjiRunesHtml(gemsHtml);
+const gems = parseGemsHtml(gemsHtml);
 
 // ─── Build lookup maps (replicating dataSyncSaga exactly) ────────────────────
 
@@ -103,9 +111,15 @@ const runePointsLookup = buildRunePointsLookup(esrRunes, lodRunes);
 const runeReqLevelLookup = buildRuneReqLevelLookup(esrRunes, lodRunes, kanjiRunes);
 const runePriorityLookup = buildRunePriorityLookup(esrRunes, lodRunes, kanjiRunes);
 
+// Build gem reqLevel lookup (same as dataSyncSaga)
+const gemReqLevelLookup: GemReqLevelLookup = new Map();
+for (const gem of gems) {
+  gemReqLevelLookup.set(gem.name, gem.reqLevel);
+}
+
 // ─── Parse runewords WITH all lookups (full pipeline) ────────────────────────
 
-const parsedRunewords = parseRunewordsHtml(runewordsHtml, runePointsLookup, runeReqLevelLookup, runePriorityLookup);
+const parsedRunewords = parseRunewordsHtml(runewordsHtml, runePointsLookup, runeReqLevelLookup, runePriorityLookup, gemReqLevelLookup);
 
 // ─── Independent raw extraction helpers ──────────────────────────────────────
 // These intentionally re-implement extraction logic to verify the parser.
@@ -134,9 +148,17 @@ function rawExtractSockets(cell: Element): number {
   return m ? parseInt(m[1], 10) : 0;
 }
 
-function rawExtractRunes(cell: Element): string[] {
+interface RawIngredients {
+  runes: string[];
+  gems: string[];
+  ingredients: string[];
+}
+
+function rawExtractIngredients(cell: Element): RawIngredients {
   const fontTags = cell.querySelectorAll('FONT[color], font[color]');
   const runes: string[] = [];
+  const gemsList: string[] = [];
+  const ingredients: string[] = [];
   for (const tag of fontTags) {
     if (tag.querySelector('FONT, font')) continue;
     const innerHTML = tag.innerHTML;
@@ -147,14 +169,26 @@ function rawExtractRunes(cell: Element): string[] {
           .replace(/<[^>]*>/g, '')
           .replace(/\s+/g, ' ')
           .trim();
-        if (text.endsWith(' Rune')) runes.push(text);
+        if (text.endsWith(' Rune')) {
+          runes.push(text);
+          ingredients.push(text);
+        } else if (isGemName(text)) {
+          gemsList.push(text);
+          ingredients.push(text);
+        }
       }
     } else {
       const text = tag.textContent?.replace(/\s+/g, ' ').trim() ?? '';
-      if (text.endsWith(' Rune')) runes.push(text);
+      if (text.endsWith(' Rune')) {
+        runes.push(text);
+        ingredients.push(text);
+      } else if (isGemName(text)) {
+        gemsList.push(text);
+        ingredients.push(text);
+      }
     }
   }
-  return runes;
+  return { runes, gems: gemsList, ingredients };
 }
 
 function rawExtractAllowedItems(cell: Element): { allowedItems: string[]; excludedItems: string[] } {
@@ -221,7 +255,8 @@ describe('Per-runeword completeness check (every runeword vs HTML source)', () =
     const cells = row.querySelectorAll('td');
     const rawName = rawExtractName(cells[0]);
     const rawSockets = rawExtractSockets(cells[0]);
-    const rawRunes = rawExtractRunes(cells[1]);
+    const rawIngredients = rawExtractIngredients(cells[1]);
+    const rawRunes = rawIngredients.runes;
     const rawItems = rawExtractAllowedItems(cells[2]);
     const rawAffixLines = rawExtractAffixes(cells);
 
@@ -259,10 +294,20 @@ describe('Per-runeword completeness check (every runeword vs HTML source)', () =
         expect(parsedRunewords[i].columnAffixes.armorShieldsBelts.map((a) => a.rawText)).toEqual(rawArmor);
       });
 
-      it('rune count <= socket count', () => {
-        // Mixed gem+rune recipes (e.g. Richesdotcom) have fewer runes than sockets
-        expect(parsedRunewords[i].runes.length).toBeLessThanOrEqual(parsedRunewords[i].sockets);
-        expect(parsedRunewords[i].runes.length).toBeGreaterThan(0);
+      it('gems', () => {
+        expect([...parsedRunewords[i].gems]).toEqual(rawIngredients.gems);
+      });
+
+      it('ingredients', () => {
+        expect([...parsedRunewords[i].ingredients]).toEqual(rawIngredients.ingredients);
+      });
+
+      it('ingredient count equals socket count', () => {
+        expect(parsedRunewords[i].ingredients.length).toBe(parsedRunewords[i].sockets);
+      });
+
+      it('runes + gems equals ingredients', () => {
+        expect(parsedRunewords[i].runes.length + parsedRunewords[i].gems.length).toBe(parsedRunewords[i].ingredients.length);
       });
     });
   }
@@ -280,10 +325,12 @@ describe('Calculated fields (reqLevel, sortKey, tierPointTotals)', () => {
       }
     });
 
-    it('reqLevel should equal the max reqLevel among its runes', () => {
+    it('reqLevel should equal the max reqLevel among its runes and gems', () => {
       for (const rw of parsedRunewords) {
         const runeReqLevels = rw.runes.map((r) => runeReqLevelLookup.get(r) ?? 0);
-        const expectedReqLevel = runeReqLevels.length > 0 ? Math.max(...runeReqLevels) : 0;
+        const gemReqLevels = rw.gems.map((g) => gemReqLevelLookup.get(g) ?? 0);
+        const allReqLevels = [...runeReqLevels, ...gemReqLevels];
+        const expectedReqLevel = allReqLevels.length > 0 ? Math.max(...allReqLevels) : 0;
         expect(rw.reqLevel, `${rw.name} v${String(rw.variant)}: reqLevel`).toBe(expectedReqLevel);
       }
     });
@@ -798,6 +845,28 @@ describe('Data quality invariants', () => {
     }
   });
 
+  it('all gem names should be recognized by isGemName', () => {
+    for (const rw of parsedRunewords) {
+      for (const gem of rw.gems) {
+        expect(isGemName(gem), `${rw.name}: gem "${gem}" not recognized by isGemName`).toBe(true);
+      }
+    }
+  });
+
+  it('gems and ingredients arrays should be present on all runewords', () => {
+    for (const rw of parsedRunewords) {
+      expect(Array.isArray(rw.gems), `${rw.name}: gems should be an array`).toBe(true);
+      expect(Array.isArray(rw.ingredients), `${rw.name}: ingredients should be an array`).toBe(true);
+    }
+  });
+
+  it('most runewords should have empty gems array', () => {
+    const withGems = parsedRunewords.filter((rw) => rw.gems.length > 0);
+    // Currently only Richesdotcom has gems
+    expect(withGems.length).toBeGreaterThanOrEqual(1);
+    expect(withGems.length).toBeLessThanOrEqual(10); // Reasonable upper bound
+  });
+
   it('every runeword should have at least one affix', () => {
     const noAffixes = parsedRunewords.filter((rw) => rw.affixes.length === 0);
     expect(noAffixes.length, `Runewords with no affixes: ${noAffixes.map((rw) => `${rw.name} v${String(rw.variant)}`).join(', ')}`).toBe(0);
@@ -826,11 +895,16 @@ describe('Data quality invariants', () => {
     }
   });
 
-  it('Richesdotcom should have fewer runes than sockets (mixed gem+rune recipe)', () => {
+  it('Richesdotcom should have gems and correct ingredients (mixed gem+rune recipe)', () => {
     const richesdotcom = parsedRunewords.find((rw) => rw.name === 'Richesdotcom');
     expect(richesdotcom).toBeDefined();
-    expect(richesdotcom!.runes.length).toBe(1); // Only "Ru Rune"
-    expect(richesdotcom!.sockets).toBe(3); // 3 sockets (2 gems + 1 rune)
+    expect(richesdotcom!.runes).toEqual(['Ru Rune']);
+    expect(richesdotcom!.gems).toEqual(['Perfect Topaz', 'Perfect Topaz']);
+    expect(richesdotcom!.ingredients).toEqual(['Perfect Topaz', 'Ru Rune', 'Perfect Topaz']);
+    expect(richesdotcom!.sockets).toBe(3);
+    expect(richesdotcom!.ingredients.length).toBe(richesdotcom!.sockets);
+    // reqLevel should be 35 (Perfect Topaz) not 34 (Ru Rune) — verifies gem reqLevel is considered
+    expect(richesdotcom!.reqLevel).toBe(35);
   });
 });
 
