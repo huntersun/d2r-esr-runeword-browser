@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.5.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.4.0...v1.5.0) (2026-03-05)
+
+
+### Features
+
+* add the optional jewel info to the runewords ([fba3841](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/fba384190873f64f6b4e2d795e6127470764a33e))
+
 ## [1.4.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.3.0...v1.4.0) (2026-03-04)
 
 
