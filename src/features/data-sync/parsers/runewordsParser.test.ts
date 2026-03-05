@@ -184,6 +184,39 @@ describe('extractIngredients', () => {
     expect(result.runes).toEqual([]);
     expect(result.gems).toEqual([]);
     expect(result.ingredients).toEqual([]);
+    expect(result.jewelInfo).toBeUndefined();
+  });
+
+  it('should extract jewel info from Kanji runeword ingredients', () => {
+    const cell = createElementFromHtml(`
+      <td class="ingredients">
+        <font color="#908858">
+          <FONT COLOR="WHITE">(0-3)</FONT>
+          <FONT COLOR="BLUE"> Jewels</FONT><br>
+          <FONT COLOR="BLUE">Moon Rune</FONT><br>
+          <FONT COLOR="YELLOW">Ko Rune</FONT><br>
+          <FONT COLOR="WHITE">U Rune</FONT><br>
+        </font>
+      </td>
+    `);
+    const result = extractIngredients(cell);
+    expect(result.runes).toEqual(['Moon Rune', 'Ko Rune', 'U Rune']);
+    expect(result.gems).toEqual([]);
+    expect(result.ingredients).toEqual(['Moon Rune', 'Ko Rune', 'U Rune']);
+    expect(result.jewelInfo).toBe('(0-3) Jewels');
+  });
+
+  it('should not extract jewel info from non-jewel runewords', () => {
+    const cell = createElementFromHtml(`
+      <td class="ingredients">
+        <font color="#908858">
+          <FONT COLOR="WHITE">I Rune</FONT><br>
+          <FONT COLOR="WHITE">Shi Rune</FONT><br>
+        </font>
+      </td>
+    `);
+    const result = extractIngredients(cell);
+    expect(result.jewelInfo).toBeUndefined();
   });
 
   it('extractRunes wrapper should return only runes', () => {

@@ -21,6 +21,7 @@ export function RunewordCard({ runeword }: RunewordCardProps) {
   const reqLevel = 'reqLevel' in runeword ? runeword.reqLevel : undefined;
   const isLod = 'sortKey' in runeword && runeword.sortKey >= LOD_SORT_KEY_OFFSET;
   const gems = 'gems' in runeword ? runeword.gems : undefined;
+  const jewelInfo = 'jewelInfo' in runeword ? runeword.jewelInfo : undefined;
   const ingredientsList = 'ingredients' in runeword && runeword.ingredients.length > 0 ? runeword.ingredients : runes;
   const runeBonuses = useRuneBonuses(runes, gems);
   const relevantCategories = getRelevantCategories(allowedItems);
@@ -68,6 +69,7 @@ export function RunewordCard({ runeword }: RunewordCardProps) {
               <RuneBadge key={`${item}-${String(index)}`} runeName={item} isLod={isLod} />
             )
           )}
+          {jewelInfo && <Badge variant="outline">{jewelInfo}</Badge>}
         </div>
 
         {/* Tier point totals - check with 'in' for backwards compatibility with old cached data */}

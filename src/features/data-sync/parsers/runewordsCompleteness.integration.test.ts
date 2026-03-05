@@ -152,6 +152,7 @@ interface RawIngredients {
   runes: string[];
   gems: string[];
   ingredients: string[];
+  jewelInfo?: string;
 }
 
 function rawExtractIngredients(cell: Element): RawIngredients {
@@ -188,7 +189,11 @@ function rawExtractIngredients(cell: Element): RawIngredients {
       }
     }
   }
-  return { runes, gems: gemsList, ingredients };
+  // Extract optional jewel info (same logic as parser)
+  const cellText = (cell.textContent ?? '').replace(/\s+/g, ' ');
+  const jewelMatch = /\(\d+(?:-\d+)?\) Jewels?/.exec(cellText);
+  const jewelInfo = jewelMatch ? jewelMatch[0] : undefined;
+  return { runes, gems: gemsList, ingredients, jewelInfo };
 }
 
 function rawExtractAllowedItems(cell: Element): { allowedItems: string[]; excludedItems: string[] } {
@@ -300,6 +305,10 @@ describe('Per-runeword completeness check (every runeword vs HTML source)', () =
 
       it('ingredients', () => {
         expect([...parsedRunewords[i].ingredients]).toEqual(rawIngredients.ingredients);
+      });
+
+      it('jewelInfo', () => {
+        expect(parsedRunewords[i].jewelInfo).toEqual(rawIngredients.jewelInfo);
       });
 
       it('ingredient count equals socket count', () => {
@@ -892,6 +901,15 @@ describe('Data quality invariants', () => {
       expect(Array.isArray(rw.columnAffixes.weaponsGloves)).toBe(true);
       expect(Array.isArray(rw.columnAffixes.helmsBoots)).toBe(true);
       expect(Array.isArray(rw.columnAffixes.armorShieldsBelts)).toBe(true);
+    }
+  });
+
+  it('runewords with jewelInfo should contain at least one Kanji rune', () => {
+    const withJewels = parsedRunewords.filter((rw) => rw.jewelInfo);
+    expect(withJewels.length).toBeGreaterThan(0);
+    for (const rw of withJewels) {
+      const hasKanjiRune = rw.runes.some((r) => kanjiRuneNames.has(r));
+      expect(hasKanjiRune, `${rw.name} v${String(rw.variant)} has jewelInfo but no Kanji rune`).toBe(true);
     }
   });
 

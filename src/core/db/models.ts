@@ -114,6 +114,7 @@ export interface Runeword {
   readonly affixes: readonly Affix[]; // Runeword bonuses from first non-empty column (backward compat)
   readonly columnAffixes: SocketableBonuses; // Per-column runeword bonuses (weapon/helm/armor)
   readonly tierPointTotals: readonly TierPointTotal[]; // Pre-calculated tier point totals
+  readonly jewelInfo?: string; // Optional jewel info for Kanji runewords, e.g. "(0-3) Jewels"
 }
 
 // HTM Unique Items

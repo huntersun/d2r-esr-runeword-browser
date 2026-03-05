@@ -33,6 +33,7 @@ interface RawRuneword {
   affixes: Affix[];
   columnAffixes: SocketableBonuses;
   tierPointTotals: TierPointTotal[];
+  jewelInfo?: string;
 }
 
 interface AllowedItemsResult {
@@ -67,6 +68,7 @@ export interface ExtractedIngredients {
   runes: string[];
   gems: string[];
   ingredients: string[];
+  jewelInfo?: string;
 }
 
 /**
@@ -123,7 +125,12 @@ export function extractIngredients(cell: Element): ExtractedIngredients {
     }
   }
 
-  return { runes, gems, ingredients };
+  // Extract optional jewel info (e.g. "(0-3) Jewels") from Kanji runewords
+  const cellText = cell.textContent.replace(/\s+/g, ' ');
+  const jewelMatch = /\(\d+(?:-\d+)?\) Jewels?/.exec(cellText);
+  const jewelInfo = jewelMatch ? jewelMatch[0] : undefined;
+
+  return { runes, gems, ingredients, jewelInfo };
 }
 
 /**
@@ -338,7 +345,7 @@ export function parseRunewordsHtml(
     variantCounters.set(name, variantNum);
 
     const sockets = extractSockets(nameCell);
-    const { runes, gems, ingredients } = extractIngredients(ingredientsCell);
+    const { runes, gems, ingredients, jewelInfo } = extractIngredients(ingredientsCell);
     const { allowedItems, excludedItems } = extractAllowedItems(allowedItemsCell);
     const { affixes, columnAffixes } = extractAffixes(cells);
 
@@ -367,6 +374,7 @@ export function parseRunewordsHtml(
       affixes,
       columnAffixes,
       tierPointTotals,
+      jewelInfo,
     });
   }
 
@@ -385,6 +393,7 @@ export function parseRunewordsHtml(
     affixes: rw.affixes as readonly Affix[],
     columnAffixes: rw.columnAffixes,
     tierPointTotals: rw.tierPointTotals as readonly TierPointTotal[],
+    ...(rw.jewelInfo !== undefined && { jewelInfo: rw.jewelInfo }),
   }));
 
   console.log(`Parsed ${String(runewords.length)} runewords`);
