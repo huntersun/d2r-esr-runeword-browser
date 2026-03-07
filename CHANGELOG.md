@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.6.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.5.0...v1.6.0) (2026-03-07)
+
+
+### Features
+
+* add temporary proxy because the site moved to HTTP webpage ([9c97534](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/9c97534ba9bc68d6f8b8fbd3d82c85a238720dee))
+
 ## [1.5.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.4.0...v1.5.0) (2026-03-05)
 
 
