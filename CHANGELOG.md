@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.9.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.8.0...v1.9.0) (2026-03-29)
+
+
+### Features
+
+* add support for ascendancies ([e39fb76](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/e39fb7687d6415ca29e0197f713a283d300d4df9))
+
+
+### Documentation
+
+* add the initial feature doc for builds and privacy policy ([bd5ef10](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/bd5ef1059d91ebfa0a36275caab90d9cf6259049))
+
 ## [1.8.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.7.1...v1.8.0) (2026-03-20)
 
 
