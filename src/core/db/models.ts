@@ -151,6 +151,20 @@ export interface MythicalUnique {
   readonly imageUrl: string;
 }
 
+// Ascendancy types
+
+export interface AscendancyTier {
+  readonly tier: number; // 1-5
+  readonly bonuses: readonly string[];
+}
+
+export interface Ascendancy {
+  readonly name: string; // PK, e.g. "Battlemage"
+  readonly imageUrl: string; // Relative URL, e.g. "./images/ascendancies/battlemage.png"
+  readonly tiers: readonly AscendancyTier[];
+  readonly footnotes: readonly string[];
+}
+
 // Metadata
 
 export interface Metadata {

@@ -7,6 +7,7 @@ import socketablesReducer from '@/features/socketables/store/socketablesSlice';
 import runewordsReducer from '@/features/runewords/store/runewordsSlice';
 import htmUniqueItemsReducer from '@/features/htm-unique-items/store/htmUniqueItemsSlice';
 import mythicalUniquesReducer from '@/features/mythical-uniques/store/mythicalUniquesSlice';
+import ascendanciesReducer from '@/features/ascendancies/store/ascendanciesSlice';
 import { rootSaga } from './rootSaga';
 
 const sagaMiddleware = createSagaMiddleware();
@@ -20,6 +21,7 @@ const store = configureStore({
     runewords: runewordsReducer,
     htmUniqueItems: htmUniqueItemsReducer,
     mythicalUniques: mythicalUniquesReducer,
+    ascendancies: ascendanciesReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(sagaMiddleware),
 });

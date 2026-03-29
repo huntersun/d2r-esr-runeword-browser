@@ -376,13 +376,13 @@ ESR adds an ascendancy system where characters earn a special item granting tier
 ### Data Source
 
 Ascendancy names and tier bonuses are parsed from the ESR documentation:
-`https://celestialrayone.github.io/Eastern_Sun_Resurrected/docs/ascendancies.htm`
+`https://easternsunresurrected.com/ascendancies.htm`
 
 Only the ascendancies and their bonuses at each tier are needed — challenges/requirements are not parsed.
 
 ### Ascendancy Data Model
 
-There are **16 ascendancies** in total. Ascendancies are **NOT class-specific** — all 16 are available to all character classes.
+There are **15 ascendancies** in total. Ascendancies are **NOT class-specific** — all 15 are available to all character classes.
 
 Each ascendancy has **5 tiers** with escalating bonuses (freetext bonus strings, similar to existing affix strings).
 
@@ -417,12 +417,12 @@ interface AscendancyTier {
 
 ### Ascendancies in Builds
 
-- **Build form**: A simple dropdown of all 16 ascendancy names (optional field). The dropdown is NOT filtered by class selection — all ascendancies are available to all classes.
+- **Build form**: A simple dropdown of all 15 ascendancy names (optional field). The dropdown is NOT filtered by class selection — all ascendancies are available to all classes.
 - **Build detail page**: Shows the ascendancy name along with its tier bonuses (pulled from the viewer's local parsed data)
 
 ### Complete Ascendancy List
 
-Battlemage, Blademaster, Arcanist, Bloodmage, Awakened, Ironbolt, Starborn, Lifebreaker, Worldshaper, Soul Warden, Stance Dancer, Nomad, Sharpshooter, Mana Warden, Berserker (+ 1 more to verify from the source HTM).
+Battlemage, Blademaster, Arcanist, Bloodmage, Awakened, Ironbolt, Starborn, Lifebreaker, Worldshaper, Soul Warden, Stance Dancer, Nomad, Sharpshooter, Mana Warden, Berserker.
 
 ## Screens & Routes
 
@@ -612,7 +612,7 @@ All sections visible on one scrollable page (no wizard, no collapsible sections)
 
 5. **Charms** — Named list. User adds charm entries one at a time (e.g., "Annihilus", "9x Java GCs"). Free-form text per entry. "+ Add charm" button.
 
-6. **Ascendancy** — Dropdown of all 16 available ascendancies (optional). Not filtered by class selection.
+6. **Ascendancy** — Dropdown of all 15 available ascendancies (optional). Not filtered by class selection.
 
 7. **Skills** — Freetext area for describing skill allocation
 

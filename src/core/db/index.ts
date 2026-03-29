@@ -18,5 +18,7 @@ export type {
   HtmUniqueItem,
   HtmUniqueItemPage,
   MythicalUnique,
+  Ascendancy,
+  AscendancyTier,
   Metadata,
 } from './models';

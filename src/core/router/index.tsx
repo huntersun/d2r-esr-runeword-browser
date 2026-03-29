@@ -4,6 +4,7 @@ import { SocketablesScreen } from '@/features/socketables';
 import { RunewordsScreen } from '@/features/runewords';
 import { HtmUniqueItemsScreen } from '@/features/htm-unique-items';
 import { MythicalUniquesScreen } from '@/features/mythical-uniques';
+import { AscendanciesScreen } from '@/features/ascendancies';
 
 export const router = createBrowserRouter(
   [
@@ -15,6 +16,7 @@ export const router = createBrowserRouter(
         { path: 'socketables', element: <SocketablesScreen /> },
         { path: 'uniques', element: <HtmUniqueItemsScreen /> },
         { path: 'mythicals', element: <MythicalUniquesScreen /> },
+        { path: 'ascendancies', element: <AscendanciesScreen /> },
       ],
     },
   ],

@@ -88,6 +88,16 @@ export function* handleStartupCheck() {
         return;
       }
 
+      // Check if ascendancies table is empty (new table migration)
+      const ascendanciesCount: number = (yield call(() => db.ascendancies.count())) as number;
+
+      if (ascendanciesCount === 0) {
+        console.log('[HTML] Migration needed: ascendancies table empty, refetching...');
+        yield put(startupNeedsFetch());
+        yield put(initDataLoad({ force: false }));
+        return;
+      }
+
       // Check if app version changed (catches data model changes and logic fixes)
       const storedAppVersion = (yield call(() => db.metadata.get('appVersion'))) as Metadata | undefined;
       const currentVersion = appVersion.version;

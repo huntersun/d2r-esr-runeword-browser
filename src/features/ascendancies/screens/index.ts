@@ -1,0 +1,1 @@
+export { AscendanciesScreen } from './AscendanciesScreen';

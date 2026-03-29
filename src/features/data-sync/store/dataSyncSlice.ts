@@ -9,6 +9,7 @@ export interface FetchedHtmlData {
   readonly uniqueArmorsHtml: string;
   readonly uniqueOthersHtml: string;
   readonly mythicalsHtml: string;
+  readonly ascendanciesHtml: string;
 }
 
 interface DataSyncState {

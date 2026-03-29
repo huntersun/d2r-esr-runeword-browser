@@ -1,4 +1,4 @@
-import type { Gem, EsrRune, LodRune, KanjiRune, Crystal, Runeword, HtmUniqueItem, MythicalUnique } from '@/core/db';
+import type { Gem, EsrRune, LodRune, KanjiRune, Crystal, Runeword, HtmUniqueItem, MythicalUnique, Ascendancy } from '@/core/db';
 
 export interface ParsedData {
   readonly gems: Gem[];
@@ -9,4 +9,5 @@ export interface ParsedData {
   readonly runewords: Runeword[];
   readonly htmUniqueItems: HtmUniqueItem[];
   readonly mythicalUniques: MythicalUnique[];
+  readonly ascendancies: Ascendancy[];
 }
