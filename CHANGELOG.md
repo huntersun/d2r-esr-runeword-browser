@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.11.2...v1.12.0) (2026-10-05)
+
+
+### Features
+
+* distinguish same-name unique variants in equipment picker ([08f6df4](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/08f6df4cb4c45ce54331b95d9fe26c7e0acc43f4))
+
+
+### Bug Fixes
+
+* fall back to cached data when parsing or storing fresh data fails ([33dad64](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/33dad64644f379efee02df2623930ce289adc4c6))
+* handle none-selected marker when toggling unique item categories ([ebd4fa2](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/ebd4fa24cd30a1e7830a814e3e702e11149ee06a))
+* match runewords with socket ranges in socket filter ([524ac62](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/524ac62b075dbca16451d40502938ef8ee765ddd))
+* resolve same-name unique variants by saved snapshot stats ([74dce05](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/74dce057295a7fc624587de579031c3622949637))
+* retry discriminator on collision when creating new user profiles ([c8efafa](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/c8efafac403b77e2c275027997cef5ccca0e0719))
+
 ## [1.11.2](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.11.1...v1.11.2) (2026-07-30)
 
 
