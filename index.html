@@ -4,6 +4,27 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!-- Apply persisted settings before first paint (no dark flash / text-size jump).
+         Keep in sync with src/features/settings/store/settingsSlice.ts and constants/textSize.ts:
+         localStorage keys 'theme' ('dark' | 'light'), 'textSize' (key of TEXT_SIZE_MAP), 'useDiabloFont' ('true').
+         The React settings hooks reconcile the same values once the app mounts. -->
+    <script>
+      (function () {
+        try {
+          var root = document.documentElement;
+          var sizes = { small: 14, normal: 16, large: 18, extralarge: 20 };
+          var textSize = localStorage.getItem('textSize');
+          root.classList.toggle('dark', localStorage.getItem('theme') !== 'light');
+          root.classList.toggle('diablo-font', localStorage.getItem('useDiabloFont') === 'true');
+          if (textSize && Object.prototype.hasOwnProperty.call(sizes, textSize)) {
+            root.style.fontSize = sizes[textSize] + 'px';
+          }
+        } catch (e) {
+          // Storage blocked: keep the defaults (dark theme, 16px, standard font).
+        }
+      })();
+    </script>
+
     <!-- Primary Meta Tags -->
     <title>ESR Runeword Browser - Eastern Sun Resurrected Runewords for Diablo 2</title>
     <meta name="title" content="ESR Runeword Browser - Eastern Sun Resurrected Runewords for Diablo 2" />

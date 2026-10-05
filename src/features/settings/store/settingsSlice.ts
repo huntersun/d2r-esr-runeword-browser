@@ -14,6 +14,7 @@ interface SettingsState {
   readonly isDrawerOpen: boolean;
 }
 
+// These localStorage keys/values are also read by the pre-paint inline script in index.html - keep in sync.
 const getInitialTheme = (): Theme => {
   if (typeof window === 'undefined') return 'dark';
   const stored = localStorage.getItem('theme');
