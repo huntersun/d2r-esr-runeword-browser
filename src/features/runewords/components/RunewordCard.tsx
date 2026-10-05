@@ -5,7 +5,8 @@ import { GemBadge } from '@/core/components/GemBadge';
 import { RunewordPointsDisplay } from './RunewordPointsDisplay';
 import { FavoriteButton } from '@/core/components/FavoriteButton';
 import { useRuneBonuses } from '../hooks/useRuneBonuses';
-import { getRelevantCategories, getCategoryLabel, type BonusCategory } from '@/core/utils/itemCategoryMapping';
+import { RecipeAffixes, SocketableBonusesSection } from '@/core/components/RecipeBonuses';
+import { getRelevantCategories } from '@/core/utils/itemCategoryMapping';
 import { isGemName } from '@/features/data-sync/parsers/gemsParser';
 import { LOD_SORT_KEY_OFFSET } from '@/features/data-sync/parsers/runewordsParser';
 import type { Runeword } from '@/core/db/models';
@@ -38,26 +39,8 @@ export function RunewordCard({
   const runeBonuses = useRuneBonuses(runes, gems);
   const relevantCategories = getRelevantCategories(allowedItems);
 
-  // Check if runeword bonuses differ across relevant columns
+  // Old cached runewords may lack per-column affixes
   const columnAffixes = 'columnAffixes' in runeword ? runeword.columnAffixes : undefined;
-  const hasColumnDifferences = (() => {
-    if (!columnAffixes || relevantCategories.length <= 1) return false;
-    const firstCol = columnAffixes[relevantCategories[0]];
-    return relevantCategories.some((cat) => {
-      const col = columnAffixes[cat];
-      if (col.length !== firstCol.length) return true;
-      return col.some((affix, i) => affix.rawText !== firstCol[i].rawText);
-    });
-  })();
-
-  // Get bonuses for a specific category
-  const getBonusesForCategory = (category: BonusCategory): readonly string[] => {
-    if (!runeBonuses) return [];
-    return runeBonuses[category];
-  };
-
-  // Check if we have any rune bonuses to show
-  const hasRuneBonuses = runeBonuses && relevantCategories.some((cat) => runeBonuses[cat].length > 0);
 
   return (
     <Card className="h-full">
@@ -105,69 +88,14 @@ export function RunewordCard({
           {excludedItems.length > 0 && <p className="text-sm text-muted-foreground mt-1">Excluded: {excludedItems.join(', ')}</p>}
         </div>
 
-        {/* Runeword Affixes */}
-        {affixes.length > 0 && (
-          <div className="text-center">
-            <p className="font-medium text-muted-foreground mb-1">Bonuses:</p>
-            {hasColumnDifferences && columnAffixes ? (
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                {relevantCategories.map((category) => {
-                  const colAffixes = columnAffixes[category];
-                  if (colAffixes.length === 0) return null;
-                  return (
-                    <div key={category}>
-                      <p className="font-medium text-muted-foreground text-xs mb-1">{getCategoryLabel(allowedItems, category)}:</p>
-                      <ul className="space-y-0.5 text-[#8080E6] text-xs">
-                        {colAffixes.map((affix, index) => (
-                          <li key={`${String(index)}-${affix.rawText}`}>{affix.rawText}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <ul className="space-y-0.5 text-[#8080E6]">
-                {affixes.map((affix, index) => (
-                  <li key={`${String(index)}-${affix.rawText}`}>{affix.rawText}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
+        <RecipeAffixes affixes={affixes} columnAffixes={columnAffixes} allowedItems={allowedItems} categories={relevantCategories} />
 
-        {/* Rune Bonuses */}
-        {hasRuneBonuses && (
-          <div className="border-t pt-3">
-            <p className="font-medium text-muted-foreground mb-2 text-center">Socketable Bonuses:</p>
-            {relevantCategories.length === 1 ? (
-              // Single category - centered list
-              <ul className="space-y-0.5 text-[#8080E6] text-center">
-                {getBonusesForCategory(relevantCategories[0]).map((bonus, index) => (
-                  <li key={`${String(index)}-${bonus}`}>{bonus}</li>
-                ))}
-              </ul>
-            ) : (
-              // Multiple categories - 2-column grid
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                {relevantCategories.map((category) => {
-                  const bonuses = getBonusesForCategory(category);
-                  if (bonuses.length === 0) return null;
-                  return (
-                    <div key={category}>
-                      <p className="font-medium text-muted-foreground text-xs mb-1">{getCategoryLabel(allowedItems, category)}:</p>
-                      <ul className="space-y-0.5 text-[#8080E6] text-xs">
-                        {bonuses.map((bonus, index) => (
-                          <li key={`${String(index)}-${bonus}`}>{bonus}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
+        <SocketableBonusesSection
+          title="Socketable Bonuses:"
+          bonuses={runeBonuses}
+          allowedItems={allowedItems}
+          categories={relevantCategories}
+        />
       </CardContent>
     </Card>
   );

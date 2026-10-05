@@ -1,5 +1,6 @@
 import type { Runeword, EsrRune, LodRune, KanjiRune, Gem, SocketableBonuses } from '@/core/db/models';
 import { getRelevantCategories, getItemCategory } from '@/core/utils/itemCategoryMapping';
+import { hasColumnDifferences } from '@/core/utils/columnAffixes';
 
 export type RuneBonusMap = Map<string, SocketableBonuses>;
 export type GemBonusMap = Map<string, SocketableBonuses>;
@@ -221,20 +222,7 @@ export function expandRunewordsByColumn(runewords: readonly Runeword[]): readonl
   for (const rw of runewords) {
     const categories = getRelevantCategories(rw.allowedItems);
 
-    if (categories.length <= 1) {
-      result.push(rw);
-      continue;
-    }
-
-    // Check if runeword bonuses differ across relevant categories
-    const firstCol = rw.columnAffixes[categories[0]];
-    const hasDifferences = categories.some((cat) => {
-      const col = rw.columnAffixes[cat];
-      if (col.length !== firstCol.length) return true;
-      return col.some((affix, i) => affix.rawText !== firstCol[i].rawText);
-    });
-
-    if (!hasDifferences) {
+    if (!hasColumnDifferences(rw.columnAffixes, categories)) {
       result.push(rw);
       continue;
     }
