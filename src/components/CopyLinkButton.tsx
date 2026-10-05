@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { Link, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -9,19 +10,27 @@ interface CopyLinkButtonProps {
 
 export function CopyLinkButton({ getShareUrl }: CopyLinkButtonProps) {
   const [copied, setCopied] = useState(false);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(resetTimerRef.current);
+    };
+  }, []);
 
   const handleCopy = () => {
     const url = getShareUrl ? getShareUrl() : window.location.href;
     navigator.clipboard.writeText(url).then(
       () => {
         setCopied(true);
-        setTimeout(() => {
+        clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = setTimeout(() => {
           setCopied(false);
         }, 2000);
       },
       (err: unknown) => {
-        // Fallback for older browsers - silently fail
         console.error('Failed to copy link:', err);
+        toast.error('Could not copy the link to the clipboard');
       }
     );
   };
