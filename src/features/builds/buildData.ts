@@ -16,6 +16,12 @@ export interface UniqueSnapshot {
   readonly category: string;
   readonly reqLevel: number;
   readonly properties: readonly string[];
+  /**
+   * Mythicals only: the orange "special" property lines, shown before `properties`.
+   * Absent on uniques and on mythical snapshots saved before this field existed, so
+   * readers must treat it as optional (see itemDiff's legacy-snapshot handling).
+   */
+  readonly specialProperties?: readonly string[];
 }
 
 export interface RunewordSnapshot {

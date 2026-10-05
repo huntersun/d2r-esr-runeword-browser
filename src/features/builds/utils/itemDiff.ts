@@ -1,7 +1,17 @@
 import { db } from '@/core/db';
-import type { BuildData, EquipmentSlot, ItemRef, WeaponSwapSlot } from '../buildData';
+import type {
+  BuildData,
+  ColumnAffixesSnapshot,
+  EquipmentSlot,
+  GemwordSnapshot,
+  ItemRef,
+  RunewordSnapshot,
+  UniqueSnapshot,
+  WeaponSwapSlot,
+} from '../buildData';
 import { gemwordToRef, mythicalToRef, runewordToRef, uniqueToRef } from './buildSnapshot';
 import { findMythicalRecord, findUniqueRecord } from './itemLookup';
+import { propertyText } from './propertyText';
 
 /**
  * - `unchanged`: the stored snapshot matches the current local data.
@@ -74,11 +84,69 @@ function deepEqual(a: unknown, b: unknown): boolean {
   return false;
 }
 
-/** Whether two item references carry equivalent snapshots (freetext compares by name). */
+/** Special lines then regular lines, as one normalised string (see propertyText). */
+function combinedText(special: readonly string[] | undefined, properties: readonly string[] | undefined): string {
+  return [propertyText(special), propertyText(properties)].filter((text) => text !== '').join(' ');
+}
+
+/**
+ * A mythical snapshot saved before `specialProperties` was snapshotted, compared with one
+ * that has it. Older parsers misfiled the wrapped continuation lines of the (leading)
+ * orange special text as regular properties, so a legacy `properties` may start with a
+ * tail of the special text. It's equivalent when it equals the current regular text, or
+ * is the current special + regular text minus a leading part of the special text.
+ */
+function legacyMythicalMatches(legacyProperties: readonly string[], special: readonly string[], properties: readonly string[]): boolean {
+  const legacy = propertyText(legacyProperties);
+  const regular = propertyText(properties);
+  if (legacy === regular) return true;
+  const full = combinedText(special, properties);
+  return legacy.length > regular.length && (full === legacy || full.endsWith(` ${legacy}`));
+}
+
+function uniqueSnapshotsEqual(a: UniqueSnapshot, b: UniqueSnapshot): boolean {
+  const { properties: aProperties, specialProperties: aSpecial, ...aRest } = a;
+  const { properties: bProperties, specialProperties: bSpecial, ...bRest } = b;
+  if (!deepEqual(aRest, bRest)) return false;
+  // Property line boundaries are not meaningful (re-wrapping), only the text is.
+  if (Array.isArray(aSpecial) && Array.isArray(bSpecial)) {
+    return combinedText(aSpecial, aProperties) === combinedText(bSpecial, bProperties);
+  }
+  if (Array.isArray(aSpecial)) return legacyMythicalMatches(bProperties, aSpecial, aProperties);
+  if (Array.isArray(bSpecial)) return legacyMythicalMatches(aProperties, bSpecial, bProperties);
+  return propertyText(aProperties) === propertyText(bProperties);
+}
+
+function columnTexts(columns: ColumnAffixesSnapshot): Record<keyof ColumnAffixesSnapshot, string> {
+  return {
+    weaponsGloves: propertyText(columns.weaponsGloves),
+    helmsBoots: propertyText(columns.helmsBoots),
+    armorShieldsBelts: propertyText(columns.armorShieldsBelts),
+  };
+}
+
+function socketableSnapshotsEqual(a: RunewordSnapshot | GemwordSnapshot, b: RunewordSnapshot | GemwordSnapshot): boolean {
+  const { columnAffixes: aColumns, ...aRest } = a;
+  const { columnAffixes: bColumns, ...bRest } = b;
+  return deepEqual(aRest, bRest) && deepEqual(columnTexts(aColumns), columnTexts(bColumns));
+}
+
+/**
+ * Whether two item references carry equivalent snapshots (freetext compares by name).
+ * Affix/property lists compare as whole text, so a line the ESR site re-wraps (split
+ * vs merged, whitespace) is not a change, while any wording/number/order change is.
+ */
 export function refSnapshotsEqual(a: ItemRef, b: ItemRef): boolean {
-  if (a.type !== b.type) return false;
-  if (a.type === 'freetext') return a.name === (b as typeof a).name;
-  return deepEqual(a.snapshot, (b as typeof a).snapshot);
+  switch (a.type) {
+    case 'freetext':
+      return b.type === 'freetext' && a.name === b.name;
+    case 'unique':
+    case 'mythical':
+      return b.type === a.type && uniqueSnapshotsEqual(a.snapshot, b.snapshot);
+    case 'runeword':
+    case 'gemword':
+      return b.type === a.type && socketableSnapshotsEqual(a.snapshot, b.snapshot);
+  }
 }
 
 /** Classifies a stored reference against its freshly-resolved current counterpart. */

@@ -54,7 +54,14 @@ export function mythicalToRef(item: MythicalUnique): MythicalItemRef | null {
   return {
     type: 'mythical',
     id: item.id,
-    snapshot: { name: item.name, baseItem: item.baseItem, category: item.category, reqLevel: item.reqLevel, properties: item.properties },
+    snapshot: {
+      name: item.name,
+      baseItem: item.baseItem,
+      category: item.category,
+      reqLevel: item.reqLevel,
+      properties: item.properties,
+      specialProperties: item.specialProperties,
+    },
   };
 }
 

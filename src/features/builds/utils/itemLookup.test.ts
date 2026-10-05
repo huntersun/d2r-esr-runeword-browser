@@ -74,6 +74,22 @@ describe('pickBestMatch', () => {
     expect(pickBestMatch([magic, poison], snapshotOf(poison))).toBe(poison);
   });
 
+  it('picks the right variant when the snapshot has split lines and current data has them merged', () => {
+    // Variants differ only inside a long line the ESR site hard-wraps; old snapshots
+    // stored it split, the current parser merges it.
+    const wrapped = (element: string) => [
+      `Each cast lowers 12% the aimed target's ${element}`,
+      'resistance for 1 second. Maximum stacks: 25',
+    ];
+    const merged = (element: string) => [`Each cast lowers 12% the aimed target's ${element} resistance for 1 second. Maximum stacks: 25`];
+    const base = ['+2 to Necromancer Skill Levels', '+20% Faster Cast Rate'];
+    const magic = unique([...base, ...merged('magic')], { name: "Vorador's Essence" });
+    const poison = unique([...base, ...merged('poison')], { name: "Vorador's Essence" });
+
+    expect(pickBestMatch([magic, poison], snapshotOf(poison, { properties: [...base, ...wrapped('poison')] }))).toBe(poison);
+    expect(pickBestMatch([poison, magic], snapshotOf(magic, { properties: [...base, ...wrapped('magic')] }))).toBe(magic);
+  });
+
   it('still prefers base item + category before comparing stats', () => {
     const otherBase = unique(AIM_COUPON, { baseItem: 'Matriarchal Bow' });
     expect(pickBestMatch([otherBase, normal], snapshotOf(normal, { properties: AIM_COUPON }))).toBe(normal);
@@ -136,6 +152,35 @@ describe('findMythicalRecord', () => {
           category: variant.category,
           reqLevel: variant.reqLevel,
           properties: variant.properties,
+        },
+      };
+      const found = await findMythicalRecord(ref);
+      expect(found?.properties).toEqual(variant.properties);
+    }
+  });
+
+  it('resolves legacy snapshots with misfiled special-text lines once the special text moves out of properties', async () => {
+    const special = [
+      'Your Teleport now automatically casts Elemental Nova on use',
+      "Elemental Novas count as attuned to all elements, but the level is based off Teleport's level",
+    ];
+    const variants = ['Fire', 'Cold', 'Lightning'].map((element) => ({ ...tathamet(element), specialProperties: special }));
+    await db.mythicalUniques.bulkAdd(variants);
+
+    for (const variant of variants) {
+      const ref: MythicalItemRef = {
+        type: 'mythical',
+        id: 1,
+        snapshot: {
+          name: variant.name,
+          baseItem: variant.baseItem,
+          category: variant.category,
+          reqLevel: variant.reqLevel,
+          properties: [
+            'Elemental Novas count as attuned to all elements,',
+            "but the level is based off Teleport's level",
+            ...variant.properties,
+          ],
         },
       };
       const found = await findMythicalRecord(ref);

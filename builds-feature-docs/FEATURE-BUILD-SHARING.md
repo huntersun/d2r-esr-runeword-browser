@@ -238,7 +238,7 @@ Snapshot fields for uniques: `name`, `baseItem`, `category`, `reqLevel`, `proper
 }
 ```
 
-Snapshot fields for mythicals: `name`, `baseItem`, `category`, `reqLevel`, `properties` (matching the unique snapshot structure for consistent display).
+Snapshot fields for mythicals: `name`, `baseItem`, `category`, `reqLevel`, `properties` (matching the unique snapshot structure for consistent display), plus `specialProperties` (the orange special-effect lines, shown before `properties`). `specialProperties` is optional: snapshots saved before it existed lack it, and the diff logic treats those legacy snapshots as unchanged when their text still matches.
 
 **Runeword** — references a runeword by its compound key (`name` + `variant`), includes a full snapshot:
 ```json

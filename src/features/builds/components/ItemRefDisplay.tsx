@@ -32,7 +32,7 @@ export function ItemRefDisplay({ item, slot }: ItemRefDisplayProps) {
       <div>
         <p className="text-sm font-medium">{item.snapshot.name}</p>
         <p className="text-xs text-muted-foreground">{item.snapshot.baseItem}</p>
-        <AffixList lines={item.snapshot.properties} />
+        <AffixList lines={[...(item.snapshot.specialProperties ?? []), ...item.snapshot.properties]} />
       </div>
     );
   }

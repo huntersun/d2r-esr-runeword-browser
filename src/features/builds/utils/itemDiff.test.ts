@@ -44,6 +44,123 @@ describe('refSnapshotsEqual', () => {
   });
 });
 
+describe('refSnapshotsEqual with re-wrapped property text', () => {
+  const SPLIT = [
+    "Each cast lowers 12% the aimed target's and surrounding",
+    'enemies elemental, magic, and physical resistances, but you',
+    'lose 4% total resistances for 1 second. Maximum stacks: 25',
+    '+2 to All Skills',
+  ];
+  const MERGED = [
+    "Each cast lowers 12% the aimed target's and surrounding enemies elemental, magic, and physical resistances, but you lose 4% total resistances for 1 second. Maximum stacks: 25",
+    '+2 to All Skills',
+  ];
+
+  it('treats split vs merged lines of the same text as unchanged', () => {
+    expect(refSnapshotsEqual(uniqueRef(1, SPLIT), uniqueRef(1, MERGED))).toBe(true);
+    expect(diffRef(uniqueRef(1, SPLIT), uniqueRef(1, MERGED)).status).toBe('unchanged');
+  });
+
+  it('still detects a changed number inside re-wrapped text', () => {
+    const changed = [MERGED[0].replace('Maximum stacks: 25', 'Maximum stacks: 30'), MERGED[1]];
+    expect(refSnapshotsEqual(uniqueRef(1, SPLIT), uniqueRef(1, changed))).toBe(false);
+  });
+
+  it('ignores whitespace-only differences', () => {
+    expect(
+      refSnapshotsEqual(
+        uniqueRef(1, ['  +2 to   All Skills ', '+20%\tFaster Cast Rate']),
+        uniqueRef(1, ['+2 to All Skills', '+20% Faster Cast Rate'])
+      )
+    ).toBe(true);
+  });
+
+  it('still detects a reordered text across lines', () => {
+    expect(
+      refSnapshotsEqual(uniqueRef(1, ['+2 to All Skills', 'Cannot Be Frozen']), uniqueRef(1, ['Cannot Be Frozen +2 to All Skills']))
+    ).toBe(false);
+  });
+
+  it('compares runeword column affixes as text too', () => {
+    const runeword = (weaponsGloves: readonly string[], reqLevel = 65): ItemRef => ({
+      type: 'runeword',
+      name: 'Enigma',
+      variant: 1,
+      snapshot: {
+        sockets: 3,
+        runes: ['Jah', 'Ith', 'Ber'],
+        gems: [],
+        allowedItems: ['Body Armor'],
+        columnAffixes: { weaponsGloves, helmsBoots: [], armorShieldsBelts: ['+2 to All Skills'] },
+        reqLevel,
+      },
+    });
+    expect(
+      refSnapshotsEqual(runeword(['Level 1 Teleport', 'Charge Every 5 Seconds']), runeword(['Level 1 Teleport Charge Every 5 Seconds']))
+    ).toBe(true);
+    expect(
+      refSnapshotsEqual(runeword(['Level 1 Teleport', 'Charge Every 5 Seconds']), runeword(['Level 1 Teleport Charge Every 4 Seconds']))
+    ).toBe(false);
+    expect(refSnapshotsEqual(runeword(['x']), runeword(['x'], 66))).toBe(false);
+  });
+});
+
+describe('refSnapshotsEqual for mythicals', () => {
+  const REGULAR = ['+(3 to 5) to Fire Skills', '-(20 to 30)% to Enemy Fire Resistance'];
+
+  function mythicalRef(properties: readonly string[], specialProperties?: readonly string[]): ItemRef {
+    return {
+      type: 'mythical',
+      id: 1,
+      snapshot: {
+        name: "Tathamet's Awakening",
+        baseItem: 'Mythical Diadem',
+        category: 'Mythical Unique Armor',
+        reqLevel: 90,
+        properties,
+        ...(specialProperties !== undefined && { specialProperties }),
+      },
+    };
+  }
+
+  it('treats a line moving from properties to specialProperties as unchanged', () => {
+    const before = mythicalRef(['Elemental Novas count as attuned to all elements', ...REGULAR], ['Teleport casts Elemental Nova']);
+    const after = mythicalRef(REGULAR, ['Teleport casts Elemental Nova', 'Elemental Novas count as attuned to all elements']);
+    expect(refSnapshotsEqual(before, after)).toBe(true);
+  });
+
+  it('treats a legacy snapshot (no specialProperties, misfiled special-text tail) as unchanged', () => {
+    // Old parser: the first orange segment went to specialProperties (not snapshotted),
+    // its wrapped continuation lines landed at the start of properties.
+    const legacy = mythicalRef([
+      'Elemental Novas cast this way count as being attuned to all',
+      "elements, but the level is based off Teleport's level",
+      ...REGULAR,
+    ]);
+    const current = mythicalRef(REGULAR, [
+      'Your Teleport now automatically casts Elemental Nova on use Elemental Novas cast this way count as being attuned to all elements,',
+      "but the level is based off Teleport's level",
+    ]);
+    expect(refSnapshotsEqual(legacy, current)).toBe(true);
+    expect(refSnapshotsEqual(current, legacy)).toBe(true);
+    expect(refSnapshotsEqual(mythicalRef(REGULAR), current)).toBe(true);
+  });
+
+  it('still flags a legacy snapshot whose regular stats changed', () => {
+    const current = mythicalRef(['+(3 to 5) to Fire Skills', '-(25 to 30)% to Enemy Fire Resistance'], ['Some special text']);
+    expect(refSnapshotsEqual(mythicalRef(['special text', ...REGULAR]), current)).toBe(false);
+    expect(refSnapshotsEqual(mythicalRef(REGULAR), current)).toBe(false);
+  });
+
+  it('flags a legacy snapshot that lost leading regular lines', () => {
+    expect(refSnapshotsEqual(mythicalRef(REGULAR.slice(1)), mythicalRef(REGULAR, ['Special']))).toBe(false);
+  });
+
+  it('flags a changed special property when both snapshots record them', () => {
+    expect(refSnapshotsEqual(mythicalRef(REGULAR, ['Maximum Stacks: 25']), mythicalRef(REGULAR, ['Maximum Stacks: 30']))).toBe(false);
+  });
+});
+
 describe('diffRef', () => {
   it('classifies an equal snapshot as unchanged', () => {
     expect(diffRef(uniqueRef(1, ['a']), uniqueRef(1, ['a'])).status).toBe('unchanged');

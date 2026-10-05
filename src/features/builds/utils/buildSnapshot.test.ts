@@ -6,6 +6,7 @@ import {
   freetextRef,
   gemwordToRef,
   itemRefName,
+  mythicalToRef,
   runewordToRef,
   slotToColumn,
   uniqueToRef,
@@ -72,6 +73,24 @@ function makeGemword(): Gemword {
 }
 
 describe('buildSnapshot', () => {
+  it('snapshots mythical special properties separately from regular ones', () => {
+    const ref = mythicalToRef({
+      id: 7,
+      name: "Tathamet's Awakening",
+      baseItem: 'Mythical Diadem',
+      baseItemLink: '',
+      category: 'Mythical Unique Armor',
+      itemLevel: 100,
+      reqLevel: 90,
+      properties: ['+(3 to 5) to Fire Skills'],
+      specialProperties: ['Your Teleport now automatically casts Elemental Nova on use'],
+      notes: [],
+      imageUrl: '',
+    });
+    expect(ref?.snapshot.properties).toEqual(['+(3 to 5) to Fire Skills']);
+    expect(ref?.snapshot.specialProperties).toEqual(['Your Teleport now automatically casts Elemental Nova on use']);
+  });
+
   it('builds a unique ref with a snapshot', () => {
     const ref = uniqueToRef(makeUnique());
     expect(ref?.type).toBe('unique');
