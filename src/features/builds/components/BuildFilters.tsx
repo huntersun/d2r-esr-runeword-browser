@@ -80,6 +80,7 @@ export function BuildFilters() {
           </InputGroupAddon>
           <InputGroupInput
             placeholder="Search builds..."
+            aria-label="Search builds by name"
             value={localSearch}
             onChange={(event) => {
               setLocalSearch(event.target.value);
@@ -100,7 +101,7 @@ export function BuildFilters() {
             dispatch(setClassFilter(value === ALL_CLASSES ? null : (value as CharacterClass)));
           }}
         >
-          <SelectTrigger className="w-40">
+          <SelectTrigger className="w-40" aria-label="Filter by class">
             <SelectValue placeholder="Class" />
           </SelectTrigger>
           <SelectContent>
@@ -119,7 +120,7 @@ export function BuildFilters() {
             dispatch(setSortMode(value as BuildSortMode));
           }}
         >
-          <SelectTrigger className="w-36">
+          <SelectTrigger className="w-36" aria-label="Sort builds">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -134,6 +135,7 @@ export function BuildFilters() {
           <Button
             variant={myBuildsOnly ? 'default' : 'outline'}
             size="sm"
+            aria-pressed={myBuildsOnly}
             onClick={() => {
               dispatch(setMyBuildsOnly(!myBuildsOnly));
             }}

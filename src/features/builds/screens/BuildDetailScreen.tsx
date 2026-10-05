@@ -203,7 +203,14 @@ export function BuildDetailScreen() {
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
-              <Button variant={liked ? 'default' : 'outline'} size="sm" disabled={likePending} onClick={handleLike}>
+              <Button
+                variant={liked ? 'default' : 'outline'}
+                size="sm"
+                disabled={likePending}
+                onClick={handleLike}
+                aria-pressed={liked}
+                aria-label={`Like this build (${String(build.likes_count)} ${build.likes_count === 1 ? 'like' : 'likes'})`}
+              >
                 <Heart className={liked ? 'size-4 fill-current' : 'size-4'} />
                 {build.likes_count}
               </Button>

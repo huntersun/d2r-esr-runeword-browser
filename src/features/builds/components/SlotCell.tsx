@@ -68,6 +68,7 @@ export function SlotCell({ label, slot, item, onChange, disabled, diff, note, on
             onClick={() => {
               setShowOriginal((value) => !value);
             }}
+            aria-expanded={showOriginal}
             className="inline-flex items-center gap-1 rounded border border-amber-500/60 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-600 transition-colors hover:bg-amber-500/20 dark:text-amber-400"
             title="Stats changed since this build was saved"
           >
