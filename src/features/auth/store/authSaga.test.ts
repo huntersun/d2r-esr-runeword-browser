@@ -138,6 +138,38 @@ describe('authSaga', () => {
     expect(mocks.builder.update).toHaveBeenCalledWith(expect.objectContaining({ display_name: 'NewName' }));
   });
 
+  it('retries consent with a fresh discriminator when the signup tag collides with the chosen name', async () => {
+    mocks.builder.maybeSingle.mockResolvedValue({ data: makeProfile({ privacy_policy_accepted_at: null }), error: null });
+    mocks.builder.single.mockResolvedValueOnce({ data: null, error: { message: 'duplicate key', code: '23505' } }).mockResolvedValue({
+      data: makeProfile({ display_name: 'Popular', discriminator: 7777, privacy_policy_accepted_at: '2026-06-08T00:00:00.000Z' }),
+      error: null,
+    });
+    const store = setupStore();
+    store.dispatch(authStateChanged({ user: { id: 'user-1', email: null } }));
+    await vi.waitFor(() => {
+      expect(store.getState().auth.needsConsent).toBe(true);
+    });
+
+    store.dispatch(acceptConsentRequested({ displayName: 'Popular' }));
+
+    await vi.waitFor(() => {
+      expect(store.getState().auth.needsConsent).toBe(false);
+    });
+    expect(store.getState().auth.profile?.display_name).toBe('Popular');
+    expect(store.getState().auth.error).toBeNull();
+    expect(mocks.builder.single).toHaveBeenCalledTimes(2);
+    // First attempt keeps the signup discriminator; the retry picks a new one.
+    expect(mocks.builder.update).toHaveBeenNthCalledWith(1, expect.not.objectContaining({ discriminator: expect.anything() }));
+    expect(mocks.builder.update).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        display_name: 'Popular',
+        privacy_policy_accepted_at: expect.any(String),
+        discriminator: expect.any(Number),
+      })
+    );
+  });
+
   it('changes the display name and reloads the profile with a new discriminator', async () => {
     mocks.builder.maybeSingle.mockResolvedValue({ data: makeProfile(), error: null });
     mocks.builder.single.mockResolvedValue({ data: makeProfile({ display_name: 'Renamed', discriminator: 1234 }), error: null });

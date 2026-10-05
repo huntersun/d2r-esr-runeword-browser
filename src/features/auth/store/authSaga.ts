@@ -3,7 +3,7 @@ import { call, delay, fork, put, select, take, takeEvery, takeLatest } from 'red
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { AuthChangeEvent, Session, SupabaseClient } from '@supabase/supabase-js';
 import { toast } from 'sonner';
-import { requireSupabase, type Database, type Profile } from '@/core/supabase';
+import { requireSupabase, type Database, type Profile, type ProfileUpdate } from '@/core/supabase';
 import { MAX_DISCRIMINATOR_ATTEMPTS, randomDiscriminator, validateDisplayName } from '../utils/profile';
 import { authRedirectTo } from '../utils/redirect';
 import {
@@ -139,6 +139,29 @@ function* handleSignOut() {
   }
 }
 
+/**
+ * Updates the user's profile with a (new) display name. The (display_name,
+ * discriminator) pair is unique, so on a collision we retry with a fresh random
+ * tag, up to MAX_DISCRIMINATOR_ATTEMPTS attempts in total. With
+ * `keepDiscriminatorFirst` the first attempt leaves the current tag untouched.
+ * Returns the updated row; throws on any other error or when the budget runs out.
+ */
+function* updateProfileName(client: Client, userId: string, fields: ProfileUpdate, keepDiscriminatorFirst: boolean) {
+  for (let attempt = 0; attempt < MAX_DISCRIMINATOR_ATTEMPTS; attempt++) {
+    const update: ProfileUpdate = keepDiscriminatorFirst && attempt === 0 ? fields : { ...fields, discriminator: randomDiscriminator() };
+    const { data, error } = (yield call(() => client.from('profiles').update(update).eq('id', userId).select('*').single())) as {
+      data: Profile | null;
+      error: { message: string; code?: string } | null;
+    };
+
+    if (error === null && data !== null) return data;
+    // Tag collision — try a different discriminator. Any other error is fatal.
+    if (error !== null && error.code === UNIQUE_VIOLATION) continue;
+    if (error !== null) throw new Error(error.message);
+  }
+  throw new Error('Could not find an available name tag. Please try a slightly different name.');
+}
+
 function* handleAcceptConsent(action: PayloadAction<{ displayName: string }>) {
   const validation = validateDisplayName(action.payload.displayName);
   if (!validation.valid) {
@@ -151,19 +174,11 @@ function* handleAcceptConsent(action: PayloadAction<{ displayName: string }>) {
     const client = requireSupabase();
     const userId = (yield select(selectAuthUserId)) as string | null;
     if (userId === null) throw new Error('You are not signed in.');
-    const { data, error } = (yield call(() =>
-      client
-        .from('profiles')
-        .update({ display_name: validation.trimmed, privacy_policy_accepted_at: new Date().toISOString() })
-        .eq('id', userId)
-        .select('*')
-        .single()
-    )) as { data: Profile | null; error: { message: string } | null };
-    if (error) throw new Error(error.message);
-    if (data) {
-      yield put(profileLoaded(data));
-      yield call(toast.success, 'Welcome! Your profile is ready.');
-    }
+    const fields = { display_name: validation.trimmed, privacy_policy_accepted_at: new Date().toISOString() };
+    // Keep the signup discriminator if the new name allows it; otherwise pick a fresh one.
+    const profile = (yield call(updateProfileName, client, userId, fields, true)) as Profile;
+    yield put(profileLoaded(profile));
+    yield call(toast.success, 'Welcome! Your profile is ready.');
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Could not save your profile.';
     yield put(authError(message));
@@ -173,8 +188,7 @@ function* handleAcceptConsent(action: PayloadAction<{ displayName: string }>) {
 
 /**
  * Changes the user's display name. Per the spec, a name change regenerates the
- * discriminator; the (display_name, discriminator) pair is unique, so on a
- * collision we retry with a fresh random tag (up to MAX_DISCRIMINATOR_ATTEMPTS).
+ * discriminator (collisions are retried by `updateProfileName`).
  */
 function* handleUpdateDisplayName(action: PayloadAction<{ displayName: string }>) {
   const validation = validateDisplayName(action.payload.displayName);
@@ -188,24 +202,10 @@ function* handleUpdateDisplayName(action: PayloadAction<{ displayName: string }>
     const client = requireSupabase();
     const userId = (yield select(selectAuthUserId)) as string | null;
     if (userId === null) throw new Error('You are not signed in.');
-
-    for (let attempt = 0; attempt < MAX_DISCRIMINATOR_ATTEMPTS; attempt++) {
-      const discriminator = randomDiscriminator();
-      const { data, error } = (yield call(() =>
-        client.from('profiles').update({ display_name: validation.trimmed, discriminator }).eq('id', userId).select('*').single()
-      )) as { data: Profile | null; error: { message: string; code?: string } | null };
-
-      if (error === null && data !== null) {
-        yield put(profileLoaded(data));
-        yield put(updateDisplayNameSucceeded());
-        yield call(toast.success, 'Your display name was updated.');
-        return;
-      }
-      // Tag collision — try a different discriminator. Any other error is fatal.
-      if (error !== null && error.code === UNIQUE_VIOLATION) continue;
-      if (error !== null) throw new Error(error.message);
-    }
-    throw new Error('Could not find an available name tag. Please try a slightly different name.');
+    const profile = (yield call(updateProfileName, client, userId, { display_name: validation.trimmed }, false)) as Profile;
+    yield put(profileLoaded(profile));
+    yield put(updateDisplayNameSucceeded());
+    yield call(toast.success, 'Your display name was updated.');
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Could not update your display name.';
     yield put(updateDisplayNameFailed(message));
