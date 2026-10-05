@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { X } from 'lucide-react';
 import { useDebouncedFilterValue } from '@/core/hooks/useDebouncedFilterValue';
@@ -55,12 +56,16 @@ function TierPointInput({ config }: { readonly config: TierKeyConfig }) {
   };
 
   const colorClass = getTierTextColor(config.tier, config.category);
+  const inputId = useId();
 
   return (
     <div className="w-28">
-      <span className={`text-xs font-medium ${colorClass}`}>{config.label} max</span>
+      <label htmlFor={inputId} className={`text-xs font-medium ${colorClass}`}>
+        {config.label} max
+      </label>
       <InputGroup>
         <InputGroupInput
+          id={inputId}
           type="number"
           min={0}
           placeholder={config.label}

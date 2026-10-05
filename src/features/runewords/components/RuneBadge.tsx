@@ -43,8 +43,8 @@ export function RuneBadge({ runeName, isLod }: RuneBadgeProps) {
 
   return (
     <RuneTooltip rune={rune}>
-      <Badge variant="outline" className={cn('cursor-pointer opacity-100 hover:opacity-75', bgColorClass)}>
-        {displayName}
+      <Badge asChild variant="outline" className={cn('cursor-pointer opacity-100 hover:opacity-75', bgColorClass)}>
+        <button type="button">{displayName}</button>
       </Badge>
     </RuneTooltip>
   );

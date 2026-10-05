@@ -28,8 +28,8 @@ function GemBadgeView({ gemName, gem }: { readonly gemName: string; readonly gem
 
   return (
     <GemTooltip gem={gem}>
-      <Badge variant="outline" className={cn('cursor-pointer opacity-100 hover:opacity-75', bgColorClass)}>
-        {gemName}
+      <Badge asChild variant="outline" className={cn('cursor-pointer opacity-100 hover:opacity-75', bgColorClass)}>
+        <button type="button">{gemName}</button>
       </Badge>
     </GemTooltip>
   );
