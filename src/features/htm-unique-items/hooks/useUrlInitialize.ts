@@ -16,7 +16,7 @@ const URL_PARAM_KEYS = {
  */
 export function useUrlInitialize(): void {
   const dispatch = useDispatch();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const initializedRef = useRef(false);
 
@@ -55,7 +55,7 @@ export function useUrlInitialize(): void {
       }
 
       // Clean the URL after initialization
-      window.history.replaceState({}, '', window.location.pathname);
+      setSearchParams({}, { replace: true });
     }
-  }, [searchParams, dispatch]);
+  }, [searchParams, setSearchParams, dispatch]);
 }

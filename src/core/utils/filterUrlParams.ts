@@ -89,8 +89,3 @@ export function buildShareUrl(routePath: string, params: URLSearchParams): strin
   const query = params.toString();
   return query ? `${base}?${query}` : base;
 }
-
-/** Removes the query string after URL filters were read, keeping the URL tidy. */
-export function clearUrlSearchParams(): void {
-  window.history.replaceState({}, '', window.location.pathname);
-}

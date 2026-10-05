@@ -6,7 +6,6 @@ import {
   FILTER_URL_PARAM_KEYS,
   MAX_REQ_LEVEL_RANGE,
   SOCKET_COUNT_RANGE,
-  clearUrlSearchParams,
   decodeSelectionParam,
   parseBoundedIntParam,
 } from '@/core/utils/filterUrlParams';
@@ -66,7 +65,7 @@ function readStoredGemwordFilters(): PersistedGemwordFilters {
  */
 export function useUrlInitialize(): void {
   const dispatch = useDispatch();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const itemTypes = useAvailableItemTypes();
   const gemGroups = useGemGroups();
   const initializedRef = useRef(false);
@@ -104,7 +103,7 @@ export function useUrlInitialize(): void {
       dispatch(setAllItemTypes(decodeSelectionParam(itemTypes, urlItems)));
       dispatch(setAllGems(decodeSelectionParam(allGemNames, urlGems)));
 
-      clearUrlSearchParams();
+      setSearchParams({}, { replace: true });
     } else {
       const storedFilters = readStoredGemwordFilters();
 
@@ -114,5 +113,5 @@ export function useUrlInitialize(): void {
       dispatch(setAllItemTypes(decodeSelectionParam(itemTypes, null, storedFilters.selectedItemTypes)));
       dispatch(setAllGems(decodeSelectionParam(allGemNames, null, storedFilters.selectedGems)));
     }
-  }, [itemTypes, gemGroups, searchParams, dispatch]);
+  }, [itemTypes, gemGroups, searchParams, setSearchParams, dispatch]);
 }

@@ -16,7 +16,7 @@ const URL_PARAM_KEYS = {
  */
 export function useUrlInitialize(): void {
   const dispatch = useDispatch();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Track initialization state
   const initializedRef = useRef(false);
@@ -52,8 +52,8 @@ export function useUrlInitialize(): void {
       );
 
       // Clean the URL after initialization
-      window.history.replaceState({}, '', window.location.pathname);
+      setSearchParams({}, { replace: true });
     }
     // If no URL params, keep the default state from the slice (all categories enabled)
-  }, [searchParams, dispatch]);
+  }, [searchParams, setSearchParams, dispatch]);
 }

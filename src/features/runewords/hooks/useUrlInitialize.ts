@@ -5,7 +5,6 @@ import {
   FILTER_URL_PARAM_KEYS,
   MAX_REQ_LEVEL_RANGE,
   SOCKET_COUNT_RANGE,
-  clearUrlSearchParams,
   decodeSelectionParam,
   parseBoundedIntParam,
 } from '@/core/utils/filterUrlParams';
@@ -20,7 +19,7 @@ import { setSearchText, setSocketCount, setMaxReqLevel, setAllRunes, setAllItemT
  */
 export function useUrlInitialize(): void {
   const dispatch = useDispatch();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Available options from DB
   const runeGroups = useRuneGroups();
@@ -92,11 +91,11 @@ export function useUrlInitialize(): void {
       }
 
       // Clean the URL after initialization
-      clearUrlSearchParams();
+      setSearchParams({}, { replace: true });
     } else {
       // No URL params - initialize with defaults (all selected)
       dispatch(setAllItemTypes(decodeSelectionParam(itemTypes, null)));
       dispatch(setAllRunes(decodeSelectionParam(allRuneKeys, null)));
     }
-  }, [runeGroups, itemTypes, searchParams, dispatch]);
+  }, [runeGroups, itemTypes, searchParams, setSearchParams, dispatch]);
 }
