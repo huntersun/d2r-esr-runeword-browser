@@ -1,4 +1,5 @@
 import { db } from '@/core/db';
+import { SANITY_CHECKED_DATASETS, type DatasetCounts } from './storeSanity';
 
 /**
  * Tables that must be populated for the cached dataset to be considered
@@ -30,4 +31,10 @@ export async function checkCacheCompleteness(): Promise<CacheCompleteness> {
  */
 export async function hasAnyCachedData(): Promise<boolean> {
   return (await db.runewords.count()) > 0;
+}
+
+/** Row counts of the currently cached datasets, for the pre-store sanity check. */
+export async function countCachedDatasets(): Promise<DatasetCounts> {
+  const counts = await Promise.all(SANITY_CHECKED_DATASETS.map((dataset) => db.table(dataset).count()));
+  return Object.fromEntries(SANITY_CHECKED_DATASETS.map((dataset, index) => [dataset, counts[index]])) as DatasetCounts;
 }

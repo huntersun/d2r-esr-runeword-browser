@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureStore } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
+import { toast } from 'sonner';
 import { db } from '@/core/db';
 import appVersion from '@/assets/version.json';
 import { dataSyncSaga } from './dataSyncSaga';
@@ -21,6 +22,10 @@ vi.mock('../parsers', async (importOriginal) => {
     },
   };
 });
+
+vi.mock('sonner', () => ({
+  toast: { warning: vi.fn(), error: vi.fn(), success: vi.fn() },
+}));
 
 const EMPTY_PARSED_DATA: ParsedData = {
   gems: [],
@@ -50,6 +55,49 @@ const EMPTY_FETCHED_HTML: FetchedHtmlData = {
 // Only the primary key matters for the cache check and rollback assertions
 const CACHED_RUNEWORD = { name: 'Cached', variant: 1 } as Runeword;
 
+const DATASETS = [
+  'gems',
+  'esrRunes',
+  'lodRunes',
+  'kanjiRunes',
+  'crystals',
+  'runewords',
+  'gemwords',
+  'htmUniqueItems',
+  'mythicalUniques',
+  'ascendancies',
+] as const;
+
+const NO_AFFIXES = { weaponsGloves: [], helmsBoots: [], armorShieldsBelts: [] };
+
+// Minimal stand-in rows: a primary key ([name+variant] or name; ++id tables
+// auto-assign) plus empty affix lists so the affix extraction step succeeds.
+function fakeRows(prefix: string, count: number): never[] {
+  return Array.from(
+    { length: count },
+    (_, i) => ({ name: `${prefix}${String(i)}`, variant: 1, bonuses: NO_AFFIXES, columnAffixes: NO_AFFIXES }) as never
+  );
+}
+
+function fullParsedData(count = 10): ParsedData {
+  return Object.fromEntries(DATASETS.map((dataset) => [dataset, fakeRows('fresh', count)])) as unknown as ParsedData;
+}
+
+/** Populates every dataset table with `count` rows and stamps an old ESR version. */
+async function seedCache(count = 10) {
+  await Promise.all(DATASETS.map((dataset) => db.table(dataset).bulkPut(fakeRows('cached', count))));
+  await db.metadata.put({ key: 'esrVersion', value: '1.0.0' });
+}
+
+async function expectCacheUntouched(count = 10) {
+  for (const dataset of DATASETS) {
+    expect(await db.table(dataset).count()).toBe(count);
+  }
+  expect(await db.gems.get('fresh0')).toBeUndefined();
+  expect((await db.metadata.get('esrVersion'))?.value).toBe('1.0.0');
+  expect(await db.metadata.get('lastUpdated')).toBeUndefined();
+}
+
 function createTestStore() {
   const sagaMiddleware = createSagaMiddleware();
   const store = configureStore({
@@ -61,6 +109,7 @@ function createTestStore() {
 }
 
 beforeEach(async () => {
+  vi.mocked(toast.warning).mockClear();
   parserControl.parseGemsError = null;
   await Promise.all(db.tables.map((table) => table.clear()));
 });
@@ -76,7 +125,7 @@ describe('dataSyncSaga store step', () => {
 
     // Triggers handleStoreData; with esrVersion in the payload no network
     // fetch happens, and all writes run inside a single Dexie transaction.
-    store.dispatch(parseDataSuccess({ ...EMPTY_PARSED_DATA, esrVersion: '9.9.9' }));
+    store.dispatch(parseDataSuccess({ ...fullParsedData(), esrVersion: '9.9.9' }));
 
     await vi.waitFor(async () => {
       const esrVersionMeta = await db.metadata.get('esrVersion');
@@ -87,6 +136,8 @@ describe('dataSyncSaga store step', () => {
     const lastUpdatedMeta = await db.metadata.get('lastUpdated');
     expect(appVersionMeta?.value).toBe(appVersion.version);
     expect(lastUpdatedMeta?.value).toBeTruthy();
+    expect(await db.runewords.count()).toBe(10);
+    expect(toast.warning).not.toHaveBeenCalled();
   });
 });
 
@@ -105,6 +156,10 @@ describe('dataSyncSaga parse/store failure fallback', () => {
     expect(state.isUsingCachedData).toBe(true);
     expect(state.networkWarning).toBe('Unable to process the latest data. Using cached version.');
     expect(state.error).toBeNull();
+    expect(toast.warning).toHaveBeenCalledTimes(1);
+    expect(toast.warning).toHaveBeenCalledWith('Unable to process the latest data. Using cached version.', {
+      description: 'See Settings for details.',
+    });
   });
 
   it('reports a parse error when parsing fails and there is no cache', async () => {
@@ -127,7 +182,7 @@ describe('dataSyncSaga parse/store failure fallback', () => {
 
     // A runeword without its primary key fails bulkPut inside the transaction,
     // which rolls back the clear() so the previous cache survives
-    store.dispatch(parseDataSuccess({ ...EMPTY_PARSED_DATA, runewords: [{} as Runeword], esrVersion: '9.9.9' }));
+    store.dispatch(parseDataSuccess({ ...fullParsedData(), runewords: [{} as Runeword], esrVersion: '9.9.9' }));
 
     await vi.waitFor(() => {
       expect(store.getState().dataSync.isInitialized).toBe(true);
@@ -143,7 +198,7 @@ describe('dataSyncSaga parse/store failure fallback', () => {
   it('reports a store error when storing fails and there is no cache', async () => {
     const store = createTestStore();
 
-    store.dispatch(parseDataSuccess({ ...EMPTY_PARSED_DATA, runewords: [{} as Runeword], esrVersion: '9.9.9' }));
+    store.dispatch(parseDataSuccess({ ...fullParsedData(), runewords: [{} as Runeword], esrVersion: '9.9.9' }));
 
     await vi.waitFor(() => {
       expect(store.getState().dataSync.error).toMatch(/^Failed to store data: /);
@@ -151,5 +206,114 @@ describe('dataSyncSaga parse/store failure fallback', () => {
     const state = store.getState().dataSync;
     expect(state.isInitialized).toBe(false);
     expect(state.networkWarning).toBeNull();
+  });
+});
+
+describe('dataSyncSaga store sanity check', () => {
+  it('keeps the cache untouched and warns when a dataset parses empty', async () => {
+    await seedCache();
+    const store = createTestStore();
+
+    store.dispatch(parseDataSuccess({ ...fullParsedData(), htmUniqueItems: [], esrVersion: '9.9.9' }));
+
+    await vi.waitFor(() => {
+      expect(store.getState().dataSync.isInitialized).toBe(true);
+    });
+    const state = store.getState().dataSync;
+    const warning = 'Could not read the latest Unique Items data. Showing the previously cached version.';
+    expect(state.isUsingCachedData).toBe(true);
+    expect(state.networkWarning).toBe(warning);
+    expect(state.error).toBeNull();
+    await expectCacheUntouched();
+    expect(toast.warning).toHaveBeenCalledTimes(1);
+    expect(toast.warning).toHaveBeenCalledWith(warning, { description: 'See Settings for details.' });
+  });
+
+  it('keeps the cache untouched when a dataset shrinks below half of the cached count', async () => {
+    await seedCache();
+    const store = createTestStore();
+
+    store.dispatch(parseDataSuccess({ ...fullParsedData(), runewords: fakeRows('fresh', 4), mythicalUniques: [], esrVersion: '9.9.9' }));
+
+    await vi.waitFor(() => {
+      expect(store.getState().dataSync.isInitialized).toBe(true);
+    });
+    const state = store.getState().dataSync;
+    expect(state.isUsingCachedData).toBe(true);
+    expect(state.networkWarning).toBe('Could not read the latest Runewords, Mythical Uniques data. Showing the previously cached version.');
+    expect(state.error).toBeNull();
+    await expectCacheUntouched();
+  });
+
+  it('stores normally when a dataset shrinks but stays above half of the cached count', async () => {
+    await seedCache();
+    const store = createTestStore();
+
+    store.dispatch(parseDataSuccess({ ...fullParsedData(), runewords: fakeRows('fresh', 6), esrVersion: '9.9.9' }));
+
+    await vi.waitFor(async () => {
+      expect((await db.metadata.get('esrVersion'))?.value).toBe('9.9.9');
+    });
+    await vi.waitFor(() => {
+      expect(store.getState().dataSync.isInitialized).toBe(true);
+    });
+    expect(await db.runewords.count()).toBe(6);
+    expect(await db.gems.get('cached0')).toBeUndefined();
+    const state = store.getState().dataSync;
+    expect(state.isUsingCachedData).toBe(false);
+    expect(state.networkWarning).toBeNull();
+    expect(toast.warning).not.toHaveBeenCalled();
+  });
+
+  it('keeps the cache on a force refresh (no version in payload) that trips the check', async () => {
+    await seedCache();
+    const store = createTestStore();
+
+    store.dispatch(parseDataSuccess({ ...fullParsedData(), gemwords: [] }));
+
+    await vi.waitFor(() => {
+      expect(store.getState().dataSync.isInitialized).toBe(true);
+    });
+    expect(store.getState().dataSync.networkWarning).toBe(
+      'Could not read the latest Gemwords data. Showing the previously cached version.'
+    );
+    await expectCacheUntouched();
+    expect(toast.warning).toHaveBeenCalledTimes(1);
+  });
+
+  it('stores the usable datasets without the ESR version when there is no cache', async () => {
+    const store = createTestStore();
+
+    store.dispatch(parseDataSuccess({ ...fullParsedData(), htmUniqueItems: [], esrVersion: '9.9.9' }));
+
+    await vi.waitFor(() => {
+      expect(store.getState().dataSync.isInitialized).toBe(true);
+    });
+    const state = store.getState().dataSync;
+    const warning = 'Could not read the latest Unique Items data. Other data was loaded; this will be retried on the next start.';
+    expect(state.isUsingCachedData).toBe(false);
+    expect(state.networkWarning).toBe(warning);
+    expect(state.error).toBeNull();
+    expect(await db.runewords.count()).toBe(10);
+    expect(await db.htmUniqueItems.count()).toBe(0);
+    expect(await db.metadata.get('esrVersion')).toBeUndefined();
+    expect((await db.metadata.get('appVersion'))?.value).toBe(appVersion.version);
+    expect((await db.metadata.get('lastUpdated'))?.value).toBeTruthy();
+    expect(toast.warning).toHaveBeenCalledTimes(1);
+    expect(toast.warning).toHaveBeenCalledWith(warning, { description: 'See Settings for details.' });
+  });
+
+  it('reports a store error when every dataset is empty and there is no cache', async () => {
+    const store = createTestStore();
+
+    store.dispatch(parseDataSuccess({ ...EMPTY_PARSED_DATA, esrVersion: '9.9.9' }));
+
+    await vi.waitFor(() => {
+      expect(store.getState().dataSync.error).toBe('Failed to store data: No data could be read from the latest documentation');
+    });
+    const state = store.getState().dataSync;
+    expect(state.isInitialized).toBe(false);
+    expect(state.networkWarning).toBeNull();
+    expect(await db.metadata.count()).toBe(0);
   });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { db } from '@/core/db';
-import { checkCacheCompleteness, hasAnyCachedData } from './cacheStatus';
+import { checkCacheCompleteness, countCachedDatasets, hasAnyCachedData } from './cacheStatus';
 
 // cacheStatus only counts rows, so minimal stand-in rows with just the
 // primary key are enough for these tests.
@@ -39,5 +39,29 @@ describe('cacheStatus', () => {
     expect(completeness.emptyTable).toBe('ascendancies');
     // Offline fallback still counts this partial cache as usable
     expect(await hasAnyCachedData()).toBe(true);
+  });
+});
+
+describe('countCachedDatasets', () => {
+  beforeEach(async () => {
+    await Promise.all(db.tables.map((table) => table.clear()));
+  });
+
+  it('counts the rows of every sanity-checked dataset', async () => {
+    await populateRequiredTables();
+    await db.gems.put({ name: 'Gem' } as never);
+    const counts = await countCachedDatasets();
+    expect(counts).toEqual({
+      gems: 1,
+      esrRunes: 0,
+      lodRunes: 0,
+      kanjiRunes: 0,
+      crystals: 0,
+      runewords: 1,
+      gemwords: 1,
+      htmUniqueItems: 1,
+      mythicalUniques: 1,
+      ascendancies: 1,
+    });
   });
 });

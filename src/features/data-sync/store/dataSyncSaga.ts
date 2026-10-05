@@ -1,5 +1,6 @@
 import { all, call, put, takeLatest } from 'redux-saga/effects';
 import type { PayloadAction } from '@reduxjs/toolkit';
+import { toast } from 'sonner';
 import {
   fetchGemsHtml,
   fetchGemwordsHtml,
@@ -49,7 +50,8 @@ import {
   type InitDataLoadPayload,
 } from './dataSyncSlice';
 import { handleStartupCheck } from './startupSaga';
-import { hasAnyCachedData } from './cacheStatus';
+import { countCachedDatasets, hasAnyCachedData } from './cacheStatus';
+import { findBadDatasets, formatBadDatasetsWarning, SANITY_CHECKED_DATASETS, type BadDataset, type DatasetCounts } from './storeSanity';
 import type { AffixPattern, Gem, EsrRune, LodRune, KanjiRune, Crystal, Runeword, Gemword } from '@/core/db';
 import type { ParsedData } from '../interfaces';
 
@@ -113,6 +115,16 @@ function* handleFetchHtml(action: PayloadAction<InitDataLoadPayload | undefined>
 }
 
 /**
+ * Warnings about unusable fresh data: stored for the Settings drawer and shown
+ * once as a toast, since the user would otherwise not notice stale data.
+ * (The ordinary offline/fetch-failure warning is expected and stays drawer-only.)
+ */
+function* warnUser(message: string) {
+  yield put(setNetworkWarning(message));
+  yield call([toast, toast.warning], message, { description: 'See Settings for details.' });
+}
+
+/**
  * Parse/store failures after a successful fetch: if any cached data exists,
  * keep the app usable on it (with a warning) instead of showing the fatal
  * error screen; only report the failure when there is nothing to fall back to.
@@ -128,7 +140,7 @@ function* fallBackToCacheOrFail(stage: 'parse' | 'store', failureAction: Payload
 
   if (hasCache) {
     console.log(`[HTML] Using cached data (${stage} failed)`);
-    yield put(setNetworkWarning('Unable to process the latest data. Using cached version.'));
+    yield call(warnUser, 'Unable to process the latest data. Using cached version.');
     yield put(startupUseCached());
   } else {
     console.log(`[HTML] Fatal: ${stage} failed with no cached data`);
@@ -284,10 +296,37 @@ function* handleStoreData(action: PayloadAction<ParsedData>) {
     const { gems, esrRunes, lodRunes, kanjiRunes, crystals, runewords, gemwords, htmUniqueItems, mythicalUniques, ascendancies } =
       action.payload;
 
+    // Sanity check: parsers silently return [] (or far fewer rows) when the
+    // upstream HTML format drifts. Never replace a good cache with that.
+    const parsedCounts = Object.fromEntries(
+      SANITY_CHECKED_DATASETS.map((dataset) => [dataset, action.payload[dataset].length])
+    ) as DatasetCounts;
+    const cachedCounts: DatasetCounts = (yield call(countCachedDatasets)) as DatasetCounts;
+    const badDatasets: BadDataset[] = findBadDatasets(parsedCounts, cachedCounts);
+
+    if (badDatasets.length > 0) {
+      console.warn('[HTML] Sanity check failed for datasets (parsed vs cached):', badDatasets);
+      const hasCache: boolean = (yield call(hasAnyCachedData)) as boolean;
+      if (hasCache) {
+        // Write nothing: esrVersion stays at the old value, so the next startup refetches and retries
+        console.log('[HTML] Keeping cached data (sanity check failed)');
+        yield call(warnUser, formatBadDatasetsWarning(badDatasets, true));
+        yield put(startupUseCached());
+        return;
+      }
+      if (badDatasets.length === SANITY_CHECKED_DATASETS.length) {
+        console.log('[HTML] Fatal: no dataset could be parsed and there is no cached data');
+        yield put(storeDataError('No data could be read from the latest documentation'));
+        return;
+      }
+    }
+    const isPartial = badDatasets.length > 0;
+
     // Resolve the ESR version to store: reuse the version already fetched during
     // the startup check; on force refresh (no version in the payload) fetch it now.
-    let esrVersion: string | null = action.payload.esrVersion ?? null;
-    if (esrVersion === null) {
+    // A partial store (no cache to fall back to) omits esrVersion so the next startup retries.
+    let esrVersion: string | null = isPartial ? null : (action.payload.esrVersion ?? null);
+    if (esrVersion === null && !isPartial) {
       try {
         const versionInfo: ChangelogVersion = (yield call(fetchLatestVersion)) as ChangelogVersion;
         esrVersion = versionInfo.version;
@@ -338,6 +377,10 @@ function* handleStoreData(action: PayloadAction<ParsedData>) {
       mythicalUniques: mythicalUniques.length,
       ascendancies: ascendancies.length,
     });
+
+    if (isPartial) {
+      yield call(warnUser, formatBadDatasetsWarning(badDatasets, false));
+    }
 
     yield put(storeDataSuccess());
   } catch (error) {

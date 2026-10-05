@@ -114,6 +114,21 @@ Each stage dispatches a success action that triggers the next stage, with indepe
 | Network error | No | Show fatal error with retry button |
 | Version matches | Yes | Use cached data immediately |
 | Version differs | Yes/No | Fetch fresh data from remote |
+| Parse or store throws | Yes | Warning + toast, use cached data |
+| Parse or store throws | No | Show fatal error with retry button |
+
+### Store Sanity Check
+
+Parsers return `[]` (or far fewer rows) instead of throwing when the upstream HTML format drifts. Before the store transaction, `handleStoreData` compares each parsed dataset (gems, ESR/LoD/Kanji runes, crystals, runewords, gemwords, unique items, mythical uniques, ascendancies) against the row count already cached in its table. A dataset is **bad** when it parsed empty, or when it has a cache and parsed below 50% of the cached count (`store/storeSanity.ts`).
+
+| Bad datasets | Cached Data? | Behavior |
+|--------------|--------------|----------|
+| None | Yes/No | Clear and rewrite all tables, write `esrVersion`, `lastUpdated`, `appVersion` |
+| Some | Yes | Write nothing; warning + toast naming the datasets; use cached data. `esrVersion` is unchanged, so the next startup refetches and retries |
+| Some (not all) | No | Store what parsed, write `lastUpdated`/`appVersion` but **not** `esrVersion` (next startup retries); warning + toast; app continues |
+| All | No | Fatal store error with retry button |
+
+The same check applies to a manual force refresh. Warnings from the sanity check and from parse/store failures are shown once as a toast ("See Settings for details.") and kept in `networkWarning` for the Settings drawer; the ordinary offline warning is drawer-only.
 
 ## Parsing Order
 
@@ -305,6 +320,8 @@ src/
         ├── store/
         │   ├── dataSyncSlice.ts   # State management with startup/error states
         │   ├── dataSyncSaga.ts    # Main saga orchestration (pipeline)
+        │   ├── storeSanity.ts     # Pre-store plausibility check of parsed datasets
+        │   ├── cacheStatus.ts     # Cached table counts / completeness checks
         │   └── startupSaga.ts     # Startup version checking logic
         ├── parsers/
         │   ├── gemsParser.ts            # Parse gems from gems.htm
