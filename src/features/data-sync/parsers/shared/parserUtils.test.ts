@@ -9,6 +9,12 @@ import {
   getInnerFontColor,
   getItemName,
   normalizeRuneName,
+  parseRecipeAffixes,
+  isWrappedContinuation,
+  mergeWrappedLines,
+  mergeWrappedCellLines,
+  extractCellLines,
+  splitCellLineGroups,
 } from './parserUtils';
 
 describe('parseReqLevel', () => {
@@ -261,5 +267,163 @@ describe('normalizeRuneName', () => {
   it('should handle case variations in "points"', () => {
     expect(normalizeRuneName('I Rune (1 POINTS)')).toEqual({ name: 'I Rune', points: 1 });
     expect(normalizeRuneName('I Rune (1 Points)')).toEqual({ name: 'I Rune', points: 1 });
+  });
+});
+
+function cellFrom(html: string): Element {
+  const doc = new DOMParser().parseFromString(`<table><tr><td>${html}</td></tr></table>`, 'text/html');
+  const td = doc.querySelector('td');
+  if (!td) throw new Error('no td');
+  return td;
+}
+
+describe('isWrappedContinuation', () => {
+  it('continues when the next line starts with a lowercase letter', () => {
+    expect(isWrappedContinuation('Adds 3-4 Fire Damage to Attacks', 'per 4 Dexterity')).toBe(true);
+  });
+
+  it('continues when the previous line ends with a comma', () => {
+    expect(isWrappedContinuation('While casting or channeling, you have 50% dodge,', 'Physical resist')).toBe(true);
+  });
+
+  it('continues when the previous line ends with a lowercase continuation word', () => {
+    expect(isWrappedContinuation('Gain 1% Lightning Spell Damage per 100 Strength when', 'Taking Damage for 5 Seconds')).toBe(true);
+    expect(isWrappedContinuation('Your Holy Auras have a 25% chance to crit for', '1% more total damage per 50 energy')).toBe(true);
+  });
+
+  it('does not continue after a verb: only function words are continuation words', () => {
+    expect(isWrappedContinuation('makes your physical attacks deal', '10 additional unscalable damage')).toBe(false);
+    expect(isWrappedContinuation('Reap Souls provides', '15% additional Physical Damage')).toBe(false);
+  });
+
+  it('does not continue a line that ends with a full stop before a capitalised line', () => {
+    expect(
+      isWrappedContinuation('have a 25% chance to release twice on discharge.', 'Fists of Fire, Claws of Thunder and Blades of Ice')
+    ).toBe(false);
+  });
+
+  it('does not continue complete statements', () => {
+    expect(isWrappedContinuation('Taking Damage for 5 Seconds', 'This effect can stack up to 25 times')).toBe(false);
+    expect(isWrappedContinuation('+1 to All Skills', '+20 to Strength')).toBe(false);
+    expect(isWrappedContinuation('dealing 25% weapon damage as cold and return to you', "Reduce enemies' cold resist by 0.5%")).toBe(false);
+  });
+
+  it('matches continuation words case-sensitively (Title Case endings are complete)', () => {
+    expect(isWrappedContinuation('+5 To All', '+10 to Life')).toBe(false);
+  });
+
+  it('never continues across an empty line', () => {
+    expect(isWrappedContinuation('', 'per 4 Dexterity')).toBe(false);
+    expect(isWrappedContinuation('Adds 1 Damage and', '')).toBe(false);
+  });
+});
+
+describe('mergeWrappedLines', () => {
+  it('joins wrapped lines with a single space', () => {
+    expect(
+      mergeWrappedLines([
+        "Each cast lowers 12% the aimed target's and surrounding",
+        'enemies elemental, magic, and physical resistances, but you',
+        'lose 4% total resistances for 1 second. Maximum stacks: 25',
+        '25% Chance to Cast Level 60 Elemental Surge when you Kill an Enemy',
+      ])
+    ).toEqual([
+      "Each cast lowers 12% the aimed target's and surrounding enemies elemental, magic, and physical resistances, but you lose 4% total resistances for 1 second. Maximum stacks: 25",
+      '25% Chance to Cast Level 60 Elemental Surge when you Kill an Enemy',
+    ]);
+  });
+
+  it("keeps Imperius' separate statements apart while joining the wrapped one", () => {
+    expect(
+      mergeWrappedLines([
+        'Gain 1% Lightning Spell Damage per 100 Strength when',
+        'Taking  Damage for 5 Seconds',
+        'This effect can stack up to 25 times',
+        'Lightning Spell Damage from Energy no Longer Works',
+      ])
+    ).toEqual([
+      'Gain 1% Lightning Spell Damage per 100 Strength when Taking Damage for 5 Seconds',
+      'This effect can stack up to 25 times',
+      'Lightning Spell Damage from Energy no Longer Works',
+    ]);
+  });
+
+  it('leaves the reversed Mosaic lines as two lines', () => {
+    const lines = ['have a 25% chance to release twice on discharge.', 'Fists of Fire, Claws of Thunder and Blades of Ice'];
+    expect(mergeWrappedLines(lines)).toEqual(lines);
+  });
+
+  it('treats empty strings as group separators and drops them', () => {
+    expect(mergeWrappedLines(['Gain 5% damage and', '', 'reduced stats'])).toEqual(['Gain 5% damage and', 'reduced stats']);
+  });
+});
+
+describe('mergeWrappedCellLines', () => {
+  it('does not merge across a colour boundary', () => {
+    expect(
+      mergeWrappedCellLines([
+        { text: 'Gain 1% damage for', orange: true },
+        { text: 'enhanced damage', orange: false },
+      ])
+    ).toEqual([
+      { text: 'Gain 1% damage for', orange: true },
+      { text: 'enhanced damage', orange: false },
+    ]);
+  });
+
+  it('merges within the same colour and keeps the colour', () => {
+    expect(
+      mergeWrappedCellLines([
+        { text: 'Adds 3-4 Fire Damage to Attacks', orange: true },
+        { text: 'per 4 Dexterity', orange: true },
+      ])
+    ).toEqual([{ text: 'Adds 3-4 Fire Damage to Attacks per 4 Dexterity', orange: true }]);
+  });
+});
+
+describe('extractCellLines', () => {
+  it('splits on <br> elements and tracks orange fonts spanning several lines', () => {
+    const cell = cellFrom('<font color=4850B8><FONT COLOR="ORANGE"><br>First<br>Second</FONT><br>Regular</font>');
+    expect(extractCellLines(cell)).toEqual([
+      { text: '', orange: false },
+      { text: 'First', orange: true },
+      { text: 'Second', orange: true },
+      { text: 'Regular', orange: false },
+    ]);
+  });
+
+  it('matches the orange colour case-insensitively, quoted or not', () => {
+    const cell = cellFrom('<font color=orange>a</font><br><font color="Orange">b</font><br><font color="#908858">c</font>');
+    expect(extractCellLines(cell).map((l) => l.orange)).toEqual([true, true, false]);
+  });
+
+  it('normalises whitespace and decodes entities', () => {
+    expect(extractCellLines(cellFrom('Pierce   Flesh &amp;\n Bone'))).toEqual([{ text: 'Pierce Flesh & Bone', orange: false }]);
+  });
+});
+
+describe('splitCellLineGroups', () => {
+  it('splits on <br><br> but not on a leading <br>', () => {
+    const groups = splitCellLineGroups(extractCellLines(cellFrom('<br>A<br>B<br><br>C<br>')));
+    expect(groups.map((g) => g.map((l) => l.text).filter(Boolean))).toEqual([['A', 'B'], ['C']]);
+  });
+});
+
+describe('parseRecipeAffixes with hard-wrapped lines', () => {
+  it('joins wrapped recipe lines and still ignores the ingredient bonuses after <br><br>', () => {
+    const cell = cellFrom(
+      '<font color="8080E6"><FONT COLOR="ORANGE">You gain a random amount of total spell damage<br>between 1% and 50% every 3 seconds</FONT><br>+5 to All Skills<br><br>+30 to Strength<br>and more</font>'
+    );
+    expect(parseRecipeAffixes(cell).map((a) => a.rawText)).toEqual([
+      'You gain a random amount of total spell damage between 1% and 50% every 3 seconds',
+      '+5 to All Skills',
+    ]);
+  });
+});
+
+describe('parseAffixes with hard-wrapped lines', () => {
+  it('joins wrapped lines', () => {
+    const cell = cellFrom('+10% Enhanced Damage and<br>+5 to Strength<br>+1 to Light Radius');
+    expect(parseAffixes(cell).map((a) => a.rawText)).toEqual(['+10% Enhanced Damage and +5 to Strength', '+1 to Light Radius']);
   });
 });

@@ -971,3 +971,37 @@ describe('runeword category classification integration', () => {
     }
   });
 });
+
+describe('hard-wrapped runeword affixes (fixture)', () => {
+  const runewords = parseRunewordsHtml(readFileSync(resolve(__dirname, '../../../../test-fixtures/runewords.htm'), 'utf-8'));
+  const find = (name: string, variant = 1) => {
+    const rw = runewords.find((r) => r.name === name && r.variant === variant);
+    if (!rw) throw new Error(`${name} v${String(variant)} not found in fixture`);
+    return rw;
+  };
+
+  it('Obsession: the 3-line orange affix is a single affix', () => {
+    const affixes = find('Obsession').affixes.map((a) => a.rawText);
+    expect(affixes[0]).toBe(
+      "Each cast lowers 12% the aimed target's and surrounding enemies elemental, magic, and physical resistances, but you lose 4% total resistances for 1 second. Maximum stacks: 25"
+    );
+    expect(affixes[1]).toBe('25% Chance to Cast Level 60 Elemental Surge when you Kill an Enemy');
+  });
+
+  it('Mosaic: upstream line order is reversed, so the two lines are left as they are', () => {
+    const affixes = find('Mosaic').affixes.map((a) => a.rawText);
+    expect(affixes).toContain('have a 25% chance to release twice on discharge.');
+    expect(affixes).toContain('Fists of Fire, Claws of Thunder and Blades of Ice');
+  });
+
+  it('no affix should start with a lowercase letter, except the known upstream Mosaic quirk', () => {
+    for (const rw of runewords) {
+      for (const column of [rw.columnAffixes.weaponsGloves, rw.columnAffixes.helmsBoots, rw.columnAffixes.armorShieldsBelts]) {
+        for (const { rawText } of column) {
+          if (rw.name === 'Mosaic' && rawText.startsWith('have a 25% chance')) continue;
+          expect(rawText, `${rw.name} v${String(rw.variant)}: "${rawText}"`).not.toMatch(/^[a-z]/);
+        }
+      }
+    }
+  });
+});

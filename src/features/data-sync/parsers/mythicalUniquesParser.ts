@@ -1,5 +1,5 @@
 import type { MythicalUnique } from '@/core/db';
-import { decodeHtmlEntities } from './shared/parserUtils';
+import { decodeHtmlEntities, extractCellLines, mergeWrappedCellLines } from './shared/parserUtils';
 
 /**
  * Parses Mythical Unique items from the ESR unique_mythicals.htm page.
@@ -167,31 +167,23 @@ interface ParsedProperties {
   specialProperties: string[];
 }
 
+/**
+ * Splits the properties cell into regular and special (orange) properties.
+ *
+ * The orange state is tracked per visual line by walking the DOM, because a single
+ * <FONT COLOR="ORANGE"> element usually spans several <br>-separated lines (and may even
+ * start with a <br>). Hard-wrapped lines are re-joined within each colour run.
+ */
 function parsePropertiesCell(cell: Element): ParsedProperties {
-  const html = cell.innerHTML;
-  if (!html.trim()) return { properties: [], specialProperties: [] };
-
   const properties: string[] = [];
   const specialProperties: string[] = [];
 
-  // Split by <br> tags
-  const segments = html.split(/<br\s*\/?>/i);
-
-  for (const segment of segments) {
-    // Check if this segment contains an orange font tag (case-insensitive)
-    const isOrange = /<font\s+color\s*=\s*"?orange"?/i.test(segment);
-
-    // Strip all HTML tags and clean up
-    const text = decodeHtmlEntities(segment.replace(/<[^>]*>/g, ''))
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    if (text.length === 0) continue;
-
-    if (isOrange) {
-      specialProperties.push(text);
+  for (const line of mergeWrappedCellLines(extractCellLines(cell))) {
+    if (line.text.length === 0) continue;
+    if (line.orange) {
+      specialProperties.push(line.text);
     } else {
-      properties.push(text);
+      properties.push(line.text);
     }
   }
 

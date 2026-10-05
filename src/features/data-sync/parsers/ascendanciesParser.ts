@@ -1,5 +1,5 @@
 import type { Ascendancy, AscendancyTier } from '@/core/db';
-import { decodeHtmlEntities } from './shared/parserUtils';
+import { decodeHtmlEntities, mergeWrappedLines } from './shared/parserUtils';
 
 /**
  * Strips all HTML tags from a string, preserving text content.
@@ -68,7 +68,8 @@ function extractTiers(textDiv: Element): AscendancyTier[] {
     // Split on <br> tags
     const lines = segment.split(/<br\s*\/?>/i);
 
-    const bonuses = lines.map((line) => cleanText(line)).filter((line) => line.length > 0);
+    // Re-join hard-wrapped bonuses (empty lines act as separators and are dropped)
+    const bonuses = mergeWrappedLines(lines.map((line) => cleanText(line)));
 
     tiers.push({
       tier: matches[i].tierNum,

@@ -1,5 +1,5 @@
 import type { HtmUniqueItem, HtmUniqueItemPage } from '@/core/db';
-import { decodeHtmlEntities } from './shared/parserUtils';
+import { decodeHtmlEntities, extractCellLines, mergeWrappedCellLines } from './shared/parserUtils';
 
 /**
  * Parses HTM unique items from ESR documentation HTML pages.
@@ -179,14 +179,12 @@ function parseNotesCell(cell: Element): string {
     .trim();
 }
 
+/**
+ * Splits the properties cell into one entry per property. Long properties that the
+ * source hard-wraps with <br> are re-joined (see mergeWrappedCellLines).
+ */
 function parsePropertiesCell(cell: Element): string[] {
-  const html = cell.innerHTML;
-  if (!html.trim()) return [];
-
-  return html
-    .split(/<br\s*\/?>/i)
-    .map((line) => line.replace(/<[^>]*>/g, ''))
-    .map((line) => decodeHtmlEntities(line))
-    .map((line) => line.replace(/\s+/g, ' ').trim())
-    .filter((line) => line.length > 0);
+  return mergeWrappedCellLines(extractCellLines(cell))
+    .map((line) => line.text)
+    .filter((text) => text.length > 0);
 }

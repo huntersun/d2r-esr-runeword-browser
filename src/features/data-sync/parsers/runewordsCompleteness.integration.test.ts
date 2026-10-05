@@ -247,6 +247,28 @@ function rawExtractCellAffixes(cell: Element): string[] {
     .filter((line) => line.length > 0);
 }
 
+/**
+ * The parser re-joins hard-wrapped lines (one affix split over several <br> lines).
+ * Instead of re-implementing that heuristic, regroup the raw <br> lines so that
+ * consecutive lines are joined wherever the parser joined them. Any dropped, altered or
+ * reordered text makes the regrouping fail, and the raw lines are returned unchanged so
+ * the `toEqual` assertion shows a useful diff.
+ */
+function regroupRawLines(rawLines: readonly string[], parsedLines: readonly string[]): string[] {
+  const regrouped: string[] = [];
+  let index = 0;
+  for (const parsed of parsedLines) {
+    let joined = '';
+    while (index < rawLines.length && joined.length < parsed.length) {
+      joined = joined ? `${joined} ${rawLines[index]}` : rawLines[index];
+      index++;
+    }
+    if (joined !== parsed) return [...rawLines];
+    regrouped.push(joined);
+  }
+  return index === rawLines.length ? regrouped : [...rawLines];
+}
+
 function rawExtractAffixes(cells: NodeListOf<Element>): string[] {
   for (const cell of [cells[3], cells[4], cells[5]]) {
     const lines = rawExtractCellAffixes(cell);
@@ -313,16 +335,21 @@ describe('Per-runeword completeness check (every runeword vs HTML source)', () =
       });
 
       it('affixes (runeword bonuses, first non-empty column)', () => {
-        expect(parsedRunewords[i].affixes.map((a) => a.rawText)).toEqual(rawAffixLines);
+        const parsed = parsedRunewords[i].affixes.map((a) => a.rawText);
+        expect(parsed).toEqual(regroupRawLines(rawAffixLines, parsed));
       });
 
       it('per-column affixes match HTML columns', () => {
         const rawWeapon = rawExtractCellAffixes(cells[3]);
         const rawHelm = rawExtractCellAffixes(cells[4]);
         const rawArmor = rawExtractCellAffixes(cells[5]);
-        expect(parsedRunewords[i].columnAffixes.weaponsGloves.map((a) => a.rawText)).toEqual(rawWeapon);
-        expect(parsedRunewords[i].columnAffixes.helmsBoots.map((a) => a.rawText)).toEqual(rawHelm);
-        expect(parsedRunewords[i].columnAffixes.armorShieldsBelts.map((a) => a.rawText)).toEqual(rawArmor);
+        const { weaponsGloves, helmsBoots, armorShieldsBelts } = parsedRunewords[i].columnAffixes;
+        const parsedWeapon = weaponsGloves.map((a) => a.rawText);
+        const parsedHelm = helmsBoots.map((a) => a.rawText);
+        const parsedArmor = armorShieldsBelts.map((a) => a.rawText);
+        expect(parsedWeapon).toEqual(regroupRawLines(rawWeapon, parsedWeapon));
+        expect(parsedHelm).toEqual(regroupRawLines(rawHelm, parsedHelm));
+        expect(parsedArmor).toEqual(regroupRawLines(rawArmor, parsedArmor));
       });
 
       it('gems', () => {

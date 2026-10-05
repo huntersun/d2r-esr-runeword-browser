@@ -359,3 +359,89 @@ describe('Edge cases', () => {
     expect(result[0].properties).toContain('Regular Effect');
   });
 });
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 13: Special (orange) properties spanning several lines
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe('Multi-line special properties (fixture)', () => {
+  const findItem = (name: string) => {
+    const item = items.find((i) => i.name === name);
+    if (!item) throw new Error(`${name} not found in fixture`);
+    return item;
+  };
+
+  it("Imperius' Undying Wrath: keeps the 3 orange statements, re-joins only the hard-wrapped one", () => {
+    const item = findItem("Imperius' Undying Wrath");
+    expect(item.specialProperties).toEqual([
+      'Gain 1% Lightning Spell Damage per 100 Strength when Taking Damage for 5 Seconds',
+      'This effect can stack up to 25 times',
+      'Lightning Spell Damage from Energy no Longer Works',
+    ]);
+    expect(item.properties[0]).toBe('+(2 to 4) to All Skills');
+  });
+
+  it("Orpheus' Pillar of Hope: orange font starting with <br> is still special", () => {
+    const item = findItem("Orpheus' Pillar of Hope");
+    expect(item.specialProperties).toEqual([
+      'Each Stack of Underworld Empowerment grants 5% Poison, Magic and Physical Skill Damage for 2 seconds',
+      'Maximum Stacks: 40',
+    ]);
+    expect(item.properties).not.toContain('Maximum Stacks: 40');
+  });
+
+  it("Tal Rasha's Final Whisper: wrapped orange line is one special property", () => {
+    const item = findItem("Tal Rasha's Final Whisper");
+    expect(item.specialProperties).toEqual([
+      'Adds 3-4 Fire, 2-5 Cold, 1-7 Lightning Damage to Attacks per 4 Dexterity',
+      'Cloak of Shadows now pierces elemental instead of physical resist at double effectiveness',
+    ]);
+    expect(item.properties).not.toContain('per 4 Dexterity');
+  });
+
+  it('no regular property should start with a lowercase letter (missed wrap / misclassified orange line)', () => {
+    for (const item of items) {
+      for (const prop of [...item.properties, ...item.specialProperties]) {
+        expect(prop, `${item.name}: "${prop}"`).not.toMatch(/^[a-z]/);
+      }
+    }
+  });
+});
+
+describe('Multi-line special properties (synthetic)', () => {
+  const wrap = (props: string) => `
+      <table>
+        <tr><td colspan="4" bgcolor="#402040"><b>TestCategory</b></td></tr>
+        <tr><td>Name</td><td>Stats</td><td>Properties</td><td>Notes</td></tr>
+        <tr>
+          <td><b>Test Item<br><a href="t.htm">Base</a></b></td>
+          <td>Item Level: 100<br>Required Level: 90</td>
+          <td>${props}</td>
+          <td></td>
+        </tr>
+      </table>`;
+
+  it('classifies every line inside an orange font as special, not only the first', () => {
+    const [item] = parseMythicalUniques(
+      wrap('<font color=4850B8><FONT COLOR="ORANGE">First effect<br>Second effect<br>Third effect</FONT><br>Regular</font>')
+    );
+    expect(item.specialProperties).toEqual(['First effect', 'Second effect', 'Third effect']);
+    expect(item.properties).toEqual(['Regular']);
+  });
+
+  it('accepts unquoted / lowercase orange colour attributes and a leading <br>', () => {
+    const [item] = parseMythicalUniques(wrap('<font color=orange><br>Special one<br>Special two</font><br>Regular'));
+    expect(item.specialProperties).toEqual(['Special one', 'Special two']);
+    expect(item.properties).toEqual(['Regular']);
+  });
+
+  it('re-joins hard-wrapped lines but never across the orange / regular boundary', () => {
+    const [item] = parseMythicalUniques(
+      wrap(
+        '<FONT COLOR="ORANGE">Gain 5% damage for every<br>10 strength you have and</FONT><br>+1 to All Skills<br>Regular wrapped for<br>two lines'
+      )
+    );
+    expect(item.specialProperties).toEqual(['Gain 5% damage for every 10 strength you have and']);
+    expect(item.properties).toEqual(['+1 to All Skills', 'Regular wrapped for two lines']);
+  });
+});

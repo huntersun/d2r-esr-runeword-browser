@@ -62,24 +62,23 @@ export function detectValueType(text: string): 'flat' | 'percent' | 'range' | 'n
 
 /**
  * Parses affixes from a table cell's innerHTML.
- * Splits on <br> tags and creates Affix objects.
+ * Splits the cell into visual lines (on <br> tags), re-joins hard-wrapped lines
+ * (see {@link mergeWrappedCellLines}) and creates Affix objects.
  */
 export function parseAffixes(cell: Element): Affix[] {
-  const html = cell.innerHTML;
-  if (!html.trim()) return [];
+  return mergeWrappedCellLines(extractCellLines(cell))
+    .map((line) => line.text)
+    .filter((text) => text.length > 0)
+    .map(toAffix);
+}
 
-  return html
-    .split(/<br\s*\/?>/i)
-    .map((line) => line.replace(/<[^>]*>/g, ''))
-    .map((line) => decodeHtmlEntities(line))
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0)
-    .map((rawText) => ({
-      rawText,
-      pattern: rawText.replace(/[+-]?\d+/g, '#'),
-      value: extractValue(rawText),
-      valueType: detectValueType(rawText),
-    }));
+function toAffix(rawText: string): Affix {
+  return {
+    rawText,
+    pattern: rawText.replace(/[+-]?\d+/g, '#'),
+    value: extractValue(rawText),
+    valueType: detectValueType(rawText),
+  };
 }
 
 /**
@@ -168,29 +167,194 @@ export function decodeHtmlEntities(text: string): string {
  *
  * Recipe cells contain: [recipe bonuses]<br><br>[ingredient bonuses]
  * (rune bonuses for runewords, gem bonuses for gemwords).
- * We only want the recipe bonuses.
+ * We only want the recipe bonuses. Hard-wrapped lines are re-joined
+ * (see {@link mergeWrappedCellLines}).
  */
 export function parseRecipeAffixes(cell: Element): Affix[] {
-  const html = cell.innerHTML;
-  if (!html.trim()) return [];
+  const [recipeLines = []] = splitCellLineGroups(extractCellLines(cell));
 
-  // Split on double <br> (separator between runeword and rune bonuses)
-  // Handle variations: <br><br>, <br/><br/>, <br /><br />, etc.
-  const parts = html.split(/<br\s*\/?>\s*<br\s*\/?>/i);
+  return mergeWrappedCellLines(recipeLines)
+    .map((line) => line.text)
+    .filter((text) => text.length > 0)
+    .map(toAffix);
+}
 
-  // Take only the first part (runeword bonuses)
-  const runewordBonusesHtml = parts[0] ?? '';
+/**
+ * One visual line of a table cell (text between two <br> elements).
+ */
+export interface CellLine {
+  /** Whitespace-normalised text of the line ('' for an empty line). */
+  readonly text: string;
+  /** True when the line's text sits inside a <font color="orange"> element. */
+  readonly orange: boolean;
+}
 
-  return runewordBonusesHtml
-    .split(/<br\s*\/?>/i)
-    .map((line) => line.replace(/<[^>]*>/g, ''))
-    .map((line) => decodeHtmlEntities(line))
-    .map((line) => normalizeWhitespace(line))
-    .filter((line) => line.length > 0)
-    .map((rawText) => ({
-      rawText,
-      pattern: rawText.replace(/[+-]?\d+/g, '#'),
-      value: extractValue(rawText),
-      valueType: detectValueType(rawText),
-    }));
+function isOrangeFont(node: Node): boolean {
+  return node instanceof Element && node.tagName === 'FONT' && node.getAttribute('color')?.trim().toLowerCase() === 'orange';
+}
+
+function hasOrangeAncestor(node: Node, root: Node): boolean {
+  for (let current = node.parentNode; current && current !== root; current = current.parentNode) {
+    if (isOrangeFont(current)) return true;
+  }
+  return isOrangeFont(root);
+}
+
+/**
+ * Splits an element into its visual lines by walking the DOM: text nodes are
+ * accumulated until a <br> element ends the line. Unlike splitting innerHTML on
+ * <br>, this keeps track of which lines are inside a <font color="orange">
+ * element even when the font spans several <br>-separated lines.
+ *
+ * Empty lines are kept (as text '') so callers can detect <br><br> group
+ * separators — see {@link splitCellLineGroups}. A line counts as orange when any
+ * of its non-whitespace text is inside an orange font (attribute value is
+ * matched case-insensitively, quoted or not).
+ */
+export function extractCellLines(root: Node): CellLine[] {
+  const lines: CellLine[] = [];
+  let text = '';
+  let orange = false;
+
+  const walk = (node: Node): void => {
+    for (const child of Array.from(node.childNodes)) {
+      if (child.nodeType === Node.TEXT_NODE) {
+        const value = child.textContent ?? '';
+        text += value;
+        if (value.trim().length > 0 && hasOrangeAncestor(child, root)) orange = true;
+      } else if (child instanceof Element) {
+        if (child.tagName === 'BR') {
+          lines.push({ text: normalizeWhitespace(text), orange });
+          text = '';
+          orange = false;
+        } else {
+          walk(child);
+        }
+      }
+    }
+  };
+
+  walk(root);
+  lines.push({ text: normalizeWhitespace(text), orange });
+  return lines;
+}
+
+/**
+ * Splits visual lines into groups separated by <br><br> (an empty line between
+ * two <br> elements). A leading empty line (cell starting with a single <br>) is
+ * not a separator. Separator lines are dropped; a leading or trailing empty line
+ * stays in its group (callers filter empty text anyway).
+ */
+export function splitCellLineGroups(lines: readonly CellLine[]): CellLine[][] {
+  const groups: CellLine[][] = [[]];
+  lines.forEach((line, index) => {
+    const isSeparator = line.text.length === 0 && index > 0 && index < lines.length - 1;
+    if (isSeparator) {
+      groups.push([]);
+    } else {
+      groups[groups.length - 1].push(line);
+    }
+  });
+  return groups;
+}
+
+/**
+ * Lowercase function words that, when they end a line, mean the sentence continues on
+ * the next line: conjunctions, prepositions and articles/determiners. Deliberately NOT
+ * extended with verbs or other content words: a few upstream wraps after a verb
+ * ("...attacks deal⏎10 additional damage") stay split rather than growing a tuned list.
+ * Matched case-sensitively so Title Case affix endings ("+1 To All") never trigger it.
+ */
+const CONTINUATION_WORDS: ReadonlySet<string> = new Set([
+  // conjunctions / subordinators
+  'and',
+  'or',
+  'but',
+  'when',
+  'while',
+  'if',
+  'than',
+  'that',
+  'as',
+  // prepositions
+  'with',
+  'per',
+  'to',
+  'of',
+  'for',
+  'from',
+  'by',
+  'in',
+  'on',
+  'at',
+  'into',
+  'during',
+  'after',
+  'before',
+  'until',
+  'against',
+  'upon',
+  'over',
+  'under',
+  'within',
+  'without',
+  // articles / determiners (not 'you': it often ends a complete line, e.g. "...and return to you")
+  'the',
+  'a',
+  'an',
+  'your',
+  'all',
+  'each',
+  'every',
+  'no',
+  'not',
+]);
+
+/**
+ * Decides whether `next` is a hard-wrapped continuation of `previous`.
+ *
+ * The ESR pages hard-wrap long (usually orange) affixes with <br> mid-sentence.
+ * A line continues the previous one when:
+ * - it starts with a lowercase letter, or
+ * - the previous line ends with a comma, or
+ * - the previous line ends with a lowercase function word (and, or, per, for, ...).
+ *
+ * A line ending in a full stop followed by a capitalised line is never merged, so two
+ * separate sentences stay separate.
+ */
+export function isWrappedContinuation(previous: string, next: string): boolean {
+  if (previous.length === 0 || next.length === 0) return false;
+  if (/^[a-z]/.test(next)) return true;
+  if (previous.endsWith(',')) return true;
+  const lastWord = /(?:^|[^A-Za-z'])([a-z]+)$/.exec(previous)?.[1];
+  return lastWord !== undefined && CONTINUATION_WORDS.has(lastWord);
+}
+
+/**
+ * Re-joins hard-wrapped visual lines (see {@link isWrappedContinuation}).
+ * Lines are only merged when both have the same colour (orange vs non-orange),
+ * and never across an empty line (<br><br> group separator). Merged text is
+ * joined with a single space. Empty lines are preserved in the output.
+ */
+export function mergeWrappedCellLines(lines: readonly CellLine[]): CellLine[] {
+  const merged: CellLine[] = [];
+  for (const line of lines) {
+    const previous = merged.at(-1);
+    if (previous && previous.orange === line.orange && isWrappedContinuation(previous.text, line.text)) {
+      merged[merged.length - 1] = { text: normalizeWhitespace(`${previous.text} ${line.text}`), orange: previous.orange };
+    } else {
+      merged.push(line);
+    }
+  }
+  return merged;
+}
+
+/**
+ * Plain-text variant of {@link mergeWrappedCellLines} for lines without colour
+ * information. Empty strings act as group separators and are dropped from the result.
+ */
+export function mergeWrappedLines(lines: readonly string[]): string[] {
+  return mergeWrappedCellLines(lines.map((text) => ({ text: normalizeWhitespace(text), orange: false })))
+    .map((line) => line.text)
+    .filter((text) => text.length > 0);
 }

@@ -175,7 +175,7 @@ Stores unique items parsed from HTM pages.
 | category | string | Yes | "Amazon Javelin", "Bow", etc. |
 | itemLevel | number | No | Item level |
 | reqLevel | number | Yes | Required level |
-| properties | string[] | No | Human-readable property strings |
+| properties | string[] | No | Human-readable property strings, one per property (hard-wrapped source lines re-joined, see CORE-DATA "Splitting Cells") |
 | isAncientCoupon | boolean | No | True if coupon-only item |
 | gambleItem | string | No | Gamble item identifier |
 
@@ -200,7 +200,7 @@ All types are defined in `src/core/db/models.ts`.
 
 ```typescript
 interface Affix {
-  readonly rawText: string;
+  readonly rawText: string; // one affix; hard-wrapped <br> lines in the source are re-joined with a space
   readonly pattern: string;
   readonly value: number | readonly [number, number] | null;
   readonly valueType: 'flat' | 'percent' | 'range' | 'none';

@@ -295,6 +295,42 @@ const fontElement = runeRow.querySelector('font[color]');
 const color = fontElement?.getAttribute('color') || 'WHITE';
 ```
 
+### Splitting Cells into Affix / Property Lines
+
+Affix and property cells list one entry per visual line, separated by `<br>`. All parsers share the
+helpers in `parsers/shared/parserUtils.ts` instead of splitting `innerHTML` on `<br>`:
+
+- `extractCellLines(cell)` walks the DOM (text nodes + `<br>` elements) and returns one `CellLine`
+  (`{ text, orange }`) per visual line. `orange` is true when the text sits inside a
+  `<font color="orange">` element (attribute value matched case-insensitively, quoted or not) — even
+  when that font spans several `<br>`-separated lines or starts with a `<br>`. The mythical uniques
+  parser uses this flag to route every orange line to `specialProperties` and the rest to `properties`.
+- `splitCellLineGroups(lines)` splits on `<br><br>` (recipe bonuses vs. ingredient bonuses in
+  runeword/gemword cells; `parseRecipeAffixes` keeps only the first group).
+- `mergeWrappedCellLines(lines)` / `mergeWrappedLines(strings)` re-join affixes that the ESR pages
+  hard-wrap with `<br>` mid-sentence (mostly long orange "special" affixes, e.g. Obsession, Death
+  Cleaver, Tal Rasha's Final Whisper).
+
+**Line-merge heuristic** (`isWrappedContinuation(previous, next)`): a line is appended (with a single
+space) to the previous line when
+
+1. it starts with a lowercase letter (`…to Attacks` ⏎ `per 4 Dexterity`), or
+2. the previous line ends with a comma, or
+3. the previous line ends with a lowercase function word: conjunctions (`and or but when while if
+   than that as`), prepositions (`with per to of for from by in on at into during after before until
+   against upon over under within without`) or determiners (`the a an your all each every no not`).
+   The match is case-sensitive so Title Case affix endings never trigger it; `you` is deliberately
+   excluded ("…and return to you"). The list is intentionally limited to function words: a handful
+   of upstream wraps after a verb ("…attacks deal" ⏎ "10 additional damage") stay split rather than
+   growing an item-tuned word list.
+
+Lines are never merged across an orange/non-orange boundary or across an empty line (`<br><br>`).
+An orange block is not always one affix — e.g. Imperius' Undying Wrath has four orange lines that
+form three statements; only the hard-wrapped pair is joined. Known limits: a wrap where the previous
+line ends in a capitalised noun and the next line starts uppercase (Aegis of Corruption: "…your Direct
+Damage" ⏎ "Spells that have…") stays split, and Mosaic's orange lines, which are in reversed order
+upstream, are intentionally left as two lines.
+
 ### Test Fixtures
 
 Integration tests use real HTML files fetched from the ESR site. Run `npm run test:fixtures` once after checkout to download fixtures to `test-fixtures/` (gitignored).

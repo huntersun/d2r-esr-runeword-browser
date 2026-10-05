@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
+import type { HtmUniqueItem } from '@/core/db';
 import { parseHtmUniqueItems } from './htmUniqueItemsParser';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
@@ -401,5 +402,61 @@ describe('Edge cases', () => {
     expect(items).toHaveLength(1);
     expect(items[0].itemLevel).toBe(0);
     expect(items[0].reqLevel).toBe(0);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 11: Hard-wrapped properties
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe('Hard-wrapped properties', () => {
+  const findIn = (list: readonly HtmUniqueItem[], name: string): HtmUniqueItem => {
+    const item = list.find((i) => i.name === name);
+    if (!item) throw new Error(`${name} not found in fixture`);
+    return item;
+  };
+
+  it('Death Cleaver: a 3-line orange property becomes one entry', () => {
+    expect(findIn(weapons, 'Death Cleaver').properties).toContain(
+      'On melee attack, gain maximum base attack speed. Every attack lowers your base attack speed by 10% and increases your total physical attack damage by 2%. Maximum stacks: 25'
+    );
+  });
+
+  it("Nord's Tenderizer: wrapped sentence is joined, the following statement stays separate", () => {
+    const props = findIn(weapons, "Nord's Tenderizer").properties;
+    expect(props).toContain(
+      'You have a 35% chance to release icy bolts on melee attack that seek enemies, dealing 25% weapon damage as cold and return to you'
+    );
+    expect(props).toContain("Reduce enemies' cold resist by 0.5% on striking, up to 50%");
+  });
+
+  it("Kaija's Gown: line ending with a comma is continued", () => {
+    expect(findIn(armors, "Kaija's Gown").properties).toContain(
+      'While casting or channeling, you have 50% dodge, physical and magic resist and 500% mana regeneration bonus'
+    );
+  });
+
+  it('no property should start with a lowercase letter (missed wrap)', () => {
+    for (const item of [...weapons, ...armors, ...others]) {
+      for (const prop of item.properties) {
+        expect(prop, `${item.name}: "${prop}"`).not.toMatch(/^[a-z]/);
+      }
+    }
+  });
+
+  it('synthetic: joins wrapped lines without crossing the orange boundary', () => {
+    const html = `
+      <table>
+        <tr><td colspan="4" bgcolor="#402040"><b>TestCategory</b></td></tr>
+        <tr><td>Name</td><td>Stats</td><td>Properties</td><td>Notes</td></tr>
+        <tr>
+          <td><b>Test Item<br>Base (tst)</b></td>
+          <td>Item Level: 1<br>Required Level: 1</td>
+          <td><font color=4850B8><FONT COLOR="ORANGE">Gain 1% damage for<br>every kill</FONT><br>enhanced stats<br>+1 to Life</font></td>
+          <td></td>
+        </tr>
+      </table>`;
+    const [item] = parseHtmUniqueItems(html, 'weapons');
+    expect(item.properties).toEqual(['Gain 1% damage for every kill', 'enhanced stats', '+1 to Life']);
   });
 });
