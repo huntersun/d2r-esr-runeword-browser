@@ -1,16 +1,13 @@
 import type { ReactNode } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { db } from '@/core/db';
+import type { Gem } from '@/core/db/models';
 
 interface GemTooltipProps {
-  readonly gemName: string;
+  readonly gem: Gem | undefined;
   readonly children: ReactNode;
 }
 
-export function GemTooltip({ gemName, children }: GemTooltipProps) {
-  const gem = useLiveQuery(() => db.gems.get(gemName), [gemName]);
-
+export function GemTooltip({ gem, children }: GemTooltipProps) {
   if (!gem) {
     return <>{children}</>;
   }

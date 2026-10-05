@@ -4,6 +4,7 @@ import { useFilteredGemwords } from '../hooks/useFilteredGemwords';
 import { useGemBonusMap } from '../hooks/useGemBonuses';
 import { useUrlInitialize } from '../hooks/useUrlInitialize';
 import { Spinner } from '@/components/ui/spinner';
+import { SocketableLookupContext, useSocketableLookupQuery } from '@/core/hooks/useSocketableLookup';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 import { FavoritesToggleButton } from '@/core/components/FavoritesToggleButton';
 import { useItemFavorites } from '@/features/favorites';
@@ -16,6 +17,8 @@ export function GemwordsScreen() {
   useUrlInitialize();
   const gemwords = useFilteredGemwords();
   const gemBonusMap = useGemBonusMap();
+  // Loaded once for the whole screen and shared by all gem badges/tooltips
+  const socketableLookup = useSocketableLookupQuery();
   const favorites = useItemFavorites<Gemword>({
     getId: getGemwordFavoriteId,
     kindPrefix: 'gemword:',
@@ -56,20 +59,22 @@ export function GemwordsScreen() {
             : 'No gemwords found. Try adjusting your filters or load data first.'}
         </p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredGemwords.map((gemword) => (
-            <div key={`${gemword.name}-${String(gemword.variant)}-${gemword.allowedItems.join(',')}`} className="card-visibility-auto">
-              <GemwordCard
-                gemword={gemword}
-                gemBonusMap={gemBonusMap}
-                isFavorite={favorites.isFavorite(gemword)}
-                favoriteCount={favorites.count(gemword)}
-                favoritePending={favorites.isPending(gemword)}
-                onToggleFavorite={favorites.toggle}
-              />
-            </div>
-          ))}
-        </div>
+        <SocketableLookupContext value={socketableLookup}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredGemwords.map((gemword) => (
+              <div key={`${gemword.name}-${String(gemword.variant)}-${gemword.allowedItems.join(',')}`} className="card-visibility-auto">
+                <GemwordCard
+                  gemword={gemword}
+                  gemBonusMap={gemBonusMap}
+                  isFavorite={favorites.isFavorite(gemword)}
+                  favoriteCount={favorites.count(gemword)}
+                  favoritePending={favorites.isPending(gemword)}
+                  onToggleFavorite={favorites.toggle}
+                />
+              </div>
+            ))}
+          </div>
+        </SocketableLookupContext>
       )}
 
       <ScrollToTopButton />

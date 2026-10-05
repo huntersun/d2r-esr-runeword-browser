@@ -3,6 +3,7 @@ import { RunewordCard } from '../components/RunewordCard';
 import { useFilteredRunewords } from '../hooks/useFilteredRunewords';
 import { useUrlInitialize } from '../hooks/useUrlInitialize';
 import { Spinner } from '@/components/ui/spinner';
+import { SocketableLookupContext, useSocketableLookupQuery } from '@/core/hooks/useSocketableLookup';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 import { FavoritesToggleButton } from '@/core/components/FavoritesToggleButton';
 import { useItemFavorites } from '@/features/favorites';
@@ -13,7 +14,9 @@ const getRunewordFavoriteId = (runeword: Runeword) => buildRecipeFavoriteId('run
 
 export function RunewordsScreen() {
   useUrlInitialize();
-  const runewords = useFilteredRunewords();
+  // Loaded once for the whole screen: search filtering, badges, tooltips and bonuses
+  const socketableLookup = useSocketableLookupQuery();
+  const runewords = useFilteredRunewords(socketableLookup);
   const favorites = useItemFavorites<Runeword>({
     getId: getRunewordFavoriteId,
     kindPrefix: 'runeword:',
@@ -54,19 +57,21 @@ export function RunewordsScreen() {
             : 'No runewords found. Try adjusting your filters or load data first.'}
         </p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredRunewords.map((runeword) => (
-            <div key={`${runeword.name}-${String(runeword.variant)}-${runeword.allowedItems.join(',')}`} className="card-visibility-auto">
-              <RunewordCard
-                runeword={runeword}
-                isFavorite={favorites.isFavorite(runeword)}
-                favoriteCount={favorites.count(runeword)}
-                favoritePending={favorites.isPending(runeword)}
-                onToggleFavorite={favorites.toggle}
-              />
-            </div>
-          ))}
-        </div>
+        <SocketableLookupContext value={socketableLookup}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredRunewords.map((runeword) => (
+              <div key={`${runeword.name}-${String(runeword.variant)}-${runeword.allowedItems.join(',')}`} className="card-visibility-auto">
+                <RunewordCard
+                  runeword={runeword}
+                  isFavorite={favorites.isFavorite(runeword)}
+                  favoriteCount={favorites.count(runeword)}
+                  favoritePending={favorites.isPending(runeword)}
+                  onToggleFavorite={favorites.toggle}
+                />
+              </div>
+            ))}
+          </div>
+        </SocketableLookupContext>
       )}
 
       <ScrollToTopButton />

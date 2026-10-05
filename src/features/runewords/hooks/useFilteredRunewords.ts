@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useSelector } from 'react-redux';
 import { db } from '@/core/db';
 import type { Runeword } from '@/core/db/models';
+import type { SocketableLookup } from '@/core/utils/socketableLookup';
 import {
   selectSearchText,
   selectSocketCount,
@@ -24,7 +25,8 @@ import {
   expandRunewordsByColumn,
 } from '../utils/filteringHelpers';
 
-export function useFilteredRunewords(): readonly Runeword[] | undefined {
+/** `lookup` is the screen-level rune/gem lookup (see useSocketableLookupQuery), reused for search and rune filters. */
+export function useFilteredRunewords(lookup: SocketableLookup | undefined): readonly Runeword[] | undefined {
   const searchText = useSelector(selectSearchText);
   const socketCount = useSelector(selectSocketCount);
   const maxReqLevel = useSelector(selectMaxReqLevel);
@@ -33,23 +35,13 @@ export function useFilteredRunewords(): readonly Runeword[] | undefined {
   const maxTierPoints = useSelector(selectMaxTierPoints);
 
   // Fetch runewords pre-sorted by sortKey from IndexedDB (ESR/Kanji first by reqLevel, then LoD by reqLevel)
-  const data = useLiveQuery(async () => {
-    const [runewords, esrRunes, lodRunes, kanjiRunes, gems] = await Promise.all([
-      db.runewords.orderBy('sortKey').toArray(),
-      db.esrRunes.toArray(),
-      db.lodRunes.toArray(),
-      db.kanjiRunes.toArray(),
-      db.gems.toArray(),
-    ]);
-    return { runewords, esrRunes, lodRunes, kanjiRunes, gems };
-  }, []);
+  const runewords = useLiveQuery(() => db.runewords.orderBy('sortKey').toArray(), []);
 
-  if (!data) return undefined;
+  if (!runewords || !lookup) return undefined;
 
-  const { runewords, esrRunes, lodRunes, kanjiRunes, gems } = data;
-  const runeBonusMap = buildRuneBonusMap(esrRunes, lodRunes, kanjiRunes);
-  const gemBonusMap = buildGemBonusMap(gems);
-  const runeCategoryMap = buildRuneCategoryMap(esrRunes, lodRunes, kanjiRunes);
+  const runeBonusMap = buildRuneBonusMap(lookup.esrRunes.values(), lookup.lodRunes.values(), lookup.kanjiRunes.values());
+  const gemBonusMap = buildGemBonusMap(lookup.gems.values());
+  const runeCategoryMap = buildRuneCategoryMap(lookup.esrRunes.values(), lookup.lodRunes.values(), lookup.kanjiRunes.values());
 
   // Expand runewords with different column bonuses into separate entries per item category
   const expandedRunewords = expandRunewordsByColumn(runewords);

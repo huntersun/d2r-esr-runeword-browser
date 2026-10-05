@@ -54,7 +54,7 @@ export function getGemBonusesText(runeword: Runeword, gemBonusMap: GemBonusMap):
 /**
  * Build a map of gem names to their bonuses for search.
  */
-export function buildGemBonusMap(gems: readonly Gem[]): GemBonusMap {
+export function buildGemBonusMap(gems: Iterable<Gem>): GemBonusMap {
   const map = new Map<string, SocketableBonuses>();
   for (const gem of gems) {
     map.set(gem.name, gem.bonuses);
@@ -123,9 +123,9 @@ export function matchesItemTypes(runeword: Runeword, selectedItemTypes: Record<s
  * A rune can exist in multiple categories (e.g., Ko Rune in both ESR and LoD).
  */
 export function buildRuneCategoryMap(
-  esrRunes: readonly EsrRune[],
-  lodRunes: readonly LodRune[],
-  kanjiRunes: readonly KanjiRune[]
+  esrRunes: Iterable<EsrRune>,
+  lodRunes: Iterable<LodRune>,
+  kanjiRunes: Iterable<KanjiRune>
 ): RuneCategoryMap {
   const map = new Map<string, string[]>();
 
@@ -191,11 +191,7 @@ export function matchesTierPoints(runeword: Runeword, maxTierPoints: Record<stri
 /**
  * Build a map of rune names to their bonuses for search.
  */
-export function buildRuneBonusMap(
-  esrRunes: readonly EsrRune[],
-  lodRunes: readonly LodRune[],
-  kanjiRunes: readonly KanjiRune[]
-): RuneBonusMap {
+export function buildRuneBonusMap(esrRunes: Iterable<EsrRune>, lodRunes: Iterable<LodRune>, kanjiRunes: Iterable<KanjiRune>): RuneBonusMap {
   const map = new Map<string, SocketableBonuses>();
 
   for (const rune of esrRunes) {

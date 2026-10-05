@@ -2,9 +2,7 @@ import { cn } from '@/lib/utils';
 import type { Affix, SocketableBonuses } from '@/core/db/models';
 import { getCategoryLabel, type BonusCategory } from '@/core/utils/itemCategoryMapping';
 import { hasColumnDifferences } from '@/core/utils/columnAffixes';
-
-/** Bonus texts per item category (e.g. aggregated rune/gem bonuses). */
-export type BonusTextsByCategory = Readonly<Record<BonusCategory, readonly string[]>>;
+import type { BonusTextsByCategory } from '@/core/utils/socketableLookup';
 
 interface RecipeAffixesProps {
   readonly affixes: readonly Affix[];

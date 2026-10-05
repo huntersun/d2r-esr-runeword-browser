@@ -1,11 +1,11 @@
-import { useLiveQuery } from 'dexie-react-hooks';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { db } from '@/core/db';
+import { useSocketableLookup } from '@/core/hooks/useSocketableLookup';
+import { resolveRune } from '@/core/utils/socketableLookup';
 import { RuneTooltip } from './RuneTooltip';
 
 // Background colors for ESR tiers — same hue as tier text colors, dimmed to 70%
-const ESR_TIER_BG_COLORS: Record<number, string> = {
+const ESR_TIER_BG_COLORS: Partial<Record<number, string>> = {
   1: 'bg-slate-600/40 dark:bg-slate-300/40', // WHITE
   2: 'bg-red-600/60 dark:bg-red-600/60', // RED
   3: 'bg-yellow-500/60 dark:bg-yellow-300/60', // YELLOW
@@ -16,7 +16,7 @@ const ESR_TIER_BG_COLORS: Record<number, string> = {
 };
 
 // Background colors for LoD and Kanji categories
-const CATEGORY_BG_COLORS: Record<string, string> = {
+const CATEGORY_BG_COLORS: Partial<Record<string, string>> = {
   lodRunes: 'bg-[#908858]/60 dark:bg-[#b8ae78]/60', // GOLD
   kanjiRunes: 'bg-blue-600/60 dark:bg-blue-500/60',
 };
@@ -31,48 +31,18 @@ export function RuneBadge({ runeName, isLod }: RuneBadgeProps) {
   // Strip " Rune" suffix for display
   const displayName = runeName.replace(' Rune', '');
 
-  // Look up rune data to get tier and category.
-  // For LoD runewords, check LoD first to resolve shared runes (e.g. Ko) correctly.
-  const runeInfo = useLiveQuery(async () => {
-    if (isLod) {
-      const lodRune = await db.lodRunes.get(runeName);
-      if (lodRune) {
-        return { tier: lodRune.tier, category: 'lodRunes' };
-      }
-    }
-
-    const esrRune = await db.esrRunes.get(runeName);
-    if (esrRune) {
-      return { tier: esrRune.tier, category: 'esrRunes' };
-    }
-
-    if (!isLod) {
-      const lodRune = await db.lodRunes.get(runeName);
-      if (lodRune) {
-        return { tier: lodRune.tier, category: 'lodRunes' };
-      }
-    }
-
-    const kanjiRune = await db.kanjiRunes.get(runeName);
-    if (kanjiRune) {
-      return { tier: null, category: 'kanjiRunes' };
-    }
-
-    return null;
-  }, [runeName, isLod]);
+  // Resolved from the screen-level lookup (LoD runewords check LoD first, see resolveRune)
+  const lookup = useSocketableLookup();
+  const rune = lookup ? resolveRune(lookup, runeName, isLod ?? false) : null;
 
   // Get background color class based on tier/category
   let bgColorClass = '';
-  if (runeInfo) {
-    if (runeInfo.category === 'esrRunes' && runeInfo.tier !== null) {
-      bgColorClass = ESR_TIER_BG_COLORS[runeInfo.tier] ?? '';
-    } else {
-      bgColorClass = CATEGORY_BG_COLORS[runeInfo.category] ?? '';
-    }
+  if (rune) {
+    bgColorClass = (rune.category === 'esrRunes' ? ESR_TIER_BG_COLORS[rune.rune.tier] : CATEGORY_BG_COLORS[rune.category]) ?? '';
   }
 
   return (
-    <RuneTooltip runeName={runeName} isLod={isLod}>
+    <RuneTooltip rune={rune}>
       <Badge variant="outline" className={cn('cursor-pointer opacity-100 hover:opacity-75', bgColorClass)}>
         {displayName}
       </Badge>

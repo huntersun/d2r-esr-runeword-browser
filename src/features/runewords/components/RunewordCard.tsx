@@ -4,7 +4,9 @@ import { RuneBadge } from './RuneBadge';
 import { GemBadge } from '@/core/components/GemBadge';
 import { RunewordPointsDisplay } from './RunewordPointsDisplay';
 import { FavoriteButton } from '@/core/components/FavoriteButton';
-import { useRuneBonuses } from '../hooks/useRuneBonuses';
+import { SocketableLookupScope } from '@/core/components/SocketableLookupScope';
+import { useSocketableLookup } from '@/core/hooks/useSocketableLookup';
+import { aggregateBonusTexts, resolveRune } from '@/core/utils/socketableLookup';
 import { RecipeAffixes, SocketableBonusesSection } from '@/core/components/RecipeBonuses';
 import { getRelevantCategories } from '@/core/utils/itemCategoryMapping';
 import { isGemName } from '@/features/data-sync/parsers/gemsParser';
@@ -19,7 +21,16 @@ interface RunewordCardProps {
   readonly onToggleFavorite?: (runeword: Runeword) => void;
 }
 
-export function RunewordCard({
+export function RunewordCard(props: RunewordCardProps) {
+  // Reuses the screen-level rune/gem lookup, or loads one when rendered on its own (e.g. builds)
+  return (
+    <SocketableLookupScope>
+      <RunewordCardContent {...props} />
+    </SocketableLookupScope>
+  );
+}
+
+function RunewordCardContent({
   runeword,
   isFavorite = false,
   favoriteCount = 0,
@@ -36,7 +47,13 @@ export function RunewordCard({
   const socketsMax = 'socketsMax' in runeword ? runeword.socketsMax : undefined;
   const socketLabel = socketsMax === undefined ? String(sockets) : `${String(sockets)}-${String(socketsMax)}`;
   const ingredientsList = 'ingredients' in runeword && runeword.ingredients.length > 0 ? runeword.ingredients : runes;
-  const runeBonuses = useRuneBonuses(runes, gems);
+  const lookup = useSocketableLookup();
+  const runeBonuses = lookup
+    ? aggregateBonusTexts([
+        ...runes.flatMap((rune) => resolveRune(lookup, rune, isLod)?.rune.bonuses ?? []),
+        ...(gems ?? []).flatMap((gem) => lookup.gems.get(gem)?.bonuses ?? []),
+      ])
+    : undefined;
   const relevantCategories = getRelevantCategories(allowedItems);
 
   // Old cached runewords may lack per-column affixes
