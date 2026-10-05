@@ -18,12 +18,27 @@ export function storeAuthReturnTo(pathWithSearch: string): void {
   }
 }
 
-/** Reads and clears the stored return location. Returns null when none is set. */
+/**
+ * Whether a stored return location is a same-origin app path. It must start with
+ * a single `/` (which also rules out any `scheme:` prefix) and must not be
+ * protocol-relative (`//host`), a backslash variant (`/\host`), or contain
+ * whitespace/control characters (browsers strip tabs/newlines, so `/<tab>/host`
+ * would become `//host`).
+ */
+export function isSafeReturnTo(value: string): boolean {
+  if (!value.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) return false;
+  // eslint-disable-next-line no-control-regex
+  if (/[\u0000-\u0020\u007f]/.test(value)) return false;
+  return true;
+}
+
+/** Reads and clears the stored return location. Returns null when none is set or it is not a safe app path. */
 export function takeAuthReturnTo(): string | null {
   try {
     const value = sessionStorage.getItem(AUTH_RETURN_KEY);
-    if (value !== null) sessionStorage.removeItem(AUTH_RETURN_KEY);
-    return value;
+    if (value === null) return null;
+    sessionStorage.removeItem(AUTH_RETURN_KEY);
+    return isSafeReturnTo(value) ? value : null;
   } catch {
     return null;
   }
