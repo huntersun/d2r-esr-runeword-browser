@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.1](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.12.0...v1.12.1) (2026-10-05)
+
+
+### Bug Fixes
+
+* ignore property line re-wrapping when diffing build snapshots ([e531ac8](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/e531ac807340f4badd7696e222a2f33c7133aa7a))
+* keep cached data when freshly parsed datasets look implausible ([e7c190c](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/e7c190c994df82ab2ef74a134b0dffed481a3828))
+* re-join hard-wrapped affixes and classify multi-line mythical specials ([1f545cb](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/1f545cb3ad2088d1bcaa0116fe7030860971dc09))
+
 ## [1.12.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.11.2...v1.12.0) (2026-10-05)
 
 
