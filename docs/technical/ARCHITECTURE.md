@@ -95,9 +95,9 @@ The app uses a single HTM-based data system. All data is fetched from the ESR do
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │  3. Store in IndexedDB via Dexie                            │
-│     - Database: d2r-esr-runeword-browser (version 13)       │
+│     - Database: d2r-esr-runeword-browser (version 14)       │
 │     - Tables: gems, esrRunes, lodRunes, kanjiRunes,         │
-│       crystals, runewords, gemwords, affixes,               │
+│       crystals, runewords, gemwords,                        │
 │       htmUniqueItems, mythicalUniques, ascendancies,        │
 │       metadata                                              │
 └─────────────────────────────────────────────────────────────┘

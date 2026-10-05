@@ -7,7 +7,6 @@ import type {
   Crystal,
   Runeword,
   Gemword,
-  AffixPattern,
   HtmUniqueItem,
   MythicalUnique,
   Ascendancy,
@@ -22,7 +21,6 @@ class AppDatabase extends Dexie {
   crystals!: EntityTable<Crystal, 'name'>;
   runewords!: Table<Runeword, [string, number]>; // Compound key: [name, variant]
   gemwords!: Table<Gemword, [string, number]>; // Compound key: [name, variant]
-  affixes!: EntityTable<AffixPattern, 'pattern'>;
   htmUniqueItems!: EntityTable<HtmUniqueItem, 'id'>;
   mythicalUniques!: EntityTable<MythicalUnique, 'id'>;
   ascendancies!: EntityTable<Ascendancy, 'name'>;
@@ -40,6 +38,22 @@ class AppDatabase extends Dexie {
       runewords: '[name+variant], name, sockets, reqLevel, sortKey',
       gemwords: '[name+variant], name, sockets, reqLevel, sortKey',
       affixes: 'pattern',
+      htmUniqueItems: '++id, name, page, category, reqLevel',
+      mythicalUniques: '++id, name, category, reqLevel',
+      ascendancies: 'name',
+      metadata: 'key',
+    });
+
+    // v14: drop the unused affixes table
+    this.version(14).stores({
+      gems: 'name, type, quality, color',
+      esrRunes: 'name, order, tier, color',
+      lodRunes: 'name, order',
+      kanjiRunes: 'name',
+      crystals: 'name, type, quality, color',
+      runewords: '[name+variant], name, sockets, reqLevel, sortKey',
+      gemwords: '[name+variant], name, sockets, reqLevel, sortKey',
+      affixes: null,
       htmUniqueItems: '++id, name, page, category, reqLevel',
       mythicalUniques: '++id, name, category, reqLevel',
       ascendancies: 'name',

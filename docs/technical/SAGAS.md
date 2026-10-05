@@ -37,9 +37,7 @@ startupCheck → startupNeedsFetch / startupUseCached
                                     ↓
                              parseDataSuccess
                                     ↓
-                             storeDataSuccess
-                                    ↓
-                         extractAffixesSuccess → App Ready
+                             storeDataSuccess → App Ready
 ```
 
 **Benefits:** Clear separation, independent error handling per stage, UI can react to intermediate states (loading, parsing, storing).

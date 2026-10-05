@@ -1,7 +1,6 @@
 export { db } from './db';
 export type {
   Affix,
-  AffixPattern,
   SocketableBonuses,
   Gem,
   GemType,

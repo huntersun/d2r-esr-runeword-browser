@@ -74,10 +74,7 @@ const dataSyncSlice = createSlice({
     parseDataSuccess(_state, _action: PayloadAction<ParsedData>) {
       // Saga listens for this, no state change
     },
-    storeDataSuccess(_state) {
-      // Saga listens for this to trigger affix extraction, no state change yet
-    },
-    extractAffixesSuccess(state) {
+    storeDataSuccess(state) {
       state.requestState = RequestState.SUCCESS;
       state.isInitialized = true;
       state.isUsingCachedData = false;
@@ -95,10 +92,6 @@ const dataSyncSlice = createSlice({
     storeDataError(state, action: PayloadAction<string>) {
       state.requestState = RequestState.ERROR;
       state.error = `Failed to store data: ${action.payload}`;
-    },
-    extractAffixesError(state, action: PayloadAction<string>) {
-      state.requestState = RequestState.ERROR;
-      state.error = `Failed to extract affixes: ${action.payload}`;
     },
     fatalError(state, action: PayloadAction<string>) {
       state.requestState = RequestState.ERROR;
@@ -120,8 +113,6 @@ export const {
   parseDataError,
   storeDataSuccess,
   storeDataError,
-  extractAffixesSuccess,
-  extractAffixesError,
   fatalError,
 } = dataSyncSlice.actions;
 

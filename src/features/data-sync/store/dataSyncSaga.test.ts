@@ -68,15 +68,9 @@ const DATASETS = [
   'ascendancies',
 ] as const;
 
-const NO_AFFIXES = { weaponsGloves: [], helmsBoots: [], armorShieldsBelts: [] };
-
-// Minimal stand-in rows: a primary key ([name+variant] or name; ++id tables
-// auto-assign) plus empty affix lists so the affix extraction step succeeds.
+// Minimal stand-in rows: only a primary key ([name+variant] or name; ++id tables auto-assign)
 function fakeRows(prefix: string, count: number): never[] {
-  return Array.from(
-    { length: count },
-    (_, i) => ({ name: `${prefix}${String(i)}`, variant: 1, bonuses: NO_AFFIXES, columnAffixes: NO_AFFIXES }) as never
-  );
+  return Array.from({ length: count }, (_, i) => ({ name: `${prefix}${String(i)}`, variant: 1 }) as never);
 }
 
 function fullParsedData(count = 10): ParsedData {

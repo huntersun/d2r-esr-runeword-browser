@@ -16,7 +16,6 @@ class AppDatabase extends Dexie {
   crystals!: EntityTable<Crystal, 'name'>;
   runewords!: Table<Runeword, [string, number]>;  // Compound key: [name, variant]
   gemwords!: Table<Gemword, [string, number]>;    // Compound key: [name, variant]
-  affixes!: EntityTable<AffixPattern, 'pattern'>;
   htmUniqueItems!: EntityTable<HtmUniqueItem, 'id'>;
   mythicalUniques!: EntityTable<MythicalUnique, 'id'>;
   ascendancies!: EntityTable<Ascendancy, 'name'>;
@@ -25,7 +24,8 @@ class AppDatabase extends Dexie {
   constructor() {
     super('d2r-esr-runeword-browser');
 
-    this.version(13).stores({
+    // version(13) (with affixes) is still declared before this so existing databases upgrade
+    this.version(14).stores({
       gems: 'name, type, quality, color',
       esrRunes: 'name, order, tier, color',
       lodRunes: 'name, order',
@@ -33,7 +33,7 @@ class AppDatabase extends Dexie {
       crystals: 'name, type, quality, color',
       runewords: '[name+variant], name, sockets, reqLevel, sortKey',
       gemwords: '[name+variant], name, sockets, reqLevel, sortKey',
-      affixes: 'pattern',
+      affixes: null, // v14: unused affixes table dropped
       htmUniqueItems: '++id, name, page, category, reqLevel',
       mythicalUniques: '++id, name, category, reqLevel',
       ascendancies: 'name',
@@ -152,15 +152,6 @@ Stores all gemword definitions (gem-based socket recipes, analogous to runewords
 | columnAffixes | SocketableBonuses | No | Per-column bonuses (weapon/helm/armor) |
 | jewelInfo | string? | No | Optional jewel requirement, e.g. "Jewel" (America, Canada, China) |
 
-### affixes
-
-Stores normalized affix patterns for filtering.
-
-| Column | Type | Index | Description |
-|--------|------|-------|-------------|
-| pattern | string | Primary | Normalized "+# Defense" |
-| valueType | AffixValueType | No | 'flat', 'percent', 'range', 'none' |
-
 ### htmUniqueItems
 
 Stores unique items parsed from HTM pages.
@@ -203,11 +194,6 @@ interface Affix {
   readonly rawText: string; // one affix; hard-wrapped <br> lines in the source are re-joined with a space
   readonly pattern: string;
   readonly value: number | readonly [number, number] | null;
-  readonly valueType: 'flat' | 'percent' | 'range' | 'none';
-}
-
-interface AffixPattern {
-  readonly pattern: string;
   readonly valueType: 'flat' | 'percent' | 'range' | 'none';
 }
 
@@ -309,7 +295,6 @@ interface Metadata {
 - Runewords reference runes by name (string lookup across ESR/LoD/Kanji tables)
 - Runewords can also reference gems by name
 - Affixes are embedded in all socketable items via SocketableBonuses
-- The `affixes` table stores unique patterns for potential affix filtering
 - HTM unique items are independent and categorized by page/category
 - Each socketable category has its own table for clean separation
 

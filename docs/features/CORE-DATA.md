@@ -100,8 +100,7 @@ startupCheck
       → fetchHtmlSuccess (5 HTML files fetched in parallel)
         → parseDataSuccess (all parsers run)
           → storeDataSuccess (IndexedDB bulk writes)
-            → extractAffixesSuccess (affix patterns extracted)
-              → App Ready
+            → App Ready
 ```
 
 Each stage dispatches a success action that triggers the next stage, with independent error handling at each step.
@@ -111,6 +110,7 @@ Each stage dispatches a success action that triggers the next stage, with indepe
 | Scenario | Cached Data? | Behavior |
 |----------|--------------|----------|
 | Network error | Yes | Show warning (`networkWarning`), use cached data |
+| Force refresh fails | Yes | Warning + toast ("Refresh failed: …"), keep cached data |
 | Network error | No | Show fatal error with retry button |
 | Version matches | Yes | Use cached data immediately |
 | Version differs | Yes/No | Fetch fresh data from remote |
@@ -149,17 +149,16 @@ When a full parse is triggered:
    e. Extract Crystals (12 types x 3 tiers = 36 items)
 3. Parse runewords.htm (multi-variant, per-column bonuses, gems)
 4. Parse unique item pages (weapons, armors, others)
-5. Normalize all affixes and extract patterns
-6. Store everything in IndexedDB (separate tables per category)
-7. Store version string and timestamp in metadata
-8. Signal app ready (extractAffixesSuccess)
+5. Store everything in IndexedDB (separate tables per category)
+6. Store version string and timestamp in metadata
+7. Signal app ready (storeDataSuccess)
 ```
 
 ## Database
 
-Single IndexedDB database: **`d2r-esr-runeword-browser`** (version 10)
+Single IndexedDB database: **`d2r-esr-runeword-browser`** (version 14)
 
-Tables: `gems`, `esrRunes`, `lodRunes`, `kanjiRunes`, `crystals`, `runewords`, `affixes`, `htmUniqueItems`, `metadata`
+Tables: `gems`, `esrRunes`, `lodRunes`, `kanjiRunes`, `crystals`, `runewords`, `gemwords`, `htmUniqueItems`, `mythicalUniques`, `ascendancies`, `metadata`
 
 See [DATA-MODELS.md](../technical/DATA-MODELS.md) for the full schema.
 
