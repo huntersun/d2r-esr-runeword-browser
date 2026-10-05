@@ -1,11 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { FILTER_URL_PARAM_KEYS } from '@/core/utils/filterUrlParams';
 import { initializeFromUrl } from '../store';
-
-const URL_PARAM_KEYS = {
-  SEARCH: 'search',
-} as const;
 
 /**
  * Initializes ascendancies filter state from URL query parameters (one-time on mount).
@@ -21,7 +18,7 @@ export function useUrlInitialize(): void {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    const urlSearch = searchParams.get(URL_PARAM_KEYS.SEARCH);
+    const urlSearch = searchParams.get(FILTER_URL_PARAM_KEYS.SEARCH);
 
     if (urlSearch !== null) {
       dispatch(initializeFromUrl({ searchText: urlSearch }));

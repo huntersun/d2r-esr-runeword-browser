@@ -1,13 +1,7 @@
 import { useSelector } from 'react-redux';
-import { selectSearchText, selectEnabledCategories, selectOnlyHighestQuality, type EnabledCategories } from '../store/socketablesSlice';
-
-const URL_PARAM_KEYS = {
-  SEARCH: 'search',
-  CATEGORIES: 'categories',
-  ONLY_HIGHEST: 'onlyHighest',
-} as const;
-
-const ALL_CATEGORIES: (keyof EnabledCategories)[] = ['gems', 'esrRunes', 'lodRunes', 'kanjiRunes', 'crystals'];
+import { FILTER_URL_PARAM_KEYS, appendSelectionParam, buildShareUrl } from '@/core/utils/filterUrlParams';
+import { selectSearchText, selectEnabledCategories, selectOnlyHighestQuality } from '../store/socketablesSlice';
+import { SOCKETABLE_URL_PARAM_KEYS } from './useUrlInitialize';
 
 /**
  * Returns a function that generates a shareable URL with current filter state.
@@ -21,26 +15,18 @@ export function useShareUrl(): () => string {
   return () => {
     const params = new URLSearchParams();
 
-    // Search: add if not empty
     if (searchText) {
-      params.set(URL_PARAM_KEYS.SEARCH, searchText);
+      params.set(FILTER_URL_PARAM_KEYS.SEARCH, searchText);
     }
 
-    // Categories: only add if NOT all enabled
-    const allEnabled = ALL_CATEGORIES.every((cat) => enabledCategories[cat]);
-    if (!allEnabled) {
-      const enabledList = ALL_CATEGORIES.filter((cat) => enabledCategories[cat]);
-      if (enabledList.length > 0) {
-        params.set(URL_PARAM_KEYS.CATEGORIES, enabledList.join(','));
-      }
-    }
+    // Categories: only listed when NOT all enabled
+    appendSelectionParam(params, SOCKETABLE_URL_PARAM_KEYS.CATEGORIES, { ...enabledCategories });
 
     // Only highest quality: add if disabled (default is true)
     if (!onlyHighestQuality) {
-      params.set(URL_PARAM_KEYS.ONLY_HIGHEST, 'false');
+      params.set(SOCKETABLE_URL_PARAM_KEYS.ONLY_HIGHEST, 'false');
     }
 
-    const base = `${window.location.origin}${import.meta.env.BASE_URL}socketables`;
-    return params.toString() ? `${base}?${params.toString()}` : base;
+    return buildShareUrl('socketables', params);
   };
 }

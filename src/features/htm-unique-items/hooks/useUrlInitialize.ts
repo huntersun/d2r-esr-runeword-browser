@@ -1,11 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { FILTER_URL_PARAM_KEYS, MAX_REQ_LEVEL_RANGE, decodeCategoryListParam, parseBoundedIntParam } from '@/core/utils/filterUrlParams';
 import { setSearchText, setMaxReqLevel, setSelectedCategories, setIncludeCouponItems } from '../store';
 
-const URL_PARAM_KEYS = {
-  SEARCH: 'search',
-  MAXLVL: 'maxlvl',
+export const HTM_URL_PARAM_KEYS = {
   CATS: 'cats',
   COUPON: 'coupon',
 } as const;
@@ -24,10 +23,10 @@ export function useUrlInitialize(): void {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    const urlSearch = searchParams.get(URL_PARAM_KEYS.SEARCH);
-    const urlMaxLvl = searchParams.get(URL_PARAM_KEYS.MAXLVL);
-    const urlCats = searchParams.get(URL_PARAM_KEYS.CATS);
-    const urlCoupon = searchParams.get(URL_PARAM_KEYS.COUPON);
+    const urlSearch = searchParams.get(FILTER_URL_PARAM_KEYS.SEARCH);
+    const urlMaxLvl = searchParams.get(FILTER_URL_PARAM_KEYS.MAXLVL);
+    const urlCats = searchParams.get(HTM_URL_PARAM_KEYS.CATS);
+    const urlCoupon = searchParams.get(HTM_URL_PARAM_KEYS.COUPON);
 
     const hasUrlParams = urlSearch !== null || urlMaxLvl !== null || urlCats !== null || urlCoupon !== null;
 
@@ -36,18 +35,14 @@ export function useUrlInitialize(): void {
         dispatch(setSearchText(urlSearch));
       }
 
-      if (urlMaxLvl !== null) {
-        const parsed = parseInt(urlMaxLvl, 10);
-        if (!isNaN(parsed) && parsed >= 1 && parsed <= 999) {
-          dispatch(setMaxReqLevel(parsed));
-        }
+      const maxReqLevel = parseBoundedIntParam(urlMaxLvl, MAX_REQ_LEVEL_RANGE);
+      if (maxReqLevel !== null) {
+        dispatch(setMaxReqLevel(maxReqLevel));
       }
 
-      if (urlCats !== null) {
-        const categories = urlCats.split(',').filter(Boolean);
-        if (categories.length > 0) {
-          dispatch(setSelectedCategories(categories));
-        }
+      const categories = decodeCategoryListParam(urlCats);
+      if (categories !== null) {
+        dispatch(setSelectedCategories(categories));
       }
 
       if (urlCoupon === '0') {

@@ -1,29 +1,19 @@
-import { useStore } from 'react-redux';
-import type { RootState } from '@/core/store/store';
+import { useSelector } from 'react-redux';
+import { FILTER_URL_PARAM_KEYS, buildShareUrl } from '@/core/utils/filterUrlParams';
 import { selectSearchText } from '../store';
-
-const URL_PARAM_KEYS = {
-  SEARCH: 'search',
-} as const;
 
 /**
  * Returns a function that generates a shareable URL with current filter state.
- * Reads state at call time via store.getState() to avoid stale closures.
+ * Used by CopyLinkButton to create links that can be shared.
  */
 export function useShareUrl(): () => string {
-  const store = useStore<RootState>();
+  const searchText = useSelector(selectSearchText);
 
   return () => {
-    const state = store.getState();
-    const searchText = selectSearchText(state);
-
     const params = new URLSearchParams();
-
     if (searchText) {
-      params.set(URL_PARAM_KEYS.SEARCH, searchText);
+      params.set(FILTER_URL_PARAM_KEYS.SEARCH, searchText);
     }
-
-    const base = `${window.location.origin}${import.meta.env.BASE_URL}ascendancies`;
-    return params.toString() ? `${base}?${params.toString()}` : base;
+    return buildShareUrl('ascendancies', params);
   };
 }

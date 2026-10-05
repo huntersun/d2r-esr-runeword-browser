@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { initializeFromUrl, type EnabledCategories } from '../store/socketablesSlice';
+import { FILTER_URL_PARAM_KEYS, decodeSelectionParam } from '@/core/utils/filterUrlParams';
+import { initializeFromUrl, SOCKETABLE_CATEGORIES } from '../store/socketablesSlice';
 
-const URL_PARAM_KEYS = {
-  SEARCH: 'search',
+export const SOCKETABLE_URL_PARAM_KEYS = {
   CATEGORIES: 'categories',
   ONLY_HIGHEST: 'onlyHighest',
 } as const;
@@ -26,27 +26,17 @@ export function useUrlInitialize(): void {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    const urlSearch = searchParams.get(URL_PARAM_KEYS.SEARCH);
-    const urlCategories = searchParams.get(URL_PARAM_KEYS.CATEGORIES);
-    const urlOnlyHighest = searchParams.get(URL_PARAM_KEYS.ONLY_HIGHEST);
+    const urlSearch = searchParams.get(FILTER_URL_PARAM_KEYS.SEARCH);
+    const urlCategories = searchParams.get(SOCKETABLE_URL_PARAM_KEYS.CATEGORIES);
+    const urlOnlyHighest = searchParams.get(SOCKETABLE_URL_PARAM_KEYS.ONLY_HIGHEST);
 
     const hasUrlParams = urlSearch !== null || urlCategories !== null || urlOnlyHighest !== null;
 
     if (hasUrlParams) {
-      const categoriesFromUrl = urlCategories ? new Set(urlCategories.split(',')) : null;
-
-      const decodedCategories: EnabledCategories = {
-        gems: categoriesFromUrl ? categoriesFromUrl.has('gems') : true,
-        esrRunes: categoriesFromUrl ? categoriesFromUrl.has('esrRunes') : true,
-        lodRunes: categoriesFromUrl ? categoriesFromUrl.has('lodRunes') : true,
-        kanjiRunes: categoriesFromUrl ? categoriesFromUrl.has('kanjiRunes') : true,
-        crystals: categoriesFromUrl ? categoriesFromUrl.has('crystals') : true,
-      };
-
       dispatch(
         initializeFromUrl({
           searchText: urlSearch ?? '',
-          enabledCategories: decodedCategories,
+          enabledCategories: decodeSelectionParam(SOCKETABLE_CATEGORIES, urlCategories),
           onlyHighestQuality: urlOnlyHighest !== null ? urlOnlyHighest !== 'false' : undefined,
         })
       );

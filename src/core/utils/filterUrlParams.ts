@@ -1,7 +1,9 @@
+import { NO_CATEGORIES_MARKER } from '@/core/constants/categoryFilter';
+
 /**
  * Shared helpers for encoding/decoding recipe filter state in share URLs.
- * Used by the runewords and gemwords useShareUrl/useUrlInitialize hooks so the
- * param names and "absent param = everything selected" semantics stay in sync.
+ * Used by the useShareUrl/useUrlInitialize hooks of every filterable screen so
+ * the param names and "absent param = everything selected" semantics stay in sync.
  */
 export const FILTER_URL_PARAM_KEYS = {
   SEARCH: 'search',
@@ -60,13 +62,13 @@ export function appendCommonFilterParams(params: URLSearchParams, filters: Commo
  * - param present → only the listed keys are selected
  * - param absent → stored value per key (when provided), defaulting to selected
  */
-export function decodeSelectionParam(
-  allKeys: readonly string[],
+export function decodeSelectionParam<K extends string>(
+  allKeys: readonly K[],
   paramValue: string | null,
-  storedSelection?: Record<string, boolean>
-): Record<string, boolean> {
-  const selectedSet = paramValue ? new Set(paramValue.split(',')) : null;
-  const selection: Record<string, boolean> = {};
+  storedSelection?: Partial<Record<K, boolean>>
+): Record<K, boolean> {
+  const selectedSet: ReadonlySet<string> | null = paramValue ? new Set(paramValue.split(',')) : null;
+  const selection = {} as Record<K, boolean>;
   for (const key of allKeys) {
     selection[key] = selectedSet ? selectedSet.has(key) : (storedSelection?.[key] ?? true);
   }
@@ -88,4 +90,21 @@ export function buildShareUrl(routePath: string, params: URLSearchParams): strin
   const base = `${window.location.origin}${path}`;
   const query = params.toString();
   return query ? `${base}?${query}` : base;
+}
+
+/**
+ * Adds a category list param (unique item screens). Omitted when all
+ * categories (`[]`) or none (`[NO_CATEGORIES_MARKER]`) are selected.
+ */
+export function appendCategoryListParam(params: URLSearchParams, key: string, selectedCategories: readonly string[]): void {
+  if (selectedCategories.length > 0 && selectedCategories[0] !== NO_CATEGORIES_MARKER) {
+    params.set(key, selectedCategories.join(','));
+  }
+}
+
+/** Decodes a category list param; null when absent or empty (keep the current selection). */
+export function decodeCategoryListParam(paramValue: string | null): string[] | null {
+  if (paramValue === null) return null;
+  const categories = paramValue.split(',').filter(Boolean);
+  return categories.length > 0 ? categories : null;
 }

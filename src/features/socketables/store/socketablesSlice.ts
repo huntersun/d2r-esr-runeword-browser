@@ -10,6 +10,9 @@ export interface EnabledCategories {
   readonly crystals: boolean;
 }
 
+/** All socketable categories, in display/URL order. */
+export const SOCKETABLE_CATEGORIES: readonly (keyof EnabledCategories)[] = ['gems', 'esrRunes', 'lodRunes', 'kanjiRunes', 'crystals'];
+
 interface SocketablesState {
   readonly enabledCategories: EnabledCategories;
   readonly searchText: string;

@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import { NO_CATEGORIES_MARKER } from '@/core/constants/categoryFilter';
 import {
   FILTER_URL_PARAM_KEYS,
   MAX_REQ_LEVEL_RANGE,
   SOCKET_COUNT_RANGE,
+  appendCategoryListParam,
   appendCommonFilterParams,
   appendSelectionParam,
+  buildShareUrl,
+  decodeCategoryListParam,
   decodeSelectionParam,
   parseBoundedIntParam,
 } from './filterUrlParams';
@@ -89,5 +93,45 @@ describe('parseBoundedIntParam', () => {
     expect(parseBoundedIntParam('abc', SOCKET_COUNT_RANGE)).toBeNull();
     expect(parseBoundedIntParam('0', SOCKET_COUNT_RANGE)).toBeNull();
     expect(parseBoundedIntParam('7', SOCKET_COUNT_RANGE)).toBeNull();
+  });
+});
+
+describe('appendCategoryListParam / decodeCategoryListParam', () => {
+  it('lists a partial selection and round-trips it', () => {
+    const params = new URLSearchParams();
+    appendCategoryListParam(params, 'cats', ['Ring', 'Amulet']);
+
+    expect(params.get('cats')).toBe('Ring,Amulet');
+    expect(decodeCategoryListParam(params.get('cats'))).toEqual(['Ring', 'Amulet']);
+  });
+
+  it('omits the param for the all and none selections', () => {
+    const params = new URLSearchParams();
+    appendCategoryListParam(params, 'cats', []);
+    appendCategoryListParam(params, 'other', [NO_CATEGORIES_MARKER]);
+
+    expect(params.toString()).toBe('');
+  });
+
+  it('decodes absent or empty params to null', () => {
+    expect(decodeCategoryListParam(null)).toBeNull();
+    expect(decodeCategoryListParam('')).toBeNull();
+    expect(decodeCategoryListParam(',,')).toBeNull();
+    expect(decodeCategoryListParam('Ring,,Amulet')).toEqual(['Ring', 'Amulet']);
+  });
+});
+
+describe('buildShareUrl', () => {
+  const base = `${window.location.origin}${import.meta.env.BASE_URL}`;
+
+  it('appends the route path and query to the app base URL', () => {
+    expect(buildShareUrl('uniques', new URLSearchParams({ search: 'ring', cats: 'Ring,Amulet' }))).toBe(
+      `${base}uniques?search=ring&cats=Ring%2CAmulet`
+    );
+  });
+
+  it('omits the query string when there are no params, and the route for the index', () => {
+    expect(buildShareUrl('mythicals', new URLSearchParams())).toBe(`${base}mythicals`);
+    expect(buildShareUrl('', new URLSearchParams())).toBe(base);
   });
 });

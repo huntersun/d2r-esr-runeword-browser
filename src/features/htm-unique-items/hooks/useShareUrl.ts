@@ -1,16 +1,11 @@
 import { useSelector } from 'react-redux';
+import { FILTER_URL_PARAM_KEYS, appendCategoryListParam, buildShareUrl } from '@/core/utils/filterUrlParams';
 import { selectSearchText, selectMaxReqLevel, selectSelectedCategoriesRaw, selectIncludeCouponItems } from '../store';
-import { NO_CATEGORIES_MARKER } from '@/core/constants/categoryFilter';
-
-const URL_PARAM_KEYS = {
-  SEARCH: 'search',
-  MAXLVL: 'maxlvl',
-  CATS: 'cats',
-  COUPON: 'coupon',
-} as const;
+import { HTM_URL_PARAM_KEYS } from './useUrlInitialize';
 
 /**
  * Returns a function that generates a shareable URL with current filter state.
+ * Used by CopyLinkButton to create links that can be shared.
  */
 export function useShareUrl(): () => string {
   const searchText = useSelector(selectSearchText);
@@ -22,22 +17,19 @@ export function useShareUrl(): () => string {
     const params = new URLSearchParams();
 
     if (searchText) {
-      params.set(URL_PARAM_KEYS.SEARCH, searchText);
+      params.set(FILTER_URL_PARAM_KEYS.SEARCH, searchText);
     }
 
     if (maxReqLevel !== null) {
-      params.set(URL_PARAM_KEYS.MAXLVL, String(maxReqLevel));
+      params.set(FILTER_URL_PARAM_KEYS.MAXLVL, String(maxReqLevel));
     }
 
-    if (selectedCategories.length > 0 && selectedCategories[0] !== NO_CATEGORIES_MARKER) {
-      params.set(URL_PARAM_KEYS.CATS, selectedCategories.join(','));
-    }
+    appendCategoryListParam(params, HTM_URL_PARAM_KEYS.CATS, selectedCategories);
 
     if (!includeCouponItems) {
-      params.set(URL_PARAM_KEYS.COUPON, '0');
+      params.set(HTM_URL_PARAM_KEYS.COUPON, '0');
     }
 
-    const base = `${window.location.origin}${import.meta.env.BASE_URL}uniques`;
-    return params.toString() ? `${base}?${params.toString()}` : base;
+    return buildShareUrl('uniques', params);
   };
 }

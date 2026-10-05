@@ -1,36 +1,22 @@
-import { useStore } from 'react-redux';
-import type { RootState } from '@/core/store/store';
+import { useSelector } from 'react-redux';
+import { FILTER_URL_PARAM_KEYS, appendCategoryListParam, buildShareUrl } from '@/core/utils/filterUrlParams';
 import { selectSearchText, selectSelectedCategoriesRaw } from '../store';
-import { NO_CATEGORIES_MARKER } from '@/core/constants/categoryFilter';
-
-const URL_PARAM_KEYS = {
-  SEARCH: 'search',
-  CATS: 'cats',
-} as const;
+import { MYTHICAL_URL_PARAM_KEYS } from './useUrlInitialize';
 
 /**
  * Returns a function that generates a shareable URL with current filter state.
- * Reads state at call time via store.getState() to avoid stale closures.
+ * Used by CopyLinkButton to create links that can be shared.
  */
 export function useShareUrl(): () => string {
-  const store = useStore<RootState>();
+  const searchText = useSelector(selectSearchText);
+  const selectedCategories = useSelector(selectSelectedCategoriesRaw);
 
   return () => {
-    const state = store.getState();
-    const searchText = selectSearchText(state);
-    const selectedCategories = selectSelectedCategoriesRaw(state);
-
     const params = new URLSearchParams();
-
     if (searchText) {
-      params.set(URL_PARAM_KEYS.SEARCH, searchText);
+      params.set(FILTER_URL_PARAM_KEYS.SEARCH, searchText);
     }
-
-    if (selectedCategories.length > 0 && selectedCategories[0] !== NO_CATEGORIES_MARKER) {
-      params.set(URL_PARAM_KEYS.CATS, selectedCategories.join(','));
-    }
-
-    const base = `${window.location.origin}${import.meta.env.BASE_URL}mythicals`;
-    return params.toString() ? `${base}?${params.toString()}` : base;
+    appendCategoryListParam(params, MYTHICAL_URL_PARAM_KEYS.CATS, selectedCategories);
+    return buildShareUrl('mythicals', params);
   };
 }

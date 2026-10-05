@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { FILTER_URL_PARAM_KEYS, decodeCategoryListParam } from '@/core/utils/filterUrlParams';
 import { setSearchText, setSelectedCategories } from '../store';
 
-const URL_PARAM_KEYS = {
-  SEARCH: 'search',
+export const MYTHICAL_URL_PARAM_KEYS = {
   CATS: 'cats',
 } as const;
 
@@ -22,8 +22,8 @@ export function useUrlInitialize(): void {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    const urlSearch = searchParams.get(URL_PARAM_KEYS.SEARCH);
-    const urlCats = searchParams.get(URL_PARAM_KEYS.CATS);
+    const urlSearch = searchParams.get(FILTER_URL_PARAM_KEYS.SEARCH);
+    const urlCats = searchParams.get(MYTHICAL_URL_PARAM_KEYS.CATS);
 
     const hasUrlParams = urlSearch !== null || urlCats !== null;
 
@@ -32,11 +32,9 @@ export function useUrlInitialize(): void {
         dispatch(setSearchText(urlSearch));
       }
 
-      if (urlCats !== null) {
-        const categories = urlCats.split(',').filter(Boolean);
-        if (categories.length > 0) {
-          dispatch(setSelectedCategories(categories));
-        }
+      const categories = decodeCategoryListParam(urlCats);
+      if (categories !== null) {
+        dispatch(setSelectedCategories(categories));
       }
 
       // Clean the URL after initialization
