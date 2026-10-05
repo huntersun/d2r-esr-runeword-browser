@@ -8,9 +8,7 @@ import {
   matchesRunes,
   matchesTierPoints,
   buildRuneCategoryMap,
-  buildRunePriorityMap,
   buildRuneBonusMap,
-  getRunewordSortKey,
   getRuneBonusesText,
   expandRunewordsByColumn,
   type RuneBonusMap,
@@ -283,73 +281,6 @@ describe('matchesRunes', () => {
     const runeCategoryMap: RuneCategoryMap = new Map();
     const selectedRunes = { 'lodRunes:El Rune': true };
     expect(matchesRunes(runeword, selectedRunes, runeCategoryMap)).toBe(false);
-  });
-});
-
-describe('buildRunePriorityMap', () => {
-  it('should assign ESR tier 1 rune priority 100', () => {
-    const esrRunes = [createEsrRune('I Rune', 1)];
-    const map = buildRunePriorityMap(esrRunes, [], []);
-    expect(map.get('I Rune')).toBe(100);
-  });
-
-  it('should assign ESR tier 7 rune priority 700', () => {
-    const esrRunes = [createEsrRune('Null Rune', 7)];
-    const map = buildRunePriorityMap(esrRunes, [], []);
-    expect(map.get('Null Rune')).toBe(700);
-  });
-
-  it('should assign Kanji rune priority 800', () => {
-    const kanjiRunes = [createKanjiRune('Moon Rune')];
-    const map = buildRunePriorityMap([], kanjiRunes, []);
-    expect(map.get('Moon Rune')).toBe(800);
-  });
-
-  it('should assign LoD rune El (order 1) priority 901', () => {
-    const lodRunes = [createLodRune('El Rune', 1)];
-    const map = buildRunePriorityMap([], [], lodRunes);
-    expect(map.get('El Rune')).toBe(901);
-  });
-
-  it('should assign LoD rune Zod (order 33) priority 933', () => {
-    const lodRunes = [createLodRune('Zod Rune', 33, 3)];
-    const map = buildRunePriorityMap([], [], lodRunes);
-    expect(map.get('Zod Rune')).toBe(933);
-  });
-
-  it('should return undefined for unknown rune', () => {
-    const map = buildRunePriorityMap([], [], []);
-    expect(map.get('Unknown Rune')).toBeUndefined();
-  });
-});
-
-describe('getRunewordSortKey', () => {
-  it('should return 0 for runeword with empty rune list', () => {
-    const runeword = createRuneword({ runes: [] });
-    const priorityMap = new Map<string, number>();
-    expect(getRunewordSortKey(runeword, priorityMap)).toBe(0);
-  });
-
-  it('should return single rune priority', () => {
-    const runeword = createRuneword({ runes: ['El Rune'] });
-    const priorityMap = new Map([['El Rune', 901]]);
-    expect(getRunewordSortKey(runeword, priorityMap)).toBe(901);
-  });
-
-  it('should return max priority among multiple runes', () => {
-    const runeword = createRuneword({ runes: ['I Rune', 'Zod Rune', 'Moon Rune'] });
-    const priorityMap = new Map([
-      ['I Rune', 100],
-      ['Zod Rune', 933],
-      ['Moon Rune', 800],
-    ]);
-    expect(getRunewordSortKey(runeword, priorityMap)).toBe(933);
-  });
-
-  it('should return 0 for runes not in priority map', () => {
-    const runeword = createRuneword({ runes: ['Unknown Rune'] });
-    const priorityMap = new Map<string, number>();
-    expect(getRunewordSortKey(runeword, priorityMap)).toBe(0);
   });
 });
 

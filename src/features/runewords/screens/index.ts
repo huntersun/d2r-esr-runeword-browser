@@ -1,1 +1,0 @@
-export { RunewordsScreen } from './RunewordsScreen';

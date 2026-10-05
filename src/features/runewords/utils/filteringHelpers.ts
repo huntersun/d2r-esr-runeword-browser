@@ -4,7 +4,6 @@ import { getRelevantCategories, getItemCategory } from '@/core/utils/itemCategor
 export type RuneBonusMap = Map<string, SocketableBonuses>;
 export type GemBonusMap = Map<string, SocketableBonuses>;
 export type RuneCategoryMap = Map<string, string[]>;
-export type RunePriorityMap = Map<string, number>;
 
 /**
  * Build searchable text from rune bonuses for a runeword.
@@ -186,44 +185,6 @@ export function matchesTierPoints(runeword: Runeword, maxTierPoints: Record<stri
     }
   }
   return true;
-}
-
-/**
- * Build a priority map for sorting runewords by their highest rune.
- * Priority order: ESR (tier 1-7) → Kanji → LoD (order 1-33)
- * Lower priority = appears first in the list
- */
-export function buildRunePriorityMap(
-  esrRunes: readonly EsrRune[],
-  kanjiRunes: readonly KanjiRune[],
-  lodRunes: readonly LodRune[]
-): RunePriorityMap {
-  const priorityMap = new Map<string, number>();
-
-  // ESR runes: priority 100-799 (tier * 100)
-  for (const rune of esrRunes) {
-    priorityMap.set(rune.name, rune.tier * 100);
-  }
-
-  // Kanji runes: priority 800 (all equal)
-  for (const rune of kanjiRunes) {
-    priorityMap.set(rune.name, 800);
-  }
-
-  // LoD runes: priority 900 + order (901-933)
-  for (const rune of lodRunes) {
-    priorityMap.set(rune.name, 900 + rune.order);
-  }
-
-  return priorityMap;
-}
-
-/**
- * Get the sort key for a runeword based on its highest priority rune.
- */
-export function getRunewordSortKey(runeword: Runeword, priorityMap: RunePriorityMap): number {
-  if (runeword.runes.length === 0) return 0;
-  return Math.max(...runeword.runes.map((r) => priorityMap.get(r) ?? 0));
 }
 
 /**
