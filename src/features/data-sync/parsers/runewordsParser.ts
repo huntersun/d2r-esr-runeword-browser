@@ -17,7 +17,7 @@ export type RuneReqLevelLookup = Map<string, number>;
 export type RunePriorityLookup = Map<string, number>;
 
 // Offset added to LoD runewords to sort them after ESR/Kanji
-const LOD_SORT_KEY_OFFSET = 10000;
+export const LOD_SORT_KEY_OFFSET = 10000;
 
 interface RawRuneword {
   name: string;

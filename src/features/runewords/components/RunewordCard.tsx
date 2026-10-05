@@ -7,6 +7,7 @@ import { FavoriteButton } from '@/core/components/FavoriteButton';
 import { useRuneBonuses } from '../hooks/useRuneBonuses';
 import { getRelevantCategories, getCategoryLabel, type BonusCategory } from '@/core/utils/itemCategoryMapping';
 import { isGemName } from '@/features/data-sync/parsers/gemsParser';
+import { LOD_SORT_KEY_OFFSET } from '@/features/data-sync/parsers/runewordsParser';
 import type { Runeword } from '@/core/db/models';
 
 interface RunewordCardProps {
@@ -16,9 +17,6 @@ interface RunewordCardProps {
   readonly favoritePending?: boolean;
   readonly onToggleFavorite?: (runeword: Runeword) => void;
 }
-
-// sortKey >= 10000 means LoD runeword (see runewordsParser.ts LOD_SORT_KEY_OFFSET)
-const LOD_SORT_KEY_OFFSET = 10000;
 
 export function RunewordCard({
   runeword,
@@ -65,7 +63,7 @@ export function RunewordCard({
     <Card className="h-full">
       <CardHeader className="pb-0">
         <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-lg text-amber-700 dark:text-amber-400">{name}</CardTitle>
+          <CardTitle className="min-w-0 text-lg text-amber-700 dark:text-amber-400">{name}</CardTitle>
           <div className="flex shrink-0 items-center gap-1">
             {onToggleFavorite && (
               <FavoriteButton
