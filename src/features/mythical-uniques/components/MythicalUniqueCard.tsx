@@ -28,8 +28,8 @@ export function MythicalUniqueCard({ item }: MythicalUniqueCardProps) {
     <Card className="h-full">
       <CardHeader className="pb-0">
         <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-lg text-amber-700 dark:text-amber-400">{item.name}</CardTitle>
-          <div className="flex gap-1">
+          <CardTitle className="min-w-0 break-words text-lg text-amber-700 dark:text-amber-400">{item.name}</CardTitle>
+          <div className="flex shrink-0 flex-wrap justify-end gap-1">
             <Badge variant="secondary">{getCategoryDisplayName(item.category)}</Badge>
             <Badge variant="outline">Lvl {item.reqLevel}</Badge>
           </div>

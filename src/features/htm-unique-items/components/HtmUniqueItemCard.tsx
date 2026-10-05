@@ -22,8 +22,8 @@ export function HtmUniqueItemCard({
     <Card className="h-full">
       <CardHeader className="pb-0">
         <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-lg text-amber-700 dark:text-amber-400">{item.name}</CardTitle>
-          <div className="flex shrink-0 items-center gap-1">
+          <CardTitle className="min-w-0 break-words text-lg text-amber-700 dark:text-amber-400">{item.name}</CardTitle>
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">
             {onToggleFavorite && (
               <FavoriteButton
                 isFavorite={isFavorite}
@@ -48,12 +48,6 @@ export function HtmUniqueItemCard({
       </CardHeader>
 
       <CardContent className="space-y-3">
-        {/* Item level - temporarily hidden
-        <div className="text-sm">
-          <span className="text-muted-foreground">iLvl:</span> {item.itemLevel}
-        </div>
-        */}
-
         {/* Properties */}
         {item.properties.length > 0 && (
           <div className="text-center">
