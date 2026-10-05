@@ -5,7 +5,8 @@ import { NO_CATEGORIES_MARKER } from '@/core/constants/categoryFilter';
 
 /**
  * State for mythical uniques feature.
- * selectedCategories: Empty array means "all categories selected" (no filtering).
+ * selectedCategories: Empty array means "all categories selected" (no filtering);
+ * [NO_CATEGORIES_MARKER] means "no categories selected".
  */
 interface MythicalUniquesState {
   readonly searchText: string;
@@ -32,21 +33,22 @@ const mythicalUniquesSlice = createSlice({
       }>
     ) {
       const { category, allCategories } = action.payload;
-      const currentSet = new Set(state.selectedCategories);
+      const isNoneMarker = state.selectedCategories.length === 1 && state.selectedCategories[0] === NO_CATEGORIES_MARKER;
+      // [] = all selected, [NO_CATEGORIES_MARKER] = none selected
+      const currentSet = new Set(state.selectedCategories.length === 0 ? allCategories : isNoneMarker ? [] : state.selectedCategories);
 
-      if (currentSet.size === 0) {
-        // All selected -> initialize with all except the toggled one
-        state.selectedCategories = allCategories.filter((c) => c !== category);
-      } else if (currentSet.has(category)) {
+      if (currentSet.has(category)) {
         currentSet.delete(category);
-        state.selectedCategories = Array.from(currentSet);
       } else {
         currentSet.add(category);
-        if (currentSet.size === allCategories.length) {
-          state.selectedCategories = [];
-        } else {
-          state.selectedCategories = Array.from(currentSet);
-        }
+      }
+
+      if (currentSet.size === allCategories.length) {
+        state.selectedCategories = [];
+      } else if (currentSet.size === 0) {
+        state.selectedCategories = [NO_CATEGORIES_MARKER];
+      } else {
+        state.selectedCategories = Array.from(currentSet);
       }
     },
     selectAllCategories(state) {
