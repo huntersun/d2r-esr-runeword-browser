@@ -13,12 +13,15 @@ Sagas are registered dynamically to avoid circular dependencies between core and
 ```
 sagaRegistry (core/store/sagaRegistry.ts)
     │
-    └── dataSyncSaga (data-sync feature)
+    ├── dataSyncSaga  (data-sync feature)
+    ├── authSaga      (auth feature, Supabase only)
+    ├── buildsSaga    (builds feature, Supabase only)
+    └── favoritesSaga (favorites feature, Supabase only)
 ```
 
 - `registerSaga(saga)` - Register a feature saga; queued before startup, started immediately after (each saga starts exactly once)
 - `runSagas()` - Start saga middleware and run all queued sagas; sagas registered later (lazy-loaded chunks) start on registration
-- Feature sagas are registered in `main.tsx` inside `startDataSync()`, which dynamically imports the data-sync module after the React root renders (keeps the heavy saga/parser code out of the entry chunk; guarded by `src/mainStartup.test.ts`)
+- Feature sagas are registered in `src/core/startup.ts` by `startDataSync()`, `startAuth()`, `startBuilds()` and `startFavorites()`, which `main.tsx` calls after the React root renders. Each dynamically imports its feature module (keeps the heavy saga/parser code out of the entry chunk; guarded by `src/mainStartup.test.ts`); the three Supabase-backed ones are no-ops when Supabase is not configured
 
 ### Feature Saga Structure
 
@@ -47,14 +50,18 @@ startupCheck → startupNeedsFetch / startupUseCached
 Use `all()` for independent operations (multiple fetches, database writes):
 
 ```typescript
-// Fetch all HTML files in parallel
-const [gemsHtml, runewordsHtml, uniqueWeaponsHtml, uniqueArmorsHtml, uniqueOthersHtml] = yield all([
-  call(fetchGemsHtml),
-  call(fetchRunewordsHtml),
-  call(fetchUniqueWeaponsHtml),
-  call(fetchUniqueArmorsHtml),
-  call(fetchUniqueOthersHtml),
-]);
+// Fetch all HTML files in parallel (dataSyncSaga.ts)
+const [gemsHtml, gemwordsHtml, runewordsHtml, uniqueWeaponsHtml, uniqueArmorsHtml, uniqueOthersHtml, mythicalsHtml, ascendanciesHtml] =
+  yield all([
+    call(fetchGemsHtml),
+    call(fetchGemwordsHtml),
+    call(fetchRunewordsHtml),
+    call(fetchUniqueWeaponsHtml),
+    call(fetchUniqueArmorsHtml),
+    call(fetchUniqueOthersHtml),
+    call(fetchUniqueMythicalsHtml),
+    call(fetchAscendanciesHtml),
+  ]);
 ```
 
 ### Error Handling

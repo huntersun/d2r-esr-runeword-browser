@@ -234,7 +234,8 @@ export default runewordsSlice.reducer;
 ### Saga Structure
 
 ```typescript
-// features/runewords/store/runewordsSaga.ts
+// Simplified example — see features/builds/store/buildsSaga.ts or
+// features/data-sync/store/dataSyncSaga.ts for real feature sagas
 import { takeLatest, put, call } from 'redux-saga/effects';
 import { setLoading } from './runewordsSlice';
 
@@ -261,7 +262,8 @@ Use `createSelector` from reselect for memoized selectors. This prevents unneces
 2. Derive all other selectors from the base selector using `createSelector`
 
 ```typescript
-// features/runewords/store/selectors.ts
+// Selectors live next to the slice, e.g. features/runewords/store/runewordsSlice.ts
+// (shared cross-feature selectors: core/store/selectors.ts). Simplified example:
 import { createSelector } from 'reselect';
 import type { RootState } from '@/core/store';
 
@@ -323,7 +325,7 @@ const selectIsLoading = createSelector(
 | Constants | UPPER_SNAKE_CASE | `MAX_RUNES` |
 | Types/Interfaces | PascalCase | `Runeword` |
 | Slices | camelCase + Slice | `runewordsSlice.ts` |
-| Sagas | camelCase + Saga | `runewordsSaga.ts` |
+| Sagas | camelCase + Saga | `buildsSaga.ts` |
 
 ## Comments
 

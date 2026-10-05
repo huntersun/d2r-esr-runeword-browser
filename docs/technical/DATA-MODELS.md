@@ -181,7 +181,8 @@ Key-value store for app metadata.
 
 **Used Keys:**
 - `esrVersion` - Current parsed version (e.g., "3.9.07 - 18/12/2025")
-- `lastParsed` - Timestamp of last parse
+- `lastUpdated` - ISO timestamp of the last successful store
+- `appVersion` - App version that wrote the cache (an app upgrade triggers a refetch)
 
 ## TypeScript Interfaces
 
@@ -347,7 +348,7 @@ function EsrRuneList() {
 When schema changes are needed:
 
 ```typescript
-this.version(11).stores({
+this.version(15).stores({
   // Updated schema
 }).upgrade(tx => {
   // Migration logic

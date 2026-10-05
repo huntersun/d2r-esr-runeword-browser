@@ -68,7 +68,7 @@ shadcn/ui uses CSS variables for theming in `globals.css`:
 
 ### Text Size
 
-Four text size options (sm, normal, lg, xl) that adjust the base font size on `<html>`. Persisted to localStorage.
+Four text size options (small, normal, large, extralarge = 14/16/18/20px, `TEXT_SIZE_MAP`) that adjust the base font size on `<html>`. Persisted to localStorage.
 
 ### Diablo Font
 

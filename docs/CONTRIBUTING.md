@@ -36,10 +36,10 @@ This project uses an iterative documentation process where:
 - **Runewords feature** - Filters (runes, sockets, item types, req level, tier points), gems/jewels support, per-column bonuses, share URLs
 - **Socketables feature** - 5 category checkboxes, text search, only highest quality filter, share URLs
 - **Unique Items feature** - HTM-based parsing from 3 pages, category groups, coupon detection, share URLs
-- **Navigation** - 3-page architecture (/, /socketables, /uniques), settings drawer with theme, text size, Diablo font
-- **Data Models** - Single Dexie database (d2r-esr-runeword-browser) with 9 tables
+- **Navigation** - 11 routes + `*` not-found (runewords, gemwords, socketables, uniques, mythicals, ascendancies, builds pages), settings drawer with theme, text size, Diablo font
+- **Data Models** - Single Dexie database (d2r-esr-runeword-browser) with 11 tables (schema version 14)
 - **Sagas** - Redux Saga patterns (pipeline pattern, dynamic registration, parallel operations)
-- **Testing** - Vitest setup, unit tests, integration tests, database testing patterns, 6 fixture files
+- **Testing** - Vitest setup, unit tests, integration tests, database testing patterns, 9 fixture files
 
 ## Documentation Guidelines
 
@@ -47,7 +47,6 @@ This project uses an iterative documentation process where:
 - Place files in appropriate subdirectory:
   - `features/` - Feature specs, user stories
   - `technical/` - Architecture, guidelines, tech stack
-  - `general/` - Overview, decisions, general info
 - Update this file's status section after each session
 - Keep docs concise but comprehensive
 

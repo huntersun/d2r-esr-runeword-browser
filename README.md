@@ -12,10 +12,11 @@ Browse and search [Eastern Sun Resurrected](https://github.com/CelestialRayOne/E
 - **Uniques** — unique weapons, armors, and other items with category filters
 - **Mythicals** — mythical unique items
 - **Ascendancies** — all 15 ascendancies with their tier bonuses
+- **Builds** — browse, like, and share character builds (creating and liking require sign-in; only available when the optional Supabase backend is configured)
 
 Plus:
 
-- Favourite your runeword and gemword recipes
+- Favourite runewords, gemwords, and unique items (sign-in required; synced to your account, with public favourite counts)
 - Shareable URLs — copy a link to your exact filter setup
 - Works offline after the first load (data is cached locally)
 - Dark/light theme, optional Diablo font, adjustable text size

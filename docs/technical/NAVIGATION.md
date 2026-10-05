@@ -7,15 +7,23 @@ Documentation for routing, layout, and navigation patterns.
 | Path | Screen | Description |
 |------|--------|-------------|
 | `/` | RunewordsScreen | Home page - browse and filter runewords |
+| `/gemwords` | GemwordsScreen | Gem-based socket recipes with filters |
 | `/socketables` | SocketablesScreen | All socketables with category filters & search |
 | `/uniques` | HtmUniqueItemsScreen | Unique items with category & coupon filters |
+| `/mythicals` | MythicalUniquesScreen | Mythical unique items |
+| `/ascendancies` | AscendanciesScreen | Ascendancies with their tier bonuses |
+| `/builds` | BuildsScreen | Shared builds list (Supabase only) |
+| `/builds/new` | CreateBuildScreen | Create a build (sign-in required) |
+| `/builds/:buildId/edit` | EditBuildScreen | Edit an own build |
+| `/build/:buildId` | BuildDetailScreen | Build detail page |
+| `/user/:userId` | UserProfileScreen | A user's public builds |
 | `*` | NotFoundScreen | Catch-all for unknown URLs, with a link back home |
 
 ## App Shell Layout
 
 ```
 ┌───────────────────────────────────────────────────────────────────────┐
-│  D2R ESR       [Runewords] [Socketables] [Uniques]               [⚙]│
+│  D2R ESR  [Runewords] [Gemwords] [Socketables] [Uniques] [More▾] [⚙]│
 ├───────────────────────────────────────────────────────────────────────┤
 │                                                                       │
 │                         Main Content Area                             │
@@ -27,7 +35,7 @@ Documentation for routing, layout, and navigation patterns.
 ### Header Components
 
 - **Logo/Title**: "D2R ESR" or similar branding
-- **Navigation Links**: Runewords, Socketables, Uniques
+- **Navigation Links**: Runewords, Gemwords, Socketables, Uniques, Mythicals, Ascendancies, Builds (only when Supabase is configured), plus external ESR Documentation / Changelog links; items that don't fit collapse into a "More" menu (priority-plus, see `Header.tsx`)
 - **Settings Button**: Cog icon in top-right corner
 
 ### Navigation Style
@@ -49,15 +57,18 @@ Opens from the right side when the cog icon is clicked.
 │    (dimmed/inactive)        │  ○ Dark (default)             │
 │                             │  ○ Light                      │
 │                             │─────────────────────────────── │
-│                             │  Text Size                    │
-│                             │  [sm] [normal] [lg] [xl]      │
+│                             │  Font                         │
+│                             │  ☐ Use Diablo 2 style font    │
 │                             │─────────────────────────────── │
-│                             │  ☐ Diablo Font                │
+│                             │  Text Size                    │
+│                             │  ○───●───○───○  (slider)      │
+│                             │         Normal                │
 │                             │─────────────────────────────── │
 │                             │  Data                         │
-│                             │  [Refresh Data]               │
+│                             │  [Force Refresh Data]         │
 │                             │                               │
-│                             │  Version: 3.9.07              │
+│                             │  App Version: 1.12.1          │
+│                             │  ESR Version: 3.9.07          │
 │                             │  Last updated: 12/21/2025     │
 └─────────────────────────────┴───────────────────────────────┘
 ```
@@ -72,10 +83,10 @@ Opens from the right side when the cog icon is clicked.
 ### Settings Contents
 
 - **Theme Toggle**: Dark (default) / Light, persisted in localStorage
-- **Text Size**: sm / normal / lg / xl, persisted in localStorage
+- **Text Size**: 4-step slider (small / normal / large / extralarge), persisted in localStorage
 - **Diablo Font**: Toggle for thematic font rendering, persisted in localStorage
 - **Refresh Data**: Force re-fetch and parse all data
-- **Version display**: Current ESR version from metadata
+- **Version display**: App version and current ESR version from metadata
 - **Last updated**: Timestamp of last successful parse
 
 ## Implementation
@@ -103,10 +114,14 @@ export const router = createBrowserRouter(
     {
       path: '/',
       element: <AppLayout />,
+      errorElement: <RouteErrorScreen />,
       children: [
         { index: true, element: routeElement(RunewordsScreen) },
+        { path: 'gemwords', element: routeElement(GemwordsScreen) },
         { path: 'socketables', element: routeElement(SocketablesScreen) },
-        { path: 'uniques', element: routeElement(HtmUniqueItemsScreen) },
+        // ... uniques, mythicals, ascendancies, builds, builds/new,
+        //     builds/:buildId/edit, build/:buildId, user/:userId
+        { path: '*', element: <NotFoundScreen /> },
       ],
     },
   ],
@@ -125,20 +140,22 @@ Uses `createBrowserRouter` (not hash-based) with `basename` set from Vite's `BAS
 ```typescript
 interface SettingsState {
   readonly theme: Theme;           // 'dark' | 'light'
-  readonly textSize: TextSize;     // 'sm' | 'normal' | 'lg' | 'xl'
+  readonly textSize: TextSize;     // 'small' | 'normal' | 'large' | 'extralarge'
   readonly useDiabloFont: boolean;
   readonly isDrawerOpen: boolean;
 }
 ```
 
-All settings (except `isDrawerOpen`) are persisted to localStorage and restored on startup.
+All settings (except `isDrawerOpen`) are persisted to localStorage and restored on startup. An inline script in `index.html` applies the stored theme, Diablo font class, and text size to `<html>` before first paint (avoids a flash of the default theme); `ThemeInitializer` then keeps them in sync with the Redux state.
 
 ## Feature Location
 
 ```
 src/core/
 ├── router/
-│   └── index.tsx           # Route definitions
+│   ├── index.tsx           # Route definitions
+│   ├── NotFoundScreen.tsx  # Catch-all 404 screen
+│   └── RouteErrorScreen.tsx # Route errorElement
 ├── layouts/
 │   └── AppLayout.tsx       # Main app shell
 └── components/
@@ -152,7 +169,7 @@ src/features/settings/
 │   ├── textSize.ts           # Text size pixel mappings
 │   └── types.ts              # Theme, TextSize types
 ├── hooks/
-│   └── useTheme.ts           # Theme toggle hook
+│   └── useTheme.ts           # useThemeSync / useTextSizeSync / useDiabloFontSync (apply settings to <html>)
 └── store/
     └── settingsSlice.ts      # Theme, text size, font, drawer state
 ```

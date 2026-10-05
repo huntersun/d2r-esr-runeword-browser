@@ -45,7 +45,7 @@ shadcn/ui components are installed via CLI and customized for a Diablo 2 aesthet
 | dexie-react-hooks | React hooks for reactive queries (useLiveQuery) |
 
 **Data Flow:**
-1. Parse remote HTML files (or local dev fixtures)
+1. Fetch and parse the remote ESR HTML pages (in dev and production alike)
 2. Transform data into structured models
 3. Store in IndexedDB via Dexie
 4. UI reads from IndexedDB reactively

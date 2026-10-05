@@ -51,7 +51,7 @@ Test individual functions alongside source files. Focus on inputs/outputs, edge 
 
 ### Integration Tests
 
-Test full flows at feature level: parse → store → query. Use real HTML fixtures from `public/data/`.
+Test full flows at feature level: parse → store → query. Use real HTML fixtures from `test-fixtures/` (see below).
 
 ## Key Patterns
 
@@ -76,11 +76,14 @@ npm run test:fixtures
 
 This downloads:
 - `gems.htm` - Socketables data (gems, runes, crystals)
+- `gemwords.htm` - Gemword definitions
 - `runewords.htm` - Runeword definitions
 - `changelogs.html` - Version information
 - `unique_weapons.htm` - Unique weapon items
 - `unique_armors.htm` - Unique armor items
 - `unique_others.htm` - Unique other items (rings, amulets, charms, jewels)
+- `unique_mythicals.htm` - Mythical unique items
+- `ascendancies.htm` - Ascendancies and their tier bonuses
 
 **Loading fixtures in tests:**
 ```typescript

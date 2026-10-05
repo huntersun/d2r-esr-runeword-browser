@@ -17,6 +17,8 @@ Data is fetched from the ESR documentation site:
 | Unique Weapons | `https://easternsunresurrected.com/unique_weapons.htm` |
 | Unique Armors | `https://easternsunresurrected.com/unique_armors.htm` |
 | Unique Others | `https://easternsunresurrected.com/unique_others.htm` |
+| Mythical Uniques | `https://easternsunresurrected.com/unique_mythicals.htm` |
+| Ascendancies | `https://easternsunresurrected.com/ascendancies.htm` |
 
 Remote URLs are configured in `src/core/api/remoteConfig.ts`.
 
@@ -38,7 +40,7 @@ Each category is stored in its own Dexie table for clean separation.
 
 ## App Startup Flow
 
-All data loading happens at app startup before any feature is accessible. The data sync module itself is loaded dynamically: `main.tsx` renders the app shell (loading UI) first, then `startDataSync()` imports the data-sync feature, registers its saga, and dispatches `startupCheck` — so the heavy parsing code downloads in parallel with the first paint instead of blocking it (guarded by `src/mainStartup.test.ts`). The data sync saga orchestrates the flow:
+All data loading happens at app startup before any feature is accessible. The data sync module itself is loaded dynamically: `main.tsx` renders the app shell (loading UI) first, then `startDataSync()` (`src/core/startup.ts`) imports the data-sync feature, registers its saga, and dispatches `startupCheck` — so the heavy parsing code downloads in parallel with the first paint instead of blocking it (guarded by `src/mainStartup.test.ts`). The data sync saga orchestrates the flow:
 
 ```
 ┌─────────────────────────────────────────┐
@@ -97,7 +99,7 @@ When fresh data is needed, the pipeline proceeds through these stages:
 startupCheck
   → startupNeedsFetch / startupUseCached
     → initDataLoad
-      → fetchHtmlSuccess (5 HTML files fetched in parallel)
+      → fetchHtmlSuccess (8 HTML files fetched in parallel)
         → parseDataSuccess (all parsers run)
           → storeDataSuccess (IndexedDB bulk writes)
             → App Ready
@@ -137,18 +139,21 @@ When a full parse is triggered:
 ```
 1. Fetch all HTML files in parallel:
    - gems.htm
+   - gemwords.htm
    - runewords.htm
    - unique_weapons.htm
    - unique_armors.htm
    - unique_others.htm
+   - unique_mythicals.htm
+   - ascendancies.htm
 2. Parse gems.htm:
    a. Extract Gems (8 types x 6 tiers = 48 items)
    b. Extract ESR Runes (~50 items)
    c. Extract LoD Runes (35 items)
    d. Extract Kanji Runes (~14 items)
    e. Extract Crystals (12 types x 3 tiers = 36 items)
-3. Parse runewords.htm (multi-variant, per-column bonuses, gems)
-4. Parse unique item pages (weapons, armors, others)
+3. Parse runewords.htm and gemwords.htm (multi-variant, per-column bonuses, gems)
+4. Parse unique item pages (weapons, armors, others), mythical uniques, and ascendancies
 5. Store everything in IndexedDB (separate tables per category)
 6. Store version string and timestamp in metadata
 7. Signal app ready (storeDataSuccess)
@@ -345,10 +350,14 @@ src/
 │   │   ├── remoteConfig.ts        # Remote URLs configuration
 │   │   ├── changelogApi.ts        # Fetch and parse version from changelog
 │   │   ├── gemsApi.ts             # Fetch gems.htm
+│   │   ├── gemwordsApi.ts         # Fetch gemwords.htm
 │   │   ├── runewordsApi.ts        # Fetch runewords.htm
-│   │   └── htmUniqueItemsApi.ts   # Fetch unique_*.htm pages
+│   │   ├── htmUniqueItemsApi.ts   # Fetch unique_weapons/armors/others.htm
+│   │   ├── mythicalUniquesApi.ts  # Fetch unique_mythicals.htm
+│   │   └── ascendanciesApi.ts     # Fetch ascendancies.htm
 │   ├── db/
 │   │   ├── db.ts                  # Dexie database instance
+│   │   ├── openDatabase.ts        # Open/upgrade with delete-and-recreate fallback
 │   │   └── models.ts              # Type definitions
 │   └── utils/
 │       └── versionUtils.ts        # Version comparison utilities
@@ -367,7 +376,10 @@ src/
         │   ├── kanjiRunesParser.ts      # Parse Kanji runes
         │   ├── crystalsParser.ts        # Parse crystals
         │   ├── runewordsParser.ts       # Parse runewords.htm
+        │   ├── gemwordsParser.ts        # Parse gemwords.htm
         │   ├── htmUniqueItemsParser.ts  # Parse unique item pages
+        │   ├── mythicalUniquesParser.ts # Parse unique_mythicals.htm
+        │   ├── ascendanciesParser.ts    # Parse ascendancies.htm
         │   └── shared/
         │       ├── extractSocketableNames.ts
         │       └── parserUtils.ts

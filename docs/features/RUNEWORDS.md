@@ -117,8 +117,8 @@ interface RunewordsState {
 
 - `useFilteredRunewords()` - Applies all filters (search, sockets, req level, item types, runes, tier points)
 - `useRuneGroups()` - Groups runes by category/tier for the filter UI
-- `useRuneBonuses()` - Gets bonuses for runes in a runeword
-- `useAvailableItemTypes()` - Lists valid item types from DB
+- `useSocketableLookup()` (`src/core/hooks/useSocketableLookup.ts`) - Rune/gem lookup (built by `src/core/utils/socketableLookup.ts`) used for badges, tooltips and bonuses; `RunewordsScreen` loads it once (`useSocketableLookupQuery`) and provides it via `SocketableLookupContext`
+- `useAvailableItemTypes()` - Lists valid item types from DB (thin wrapper over `src/core/hooks/useAvailableItemTypes.ts`)
 - `useShareUrl()` - Generates shareable URLs with current filter state
 - `useUrlInitialize()` - Initializes filters from URL params, cleans URL after load
 
@@ -127,9 +127,6 @@ interface RunewordsState {
 ```
 src/features/runewords/
 ├── components/
-│   ├── GemBadge.tsx             # Gem display badge
-│   ├── GemTooltip.tsx           # Gem hover tooltip
-│   ├── ItemTypeFilter.tsx       # Item type checkbox filter
 │   ├── RuneBadge.tsx            # Rune display badge
 │   ├── RuneCheckboxGroup.tsx    # Tiered rune checkbox group
 │   ├── RuneTooltip.tsx          # Rune hover tooltip
@@ -138,12 +135,10 @@ src/features/runewords/
 │   ├── RunewordPointsDisplay.tsx # Tier point totals display
 │   └── TierPointsFilter.tsx     # Tier points filter controls
 ├── constants/
-│   ├── itemTypeCategories.ts    # Item type category definitions
 │   └── tierColors.ts            # Tier color mappings
 ├── hooks/
 │   ├── useAvailableItemTypes.ts
 │   ├── useFilteredRunewords.ts
-│   ├── useRuneBonuses.ts
 │   ├── useRuneGroups.ts
 │   ├── useShareUrl.ts
 │   └── useUrlInitialize.ts
@@ -154,6 +149,7 @@ src/features/runewords/
 ├── types/
 │   └── index.ts
 └── utils/
-    ├── filteringHelpers.ts
-    └── itemCategoryMapping.ts
+    └── filteringHelpers.ts
 ```
+
+Shared with gemwords (in `src/core/`): `components/RecipeCommonFilters.tsx` (search, sockets, req level, item types via `ItemTypeFilter.tsx`), `components/RecipeBonuses.tsx`, `components/GemBadge.tsx` / `GemTooltip.tsx`, `constants/itemTypeCategories.ts`, `utils/itemCategoryMapping.ts`, `utils/columnAffixes.ts`.

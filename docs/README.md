@@ -10,9 +10,6 @@ Feature descriptions, user stories, and task breakdowns.
 ### [Technical](./technical/)
 Architecture decisions, coding guidelines, tech stack documentation, and implementation details.
 
-### [General](./general/)
-Project overview, design decisions, and general project information.
-
 ## Quick Links
 
 - [Contributing & Documentation Process](./CONTRIBUTING.md) - How to continue documentation sessions
@@ -49,6 +46,8 @@ The app uses a single HTM-based data system. All data is fetched from the ESR do
 | Unique Weapons | `unique_weapons.htm` |
 | Unique Armors | `unique_armors.htm` |
 | Unique Others | `unique_others.htm` |
+| Mythical Uniques | `unique_mythicals.htm` |
+| Ascendancies | `ascendancies.htm` |
 | Version info | `changelogs.html` |
 
 ### Features
@@ -59,6 +58,12 @@ The app uses a single HTM-based data system. All data is fetched from the ESR do
 | Gemwords | `/gemwords` | ~590 gem-based socket recipes with filters for gems, sockets, item types, req level |
 | Socketables | `/socketables` | ~177 socketable items across 5 categories |
 | Unique Items | `/uniques` | Unique weapons, armors, and other items with category filters |
+| Mythicals | `/mythicals` | Mythical unique items (`src/features/mythical-uniques/`) |
+| Ascendancies | `/ascendancies` | Ascendancies with their tier bonuses (`src/features/ascendancies/`) |
+| Builds | `/builds`, `/builds/new`, `/builds/:buildId/edit`, `/build/:buildId`, `/user/:userId` | Shared builds; needs the optional Supabase backend (`src/features/builds/`, `src/features/auth/`) |
+| Not found | `*` | Catch-all 404 screen |
+
+Favourites for runewords, gemwords, and unique items (sign-in required, synced to Supabase) live in `src/features/favorites/`.
 
 ---
 

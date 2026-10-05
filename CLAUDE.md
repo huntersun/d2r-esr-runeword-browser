@@ -9,7 +9,7 @@ D2R ESR Runeword Browser - A React SPA for browsing Diablo 2 Resurrected runewor
 ## Documentation
 
 See [docs/README.md](./docs/README.md) for comprehensive project documentation including:
-- Feature specifications (Runewords, Runes, Gems, Crystals, Core Data)
+- Feature specifications (Core Data, Runewords, Socketables, Unique Items)
 - Technical documentation (Architecture, Data Models, Navigation, UI Components)
 - Coding guidelines and conventions
 

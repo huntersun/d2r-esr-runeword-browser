@@ -21,13 +21,22 @@ src/
 │   │   ├── remoteConfig.ts     # Remote URLs
 │   │   ├── changelogApi.ts     # Version checking
 │   │   ├── gemsApi.ts          # Fetch gems.htm
+│   │   ├── gemwordsApi.ts      # Fetch gemwords.htm
 │   │   ├── runewordsApi.ts     # Fetch runewords.htm
-│   │   └── htmUniqueItemsApi.ts # Fetch unique_*.htm pages
+│   │   ├── htmUniqueItemsApi.ts # Fetch unique_weapons/armors/others.htm
+│   │   ├── mythicalUniquesApi.ts # Fetch unique_mythicals.htm
+│   │   └── ascendanciesApi.ts  # Fetch ascendancies.htm
+│   ├── supabase/               # Optional Supabase client, config, generated types
+│   ├── components/             # Shared app components (Header, SettingsDrawer, recipe filters/bonuses, favourites)
+│   ├── hooks/                  # Shared hooks (useAvailableItemTypes, useSocketableLookup, ...)
+│   ├── utils/                  # Shared stateless utilities
+│   ├── constants/              # Shared constants (item type categories, gem colors)
 │   ├── types/                  # Shared types (RequestState enum)
 │   ├── router/                 # Router configuration
 │   │   └── index.tsx           # Route definitions (screens lazy-loaded per route)
-│   └── layouts/                # App layouts
-│       └── AppLayout.tsx
+│   ├── layouts/                # App layouts
+│   │   └── AppLayout.tsx
+│   └── startup.ts              # Lazy saga registration (startDataSync, startAuth, startBuilds, startFavorites)
 │
 ├── features/                   # Feature modules
 │   ├── data-sync/              # Data fetching, parsing, and storage
@@ -35,6 +44,11 @@ src/
 │   ├── gemwords/               # Gemword browsing and filtering
 │   ├── socketables/            # Socketable browsing and filtering
 │   ├── htm-unique-items/       # Unique item browsing and filtering
+│   ├── mythical-uniques/       # Mythical unique items
+│   ├── ascendancies/           # Ascendancies and their tier bonuses
+│   ├── auth/                   # Supabase sign-in (optional backend)
+│   ├── builds/                 # Shared builds (optional backend)
+│   ├── favorites/              # Recipe favourites synced to Supabase
 │   └── settings/               # Theme, text size, Diablo font
 │
 ├── lib/                        # Third-party library configurations
