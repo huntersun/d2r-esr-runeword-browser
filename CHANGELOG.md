@@ -2,6 +2,69 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.13.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.12.1...v1.13.0) (2026-10-05)
+
+
+### Features
+
+* **router:** add a not-found route ([3538561](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/353856110d5de432ed43f6000cf8992e611698ac))
+
+
+### Bug Fixes
+
+* **a11y:** label settings drawer controls and use warning token ([64deb40](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/64deb40d49ad8d0db33be81b2a0f828ee60bc5ed))
+* **a11y:** make rune/gem badges focusable and label tier point inputs ([1a0bc3b](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/1a0bc3b93dd78db45729efcdcafc69a1adb3c79e))
+* **auth:** only restore same-origin app paths after sign-in ([c72a0b6](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/c72a0b636a1942d7656f943bbd854afdcc7ead66))
+* **auth:** retry consent with a fresh discriminator on name tag collision ([be9f540](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/be9f5408c63adfe53d40dd8272c8907372dcff20))
+* **builds:** add accessible names and states to build controls ([e4d2694](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/e4d269493b097e0763e9947303d91bb96d6bbb26))
+* **builds:** stop load-more retry loops, stale pages and list over-fetch ([1ca0748](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/1ca07485d2d6fa303ad541286b50405f363a17ef))
+* **builds:** validate item refs read from build_data ([0561ed8](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/0561ed8aa9dfb4ac524758a64d78ae1be077060d))
+* **data-sync:** warn when a forced refresh fails ([42f08fa](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/42f08fa50444041e1b08a24c6700e849fac34cfe))
+* **db:** recover from an un-upgradable cache database ([3cda76f](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/3cda76ffec588694c042b4318c2b733f203c098b))
+* **runewords:** reuse parser LoD sort-key offset and let long card titles wrap ([c6174f8](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/c6174f8b59aebafe9e0c06c338343e6977fd637d))
+* **settings:** apply persisted theme before first paint ([4c76b79](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/4c76b7938dc6f224186f426bb140c1bf23045355))
+* show toast on clipboard failure and clear copy-reset timer on unmount ([fb92c4a](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/fb92c4a9bc696c1119d7607be34efc54d37c3336))
+* **socketables:** explain the empty list when no categories are selected ([73eb555](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/73eb555326465028ab4971d5fe674588af6ca159))
+* **theme:** add warning colour tokens ([7f7675d](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/7f7675d8a76c03188987df96e7b44a9048175806))
+* **ui:** keep unique card headers from overflowing on narrow screens ([dee09ed](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/dee09ed007843497556de3e61f8cb25465b1f949))
+
+
+### Performance
+
+* **runewords:** load rune and gem tables once per screen for badges ([beed142](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/beed142bc99c542697e6140dde071e8539c31089))
+
+
+### Documentation
+
+* align documentation with the current code ([af71659](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/af716594f47a6abe01a93f2b18c459944ba91b8f))
+* **builds:** document load-more errors, list select and name-based item lookup ([c2e4403](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/c2e4403fdbf53aa483d33acaf4f00b86d68c38bc))
+* describe public likes, favourites and avatars; refresh backend wording ([8c0a1e0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/8c0a1e0efcec988bcd69aff82fd58abb01b161a1))
+
+
+### Styles
+
+* format ScrollToTopButton with prettier ([7a1f313](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/7a1f3136600fc877cb6a038b1587d21e44ce639f))
+
+
+### Chores
+
+* **deps:** bump react-router-dom, move build tools to devDependencies, drop uuid ([8e6a68a](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/8e6a68ace5b2ac7e570a98ad98fd560a21a4792b))
+
+
+### Refactoring
+
+* **core:** remove unused tsvParser ([370dd48](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/370dd48cf9e4f22d74c256ca027ad6166e009ad4))
+* **core:** trim supabase barrel and align write types with grants ([e572a21](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/e572a2182df209a41f79997434c06a78c076487b))
+* **data-sync:** drop test-only exports ([107f2a1](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/107f2a1aaf3cf690f30cd02eb9f6bf60930b6bcc))
+* **data-sync:** remove the unused affix extraction step ([65f00ba](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/65f00baa0b2313f8158327db785dd52ad9dbc3c9))
+* **filters:** use useDebouncedFilterValue in socketable, ascendancy and unique filters ([4b67bff](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/4b67bff6dbc29dc8172128dc93485259e068f4b3))
+* **router:** clear consumed URL params through react-router ([305ea61](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/305ea619c1b05a06dabff5f4b6044b4ba6a4dc00))
+* **runewords:** remove unused barrels and test-only sort helpers ([17284a1](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/17284a114aad2fd49199232d73f6856b8d2d7fa9))
+* **runewords:** share column-difference check and bonus sections ([b1eb91b](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/b1eb91b6850679634bb2293e4a224d7f5bed9bae))
+* **runewords:** share recipe search/sockets/level filters with gemwords ([d9034e0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/d9034e0eead55fc187b09d33d06fd35cc2cccd3d))
+* **share:** build socketable, ascendancy and unique share URLs with shared helpers ([59e16f2](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/59e16f223ff2f817341f1e847883f89bd3a2f206))
+* **uniques:** share category selection helpers between unique slices ([ee9c37a](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/ee9c37a5760c40e81d80981f1bd69f5d79b506e9))
+
 ## [1.12.1](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.12.0...v1.12.1) (2026-10-05)
 
 
