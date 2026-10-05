@@ -2,6 +2,7 @@ import { lazy, Suspense, type ComponentType, type LazyExoticComponent } from 're
 import { createBrowserRouter } from 'react-router-dom';
 import { AppLayout } from '@/core/layouts/AppLayout';
 import { RouteErrorScreen } from './RouteErrorScreen';
+import { NotFoundScreen } from './NotFoundScreen';
 import { Spinner } from '@/components/ui/spinner';
 
 const RunewordsScreen = lazy(async () => {
@@ -92,6 +93,7 @@ export const router = createBrowserRouter(
         { path: 'builds/:buildId/edit', element: routeElement(EditBuildScreen) },
         { path: 'build/:buildId', element: routeElement(BuildDetailScreen) },
         { path: 'user/:userId', element: routeElement(UserProfileScreen) },
+        { path: '*', element: <NotFoundScreen /> },
       ],
     },
   ],

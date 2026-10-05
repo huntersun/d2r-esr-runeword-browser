@@ -1,5 +1,6 @@
-import { useRouteError } from 'react-router-dom';
+import { isRouteErrorResponse, useRouteError } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { NotFoundScreen } from './NotFoundScreen';
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message) return error.message;
@@ -10,7 +11,8 @@ function getErrorMessage(error: unknown): string {
 /**
  * Catches route render errors — most importantly failed lazy chunk loads after
  * a redeploy (stale index.html requesting hashed chunks that no longer exist).
- * A full reload fetches the fresh index.html and chunks.
+ * A full reload fetches the fresh index.html and chunks. 404 responses get a
+ * not-found message instead.
  */
 export function RouteErrorScreen() {
   const error = useRouteError();
@@ -19,6 +21,14 @@ export function RouteErrorScreen() {
   const handleReload = () => {
     window.location.reload();
   };
+
+  if (isRouteErrorResponse(error) && error.status === 404) {
+    return (
+      <div className="min-h-svh flex flex-col justify-center">
+        <NotFoundScreen />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-svh flex flex-col items-center justify-center p-4">

@@ -9,6 +9,7 @@ Documentation for routing, layout, and navigation patterns.
 | `/` | RunewordsScreen | Home page - browse and filter runewords |
 | `/socketables` | SocketablesScreen | All socketables with category filters & search |
 | `/uniques` | HtmUniqueItemsScreen | Unique items with category & coupon filters |
+| `*` | NotFoundScreen | Catch-all for unknown URLs, with a link back home |
 
 ## App Shell Layout
 
