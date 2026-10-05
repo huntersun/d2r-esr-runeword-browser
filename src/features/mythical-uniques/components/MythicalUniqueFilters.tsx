@@ -11,6 +11,7 @@ import { SearchHelpButton } from '@/components/SearchHelpButton';
 import { db } from '@/core/db';
 import { useShareUrl } from '../hooks/useShareUrl';
 import { NO_CATEGORIES_MARKER } from '@/core/constants/categoryFilter';
+import { matchesCategory } from '@/core/store/categorySelection';
 import {
   setSearchText,
   toggleCategory,
@@ -74,11 +75,6 @@ export function MythicalUniqueFilters() {
   };
 
   const isNoneSelected = selectedCategories.has(NO_CATEGORIES_MARKER);
-
-  const isCategorySelected = (category: string): boolean => {
-    if (selectedCategories.has('__all__')) return true;
-    return selectedCategories.has(category);
-  };
 
   return (
     <div className="space-y-4 mb-6">
@@ -149,7 +145,7 @@ export function MythicalUniqueFilters() {
             {availableCategories.map((category) => (
               <label key={category} className="flex items-center gap-1.5 text-sm cursor-pointer">
                 <Checkbox
-                  checked={isCategorySelected(category)}
+                  checked={matchesCategory(category, selectedCategories)}
                   onCheckedChange={() => {
                     handleToggleCategory(category);
                   }}

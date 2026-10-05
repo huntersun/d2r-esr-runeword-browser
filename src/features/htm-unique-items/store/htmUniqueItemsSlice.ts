@@ -2,6 +2,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { createSelector } from 'reselect';
 import type { RootState } from '@/core/store/store';
 import { NO_CATEGORIES_MARKER } from '@/core/constants/categoryFilter';
+import { createCategorySelectionSelectors, setCategoriesInSelection, toggleCategoryInSelection } from '@/core/store/categorySelection';
 
 /**
  * State for HTM unique items feature
@@ -40,23 +41,7 @@ const htmUniqueItemsSlice = createSlice({
       }>
     ) {
       const { category, allCategories } = action.payload;
-      const isNoneMarker = state.selectedCategories.length === 1 && state.selectedCategories[0] === NO_CATEGORIES_MARKER;
-      // [] = all selected, [NO_CATEGORIES_MARKER] = none selected
-      const currentSet = new Set(state.selectedCategories.length === 0 ? allCategories : isNoneMarker ? [] : state.selectedCategories);
-
-      if (currentSet.has(category)) {
-        currentSet.delete(category);
-      } else {
-        currentSet.add(category);
-      }
-
-      if (currentSet.size === allCategories.length) {
-        state.selectedCategories = [];
-      } else if (currentSet.size === 0) {
-        state.selectedCategories = [NO_CATEGORIES_MARKER];
-      } else {
-        state.selectedCategories = Array.from(currentSet);
-      }
+      state.selectedCategories = toggleCategoryInSelection(state.selectedCategories, category, allCategories);
     },
     toggleGroup(
       state,
@@ -67,26 +52,7 @@ const htmUniqueItemsSlice = createSlice({
       }>
     ) {
       const { groupCategories, selected, allCategories } = action.payload;
-      const isNoneMarker = state.selectedCategories.length === 1 && state.selectedCategories[0] === NO_CATEGORIES_MARKER;
-      const currentSet = new Set(state.selectedCategories.length === 0 ? allCategories : isNoneMarker ? [] : state.selectedCategories);
-
-      if (selected) {
-        for (const cat of groupCategories) {
-          currentSet.add(cat);
-        }
-      } else {
-        for (const cat of groupCategories) {
-          currentSet.delete(cat);
-        }
-      }
-
-      if (currentSet.size === allCategories.length) {
-        state.selectedCategories = [];
-      } else if (currentSet.size === 0) {
-        state.selectedCategories = [NO_CATEGORIES_MARKER];
-      } else {
-        state.selectedCategories = Array.from(currentSet);
-      }
+      state.selectedCategories = setCategoriesInSelection(state.selectedCategories, groupCategories, selected, allCategories);
     },
     selectAllCategories(state) {
       state.selectedCategories = [];
@@ -124,16 +90,6 @@ export const selectMaxReqLevel = createSelector([selectHtmUniqueItemsState], (s)
 
 export const selectSelectedCategoriesRaw = createSelector([selectHtmUniqueItemsState], (s) => s.selectedCategories);
 
-export const selectSelectedCategories = createSelector([selectSelectedCategoriesRaw], (selectedCategories): ReadonlySet<string> => {
-  if (selectedCategories.length === 0) {
-    return new Set(['__all__']);
-  }
-  return new Set(selectedCategories);
-});
-
-export const selectIsAllCategoriesSelected = createSelector(
-  [selectSelectedCategoriesRaw],
-  (selectedCategories) => selectedCategories.length === 0
-);
+export const { selectSelectedCategories, selectIsAllCategoriesSelected } = createCategorySelectionSelectors(selectSelectedCategoriesRaw);
 
 export const selectIncludeCouponItems = createSelector([selectHtmUniqueItemsState], (s) => s.includeCouponItems);

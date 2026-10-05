@@ -2,6 +2,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { createSelector } from 'reselect';
 import type { RootState } from '@/core/store/store';
 import { NO_CATEGORIES_MARKER } from '@/core/constants/categoryFilter';
+import { createCategorySelectionSelectors, toggleCategoryInSelection } from '@/core/store/categorySelection';
 
 /**
  * State for mythical uniques feature.
@@ -33,23 +34,7 @@ const mythicalUniquesSlice = createSlice({
       }>
     ) {
       const { category, allCategories } = action.payload;
-      const isNoneMarker = state.selectedCategories.length === 1 && state.selectedCategories[0] === NO_CATEGORIES_MARKER;
-      // [] = all selected, [NO_CATEGORIES_MARKER] = none selected
-      const currentSet = new Set(state.selectedCategories.length === 0 ? allCategories : isNoneMarker ? [] : state.selectedCategories);
-
-      if (currentSet.has(category)) {
-        currentSet.delete(category);
-      } else {
-        currentSet.add(category);
-      }
-
-      if (currentSet.size === allCategories.length) {
-        state.selectedCategories = [];
-      } else if (currentSet.size === 0) {
-        state.selectedCategories = [NO_CATEGORIES_MARKER];
-      } else {
-        state.selectedCategories = Array.from(currentSet);
-      }
+      state.selectedCategories = toggleCategoryInSelection(state.selectedCategories, category, allCategories);
     },
     selectAllCategories(state) {
       state.selectedCategories = [];
@@ -74,14 +59,4 @@ export const selectSearchText = createSelector([selectMythicalUniquesState], (s)
 
 export const selectSelectedCategoriesRaw = createSelector([selectMythicalUniquesState], (s) => s.selectedCategories);
 
-export const selectSelectedCategories = createSelector([selectSelectedCategoriesRaw], (selectedCategories): ReadonlySet<string> => {
-  if (selectedCategories.length === 0) {
-    return new Set(['__all__']);
-  }
-  return new Set(selectedCategories);
-});
-
-export const selectIsAllCategoriesSelected = createSelector(
-  [selectSelectedCategoriesRaw],
-  (selectedCategories) => selectedCategories.length === 0
-);
+export const { selectSelectedCategories, selectIsAllCategoriesSelected } = createCategorySelectionSelectors(selectSelectedCategoriesRaw);

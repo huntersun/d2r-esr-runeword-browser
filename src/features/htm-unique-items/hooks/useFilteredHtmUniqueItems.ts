@@ -4,6 +4,7 @@ import { db } from '@/core/db';
 import type { HtmUniqueItem } from '@/core/db';
 import { selectSearchText, selectMaxReqLevel, selectSelectedCategories, selectIncludeCouponItems } from '../store';
 import { parseSearchTerms } from '@/core/utils/searchTerms';
+import { matchesCategory } from '@/core/store/categorySelection';
 
 /**
  * Hook to get filtered and sorted HTM unique items.
@@ -38,13 +39,6 @@ export function useFilteredHtmUniqueItems(): readonly HtmUniqueItem[] | undefine
   });
 
   return filtered;
-}
-
-function matchesCategory(category: string, selectedCategories: ReadonlySet<string>): boolean {
-  if (selectedCategories.has('__all__')) {
-    return true;
-  }
-  return selectedCategories.has(category);
 }
 
 function matchesSearch(item: HtmUniqueItem, searchTerms: readonly string[]): boolean {

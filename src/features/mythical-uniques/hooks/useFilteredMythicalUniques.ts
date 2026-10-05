@@ -4,6 +4,7 @@ import { db } from '@/core/db';
 import type { MythicalUnique } from '@/core/db';
 import { selectSearchText, selectSelectedCategories } from '../store';
 import { parseSearchTerms } from '@/core/utils/searchTerms';
+import { matchesCategory } from '@/core/store/categorySelection';
 
 /**
  * Hook to get filtered and sorted mythical unique items.
@@ -29,13 +30,6 @@ export function useFilteredMythicalUniques(): readonly MythicalUnique[] | undefi
   filtered.sort((a, b) => a.name.localeCompare(b.name));
 
   return filtered;
-}
-
-function matchesCategory(category: string, selectedCategories: ReadonlySet<string>): boolean {
-  if (selectedCategories.has('__all__')) {
-    return true;
-  }
-  return selectedCategories.has(category);
 }
 
 function matchesSearch(item: MythicalUnique, searchTerms: readonly string[]): boolean {
