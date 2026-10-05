@@ -1,7 +1,10 @@
-// Hand-written types for the Supabase schema (supabase/migrations/001_initial_schema.sql).
+// Hand-written types for the Supabase schema (supabase/migrations/*.sql: tables from
+// 001_initial_schema + 002_favorites, client write access as narrowed by the
+// column-scoped grants in 003_harden_write_access).
 //
 // We don't run `supabase gen types` (no CLI / project linking in this repo), so these
 // are maintained by hand alongside the migrations. Keep them in sync when the schema changes.
+// `Insert` / `Update` list only the columns the `authenticated` role may write.
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
@@ -18,6 +21,7 @@ export interface Database {
           created_at: string;
           updated_at: string;
         };
+        // Shape only: clients have no INSERT grant, rows come from the handle_new_user() trigger.
         Insert: {
           id: string;
           display_name: string;
@@ -30,9 +34,7 @@ export interface Database {
         Update: {
           display_name?: string;
           discriminator?: number;
-          avatar_url?: string | null;
           privacy_policy_accepted_at?: string | null;
-          updated_at?: string;
         };
         Relationships: [];
       };
@@ -53,7 +55,6 @@ export interface Database {
           updated_at: string;
         };
         Insert: {
-          id?: string;
           user_id: string;
           name: string;
           description?: string | null;
@@ -61,18 +62,13 @@ export interface Database {
           build_data?: Json;
           esr_version?: string | null;
           esr_version_updated?: string | null;
-          likes_count?: number;
-          created_at?: string;
-          updated_at?: string;
         };
         Update: {
           name?: string;
           description?: string | null;
           class?: string;
           build_data?: Json;
-          esr_version?: string | null;
           esr_version_updated?: string | null;
-          updated_at?: string;
         };
         Relationships: [];
       };
