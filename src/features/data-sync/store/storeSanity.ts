@@ -17,7 +17,7 @@ export const SANITY_CHECKED_DATASETS = [
 export type SanityCheckedDataset = (typeof SANITY_CHECKED_DATASETS)[number];
 
 /** User-facing names, used in the warning shown when a dataset could not be read. */
-export const DATASET_LABELS: Readonly<Record<SanityCheckedDataset, string>> = {
+const DATASET_LABELS: Readonly<Record<SanityCheckedDataset, string>> = {
   gems: 'Gems',
   esrRunes: 'ESR Runes',
   lodRunes: 'LoD Runes',
@@ -34,7 +34,7 @@ export const DATASET_LABELS: Readonly<Record<SanityCheckedDataset, string>> = {
  * A freshly parsed dataset smaller than this fraction of the cached one is
  * treated as a parser failure (upstream HTML format drift), not a real change.
  */
-export const MIN_PARSED_TO_CACHED_RATIO = 0.5;
+const MIN_PARSED_TO_CACHED_RATIO = 0.5;
 
 export type DatasetCounts = Readonly<Record<SanityCheckedDataset, number>>;
 

@@ -13,7 +13,7 @@ export interface ExtractedGemwordIngredients {
   readonly jewelInfo?: string;
 }
 
-export function extractGemwordIngredients(cell: Element): ExtractedGemwordIngredients {
+function extractGemwordIngredients(cell: Element): ExtractedGemwordIngredients {
   const lines = cell.innerHTML
     .split(/<br\s*\/?>/i)
     .map((line) =>
