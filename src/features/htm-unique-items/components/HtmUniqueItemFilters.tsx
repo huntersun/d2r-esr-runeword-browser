@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useDebouncedFilterValue } from '@/core/hooks/useDebouncedFilterValue';
 import { X } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
@@ -18,54 +18,24 @@ export function HtmUniqueItemFilters() {
   const maxReqLevel = useSelector(selectMaxReqLevel);
   const getShareUrl = useShareUrl();
 
-  const [localSearchText, setLocalSearchText] = useState(searchText);
-  const [localMaxReqLevel, setLocalMaxReqLevel] = useState(maxReqLevel);
+  const [localSearchText, setLocalSearchText, commitSearchText] = useDebouncedFilterValue(
+    searchText,
+    (value) => dispatch(setSearchText(value)),
+    SEARCH_DEBOUNCE_MS
+  );
 
-  // Sync local state when Redux state changes externally (adjust during render)
-  const [prevSearchText, setPrevSearchText] = useState(searchText);
-  if (searchText !== prevSearchText) {
-    setPrevSearchText(searchText);
-    setLocalSearchText(searchText);
-  }
-
-  const [prevMaxReqLevel, setPrevMaxReqLevel] = useState(maxReqLevel);
-  if (maxReqLevel !== prevMaxReqLevel) {
-    setPrevMaxReqLevel(maxReqLevel);
-    setLocalMaxReqLevel(maxReqLevel);
-  }
-
-  // Debounce dispatch to Redux
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localSearchText !== searchText) {
-        dispatch(setSearchText(localSearchText));
-      }
-    }, SEARCH_DEBOUNCE_MS);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [localSearchText, searchText, dispatch]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localMaxReqLevel !== maxReqLevel) {
-        dispatch(setMaxReqLevel(localMaxReqLevel));
-      }
-    }, INPUT_DEBOUNCE_MS);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [localMaxReqLevel, maxReqLevel, dispatch]);
+  const [localMaxReqLevel, setLocalMaxReqLevel, commitMaxReqLevel] = useDebouncedFilterValue(
+    maxReqLevel,
+    (value) => dispatch(setMaxReqLevel(value)),
+    INPUT_DEBOUNCE_MS
+  );
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalSearchText(e.target.value);
   };
 
   const handleClearSearch = () => {
-    setLocalSearchText('');
-    dispatch(setSearchText(''));
+    commitSearchText('');
   };
 
   const handleMaxReqLevelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,8 +51,7 @@ export function HtmUniqueItemFilters() {
   };
 
   const handleClearMaxReqLevel = () => {
-    setLocalMaxReqLevel(null);
-    dispatch(setMaxReqLevel(null));
+    commitMaxReqLevel(null);
   };
 
   return (

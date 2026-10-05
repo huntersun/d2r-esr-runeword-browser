@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useDebouncedFilterValue } from '@/core/hooks/useDebouncedFilterValue';
 import { X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
@@ -42,28 +42,11 @@ export function SocketableFilters() {
   const onlyHighestQuality = useSelector(selectOnlyHighestQuality);
   const getShareUrl = useShareUrl();
 
-  // Local state for immediate input feedback
-  const [localSearchText, setLocalSearchText] = useState(searchText);
-
-  // Sync local state when Redux state changes externally (adjust during render)
-  const [prevSearchText, setPrevSearchText] = useState(searchText);
-  if (searchText !== prevSearchText) {
-    setPrevSearchText(searchText);
-    setLocalSearchText(searchText);
-  }
-
-  // Debounce dispatch to Redux
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localSearchText !== searchText) {
-        dispatch(setSearchText(localSearchText));
-      }
-    }, SEARCH_DEBOUNCE_MS);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [localSearchText, searchText, dispatch]);
+  const [localSearchText, setLocalSearchText, commitSearchText] = useDebouncedFilterValue(
+    searchText,
+    (value) => dispatch(setSearchText(value)),
+    SEARCH_DEBOUNCE_MS
+  );
 
   const handleCategoryToggle = (category: keyof EnabledCategories) => {
     dispatch(toggleCategory(category));
@@ -74,8 +57,7 @@ export function SocketableFilters() {
   };
 
   const handleClearSearch = () => {
-    setLocalSearchText('');
-    dispatch(setSearchText(''));
+    commitSearchText('');
   };
 
   const handleSelectAll = () => {

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useDebouncedFilterValue } from '@/core/hooks/useDebouncedFilterValue';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { X } from 'lucide-react';
 import { Label } from '@/components/ui/label';
@@ -31,7 +31,11 @@ export function MythicalUniqueFilters() {
   const isAllSelected = useSelector(selectIsAllCategoriesSelected);
   const getShareUrl = useShareUrl();
 
-  const [localSearchText, setLocalSearchText] = useState(searchText);
+  const [localSearchText, setLocalSearchText, commitSearchText] = useDebouncedFilterValue(
+    searchText,
+    (value) => dispatch(setSearchText(value)),
+    SEARCH_DEBOUNCE_MS
+  );
 
   // Get available categories from DB
   const availableCategories = useLiveQuery(async () => {
@@ -40,33 +44,12 @@ export function MythicalUniqueFilters() {
     return Array.from(cats).sort();
   });
 
-  // Sync local state when Redux state changes externally (adjust during render)
-  const [prevSearchText, setPrevSearchText] = useState(searchText);
-  if (searchText !== prevSearchText) {
-    setPrevSearchText(searchText);
-    setLocalSearchText(searchText);
-  }
-
-  // Debounce dispatch to Redux
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localSearchText !== searchText) {
-        dispatch(setSearchText(localSearchText));
-      }
-    }, SEARCH_DEBOUNCE_MS);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [localSearchText, searchText, dispatch]);
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalSearchText(e.target.value);
   };
 
   const handleClearSearch = () => {
-    setLocalSearchText('');
-    dispatch(setSearchText(''));
+    commitSearchText('');
   };
 
   const handleToggleCategory = (category: string) => {
