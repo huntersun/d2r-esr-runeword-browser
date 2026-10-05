@@ -95,10 +95,81 @@ export interface BuildData {
   readonly skills?: string | null;
 }
 
-/** Defensive read of the jsonb column into BuildData (we control all writes). */
-export function asBuildData(value: unknown): BuildData {
-  if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-    return value;
+type UnknownRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isStringArray(value: unknown): value is readonly string[] {
+  return Array.isArray(value) && value.every((entry) => typeof entry === 'string');
+}
+
+function isColumnAffixes(value: unknown): boolean {
+  return isRecord(value) && isStringArray(value.weaponsGloves) && isStringArray(value.helmsBoots) && isStringArray(value.armorShieldsBelts);
+}
+
+function isUniqueSnapshot(s: UnknownRecord): boolean {
+  return (
+    typeof s.name === 'string' &&
+    typeof s.baseItem === 'string' &&
+    isStringArray(s.properties) &&
+    (s.specialProperties === undefined || isStringArray(s.specialProperties))
+  );
+}
+
+function isSocketableSnapshot(s: UnknownRecord, recipeKey: 'runes' | 'gems'): boolean {
+  return isStringArray(s[recipeKey]) && isColumnAffixes(s.columnAffixes);
+}
+
+/** Runtime check of the fields the display/lookup/diff code dereferences. */
+export function isItemRef(value: unknown): value is ItemRef {
+  if (!isRecord(value)) return false;
+  if (value.type === 'freetext') return typeof value.name === 'string';
+  const snapshot = value.snapshot;
+  if (!isRecord(snapshot)) return false;
+  switch (value.type) {
+    case 'unique':
+    case 'mythical':
+      return typeof value.id === 'number' && isUniqueSnapshot(snapshot);
+    case 'runeword':
+    case 'gemword':
+      return (
+        typeof value.name === 'string' &&
+        typeof value.variant === 'number' &&
+        isSocketableSnapshot(snapshot, value.type === 'runeword' ? 'runes' : 'gems')
+      );
+    default:
+      return false;
   }
-  return {};
+}
+
+/** Keeps only the entries of a jsonb object whose value passes `isValid`; undefined if not an object. */
+function filterEntries<T>(value: unknown, isValid: (entry: unknown) => entry is T): Record<string, T> | undefined {
+  if (!isRecord(value)) return undefined;
+  return Object.fromEntries(Object.entries(value).filter((entry): entry is [string, T] => isValid(entry[1])));
+}
+
+const isString = (value: unknown): value is string => typeof value === 'string';
+const optionalString = (value: unknown): string | null | undefined => (typeof value === 'string' || value === null ? value : undefined);
+
+/**
+ * Defensive read of the jsonb column into BuildData. The column is user-writable
+ * (any authenticated owner can PATCH arbitrary JSON through PostgREST), so every
+ * field is validated: malformed item refs, notes and charms are dropped rather than
+ * crashing the detail/edit screens.
+ */
+export function asBuildData(value: unknown): BuildData {
+  if (!isRecord(value)) return {};
+  return {
+    items: filterEntries(value.items, isItemRef),
+    weaponSwap: filterEntries(value.weaponSwap, isItemRef),
+    mercenary: filterEntries(value.mercenary, isItemRef),
+    itemNotes: filterEntries(value.itemNotes, isString),
+    weaponSwapNotes: filterEntries(value.weaponSwapNotes, isString),
+    mercenaryNotes: filterEntries(value.mercenaryNotes, isString),
+    charms: Array.isArray(value.charms) ? value.charms.filter(isString) : undefined,
+    ascendancy: optionalString(value.ascendancy),
+    skills: optionalString(value.skills),
+  };
 }
