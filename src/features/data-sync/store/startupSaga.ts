@@ -1,5 +1,5 @@
 import { call, put } from 'redux-saga/effects';
-import { db } from '@/core/db';
+import { db, openDatabase } from '@/core/db';
 import type { Metadata } from '@/core/db';
 import { fetchLatestVersion, type ChangelogVersion } from '@/core/api';
 import { isVersionDifferent } from '@/core/utils';
@@ -36,6 +36,9 @@ function* checkCachedData(): Generator<unknown, CachedDataCheck, unknown> {
 export function* handleStartupCheck() {
   try {
     console.log('[HTML] Startup check initiated');
+
+    // Open (or recreate an un-upgradable) cache database before any table access
+    yield call(openDatabase);
 
     // Step 1: Check what we have cached
     const cached: CachedDataCheck = (yield call(checkCachedData)) as CachedDataCheck;

@@ -160,6 +160,8 @@ Single IndexedDB database: **`d2r-esr-runeword-browser`** (version 14)
 
 Tables: `gems`, `esrRunes`, `lodRunes`, `kanjiRunes`, `crystals`, `runewords`, `gemwords`, `htmUniqueItems`, `mythicalUniques`, `ascendancies`, `metadata`
 
+The startup check opens the database first via `openDatabase()` (`src/core/db/openDatabase.ts`). If Dexie cannot upgrade the stored schema (`UpgradeError`, e.g. a very old install with a different primary key) or the stored version is newer (`VersionError`), the database is deleted and recreated empty; it is only a cache, so the startup check then refetches everything.
+
 See [DATA-MODELS.md](../technical/DATA-MODELS.md) for the full schema.
 
 ## Data Models

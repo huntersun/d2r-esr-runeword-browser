@@ -1,4 +1,5 @@
 export { db } from './db';
+export { openDatabase } from './openDatabase';
 export type {
   Affix,
   SocketableBonuses,
