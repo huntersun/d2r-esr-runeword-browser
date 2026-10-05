@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { db } from '@/core/db';
 import appVersion from '@/assets/version.json';
 import { dataSyncSaga } from './dataSyncSaga';
-import dataSyncReducer, { fetchHtmlSuccess, parseDataSuccess, type FetchedHtmlData } from './dataSyncSlice';
+import dataSyncReducer, { fetchHtmlSuccess, initDataLoad, parseDataSuccess, type FetchedHtmlData } from './dataSyncSlice';
 import type { ParsedData } from '../interfaces';
 import type { Runeword } from '@/core/db';
 
@@ -109,6 +109,7 @@ function createTestStore() {
 }
 
 beforeEach(async () => {
+  vi.restoreAllMocks();
   vi.mocked(toast.warning).mockClear();
   parserControl.parseGemsError = null;
   await Promise.all(db.tables.map((table) => table.clear()));
@@ -137,6 +138,40 @@ describe('dataSyncSaga store step', () => {
     expect(appVersionMeta?.value).toBe(appVersion.version);
     expect(lastUpdatedMeta?.value).toBeTruthy();
     expect(await db.runewords.count()).toBe(10);
+    expect(toast.warning).not.toHaveBeenCalled();
+  });
+});
+
+describe('dataSyncSaga fetch failure', () => {
+  it('warns and keeps the cached data when a forced refresh fails', async () => {
+    await db.runewords.put(CACHED_RUNEWORD);
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'));
+    const store = createTestStore();
+
+    store.dispatch(initDataLoad({ force: true }));
+
+    const warning = 'Refresh failed: offline. Still using cached data.';
+    await vi.waitFor(() => {
+      expect(store.getState().dataSync.networkWarning).toBe(warning);
+    });
+    const state = store.getState().dataSync;
+    expect(state.isInitialized).toBe(true);
+    expect(state.isUsingCachedData).toBe(true);
+    expect(state.error).toBeNull();
+    expect(toast.warning).toHaveBeenCalledWith(warning, { description: 'See Settings for details.' });
+    expect(await db.runewords.count()).toBe(1);
+  });
+
+  it('reports a fatal error when a forced refresh fails and there is no cache', async () => {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'));
+    const store = createTestStore();
+
+    store.dispatch(initDataLoad({ force: true }));
+
+    await vi.waitFor(() => {
+      expect(store.getState().dataSync.error).toBe('Unable to load data. Please check your internet connection and try again.');
+    });
+    expect(store.getState().dataSync.isInitialized).toBe(false);
     expect(toast.warning).not.toHaveBeenCalled();
   });
 });

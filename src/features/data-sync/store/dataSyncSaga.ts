@@ -96,20 +96,21 @@ function* handleFetchHtml(action: PayloadAction<InitDataLoadPayload | undefined>
     console.error('[HTML] Fetch error:', error);
     // Check if we have cached data to fall back to
     const hasCache: boolean = (yield call(hasAnyCachedData)) as boolean;
+    const reason = error instanceof Error ? error.message : 'Network error';
 
-    if (hasCache && !action.payload?.force) {
-      // Not a force refresh and we have cached data - use it
+    if (!hasCache) {
+      console.log('[HTML] Fatal: fetch failed with no cached data');
+      yield put(fetchHtmlError(reason));
+      yield put(fatalError('Unable to load data. Please check your internet connection and try again.'));
+    } else if (action.payload?.force) {
+      // The user asked for this refresh, so tell them it failed
+      console.log('[HTML] Using cached data (forced refresh failed)');
+      yield call(warnUser, `Refresh failed: ${reason}. Still using cached data.`);
+      yield put(startupUseCached());
+    } else {
       console.log('[HTML] Using cached data (fetch failed)');
       yield put(setNetworkWarning('Unable to fetch latest data. Using cached version.'));
       yield put(startupUseCached());
-    } else {
-      // Force refresh or no cached data - report error
-      console.log('[HTML] Fatal: fetch failed with no cached data');
-      yield put(fetchHtmlError(error instanceof Error ? error.message : 'Network error'));
-
-      if (!hasCache) {
-        yield put(fatalError('Unable to load data. Please check your internet connection and try again.'));
-      }
     }
   }
 }
