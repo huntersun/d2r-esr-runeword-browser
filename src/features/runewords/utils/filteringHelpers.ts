@@ -87,10 +87,13 @@ export function matchesSearch(
 
 /**
  * Check if a runeword matches the socket count filter.
+ * Recipes accepting optional jewels have a socket range (e.g. "3-6 Socket"); they match
+ * any count within [sockets, socketsMax]. Others match only their exact `sockets` count.
  */
 export function matchesSockets(runeword: Runeword, socketCount: number | null): boolean {
   if (socketCount === null) return true;
-  return runeword.sockets === socketCount;
+  const max = runeword.socketsMax ?? runeword.sockets;
+  return socketCount >= runeword.sockets && socketCount <= max;
 }
 
 /**

@@ -20,8 +20,9 @@ The primary feature - browse and filter all Eastern Sun Resurrected runewords.
 ### Socket Count
 - Single-digit number input (1-6)
 - Default: empty (shows all runewords)
-- If set: only runewords with that exact socket count
-- Matches the base `sockets` count; recipes with optional jewels (shown as "2-3 Socket") match their base count
+- If set: only runewords that can be made with that socket count
+- Runewords without a range match their exact `sockets` count; recipes with optional jewels
+  (shown as "3-6 Socket") match any count in `[sockets, socketsMax]`
 
 ### Max Required Level
 - Number input to cap the required level of shown runewords
@@ -84,8 +85,8 @@ interface Runeword {
 - **sortKey**: Pre-calculated for sorting: ESR/Kanji (0-9999) or LoD (10000+) combined with reqLevel
 - **jewelInfo**: e.g. "(0-3) Jewels" — recipes that accept optional jewels on top of their runes
 - **socketsMax**: Set only for those jewel-accepting recipes, which the source shows as a range,
-  e.g. Void `(2-3 Socket)`. `sockets` stays the base count so socket filtering is unaffected;
-  the card shows "2-3 Socket".
+  e.g. Void `(2-3 Socket)`. `sockets` stays the base count; the socket filter matches any
+  count in `[sockets, socketsMax]` and the card shows "2-3 Socket".
 
 ## RunewordCard Display
 

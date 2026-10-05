@@ -103,6 +103,31 @@ describe('matchesSockets', () => {
     const runeword = createRuneword({ sockets: 3 });
     expect(matchesSockets(runeword, 4)).toBe(false);
   });
+
+  it('should match every socket count within a socket range', () => {
+    const runeword = createRuneword({ sockets: 3, socketsMax: 6 });
+    for (const count of [3, 4, 5, 6]) {
+      expect(matchesSockets(runeword, count)).toBe(true);
+    }
+  });
+
+  it('should not match socket counts outside a socket range', () => {
+    const runeword = createRuneword({ sockets: 3, socketsMax: 5 });
+    expect(matchesSockets(runeword, 2)).toBe(false);
+    expect(matchesSockets(runeword, 6)).toBe(false);
+  });
+
+  it('should match a range runeword when socketCount is null', () => {
+    const runeword = createRuneword({ sockets: 2, socketsMax: 3 });
+    expect(matchesSockets(runeword, null)).toBe(true);
+  });
+
+  it('should only match the exact count for a runeword without socketsMax', () => {
+    const runeword = createRuneword({ sockets: 4 });
+    expect(matchesSockets(runeword, 3)).toBe(false);
+    expect(matchesSockets(runeword, 4)).toBe(true);
+    expect(matchesSockets(runeword, 5)).toBe(false);
+  });
 });
 
 describe('matchesMaxReqLevel', () => {
