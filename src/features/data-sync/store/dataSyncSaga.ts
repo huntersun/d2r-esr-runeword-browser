@@ -112,6 +112,30 @@ function* handleFetchHtml(action: PayloadAction<InitDataLoadPayload | undefined>
   }
 }
 
+/**
+ * Parse/store failures after a successful fetch: if any cached data exists,
+ * keep the app usable on it (with a warning) instead of showing the fatal
+ * error screen; only report the failure when there is nothing to fall back to.
+ */
+function* fallBackToCacheOrFail(stage: 'parse' | 'store', failureAction: PayloadAction<string>) {
+  let hasCache = false;
+  try {
+    hasCache = (yield call(hasAnyCachedData)) as boolean;
+  } catch (cacheError) {
+    // The database itself may be unusable (e.g. after a store failure)
+    console.error('[HTML] Cache check error:', cacheError);
+  }
+
+  if (hasCache) {
+    console.log(`[HTML] Using cached data (${stage} failed)`);
+    yield put(setNetworkWarning('Unable to process the latest data. Using cached version.'));
+    yield put(startupUseCached());
+  } else {
+    console.log(`[HTML] Fatal: ${stage} failed with no cached data`);
+    yield put(failureAction);
+  }
+}
+
 function* handleParseData(action: PayloadAction<FetchedHtmlData>) {
   try {
     console.log('[HTML] Parsing HTML data...');
@@ -251,7 +275,7 @@ function* handleParseData(action: PayloadAction<FetchedHtmlData>) {
     );
   } catch (error) {
     console.error('[HTML] Parse error:', error);
-    yield put(parseDataError(error instanceof Error ? error.message : 'Parse error'));
+    yield call(fallBackToCacheOrFail, 'parse', parseDataError(error instanceof Error ? error.message : 'Parse error'));
   }
 }
 
@@ -318,7 +342,9 @@ function* handleStoreData(action: PayloadAction<ParsedData>) {
     yield put(storeDataSuccess());
   } catch (error) {
     console.error('[HTML] Store error:', error);
-    yield put(storeDataError(error instanceof Error ? error.message : 'Database error'));
+    // The store runs in a single Dexie transaction, so a failure (e.g.
+    // QuotaExceededError) rolls back and leaves the previous cache intact
+    yield call(fallBackToCacheOrFail, 'store', storeDataError(error instanceof Error ? error.message : 'Database error'));
   }
 }
 
