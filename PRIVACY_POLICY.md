@@ -16,12 +16,13 @@ For any privacy-related questions or requests, contact me at: **mirages_armful_2
 
 - **If you sign in with Discord:** I receive your Discord user ID, username, and avatar URL from Discord's OAuth service. I do not receive your Discord password or access to your Discord messages.
 - **If you sign in with email magic link:** I store the email address you provide.
-- **Display name:** You choose a public display name during registration. This is the only piece of identifying information visible to other users.
+- **Display name:** You choose a public display name during registration. It is shown to other users next to your builds — together with your Discord avatar if you signed in with Discord.
 
 ### When you use the app
 
 - **Builds:** The character builds you create (item/runeword selections, build name, description, character class).
 - **Likes:** Which builds you have liked.
+- **Favourites:** Which items (runewords, uniques, etc.) you have marked as favourites.
 - **Timestamp of your privacy policy acceptance.**
 
 ### What I do NOT collect
@@ -44,9 +45,9 @@ All data I collect serves one purpose: to let you save your builds, share them w
 
 ## What Is Publicly Visible
 
-- Your **display name** and **public builds** are visible to all users (including unauthenticated visitors).
+- Your **display name**, your **Discord avatar** (if you signed in with Discord) and your **public builds** are visible to all users (including unauthenticated visitors).
 - Your **email address** is **never** visible to other users. It is stored in a separate, protected authentication system.
-- Your **likes** are used for counting only — other users see the total like count on a build but cannot see a list of who liked it.
+- Your **likes** and **favourites**: the app itself only shows totals (like counts on builds, favourite counts on items). However, the underlying records — which builds you liked and which items you favourited, linked to your account ID — are technically readable by anyone through the app's public API.
 
 ## Where Your Data Is Stored
 

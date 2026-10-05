@@ -22,7 +22,7 @@ Plus:
 
 ## How it works
 
-There is no backend. The app fetches the official ESR documentation pages from [easternsunresurrected.com](https://easternsunresurrected.com/), parses them directly in your browser, and stores the data in IndexedDB. On startup it checks the ESR changelog and automatically refreshes the data when a new ESR version is released.
+The item data needs no backend: the app fetches the official ESR documentation pages from [easternsunresurrected.com](https://easternsunresurrected.com/), parses them directly in your browser, and stores the data in IndexedDB. On startup it checks the ESR changelog and automatically refreshes the data when a new ESR version is released. An optional [Supabase](https://supabase.com/) backend adds sign-in, shared builds and account favourites; without it configured, the rest of the app works as before.
 
 ## Development
 
