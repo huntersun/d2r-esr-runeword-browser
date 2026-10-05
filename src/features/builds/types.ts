@@ -11,3 +11,9 @@ export interface BuildAuthor {
 
 /** A build row with its author profile embedded. */
 export type BuildWithAuthor = Build & { readonly profiles: BuildAuthor | null };
+
+/**
+ * A build as fetched for list views (cards). The list query skips the heavy
+ * `build_data` jsonb and the free-form `description`, which cards never show.
+ */
+export type BuildListItem = Omit<BuildWithAuthor, 'build_data' | 'description'>;

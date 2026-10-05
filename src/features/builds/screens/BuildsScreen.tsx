@@ -12,6 +12,7 @@ import { openSignInDialog, selectIsAuthenticated } from '@/features/auth';
 import { BuildCard } from '../components/BuildCard';
 import { BuildCardSkeleton } from '../components/BuildCardSkeleton';
 import { BuildFilters } from '../components/BuildFilters';
+import { LoadMoreError } from '../components/LoadMoreError';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import {
   fetchBuildsRequested,
@@ -21,6 +22,7 @@ import {
   selectBuildsHasActiveFilters,
   selectBuildsHasMore,
   selectBuildsLoading,
+  selectBuildsLoadMoreError,
   selectBuildsLoadingMore,
   selectLikedBuildIdSet,
 } from '../store';
@@ -34,6 +36,7 @@ export function BuildsScreen() {
   const loadingMore = useSelector(selectBuildsLoadingMore);
   const hasMore = useSelector(selectBuildsHasMore);
   const error = useSelector(selectBuildsError);
+  const loadMoreError = useSelector(selectBuildsLoadMoreError);
   const hasActiveFilters = useSelector(selectBuildsHasActiveFilters);
   const likedBuildIds = useSelector(selectLikedBuildIdSet);
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -48,7 +51,9 @@ export function BuildsScreen() {
   const handleLoadMore = () => {
     if (hasMore && !loadingMore) dispatch(fetchMoreBuildsRequested());
   };
-  const sentinelRef = useInfiniteScroll(handleLoadMore, builds.length > 0 && hasMore && !loadingMore);
+  // Paused while a refetch runs (load-more would cancel it) and after a failed page,
+  // so a failing backend isn't hammered; the user retries explicitly instead.
+  const sentinelRef = useInfiniteScroll(handleLoadMore, builds.length > 0 && hasMore && !loadingMore && !loading && loadMoreError === null);
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -117,6 +122,9 @@ export function BuildsScreen() {
             <div className="flex justify-center py-6">
               <Spinner className="size-6" />
             </div>
+          )}
+          {loadMoreError !== null && (
+            <LoadMoreError message="Couldn’t load more builds. The backend may be waking up." onRetry={handleLoadMore} />
           )}
         </>
       )}

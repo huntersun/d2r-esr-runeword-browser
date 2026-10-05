@@ -4,13 +4,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { avatarInitials, formatProfileTag } from '@/features/auth';
-import type { BuildWithAuthor } from '../types';
+import type { BuildListItem } from '../types';
 import { classStyle } from '../utils/classStyle';
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
 interface BuildCardProps {
-  readonly build: BuildWithAuthor;
+  readonly build: BuildListItem;
   readonly currentEsrVersion: string | null;
   /** Whether the signed-in viewer has liked this build (fills the heart). */
   readonly liked?: boolean;

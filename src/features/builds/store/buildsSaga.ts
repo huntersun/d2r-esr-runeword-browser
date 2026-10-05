@@ -8,7 +8,7 @@ import type { Json, Profile } from '@/core/supabase/types';
 import { authStateChanged, selectAuthUserId, type AuthUser } from '@/features/auth/store/authSlice';
 import { BUILDS_PAGE_SIZE } from '../constants';
 import type { BuildData } from '../buildData';
-import type { BuildSortMode, BuildWithAuthor } from '../types';
+import type { BuildListItem, BuildSortMode, BuildWithAuthor } from '../types';
 import { refreshBuildData } from '../utils/refreshBuildData';
 import { buildCursorOrFilter, isUuid, type BuildListCursor } from './buildsQuery';
 import {
@@ -32,6 +32,7 @@ import {
   fetchBuildsRequested,
   fetchBuildsSuccess,
   fetchMoreAuthorBuildsRequested,
+  fetchMoreBuildsFailure,
   fetchMoreBuildsRequested,
   selectAuthorBuildsCursor,
   selectAuthorProfile,
@@ -59,9 +60,13 @@ import {
 // Embeds the author profile. The FK hint (!builds_user_id_fkey) is required to
 // disambiguate: PostgREST also infers a many-to-many builds<->profiles path via
 // the `likes` table, so a bare `profiles` embed errors with PGRST201.
-const BUILDS_SELECT = '*, profiles!builds_user_id_fkey(display_name, discriminator, avatar_url)';
+const AUTHOR_EMBED = 'profiles!builds_user_id_fkey(display_name, discriminator, avatar_url)';
+// Detail page: the full row (build_data + description).
+const BUILD_DETAIL_SELECT = `*, ${AUTHOR_EMBED}`;
+// List pages: only what BuildCard renders (see BuildListItem) — no build_data/description.
+const BUILD_LIST_SELECT = `id, user_id, name, class, esr_version, esr_version_updated, likes_count, created_at, updated_at, ${AUTHOR_EMBED}`;
 
-function cursorFromItem(item: BuildWithAuthor): BuildListCursor {
+function cursorFromItem(item: BuildListItem): BuildListCursor {
   return { likesCount: item.likes_count, createdAt: item.created_at, id: item.id };
 }
 
@@ -90,7 +95,7 @@ function* fetchBuildsPage(append: boolean) {
   const userId = (yield select(selectAuthUserId)) as string | null;
   const cursor = append ? ((yield select(selectBuildsCursor)) as BuildListCursor | null) : null;
 
-  let query = client.from('builds').select(BUILDS_SELECT);
+  let query = client.from('builds').select(BUILD_LIST_SELECT);
 
   const trimmed = searchText.trim();
   if (trimmed.length > 0) query = query.ilike('name', `%${trimmed}%`);
@@ -103,7 +108,7 @@ function* fetchBuildsPage(append: boolean) {
   if (append && cursor !== null) query = query.or(buildCursorOrFilter(sortMode, cursor));
   query = query.limit(BUILDS_PAGE_SIZE);
 
-  const { data, error } = (yield call(() => query)) as { data: BuildWithAuthor[] | null; error: { message: string } | null };
+  const { data, error } = (yield call(() => query)) as { data: BuildListItem[] | null; error: { message: string } | null };
   if (error) throw new Error(error.message);
 
   const items = data ?? [];
@@ -117,19 +122,16 @@ function* fetchBuildsPage(append: boolean) {
   yield put(fetchBuildsSuccess({ items, cursor: nextCursor, hasMore, append, likedIds }));
 }
 
-function* handleFetchBuilds() {
+// One watcher serves both the first page and load-more, so takeLatest cancels an
+// in-flight load-more when a refetch (e.g. a filter change) starts — its stale page
+// is never appended to the new list.
+function* handleFetchBuilds(action: PayloadAction) {
+  const append = action.type === fetchMoreBuildsRequested.type;
   try {
-    yield call(fetchBuildsPage, false);
+    yield call(fetchBuildsPage, append);
   } catch (error) {
-    yield put(fetchBuildsFailure(error instanceof Error ? error.message : 'Failed to load builds.'));
-  }
-}
-
-function* handleFetchMore() {
-  try {
-    yield call(fetchBuildsPage, true);
-  } catch (error) {
-    yield put(fetchBuildsFailure(error instanceof Error ? error.message : 'Failed to load more builds.'));
+    const message = error instanceof Error ? error.message : 'Failed to load builds.';
+    yield put(append ? fetchMoreBuildsFailure(message) : fetchBuildsFailure(message));
   }
 }
 
@@ -217,7 +219,9 @@ function* handleFetchBuild(action: PayloadAction<string>) {
     const client = requireSupabase();
     const userId = (yield select(selectAuthUserId)) as string | null;
 
-    const { data: build, error } = (yield call(() => client.from('builds').select(BUILDS_SELECT).eq('id', buildId).maybeSingle())) as {
+    const { data: build, error } = (yield call(() =>
+      client.from('builds').select(BUILD_DETAIL_SELECT).eq('id', buildId).maybeSingle()
+    )) as {
       data: BuildWithAuthor | null;
       error: { message: string } | null;
     };
@@ -290,12 +294,12 @@ function* fetchAuthorBuildsPage(authorId: string, append: boolean) {
   const client = requireSupabase();
   const cursor = append ? ((yield select(selectAuthorBuildsCursor)) as BuildListCursor | null) : null;
 
-  let query = client.from('builds').select(BUILDS_SELECT).eq('user_id', authorId);
+  let query = client.from('builds').select(BUILD_LIST_SELECT).eq('user_id', authorId);
   query = query.order('created_at', { ascending: false }).order('id', { ascending: false });
   if (append && cursor !== null) query = query.or(buildCursorOrFilter('newest', cursor));
   query = query.limit(BUILDS_PAGE_SIZE);
 
-  const { data, error } = (yield call(() => query)) as { data: BuildWithAuthor[] | null; error: { message: string } | null };
+  const { data, error } = (yield call(() => query)) as { data: BuildListItem[] | null; error: { message: string } | null };
   if (error) throw new Error(error.message);
 
   const items = data ?? [];
@@ -328,9 +332,15 @@ function* handleFetchAuthorProfile(action: PayloadAction<string>) {
       return;
     }
     yield put(fetchAuthorProfileSuccess(profile));
-    yield call(fetchAuthorBuildsPage, userId, false);
   } catch {
     yield put(fetchAuthorProfileFailure());
+    return;
+  }
+  // The profile loaded; a builds failure is reported on the builds list, not the profile.
+  try {
+    yield call(fetchAuthorBuildsPage, userId, false);
+  } catch (error) {
+    yield put(fetchAuthorBuildsFailure(error instanceof Error ? error.message : 'Failed to load builds.'));
   }
 }
 
@@ -341,6 +351,15 @@ function* handleAuthChangedForBuilds(action: PayloadAction<{ user: AuthUser | nu
   if (action.payload.user !== null) return;
   const myBuildsOnly = (yield select(selectBuildsMyBuildsOnly)) as boolean;
   if (myBuildsOnly) yield put(setMyBuildsOnly(false));
+}
+
+// Shares one takeLatest watcher with the profile fetch (see handleFetchBuilds).
+function* handleAuthorAction(action: PayloadAction<string | undefined>) {
+  if (fetchAuthorProfileRequested.match(action)) {
+    yield call(handleFetchAuthorProfile, action);
+  } else {
+    yield call(handleFetchMoreAuthorBuilds);
+  }
 }
 
 function* handleFetchMoreAuthorBuilds() {
@@ -355,14 +374,12 @@ function* handleFetchMoreAuthorBuilds() {
 
 export function* buildsSaga() {
   yield takeLatest([setSearchText.type, setClassFilter.type, setSortMode.type, setMyBuildsOnly.type], handleFilterChanged);
-  yield takeLatest(fetchBuildsRequested.type, handleFetchBuilds);
-  yield takeLatest(fetchMoreBuildsRequested.type, handleFetchMore);
+  yield takeLatest([fetchBuildsRequested.type, fetchMoreBuildsRequested.type], handleFetchBuilds);
   yield takeLatest(createBuildRequested.type, handleCreateBuild);
   yield takeLatest(updateBuildRequested.type, handleUpdateBuild);
   yield takeLatest(fetchBuildRequested.type, handleFetchBuild);
   yield takeLatest(toggleLikeRequested.type, handleToggleLike);
   yield takeLatest(deleteBuildRequested.type, handleDeleteBuild);
-  yield takeLatest(fetchAuthorProfileRequested.type, handleFetchAuthorProfile);
-  yield takeLatest(fetchMoreAuthorBuildsRequested.type, handleFetchMoreAuthorBuilds);
+  yield takeLatest([fetchAuthorProfileRequested.type, fetchMoreAuthorBuildsRequested.type], handleAuthorAction);
   yield takeLatest(authStateChanged.type, handleAuthChangedForBuilds);
 }

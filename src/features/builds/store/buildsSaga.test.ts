@@ -12,6 +12,9 @@ const mocks = vi.hoisted(() => {
     singleResult: { data: null as { id: string } | null, error: null as { message: string } | null },
     // Result of the "which of these builds did the viewer like" query (terminated by .in()).
     likesResult: { data: [] as { build_id: string }[] | null, error: null as { message: string } | null },
+    // When set, the next awaited query waits for this promise before resolving (one-shot),
+    // so a test can hold one request in flight while others complete.
+    nextGate: null as Promise<void> | null,
   };
   const builder: Record<string, unknown> = {};
   builder.select = vi.fn(() => builder);
@@ -30,9 +33,14 @@ const mocks = vi.hoisted(() => {
   builder.in = vi.fn(() => Promise.resolve(state.likesResult));
   // Resolve on a microtask (like a real network call) so the saga blocks at the
   // yield — letting optimistic state be observed before the request settles.
+  // The result is captured when the request is made, so later changes to listResult
+  // don't leak into an in-flight request.
   builder.then = (resolve: (value: unknown) => void) => {
-    Promise.resolve().then(() => {
-      resolve(state.listResult);
+    const result = state.listResult;
+    const gate = state.nextGate ?? Promise.resolve();
+    state.nextGate = null;
+    void gate.then(() => {
+      resolve(result);
     });
   };
   const client = { from: vi.fn(() => builder) };
@@ -57,6 +65,7 @@ import buildsReducer, {
   fetchBuildSuccess,
   fetchBuildsRequested,
   fetchMoreAuthorBuildsRequested,
+  fetchMoreBuildsRequested,
   setClassFilter,
   setMyBuildsOnly,
   toggleLikeRequested,
@@ -64,6 +73,7 @@ import buildsReducer, {
 } from './buildsSlice';
 import authReducer, { authStateChanged } from '@/features/auth/store/authSlice';
 import { RequestState } from '@/core/types';
+import { BUILDS_PAGE_SIZE } from '../constants';
 
 function makeRow(id: string): BuildWithAuthor {
   return {
@@ -80,6 +90,11 @@ function makeRow(id: string): BuildWithAuthor {
     updated_at: '2026-06-08T10:00:00.000Z',
     profiles: { display_name: 'Hero', discriminator: 4242, avatar_url: null },
   };
+}
+
+/** A full page of rows, so the list reports hasMore and load-more is possible. */
+function makeFullPage(prefix: string): BuildWithAuthor[] {
+  return Array.from({ length: BUILDS_PAGE_SIZE }, (_, index) => makeRow(`${prefix}${String(index)}`));
 }
 
 function makeProfileRow(id: string): Profile {
@@ -111,6 +126,7 @@ beforeEach(() => {
   mocks.state.listResult = { data: [], error: null };
   mocks.state.singleResult = { data: null, error: null };
   mocks.state.likesResult = { data: [], error: null };
+  mocks.state.nextGate = null;
   // maybeSingle is set per test; reset clears any prior once-queue (clearAllMocks does not).
   (mocks.builder.maybeSingle as Mock).mockReset();
 });
@@ -361,5 +377,123 @@ describe('buildsSaga', () => {
     await vi.waitFor(() => {
       expect(store.getState().builds.authorBuilds).toHaveLength(2);
     });
+  });
+  it('flags a failed load-more without touching the loaded list or retrying', async () => {
+    mocks.state.listResult = { data: makeFullPage('a'), error: null };
+    const store = setupStore();
+    store.dispatch(fetchBuildsRequested());
+    await vi.waitFor(() => {
+      expect(store.getState().builds.items).toHaveLength(BUILDS_PAGE_SIZE);
+    });
+
+    mocks.state.listResult = { data: null, error: { message: 'backend down' } };
+    store.dispatch(fetchMoreBuildsRequested());
+
+    await vi.waitFor(() => {
+      expect(store.getState().builds.loadMoreError).toBe('backend down');
+    });
+    const callsAfterFailure = mocks.client.from.mock.calls.length;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    const builds = store.getState().builds;
+    expect(mocks.client.from.mock.calls.length).toBe(callsAfterFailure);
+    expect(builds.items).toHaveLength(BUILDS_PAGE_SIZE);
+    expect(builds.listStatus).toBe(RequestState.SUCCESS);
+    expect(builds.error).toBeNull();
+    expect(builds.loadingMore).toBe(false);
+    expect(builds.hasMore).toBe(true);
+
+    // An explicit retry clears the flag and appends the page.
+    mocks.state.listResult = { data: [makeRow('b')], error: null };
+    store.dispatch(fetchMoreBuildsRequested());
+    expect(store.getState().builds.loadMoreError).toBeNull();
+    await vi.waitFor(() => {
+      expect(store.getState().builds.items).toHaveLength(BUILDS_PAGE_SIZE + 1);
+    });
+  });
+
+  it('drops an in-flight load-more page when the list is refetched', async () => {
+    mocks.state.listResult = { data: makeFullPage('a'), error: null };
+    const store = setupStore();
+    store.dispatch(fetchBuildsRequested());
+    await vi.waitFor(() => {
+      expect(store.getState().builds.items).toHaveLength(BUILDS_PAGE_SIZE);
+    });
+
+    // Hold the load-more request in flight until after the refetch has settled.
+    let releaseStale = () => {};
+    mocks.state.nextGate = new Promise<void>((resolve) => {
+      releaseStale = resolve;
+    });
+    mocks.state.listResult = { data: [makeRow('stale')], error: null };
+    store.dispatch(fetchMoreBuildsRequested());
+
+    mocks.state.listResult = { data: [makeRow('fresh')], error: null };
+    store.dispatch(setClassFilter('Paladin'));
+    expect(store.getState().builds.loadingMore).toBe(false);
+    await vi.waitFor(() => {
+      expect(store.getState().builds.items.map((item) => item.id)).toEqual(['fresh']);
+    });
+
+    releaseStale();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(store.getState().builds.items.map((item) => item.id)).toEqual(['fresh']);
+  });
+
+  it('reports an author builds failure on the builds list, not the profile', async () => {
+    (mocks.builder.maybeSingle as Mock).mockResolvedValue({ data: makeProfileRow(VALID_USER_ID), error: null });
+    mocks.state.listResult = { data: null, error: { message: 'builds down' } };
+    const store = setupStore();
+
+    store.dispatch(fetchAuthorProfileRequested(VALID_USER_ID));
+
+    await vi.waitFor(() => {
+      expect(store.getState().builds.authorBuildsError).toBe('builds down');
+    });
+    const builds = store.getState().builds;
+    expect(builds.authorProfile?.id).toBe(VALID_USER_ID);
+    expect(builds.authorStatus).toBe(RequestState.SUCCESS);
+    expect(builds.authorBuilds).toEqual([]);
+  });
+
+  it('flags a failed author load-more without retrying', async () => {
+    (mocks.builder.maybeSingle as Mock).mockResolvedValue({ data: makeProfileRow(VALID_USER_ID), error: null });
+    mocks.state.listResult = { data: makeFullPage('a'), error: null };
+    const store = setupStore();
+    store.dispatch(fetchAuthorProfileRequested(VALID_USER_ID));
+    await vi.waitFor(() => {
+      expect(store.getState().builds.authorBuilds).toHaveLength(BUILDS_PAGE_SIZE);
+    });
+
+    mocks.state.listResult = { data: null, error: { message: 'backend down' } };
+    store.dispatch(fetchMoreAuthorBuildsRequested());
+
+    await vi.waitFor(() => {
+      expect(store.getState().builds.authorBuildsError).toBe('backend down');
+    });
+    const builds = store.getState().builds;
+    expect(builds.authorBuildsLoadingMore).toBe(false);
+    expect(builds.authorBuilds).toHaveLength(BUILDS_PAGE_SIZE);
+  });
+
+  it('requests list columns without build_data for the listing and the full row for the detail page', async () => {
+    mocks.state.listResult = { data: [makeRow('a')], error: null };
+    (mocks.builder.maybeSingle as Mock).mockResolvedValue({ data: makeRow(VALID_USER_ID), error: null });
+    const store = setupStore();
+
+    store.dispatch(fetchBuildsRequested());
+    await vi.waitFor(() => {
+      expect(store.getState().builds.items).toHaveLength(1);
+    });
+    store.dispatch(fetchBuildRequested(VALID_USER_ID));
+    await vi.waitFor(() => {
+      expect(store.getState().builds.detailBuild?.id).toBe(VALID_USER_ID);
+    });
+
+    const selects = (mocks.builder.select as Mock).mock.calls.map((call) => String(call[0]));
+    const [listSelect, detailSelect] = selects;
+    expect(listSelect).not.toContain('*');
+    expect(listSelect).not.toContain('build_data');
+    expect(listSelect).not.toContain('description');
+    expect(detailSelect.startsWith('*')).toBe(true);
   });
 });

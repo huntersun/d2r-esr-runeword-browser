@@ -5,7 +5,7 @@ import type { RootState } from '@/core/store/store';
 import type { Profile } from '@/core/supabase';
 import type { CharacterClass } from '../constants';
 import type { BuildData } from '../buildData';
-import type { BuildSortMode, BuildWithAuthor } from '../types';
+import type { BuildListItem, BuildSortMode, BuildWithAuthor } from '../types';
 import type { BuildListCursor } from './buildsQuery';
 
 export interface CreateBuildPayload {
@@ -20,7 +20,7 @@ export interface UpdateBuildPayload extends CreateBuildPayload {
 }
 
 interface FetchBuildsSuccessPayload {
-  readonly items: readonly BuildWithAuthor[];
+  readonly items: readonly BuildListItem[];
   readonly cursor: BuildListCursor | null;
   readonly hasMore: boolean;
   readonly append: boolean;
@@ -31,12 +31,17 @@ interface FetchBuildsSuccessPayload {
 type FetchAuthorBuildsSuccessPayload = FetchBuildsSuccessPayload;
 
 interface BuildsState {
-  readonly items: readonly BuildWithAuthor[];
+  readonly items: readonly BuildListItem[];
   readonly listStatus: RequestState;
   readonly loadingMore: boolean;
   readonly hasMore: boolean;
   readonly cursor: BuildListCursor | null;
   readonly error: string | null;
+  /**
+   * Set when a load-more page failed. Stops the infinite-scroll sentinel from
+   * re-firing (no retry storm); the list shows an inline Retry instead.
+   */
+  readonly loadMoreError: string | null;
   /** Build ids in the current list the signed-in viewer has liked. */
   readonly likedBuildIds: readonly string[];
   // Filters / sort (server-side). My Builds is intentionally local-only state.
@@ -58,10 +63,11 @@ interface BuildsState {
   readonly authorProfile: Profile | null;
   readonly authorStatus: RequestState;
   readonly authorNotFound: boolean;
-  readonly authorBuilds: readonly BuildWithAuthor[];
+  readonly authorBuilds: readonly BuildListItem[];
   readonly authorBuildsLoadingMore: boolean;
   readonly authorBuildsHasMore: boolean;
   readonly authorBuildsCursor: BuildListCursor | null;
+  /** Set when a page of the author's builds failed (first page or load-more). Pauses infinite scroll. */
   readonly authorBuildsError: string | null;
   /** Build ids on the author profile list the signed-in viewer has liked. */
   readonly authorLikedBuildIds: readonly string[];
@@ -74,6 +80,7 @@ const initialState: BuildsState = {
   hasMore: false,
   cursor: null,
   error: null,
+  loadMoreError: null,
   likedBuildIds: [],
   searchText: '',
   classFilter: null,
@@ -118,9 +125,14 @@ const buildsSlice = createSlice({
     fetchBuildsRequested(state) {
       state.listStatus = RequestState.LOADING;
       state.error = null;
+      // A refetch supersedes (and the saga cancels) any in-flight load-more.
+      state.loadingMore = false;
+      state.loadMoreError = null;
+      state.cursor = null;
     },
     fetchMoreBuildsRequested(state) {
       state.loadingMore = true;
+      state.loadMoreError = null;
     },
     fetchBuildsSuccess(state, action: PayloadAction<FetchBuildsSuccessPayload>) {
       const { items, cursor, hasMore, append, likedIds = [] } = action.payload;
@@ -130,10 +142,15 @@ const buildsSlice = createSlice({
       state.hasMore = hasMore;
       state.listStatus = RequestState.SUCCESS;
       state.loadingMore = false;
+      state.loadMoreError = null;
     },
     fetchBuildsFailure(state, action: PayloadAction<string>) {
       state.listStatus = RequestState.ERROR;
       state.error = action.payload;
+      state.loadingMore = false;
+    },
+    fetchMoreBuildsFailure(state, action: PayloadAction<string>) {
+      state.loadMoreError = action.payload;
       state.loadingMore = false;
     },
 
@@ -251,6 +268,7 @@ const buildsSlice = createSlice({
     },
     fetchMoreAuthorBuildsRequested(state) {
       state.authorBuildsLoadingMore = true;
+      state.authorBuildsError = null;
     },
     fetchAuthorBuildsSuccess(state, action: PayloadAction<FetchAuthorBuildsSuccessPayload>) {
       const { items, cursor, hasMore, append, likedIds = [] } = action.payload;
@@ -288,6 +306,7 @@ export const {
   fetchMoreBuildsRequested,
   fetchBuildsSuccess,
   fetchBuildsFailure,
+  fetchMoreBuildsFailure,
   createBuildRequested,
   createBuildSucceeded,
   createBuildFailed,
@@ -330,6 +349,7 @@ export const selectBuildsLoadingMore = createSelector([selectBuildsState], (s) =
 export const selectBuildsHasMore = createSelector([selectBuildsState], (s) => s.hasMore);
 export const selectBuildsCursor = createSelector([selectBuildsState], (s) => s.cursor);
 export const selectBuildsError = createSelector([selectBuildsState], (s) => s.error);
+export const selectBuildsLoadMoreError = createSelector([selectBuildsState], (s) => s.loadMoreError);
 export const selectBuildsSearchText = createSelector([selectBuildsState], (s) => s.searchText);
 export const selectBuildsClassFilter = createSelector([selectBuildsState], (s) => s.classFilter);
 export const selectBuildsSortMode = createSelector([selectBuildsState], (s) => s.sortMode);

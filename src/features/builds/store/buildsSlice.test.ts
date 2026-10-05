@@ -12,7 +12,9 @@ import buildsReducer, {
   fetchBuildNotFound,
   fetchBuildSuccess,
   fetchBuildsFailure,
+  fetchBuildsRequested,
   fetchBuildsSuccess,
+  fetchMoreBuildsFailure,
   fetchMoreBuildsRequested,
   resetCreateStatus,
   resetUpdateStatus,
@@ -74,6 +76,22 @@ describe('buildsSlice', () => {
     expect(next.listStatus).toBe(RequestState.ERROR);
     expect(next.error).toBe('boom');
     expect(next.loadingMore).toBe(false);
+  });
+
+  it('records a load-more error separately and clears it on retry or refetch', () => {
+    const loaded = buildsReducer(initial, fetchBuildsSuccess({ items: [makeBuild('a')], cursor: null, hasMore: true, append: false }));
+    const failed = buildsReducer({ ...loaded, loadingMore: true }, fetchMoreBuildsFailure('boom'));
+    expect(failed.loadMoreError).toBe('boom');
+    expect(failed.loadingMore).toBe(false);
+    expect(failed.listStatus).toBe(RequestState.SUCCESS);
+    expect(failed.error).toBeNull();
+    expect(failed.items).toHaveLength(1);
+
+    expect(buildsReducer(failed, fetchMoreBuildsRequested()).loadMoreError).toBeNull();
+    const refetching = buildsReducer({ ...failed, loadingMore: true }, fetchBuildsRequested());
+    expect(refetching.loadMoreError).toBeNull();
+    expect(refetching.loadingMore).toBe(false);
+    expect(refetching.cursor).toBeNull();
   });
 
   it('tracks filter and sort changes', () => {

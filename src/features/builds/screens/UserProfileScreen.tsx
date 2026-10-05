@@ -11,12 +11,14 @@ import { db } from '@/core/db';
 import { ProfileEditDialog, avatarInitials, formatProfileTag, selectAuthUserId } from '@/features/auth';
 import { BuildCard } from '../components/BuildCard';
 import { BuildCardSkeleton } from '../components/BuildCardSkeleton';
+import { LoadMoreError } from '../components/LoadMoreError';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import {
   clearAuthorProfile,
   fetchAuthorProfileRequested,
   fetchMoreAuthorBuildsRequested,
   selectAuthorBuilds,
+  selectAuthorBuildsError,
   selectAuthorBuildsHasMore,
   selectAuthorBuildsLoadingMore,
   selectAuthorLikedBuildIdSet,
@@ -38,6 +40,7 @@ export function UserProfileScreen() {
   const builds = useSelector(selectAuthorBuilds);
   const loadingMore = useSelector(selectAuthorBuildsLoadingMore);
   const hasMore = useSelector(selectAuthorBuildsHasMore);
+  const buildsError = useSelector(selectAuthorBuildsError);
   const likedBuildIds = useSelector(selectAuthorLikedBuildIdSet);
   const currentUserId = useSelector(selectAuthUserId);
 
@@ -57,7 +60,8 @@ export function UserProfileScreen() {
   const handleLoadMore = () => {
     if (hasMore && !loadingMore) dispatch(fetchMoreAuthorBuildsRequested());
   };
-  const sentinelRef = useInfiniteScroll(handleLoadMore, builds.length > 0 && hasMore && !loadingMore);
+  // Paused after a failed page so a failing backend isn't hammered; retry is explicit.
+  const sentinelRef = useInfiniteScroll(handleLoadMore, builds.length > 0 && hasMore && !loadingMore && buildsError === null);
 
   if (userId === undefined) {
     return <Navigate to="/builds" replace />;
@@ -142,7 +146,14 @@ export function UserProfileScreen() {
 
       <section className="mt-8">
         <h2 className="mb-4 text-lg font-semibold">Builds</h2>
-        {builds.length === 0 ? (
+        {builds.length === 0 && buildsError !== null ? (
+          <LoadMoreError
+            message="Couldn’t load builds. The backend may be waking up."
+            onRetry={() => {
+              dispatch(fetchAuthorProfileRequested(userId));
+            }}
+          />
+        ) : builds.length === 0 ? (
           <p className="py-8 text-center text-muted-foreground">
             {isOwner ? 'You haven’t shared any builds yet.' : 'This user hasn’t shared any builds yet.'}
           </p>
@@ -158,6 +169,9 @@ export function UserProfileScreen() {
               <div className="flex justify-center py-6">
                 <Spinner className="size-6" />
               </div>
+            )}
+            {buildsError !== null && (
+              <LoadMoreError message="Couldn’t load more builds. The backend may be waking up." onRetry={handleLoadMore} />
             )}
           </>
         )}
