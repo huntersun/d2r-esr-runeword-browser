@@ -82,3 +82,18 @@ describe('refreshBuildData', () => {
     expect(refreshed.mercenaryNotes).toEqual({ helmet: 'D-Stone until very fast attack speed' });
   });
 });
+
+describe('refreshBuildData with same-name variants', () => {
+  it('keeps the saved variant instead of rewriting it to a same-name sibling', async () => {
+    const shared = { name: "Lycander's Aim", baseItem: 'Ceremonial Bow', category: 'Amazon Bow', reqLevel: 42 } as const;
+    const rest = { baseItemCode: 'am7', page: 'weapons', itemLevel: 50, gambleItem: '', notes: '' } as const;
+    await db.htmUniqueItems.add({ ...shared, ...rest, properties: ['+(50 to 100) to Dexterity'], isAncientCoupon: false });
+    await db.htmUniqueItems.add({ ...shared, ...rest, properties: ['-200% Target Defense'], isAncientCoupon: true });
+
+    const refreshed = await refreshBuildData({
+      items: { weapon: { type: 'unique', id: 987654, snapshot: { ...shared, properties: ['-200% Target Defense'] } } },
+    });
+    const weapon = refreshed.items?.weapon;
+    expect(weapon?.type === 'unique' && weapon.snapshot.properties).toEqual(['-200% Target Defense']);
+  });
+});

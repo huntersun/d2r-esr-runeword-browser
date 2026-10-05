@@ -132,3 +132,50 @@ describe('computeBuildItemDiffs', () => {
     expect(diffs.mercenary.helmet?.status).toBe('unchanged');
   });
 });
+
+describe('computeBuildItemDiffs with same-name variants', () => {
+  const NORMAL = ['+(150 to 200)% Enhanced Damage', '+(50 to 100) to Dexterity'];
+  const COUPON = ['+100% Enhanced Damage', '-200% Target Defense', '+(1 to 5) To Broadhead'];
+
+  async function addAim(properties: readonly string[], isAncientCoupon: boolean): Promise<void> {
+    await db.htmUniqueItems.add({
+      name: "Lycander's Aim",
+      baseItem: 'Ceremonial Bow',
+      baseItemCode: 'am7',
+      page: 'weapons',
+      category: 'Amazon Bow',
+      itemLevel: 50,
+      reqLevel: 42,
+      properties: [...properties],
+      isAncientCoupon,
+      gambleItem: '',
+      notes: '',
+    });
+  }
+
+  function aimRef(properties: readonly string[]): ItemRef {
+    return {
+      type: 'unique',
+      id: 987654,
+      snapshot: { name: "Lycander's Aim", baseItem: 'Ceremonial Bow', category: 'Amazon Bow', reqLevel: 42, properties },
+    };
+  }
+
+  it('reports the saved (second) variant as unchanged instead of diffing it against the first', async () => {
+    await addAim(NORMAL, false);
+    await addAim(COUPON, true);
+
+    const diffs = await computeBuildItemDiffs({ items: { weapon: aimRef(COUPON) } });
+    expect(diffs.items.weapon?.status).toBe('unchanged');
+  });
+
+  it('still flags a real upstream change to the saved variant', async () => {
+    await addAim(NORMAL, false);
+    await addAim([...COUPON.slice(0, 2), '+(2 to 6) To Broadhead'], true);
+
+    const diffs = await computeBuildItemDiffs({ items: { weapon: aimRef(COUPON) } });
+    const weapon = diffs.items.weapon;
+    expect(weapon?.status).toBe('changed');
+    if (weapon?.current?.type === 'unique') expect(weapon.current.snapshot.properties).toContain('+(2 to 6) To Broadhead');
+  });
+});
