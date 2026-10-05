@@ -206,7 +206,7 @@ The database stores **typed item references** with full item snapshots. Each equ
 
 There are five types of item references:
 
-**Unique item** — references a unique item from `htmUniqueItems` by its auto-increment ID, includes a full snapshot of the item's stats at the time the build was created/edited:
+**Unique item** — references a unique item from `htmUniqueItems`, includes a full snapshot of the item's stats at the time the build was created/edited. The stored `id` is informational only: the local auto-increment ID is reassigned on every data re-sync, so the item is resolved by snapshot `name` and, among same-name variants, by snapshot similarity (base item, category, properties, level — see `utils/itemLookup.ts`):
 ```json
 {
   "type": "unique",
@@ -223,7 +223,7 @@ There are five types of item references:
 
 Snapshot fields for uniques: `name`, `baseItem`, `category`, `reqLevel`, `properties` (stored as strings — the `rawText` values from `Affix` objects where applicable). Other `htmUniqueItems` fields (`baseItemCode`, `itemLevel`, `isAncientCoupon`, `gambleItem`) are not included — they're not useful for display on a build page.
 
-**Mythical unique** — references a mythical unique item from `mythicalUniques` by its ID, includes a snapshot:
+**Mythical unique** — references a mythical unique item from `mythicalUniques` (resolved by name + snapshot similarity, like uniques), includes a snapshot:
 ```json
 {
   "type": "mythical",
@@ -549,7 +549,7 @@ No ascendancy filter — keep it simple.
 
 ### Pagination
 
-**Cursor-based pagination** with 50 builds per batch. Load more as the user scrolls down (infinite scroll). Cursor-based pagination is used instead of offset-based to avoid missed or duplicated items when `likes_count` changes between page fetches.
+**Cursor-based pagination** with 50 builds per batch. Load more as the user scrolls down (infinite scroll). List pages select only the columns the cards render (no `build_data` / `description`); the detail page fetches the full row. A failed load-more keeps the loaded list, pauses infinite scroll and shows an inline Retry (no automatic retry). A refetch (filter/sort change) cancels any in-flight load-more so a stale page is never appended. Cursor-based pagination is used instead of offset-based to avoid missed or duplicated items when `likes_count` changes between page fetches.
 
 **Cursor strategy per sort mode:**
 - **Newest first**: Cursor is `(created_at, id)` — both are immutable, so ordering is stable
@@ -660,8 +660,8 @@ Only groups with matches are shown. Empty groups are hidden.
 ```
 
 When a user selects an item from the autocomplete:
-- **Unique item**: The reference stores the item's `id` (auto-increment PK from `htmUniqueItems`) and a full snapshot of its current stats
-- **Mythical unique**: The reference stores the item's `id` (from `mythicalUniques`) and a full snapshot — same display structure as regular uniques
+- **Unique item**: The reference stores the item's `id` (auto-increment PK from `htmUniqueItems`, informational only — lookups go by snapshot name + similarity) and a full snapshot of its current stats
+- **Mythical unique**: The reference stores the item's `id` (from `mythicalUniques`, informational only, as above) and a full snapshot — same display structure as regular uniques
 - **Runeword**: The reference stores the runeword's `name` and `variant` (compound key) and a full snapshot of its current stats
 - **Gemword**: The reference stores the gemword's `name` and `variant` (compound key) and a full snapshot — same structure as runewords, with a `gems` recipe instead of `runes`
 - **Freetext**: If the user's input doesn't match any item, it's stored as a freetext entry with just the typed name
@@ -1082,7 +1082,7 @@ These were decided or discovered while building the feature, amending the origin
 - **Supabase SDK is lazily loaded.** A lightweight `config` module exposes `isSupabaseConfigured` for the eager app shell; the SDK client lives in a separate module imported only by the (lazy) auth/builds sagas, keeping `@supabase/supabase-js` out of the main bundle.
 - **Consent gate keeps the trigger-assigned discriminator.** The display-name-change discriminator regeneration (with collision retry) is implemented as part of profile editing, not the consent gate.
 - **Discriminator regeneration is client-side.** Renaming via the profile-edit dialog generates a fresh random discriminator (1000–9999) in the auth saga and retries on the `(display_name, discriminator)` unique violation (PostgREST code `23505`), up to 10 attempts before surfacing an error. No extra DB function/migration is needed — the existing per-row UPDATE policy covers it.
-- **Author profile page reuses the builds list machinery.** `/user/:userId` reads the public `profiles` row (UUID-guarded like build ids) plus that author's builds via the same `BUILDS_SELECT` embed and keyset cursor (newest-first only — no sort toggle), with infinite scroll. Its state lives alongside the builds slice (`authorProfile` + `authorBuilds`), separate from the main listing state. After an owner rename, the page refetches so the header and cards reflect the new tag.
+- **Author profile page reuses the builds list machinery.** `/user/:userId` reads the public `profiles` row (UUID-guarded like build ids) plus that author's builds via the same list column select + author embed and keyset cursor (newest-first only — no sort toggle), with infinite scroll. A builds-query failure is shown on the builds section (with Retry), not as a profile failure. Its state lives alongside the builds slice (`authorProfile` + `authorBuilds`), separate from the main listing state. After an owner rename, the page refetches so the header and cards reflect the new tag.
 - **Profile editing scope.** The "Edit Profile" dialog currently changes the display name only (avatar comes from Discord; magic-link users keep the initials fallback). The account-deletion link described for this dialog ships with the account-deletion phase.
 - **Per-item ESR diff badges.** On the detail page each item's stored snapshot is re-resolved against the viewer's current local data (`utils/itemDiff.ts`: `resolveCurrentRef` + an order-independent `deepEqual` so Postgres jsonb key reordering isn't a false diff). Item stats are shown from **current** data; a changed item gets an amber "Stats updated" toggle that reveals the snapshot saved with the build, and an item missing from local data falls back to the saved snapshot with a "may no longer exist in the current ESR version" note. Diffs are computed via `useLiveQuery` (so they react to local data loading) and only surfaced once `esrVersion` is present, to avoid flagging everything as missing before local data finishes loading. `refreshBuildData` now shares `resolveCurrentRef`.
 - **Reused the rich browse-page item cards.** Equipped items render with the same `HtmUniqueItemCard` / `MythicalUniqueCard` / `RunewordCard` / `GemwordCard` (colours, affixes, rune/gem badges, socketable bonuses) used on the browse pages — same pattern as `AscendancyCard`. Those cards need the full local-DB record (far more than the saved snapshot), so `utils/resolveItem.ts` resolves each slot's ref against current local data and a new `BuildItemCard` renders the matching card via `useLiveQuery`; it falls back to the saved-snapshot text (`ItemRefDisplay`) for freetext, items missing from the current ESR data, or while data loads. Used on the detail page (read-only) and as the live preview under each picker in the create/edit form. The per-item version-diff badge and "saved snapshot" reveal are kept on top of the rich card. The four cards are now exported from their feature barrels (plus `useGemBonusMap`).
@@ -1097,7 +1097,7 @@ These were decided or discovered while building the feature, amending the origin
 
 - Comments on builds
 - Build versioning / edit history
-- Build import/export
+- Build import (JSON export shipped — see Implementation Notes)
 - User following / social features
 - Build categories or tags
 - Admin moderation dashboard
