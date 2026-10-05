@@ -3,7 +3,18 @@ import * as SliderPrimitive from '@radix-ui/react-slider';
 
 import { cn } from '@/lib/utils';
 
-function Slider({ className, defaultValue, value, min = 0, max = 100, ...props }: React.ComponentProps<typeof SliderPrimitive.Root>) {
+function Slider({
+  className,
+  defaultValue,
+  value,
+  min = 0,
+  max = 100,
+  thumbProps,
+  ...props
+}: React.ComponentProps<typeof SliderPrimitive.Root> & {
+  /** Extra props (e.g. aria-label, aria-valuetext) forwarded to every thumb, which carries role="slider". */
+  thumbProps?: Pick<React.ComponentProps<typeof SliderPrimitive.Thumb>, 'aria-label' | 'aria-labelledby' | 'aria-valuetext'>;
+}) {
   // Manual useMemo kept as-is from the stock shadcn/ui slider; redundant under
   // React Compiler but harmless, and staying unmodified eases future shadcn syncs.
   const _values = React.useMemo(
@@ -39,6 +50,7 @@ function Slider({ className, defaultValue, value, min = 0, max = 100, ...props }
         <SliderPrimitive.Thumb
           data-slot="slider-thumb"
           key={index}
+          {...thumbProps}
           className="border-primary ring-ring/50 block size-4 shrink-0 rounded-full border bg-white shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
         />
       ))}

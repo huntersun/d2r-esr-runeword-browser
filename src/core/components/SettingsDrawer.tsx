@@ -75,14 +75,14 @@ export function SettingsDrawer() {
         <div className="mt-0 space-y-5 flex-1 overflow-y-auto px-4 pb-2">
           {/* Network Warning */}
           {networkWarning ? (
-            <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-md">
-              <p className="text-sm text-yellow-500">{networkWarning}</p>
+            <div className="p-3 bg-warning/10 border border-warning/20 rounded-md">
+              <p className="text-sm text-warning">{networkWarning}</p>
             </div>
           ) : null}
 
           {/* Theme Section */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Theme</Label>
+          <fieldset className="space-y-3">
+            <legend className="text-sm font-medium leading-none">Theme</legend>
             <div className="space-y-2">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -109,13 +109,16 @@ export function SettingsDrawer() {
                 <span>Light</span>
               </label>
             </div>
-          </div>
+          </fieldset>
 
           {/* Font Section */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Font</Label>
+            <Label htmlFor="settings-diablo-font" className="text-sm font-medium">
+              Font
+            </Label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
+                id="settings-diablo-font"
                 type="checkbox"
                 checked={useDiabloFont}
                 onChange={(e) => {
@@ -130,7 +133,15 @@ export function SettingsDrawer() {
           {/* Text Size Section */}
           <div className="space-y-3">
             <Label className="text-sm font-medium">Text Size</Label>
-            <Slider value={[textSizeIndex]} onValueChange={handleTextSizeChange} min={0} max={3} step={1} className="w-full" />
+            <Slider
+              value={[textSizeIndex]}
+              onValueChange={handleTextSizeChange}
+              min={0}
+              max={3}
+              step={1}
+              className="w-full"
+              thumbProps={{ 'aria-label': 'Text size', 'aria-valuetext': TEXT_SIZE_LABELS[textSizeIndex] }}
+            />
             <p className="text-sm text-muted-foreground text-center">{TEXT_SIZE_LABELS[textSizeIndex]}</p>
           </div>
 
@@ -149,7 +160,7 @@ export function SettingsDrawer() {
             <p>App Version: {appVersion.version}</p>
             <p>ESR Version: {version}</p>
             <p>Last updated: {lastUpdated}</p>
-            {isUsingCachedData ? <p className="text-yellow-500">Using cached data</p> : null}
+            {isUsingCachedData ? <p className="text-warning">Using cached data</p> : null}
           </div>
         </div>
       </SheetContent>
