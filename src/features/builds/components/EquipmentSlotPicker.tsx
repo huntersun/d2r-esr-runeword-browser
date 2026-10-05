@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import type { ItemRef } from '../buildData';
 import { useEquipmentItems } from '../hooks/useEquipmentItems';
 import { freetextRef, gemwordToRef, itemRefName, mythicalToRef, runewordToRef, uniqueToRef } from '../utils/buildSnapshot';
+import { mythicalVariantHints, uniqueVariantHints } from '../utils/variantHints';
 
 const MAX_PER_GROUP = 8;
 
@@ -41,6 +42,11 @@ export function EquipmentSlotPicker({ label, value, onChange, disabled }: Equipm
   for (const rw of items?.runewords ?? []) runewordVariantCounts.set(rw.name, (runewordVariantCounts.get(rw.name) ?? 0) + 1);
   const gemwordVariantCounts = new Map<string, number>();
   for (const gw of items?.gemwords ?? []) gemwordVariantCounts.set(gw.name, (gemwordVariantCounts.get(gw.name) ?? 0) + 1);
+
+  // Same-name uniques/mythicals that look identical by base item (+ coupon flag) get their
+  // distinguishing property lines. Computed over the full lists so sliced results stay consistent.
+  const uniqueHints = items !== undefined ? uniqueVariantHints(items.uniques) : undefined;
+  const mythicalHints = items !== undefined ? mythicalVariantHints(items.mythicals) : undefined;
 
   const select = (ref: ItemRef | null) => {
     onChange(ref);
@@ -101,7 +107,12 @@ export function EquipmentSlotPicker({ label, value, onChange, disabled }: Equipm
                           select(ref);
                         }}
                       >
-                        {item.name}
+                        <ItemOptionLabel
+                          name={item.name}
+                          baseItem={item.baseItem}
+                          isAncientCoupon={item.isAncientCoupon}
+                          hints={uniqueHints?.get(item)}
+                        />
                       </CommandItem>
                     );
                   })}
@@ -120,7 +131,7 @@ export function EquipmentSlotPicker({ label, value, onChange, disabled }: Equipm
                           select(ref);
                         }}
                       >
-                        {item.name}
+                        <ItemOptionLabel name={item.name} baseItem={item.baseItem} hints={mythicalHints?.get(item)} />
                       </CommandItem>
                     );
                   })}
@@ -182,6 +193,32 @@ export function EquipmentSlotPicker({ label, value, onChange, disabled }: Equipm
           </Command>
         </PopoverContent>
       </Popover>
+    </div>
+  );
+}
+
+interface ItemOptionLabelProps {
+  readonly name: string;
+  readonly baseItem: string;
+  readonly isAncientCoupon?: boolean;
+  readonly hints?: readonly string[];
+}
+
+/** Picker row for a unique/mythical: name + muted base item (+ coupon marker), optional second line of distinguishing stats. */
+function ItemOptionLabel({ name, baseItem, isAncientCoupon = false, hints }: ItemOptionLabelProps) {
+  const hintText = hints !== undefined && hints.length > 0 ? hints.join(' · ') : null;
+  return (
+    <div className="flex min-w-0 flex-1 flex-col">
+      <span className="truncate" title={[name, baseItem, isAncientCoupon ? 'Ancient Coupon' : ''].filter(Boolean).join(' — ')}>
+        {name}
+        {baseItem !== '' && <span className="ml-1 text-xs text-muted-foreground">{baseItem}</span>}
+        {isAncientCoupon && <span className="ml-1 text-xs font-medium text-purple-600 dark:text-purple-400">Ancient Coupon</span>}
+      </span>
+      {hintText !== null && (
+        <span className="truncate text-xs text-muted-foreground" title={hintText}>
+          {hintText}
+        </span>
+      )}
     </div>
   );
 }
