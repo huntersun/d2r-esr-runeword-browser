@@ -16,7 +16,7 @@ const HTM_CATEGORY_GROUPS: readonly HtmCategoryDefinition[] = [
   {
     id: 'missile-weapons',
     label: 'Missile Weapons',
-    categories: ['Bow', 'Bow Quiver2', 'Crossbow', 'Crossbow Quiver2', 'Javelin', 'Shuriken', 'Throwing Axe', 'Throwing Knife'],
+    categories: ['Bow', 'Bow Quiver', 'Crossbow', 'Crossbow Quiver', 'Javelin', 'Shuriken', 'Throwing Axe', 'Throwing Knife'],
   },
   {
     id: 'class-weapons',
@@ -33,6 +33,7 @@ const HTM_CATEGORY_GROUPS: readonly HtmCategoryDefinition[] = [
       'Orb',
       'Paladin Sword',
       'Sorceress Mana Blade',
+      'Voidblade',
     ],
   },
   {
@@ -65,14 +66,26 @@ const HTM_CATEGORY_GROUPS: readonly HtmCategoryDefinition[] = [
   {
     id: 'class-armors',
     label: 'Class Specific',
-    categories: ['Auric Shields', 'Pelt', 'Primal Helm', 'Spirit Crown', 'Voodoo Heads'],
+    categories: ['Auric Shields', 'Grimoire', 'Pelt', 'Primal Helm', 'Spirit Crown', 'Voodoo Heads'],
   },
 
   // ── Other page ────────────────────────────────────────────────────────────
   {
     id: 'rings',
     label: 'Rings',
-    categories: ['Ring', 'Ama Ring', 'Ass Ring', 'Bar Ring', 'Coupon Rings', 'Dru Ring', 'Nec Ring', 'Pal Ring', 'Sor Ring'],
+    categories: [
+      'Ring',
+      'Ama Ring',
+      'Ass Ring',
+      'Bar Ring',
+      'Coupon Rings',
+      'Dru Ring',
+      'LoD Ring',
+      'Nec Ring',
+      'Pal Ring',
+      'Sor Ring',
+      'War Ring',
+    ],
   },
   {
     id: 'amulets',
@@ -84,9 +97,11 @@ const HTM_CATEGORY_GROUPS: readonly HtmCategoryDefinition[] = [
       'Bar Amulet',
       'Coupon Amulets',
       'Dru Amulet',
+      'LoD Amulet',
       'Nec Amulet',
       'Pal Amulet',
       'Sor Amulet',
+      'War Amulet',
     ],
   },
   {
