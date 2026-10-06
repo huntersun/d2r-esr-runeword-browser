@@ -7,7 +7,6 @@ const ITEM_TYPE_CATEGORIES: readonly ItemTypeCategory[] = [
   {
     label: 'Weapons',
     itemTypes: [
-      '2H Swing Weapon',
       'Axe',
       'Blunt',
       'Club',
@@ -21,6 +20,7 @@ const ITEM_TYPE_CATEGORIES: readonly ItemTypeCategory[] = [
       'Spear',
       'Staff',
       'Sword',
+      'Two-Handed Melee Weapon',
       'Wand',
       'Weapon',
     ],

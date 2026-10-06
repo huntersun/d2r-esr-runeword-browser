@@ -99,6 +99,11 @@ describe('getRelevantCategories', () => {
       }
     });
 
+    it('should recognize the ESR 3.2 one/two-handed melee weapon types as weaponsGloves', () => {
+      expect(getRelevantCategories(['Two-Handed Melee Weapon'])).toEqual(['weaponsGloves']);
+      expect(getRelevantCategories(['One-Handed Melee Weapon'])).toEqual(['weaponsGloves']);
+    });
+
     it('should recognize staves, orbs, and wands as helmsBoots (per runewords.htm column 5)', () => {
       expect(getRelevantCategories(['Staff'])).toEqual(['helmsBoots']);
       expect(getRelevantCategories(['Orb'])).toEqual(['helmsBoots']);
