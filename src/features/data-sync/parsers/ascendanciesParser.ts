@@ -44,9 +44,9 @@ function extractTiers(textDiv: Element): AscendancyTier[] {
 
   const html = contentFont.innerHTML;
 
-  // Split on tier labels: <font color="orange">Tier N</font>
-  // The regex captures the tier number
-  const tierRegex = /<font\s+color="orange"\s*>Tier\s+(\d+)<\/font>/gi;
+  // Split on tier labels: <font color="orange">Tier N</font>, optionally with a
+  // footnote marker ("Tier 3*", since ESR 3.2). The regex captures the tier number
+  const tierRegex = /<font\s+color="orange"\s*>\s*Tier\s+(\d+)\s*\**\s*<\/font>/gi;
 
   const tiers: AscendancyTier[] = [];
   const matches: Array<{ tierNum: number; index: number; matchLength: number }> = [];

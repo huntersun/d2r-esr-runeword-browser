@@ -157,6 +157,16 @@ describe('Bonus text quality', () => {
     }
   });
 
+  it('no bonus should be an unrecognised tier label', () => {
+    for (const item of items) {
+      for (const tier of item.tiers) {
+        for (const bonus of tier.bonuses) {
+          expect(bonus, `${item.name} Tier ${String(tier.tier)}: "${bonus}" looks like a tier label`).not.toMatch(/^Tier\s+\d/i);
+        }
+      }
+    }
+  });
+
   it('no bonus should contain HTML entities', () => {
     for (const item of items) {
       for (const tier of item.tiers) {
@@ -250,6 +260,19 @@ describe('Known items', () => {
     expect(item!.tiers[2].bonuses.length).toBeGreaterThanOrEqual(2);
     expect(item!.tiers[3].tier).toBe(4);
     expect(item!.tiers[3].bonuses.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('should parse a tier label with a footnote marker (Stance Dancer "Tier 3*")', () => {
+    const item = items.find((i) => i.name === 'Stance Dancer');
+    expect(item).toBeDefined();
+    expect(item!.tiers[1].bonuses).not.toContain('Tier 3*');
+    expect(item!.tiers[2].tier).toBe(3);
+    expect(item!.tiers[2].bonuses).toEqual([
+      'Damage Stance (Red): 5% Enhanced Damage and 1% Spell Damage per 75 combined Strength, Dexterity and Energy',
+      'Evade Stance (Green): 10% to All Speeds and 1% Dodge per 1000 combined Strength, Dexterity and Energy',
+      'Recovery Stance (Blue): +1 to All Skills and 150 Replenish Life and Mana per 1500 combined Strength, Dexterity and Energy',
+    ]);
+    expect(item!.footnotes[0]).toMatch(/^\*You need to set a hotkey for stance dancing/);
   });
 
   it('should parse Blademaster without footnotes', () => {
