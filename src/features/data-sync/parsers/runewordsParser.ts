@@ -67,7 +67,7 @@ export interface ExtractedSockets {
  * 2. Range: `(N-M Socket)` — the recipe accepts optional jewels on top of its runes
  *    (see `jewelInfo`), so the item may have between N and M sockets.
  *
- * `sockets` is always the base/minimum count (equal to the number of listed runes/gems);
+ * `sockets` is always the base/minimum count (the listed runes/gems plus any required jewels);
  * `socketsMax` is only set when the source shows a range.
  */
 export function extractSocketRange(cell: Element): ExtractedSockets {
@@ -154,12 +154,27 @@ export function extractIngredients(cell: Element): ExtractedIngredients {
     }
   }
 
-  // Extract optional jewel info (e.g. "(0-3) Jewels") from Kanji runewords
-  const cellText = cell.textContent.replace(/\s+/g, ' ');
-  const jewelMatch = /\(\d+(?:-\d+)?\) Jewels?/.exec(cellText);
-  const jewelInfo = jewelMatch ? jewelMatch[0] : undefined;
+  return { runes, gems, ingredients, jewelInfo: extractJewelInfo(cell) };
+}
 
-  return { runes, gems, ingredients, jewelInfo };
+/**
+ * Extracts the jewel info from the ingredients cell.
+ *
+ * Two formats exist:
+ * 1. Optional jewels: a "(0-3) Jewels" line on a "(N-M Socket)" recipe — returned as is.
+ * 2. Required jewels: one plain "Jewel" line per jewel. Since ESR 3.2 the site lists every socket count
+ *    of a ranged recipe as its own "(N Socket)" row with the extra sockets filled by jewels.
+ *    Returned as "(2) Jewels" so both formats read alike; sockets = runes + gems + jewels.
+ */
+function extractJewelInfo(cell: Element): string | undefined {
+  const cellText = cell.textContent.replace(/\s+/g, ' ');
+  const optionalMatch = /\(\d+(?:-\d+)?\) Jewels?/.exec(cellText);
+  if (optionalMatch) return optionalMatch[0];
+
+  const lines = cell.innerHTML.split(/<br\s*\/?>/i).map((line) => line.replace(/<[^>]*>/g, '').trim());
+  const requiredJewels = lines.filter((line) => line === 'Jewel').length;
+  if (requiredJewels === 0) return undefined;
+  return `(${String(requiredJewels)}) Jewel${requiredJewels > 1 ? 's' : ''}`;
 }
 
 /**

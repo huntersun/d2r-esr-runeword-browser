@@ -211,11 +211,27 @@ function rawExtractIngredients(cell: Element): RawIngredients {
       }
     }
   }
-  // Extract optional jewel info (same logic as parser)
+  // Optional jewels: "(0-3) Jewels" text (same logic as parser)
   const cellText = (cell.textContent ?? '').replace(/\s+/g, ' ');
   const jewelMatch = /\(\d+(?:-\d+)?\) Jewels?/.exec(cellText);
-  const jewelInfo = jewelMatch ? jewelMatch[0] : undefined;
+  // Required jewels (ESR 3.2+): bare "Jewel" text nodes in the wrapper font, counted via the DOM
+  // rather than the parser's innerHTML split
+  const wrapper = cell.querySelector('font');
+  const requiredJewels = wrapper
+    ? [...wrapper.childNodes].filter((n) => n.nodeType === Node.TEXT_NODE && n.textContent?.trim() === 'Jewel').length
+    : 0;
+  const jewelInfo = jewelMatch
+    ? jewelMatch[0]
+    : requiredJewels > 0
+      ? `(${String(requiredJewels)}) Jewel${requiredJewels > 1 ? 's' : ''}`
+      : undefined;
   return { runes, gems: gemsList, ingredients, jewelInfo };
+}
+
+/** Number of required jewels from a "(N) Jewels" string (no range), or 0. */
+function requiredJewelsFrom(jewelInfo: string | undefined): number {
+  const m = jewelInfo === undefined ? null : /^\((\d+)\) Jewels?$/.exec(jewelInfo);
+  return m ? parseInt(m[1], 10) : 0;
 }
 
 function rawExtractAllowedItems(cell: Element): { allowedItems: string[]; excludedItems: string[] } {
@@ -364,8 +380,9 @@ describe('Per-runeword completeness check (every runeword vs HTML source)', () =
         expect(parsedRunewords[i].jewelInfo).toEqual(rawIngredients.jewelInfo);
       });
 
-      it('ingredient count equals socket count', () => {
-        expect(parsedRunewords[i].ingredients.length).toBe(parsedRunewords[i].sockets);
+      it('ingredient count plus required jewels equals socket count', () => {
+        const requiredJewels = requiredJewelsFrom(parsedRunewords[i].jewelInfo);
+        expect(parsedRunewords[i].ingredients.length + requiredJewels).toBe(parsedRunewords[i].sockets);
       });
 
       it('runes + gems equals ingredients', () => {
@@ -947,9 +964,10 @@ describe('Data quality invariants', () => {
     }
   });
 
-  // Until ESR 3.12 only Kanji runewords accepted jewels; since 3.12 regular runewords
-  // (e.g. Void) do too, so the invariant is now about the socket range instead.
-  it('runewords with jewelInfo should have a well-formed jewel count and a matching socket range', () => {
+  // Until ESR 3.12 only Kanji runewords accepted jewels; since 3.12 regular runewords do too,
+  // so the invariant is about the socket range instead. Since 3.2 the site also lists every
+  // socket count of a ranged recipe as its own fixed row with the extra sockets as "Jewel" lines.
+  it('runewords with jewelInfo should have a well-formed jewel count and matching sockets', () => {
     const withJewels = parsedRunewords.filter((rw) => rw.jewelInfo !== undefined);
     expect(withJewels.length).toBeGreaterThan(0);
     for (const rw of withJewels) {
@@ -957,9 +975,32 @@ describe('Data quality invariants', () => {
       expect(rw.jewelInfo, `${label}: jewelInfo format`).toMatch(/^\(\d+(-\d+)?\) Jewels?$/);
 
       const maxJewels = maxJewelsFrom(rw.jewelInfo);
-      expect(maxJewels, `${label}: max jewels`).toBeGreaterThan(0);
-      // Optional jewels widen the socket count: base sockets (the listed runes) + max jewels
-      expect(rw.socketsMax, `${label}: socketsMax`).toBe(rw.sockets + maxJewels);
+      const requiredJewels = requiredJewelsFrom(rw.jewelInfo);
+      expect(maxJewels + requiredJewels, `${label}: jewel count`).toBeGreaterThan(0);
+      if (maxJewels > 0) {
+        // Optional jewels widen the socket count: base sockets (the listed runes) + max jewels
+        expect(rw.socketsMax, `${label}: socketsMax`).toBe(rw.sockets + maxJewels);
+      } else {
+        // Required jewels fill a fixed socket count next to the listed runes
+        expect(rw.socketsMax, `${label}: socketsMax`).toBeUndefined();
+        expect(rw.ingredients.length + requiredJewels, `${label}: sockets`).toBe(rw.sockets);
+      }
+    }
+  });
+
+  it('every required-jewel row should fall within the socket range of a same-named recipe with the same runes', () => {
+    const withRequiredJewels = parsedRunewords.filter((rw) => requiredJewelsFrom(rw.jewelInfo) > 0);
+    expect(withRequiredJewels.length).toBeGreaterThan(0);
+    for (const rw of withRequiredJewels) {
+      const rangeRow = parsedRunewords.find(
+        (other) =>
+          other.name === rw.name &&
+          other.socketsMax !== undefined &&
+          other.runes.join() === rw.runes.join() &&
+          rw.sockets > other.sockets &&
+          rw.sockets <= other.socketsMax
+      );
+      expect(rangeRow, `${rw.name} v${String(rw.variant)}: no matching "(N-M Socket)" recipe`).toBeDefined();
     }
   });
 
@@ -968,7 +1009,7 @@ describe('Data quality invariants', () => {
     expect(withRange.length).toBeGreaterThan(0);
     for (const rw of withRange) {
       const label = `${rw.name} v${String(rw.variant)}`;
-      expect(rw.jewelInfo, `${label}: socket range without jewelInfo`).toBeDefined();
+      expect(maxJewelsFrom(rw.jewelInfo), `${label}: socket range without optional jewels`).toBeGreaterThan(0);
       expect(rw.socketsMax, `${label}: socketsMax`).toBeGreaterThan(rw.sockets);
       expect(rw.socketsMax, `${label}: socketsMax`).toBeLessThanOrEqual(6);
     }
@@ -1021,6 +1062,7 @@ describe('Data snapshot counts (detect ESR version changes)', () => {
     const charmRunewords = parsedRunewords.filter((rw) => rw.allowedItems.some((item) => item.toLowerCase().includes('charm'))).length;
     const withSocketRange = parsedRunewords.filter((rw) => rw.socketsMax !== undefined).length;
     const withJewels = parsedRunewords.filter((rw) => rw.jewelInfo !== undefined).length;
+    const withRequiredJewels = parsedRunewords.filter((rw) => requiredJewelsFrom(rw.jewelInfo) > 0).length;
 
     // If any of these change, it likely means an ESR update modified the runewords data.
     // Update the expected values and verify the changes are correct.
@@ -1032,9 +1074,11 @@ describe('Data snapshot counts (detect ESR version changes)', () => {
     expect(withColumnDiffs, 'runewords with column differences').toBeGreaterThanOrEqual(0);
     expect(withExcludedItems, 'runewords with excluded items').toBeGreaterThan(0);
     expect(charmRunewords, 'charm runewords').toBeGreaterThanOrEqual(30);
-    // Recipes accepting optional jewels are shown as "(N-M Socket)" — 12 as of 3.12
-    expect(withSocketRange, 'runewords with a socket range').toBeGreaterThanOrEqual(12);
-    expect(withJewels, 'runewords with jewelInfo').toBe(withSocketRange);
+    // Recipes accepting optional jewels are shown as "(N-M Socket)" — 12 in 3.12, 11 in 3.2 (Void became a fixed 2-socket recipe)
+    expect(withSocketRange, 'runewords with a socket range').toBeGreaterThanOrEqual(11);
+    // Since 3.2 each extra socket count of those recipes is also listed as a row with required jewels — 25 in 3.2
+    expect(withRequiredJewels, 'runewords with required jewels').toBeGreaterThanOrEqual(25);
+    expect(withJewels, 'runewords with jewelInfo').toBe(withSocketRange + withRequiredJewels);
 
     // Log counts for debugging when an ESR update changes things
     console.log('[Test] Data snapshot:', {
@@ -1046,6 +1090,7 @@ describe('Data snapshot counts (detect ESR version changes)', () => {
       withExcludedItems,
       charmRunewords,
       withSocketRange,
+      withRequiredJewels,
       withJewels,
       esrRunesParsed: esrRunes.length,
       lodRunesParsed: lodRunes.length,

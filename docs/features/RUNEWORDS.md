@@ -61,7 +61,7 @@ interface TierPointTotal {
 interface Runeword {
   readonly name: string;
   readonly variant: number;                     // 1, 2, 3... for multi-variant runewords
-  readonly sockets: number;                     // Base/minimum socket count (= number of ingredients)
+  readonly sockets: number;                     // Base/minimum socket count (= ingredients + required jewels)
   readonly socketsMax?: number;                 // Only set when the source shows a range, e.g. "(2-3 Socket)"
   readonly reqLevel: number;                    // Highest required level among all runes and gems
   readonly sortKey: number;                     // Pre-calculated sort key
@@ -73,7 +73,7 @@ interface Runeword {
   readonly affixes: readonly Affix[];           // Backward compat: bonuses from first non-empty column
   readonly columnAffixes: SocketableBonuses;    // Per-column bonuses (weapon/helm/armor)
   readonly tierPointTotals: readonly TierPointTotal[];
-  readonly jewelInfo?: string;                  // Optional jewel info, e.g. "(0-3) Jewels"
+  readonly jewelInfo?: string;                  // Jewel info, e.g. "(0-3) Jewels" (optional) or "(2) Jewels" (required)
 }
 ```
 
@@ -83,10 +83,12 @@ interface Runeword {
 - **ingredients**: The original order of runes + gems interleaved in the recipe
 - **columnAffixes**: Per-column bonuses displayed as split cards (weapon/helm/armor)
 - **sortKey**: Pre-calculated for sorting: ESR/Kanji (0-9999) or LoD (10000+) combined with reqLevel
-- **jewelInfo**: e.g. "(0-3) Jewels" — recipes that accept optional jewels on top of their runes
-- **socketsMax**: Set only for those jewel-accepting recipes, which the source shows as a range,
-  e.g. Void `(2-3 Socket)`. `sockets` stays the base count; the socket filter matches any
-  count in `[sockets, socketsMax]` and the card shows "2-3 Socket".
+- **jewelInfo**: e.g. "(0-3) Jewels" — recipes that accept optional jewels on top of their runes.
+  Since ESR 3.2 the source also lists each socket count of such a recipe as its own row with plain
+  "Jewel" lines; those rows get e.g. "(2) Jewels" and `sockets` = runes + gems + jewels.
+- **socketsMax**: Set only for the optional-jewel recipes, which the source shows as a range,
+  e.g. Moonlight `(3-6 Socket)`. `sockets` stays the base count; the socket filter matches any
+  count in `[sockets, socketsMax]` and the card shows "3-6 Socket".
 
 ## RunewordCard Display
 

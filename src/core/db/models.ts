@@ -98,7 +98,7 @@ export interface TierPointTotal {
 export interface Runeword {
   readonly name: string;
   readonly variant: number; // 1, 2, 3... for multi-variant runewords
-  readonly sockets: number; // Base/minimum socket count (= number of listed runes/gems)
+  readonly sockets: number; // Base/minimum socket count (= listed runes/gems + required jewels)
   readonly socketsMax?: number; // Only set when the source shows a range, e.g. "(2-3 Socket)" for recipes taking optional jewels
   readonly reqLevel: number; // Highest required level among all runes and gems
   readonly sortKey: number; // Pre-calculated sort key: ESR/Kanji (0-9999) or LoD (10000+) + reqLevel
@@ -110,7 +110,7 @@ export interface Runeword {
   readonly affixes: readonly Affix[]; // Runeword bonuses from first non-empty column (backward compat)
   readonly columnAffixes: SocketableBonuses; // Per-column runeword bonuses (weapon/helm/armor)
   readonly tierPointTotals: readonly TierPointTotal[]; // Pre-calculated tier point totals
-  readonly jewelInfo?: string; // Optional jewel info for Kanji runewords, e.g. "(0-3) Jewels"
+  readonly jewelInfo?: string; // Jewels: optional "(0-3) Jewels" (with socketsMax) or required "(2) Jewels" (fixed sockets)
 }
 
 // Gemword types

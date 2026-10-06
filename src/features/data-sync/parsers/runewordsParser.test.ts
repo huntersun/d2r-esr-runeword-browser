@@ -256,6 +256,22 @@ describe('extractIngredients', () => {
     expect(result.jewelInfo).toBe('(0-3) Jewels');
   });
 
+  it('should count required "Jewel" lines (ESR 3.2 per-socket-count rows)', () => {
+    const cell = createElementFromHtml(`
+      <td class="ingredients"><font size="-1" face="arial,helvetica" color="#908858">Jewel<br>Jewel<br><FONT COLOR="#EED68D">Moon Rune</FONT><br><FONT COLOR="YELLOW">Ko Rune</FONT><br><FONT COLOR="WHITE">U Rune</FONT><br></font></td>
+    `);
+    const result = extractIngredients(cell);
+    expect(result.ingredients).toEqual(['Moon Rune', 'Ko Rune', 'U Rune']);
+    expect(result.jewelInfo).toBe('(2) Jewels');
+  });
+
+  it('should use the singular for a single required jewel', () => {
+    const cell = createElementFromHtml(`
+      <td class="ingredients"><font color="#908858">Jewel<br><FONT COLOR="#EED68D">Sun Rune</FONT><br><FONT COLOR="YELLOW">Ko Rune</FONT><br></font></td>
+    `);
+    expect(extractIngredients(cell).jewelInfo).toBe('(1) Jewel');
+  });
+
   it('should not extract jewel info from non-jewel runewords', () => {
     const cell = createElementFromHtml(`
       <td class="ingredients">
@@ -624,10 +640,11 @@ describe('calculateTierPointTotals', () => {
 describe('parseRunewordsHtml integration', () => {
   const html = readFileSync(resolve(__dirname, '../../../../test-fixtures/runewords.htm'), 'utf-8');
 
-  it('should parse all runeword rows (approximately 380-400)', () => {
+  it('should parse all runeword rows (approximately 400-420)', () => {
     const runewords = parseRunewordsHtml(html);
-    expect(runewords.length).toBeGreaterThanOrEqual(380);
-    expect(runewords.length).toBeLessThanOrEqual(400);
+    // 409 as of ESR 3.2 (383 in 3.12): +25 per-socket-count jewel rows, +1 new Plague recipe
+    expect(runewords.length).toBeGreaterThanOrEqual(400);
+    expect(runewords.length).toBeLessThanOrEqual(420);
   });
 
   it('should parse Boar runeword correctly', () => {
@@ -778,16 +795,41 @@ describe('parseRunewordsHtml integration', () => {
     }
   });
 
-  it('should parse Void with a socket range and optional jewels', () => {
+  it('should parse Moonlight with a socket range and optional jewels', () => {
+    const runewords = parseRunewordsHtml(html);
+    const moonlight = runewords.find((r) => r.name === 'Moonlight' && r.variant === 1);
+
+    expect(moonlight).toBeDefined();
+    // Base sockets = number of runes; the extra sockets come from the optional jewels
+    expect(moonlight!.sockets).toBe(3);
+    expect(moonlight!.ingredients).toEqual(['Moon Rune', 'Ko Rune', 'U Rune']);
+    expect(moonlight!.socketsMax).toBe(6);
+    expect(moonlight!.jewelInfo).toBe('(0-3) Jewels');
+  });
+
+  it('should parse the per-socket-count Moonlight rows with required jewels', () => {
+    const runewords = parseRunewordsHtml(html);
+    const rows = runewords.filter((r) => r.name === 'Moonlight' && r.variant > 1);
+
+    // ESR 3.2 lists "(4 Socket)", "(5 Socket)", "(6 Socket)" rows with 1-3 "Jewel" lines below the range row
+    expect(rows.map((r) => [r.sockets, r.socketsMax, r.jewelInfo])).toEqual([
+      [4, undefined, '(1) Jewel'],
+      [5, undefined, '(2) Jewels'],
+      [6, undefined, '(3) Jewels'],
+    ]);
+    for (const row of rows) {
+      expect(row.ingredients).toEqual(['Moon Rune', 'Ko Rune', 'U Rune']);
+    }
+  });
+
+  it('should parse Void as a fixed 2-socket runeword (no optional jewel since ESR 3.2)', () => {
     const runewords = parseRunewordsHtml(html);
     const voidRw = runewords.find((r) => r.name === 'Void' && r.variant === 1);
 
     expect(voidRw).toBeDefined();
-    // Base sockets = number of runes; the extra socket comes from the optional jewel
     expect(voidRw!.sockets).toBe(2);
-    expect(voidRw!.ingredients).toHaveLength(2);
-    expect(voidRw!.socketsMax).toBe(3);
-    expect(voidRw!.jewelInfo).toBe('(0-1) Jewels');
+    expect(voidRw!.socketsMax).toBeUndefined();
+    expect(voidRw!.jewelInfo).toBeUndefined();
   });
 
   it('should not set socketsMax for fixed-socket runewords', () => {
@@ -983,7 +1025,7 @@ describe('hard-wrapped runeword affixes (fixture)', () => {
   it('Obsession: the 3-line orange affix is a single affix', () => {
     const affixes = find('Obsession').affixes.map((a) => a.rawText);
     expect(affixes[0]).toBe(
-      "Each cast lowers 12% the aimed target's and surrounding enemies elemental, magic, and physical resistances, but you lose 4% total resistances for 1 second. Maximum stacks: 25"
+      "Each cast lowers 12% the aimed target's and surrounding enemies elemental, magic, and physical resists, but you lose 4% total resists for 1 second. Maximum stacks: 25"
     );
     expect(affixes[1]).toBe('25% Chance to Cast Level 60 Elemental Surge when you Kill an Enemy');
   });

@@ -189,13 +189,15 @@ describe('Data Sync Integration', () => {
   });
 
   describe('Runewords → IndexedDB', () => {
-    it('should parse and store runewords (approximately 380-400)', async () => {
+    it('should parse and store runewords (approximately 400-420)', async () => {
       const runewords = parseRunewordsHtml(runewordsHtml);
       await db.runewords.bulkPut(runewords);
 
+      // [name+variant] is unique, so every parsed row is stored
       const storedRunewords = await db.runewords.toArray();
-      expect(storedRunewords.length).toBeGreaterThanOrEqual(380);
-      expect(storedRunewords.length).toBeLessThanOrEqual(400);
+      expect(storedRunewords).toHaveLength(runewords.length);
+      expect(storedRunewords.length).toBeGreaterThanOrEqual(400);
+      expect(storedRunewords.length).toBeLessThanOrEqual(420);
     });
 
     it('should store Boar with correct properties', async () => {
