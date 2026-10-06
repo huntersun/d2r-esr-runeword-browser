@@ -25,10 +25,11 @@ describe('fetchLatestVersion', () => {
   it('should parse the newest version from the real changelog fixture', async () => {
     stubFetch(changelogHtml);
     const result = await fetchLatestVersion();
-    // 3.12 is the first (newest) entry — a two-part version, which must not be skipped
-    expect(result.version).toBe('3.12');
-    expect(result.date).toBe('30/07/2026');
-    expect(result.fullString).toBe('Eastern Sun Resurrected 3.12 - 30/07/2026');
+    // 3.2.02 is the first (newest) entry. It is listed above 3.12.09 although it sorts lower
+    // numerically, so the newest version is the first heading, never the numeric maximum.
+    expect(result.version).toBe('3.2.02');
+    expect(result.date).toBe('06/08/2026');
+    expect(result.fullString).toBe('Eastern Sun Resurrected 3.2.02 - 06/08/2026');
   });
 
   it('should parse three-part versions', async () => {
