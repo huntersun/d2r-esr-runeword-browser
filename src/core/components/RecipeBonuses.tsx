@@ -1,19 +1,21 @@
 import { cn } from '@/lib/utils';
-import type { Affix, SocketableBonuses } from '@/core/db/models';
+import type { Affix, BonusPool, ColumnBonusPools, SocketableBonuses } from '@/core/db/models';
 import { getCategoryLabel, type BonusCategory } from '@/core/utils/itemCategoryMapping';
-import { hasColumnDifferences } from '@/core/utils/columnAffixes';
+import { firstNonEmptyPools, hasColumnDifferences, hasPoolColumnDifferences } from '@/core/utils/columnAffixes';
 import type { BonusTextsByCategory } from '@/core/utils/socketableLookup';
 
 interface RecipeAffixesProps {
   readonly affixes: readonly Affix[];
   /** Per-column affixes; undefined for old cached data */
   readonly columnAffixes: SocketableBonuses | undefined;
+  /** Per-column random bonus pools (gemwords); undefined for runewords and old cached data */
+  readonly columnBonusPools?: ColumnBonusPools;
   readonly allowedItems: readonly string[];
   readonly categories: readonly BonusCategory[];
 }
 
-/** A recipe's own bonuses: one list, or one column per category when they differ. */
-export function RecipeAffixes({ affixes, columnAffixes, allowedItems, categories }: RecipeAffixesProps) {
+/** A recipe's own bonuses (then its random bonus pools): one list, or one column per category when they differ. */
+export function RecipeAffixes({ affixes, columnAffixes, columnBonusPools, allowedItems, categories }: RecipeAffixesProps) {
   if (affixes.length === 0) return null;
 
   return (
@@ -28,6 +30,54 @@ export function RecipeAffixes({ affixes, columnAffixes, allowedItems, categories
       ) : (
         <BonusList lines={affixes.map((affix) => affix.rawText)} />
       )}
+      {columnBonusPools && <RecipeBonusPools columnBonusPools={columnBonusPools} allowedItems={allowedItems} categories={categories} />}
+    </div>
+  );
+}
+
+interface RecipeBonusPoolsProps {
+  readonly columnBonusPools: ColumnBonusPools;
+  readonly allowedItems: readonly string[];
+  readonly categories: readonly BonusCategory[];
+}
+
+/** Random bonus pools ("1-2 of the following:"): shown once, or per category when they differ. */
+function RecipeBonusPools({ columnBonusPools, allowedItems, categories }: RecipeBonusPoolsProps) {
+  if (hasPoolColumnDifferences(columnBonusPools, categories)) {
+    return (
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        {categories.map((category) => {
+          const pools = columnBonusPools[category];
+          if (pools.length === 0) return null;
+          return (
+            <div key={category}>
+              <p className="font-medium text-muted-foreground text-xs mb-1">{getCategoryLabel(allowedItems, category)}:</p>
+              <BonusPoolList pools={pools} />
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  const pools = firstNonEmptyPools(columnBonusPools);
+  if (pools.length === 0) return null;
+  return <BonusPoolList pools={pools} className="mt-3" />;
+}
+
+function BonusPoolList({ pools, className }: { readonly pools: readonly BonusPool[]; readonly className?: string }) {
+  return (
+    <div className={cn('space-y-2 text-xs', className)}>
+      {pools.map((pool, index) => (
+        <div key={`${String(index)}-${pool.label}`} className="rounded-md border border-dashed px-2 py-1.5">
+          <p className="italic text-muted-foreground mb-0.5">{pool.label}</p>
+          <ul className="space-y-0.5 text-[#8080E6]">
+            {pool.affixes.map((affix, lineIndex) => (
+              <li key={`${String(lineIndex)}-${affix.rawText}`}>{affix.rawText}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
   );
 }

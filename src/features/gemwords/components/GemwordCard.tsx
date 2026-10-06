@@ -67,6 +67,7 @@ export function GemwordCard({
         <RecipeAffixes
           affixes={affixes}
           columnAffixes={gemword.columnAffixes}
+          columnBonusPools={gemword.columnBonusPools}
           allowedItems={allowedItems}
           categories={relevantCategories}
         />
