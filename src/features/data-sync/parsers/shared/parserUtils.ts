@@ -1,4 +1,4 @@
-import type { Affix, SocketableBonuses } from '@/core/db';
+import type { Affix, BonusPool, SocketableBonuses } from '@/core/db';
 
 export interface NormalizedRuneName {
   name: string;
@@ -177,6 +177,32 @@ export function parseRecipeAffixes(cell: Element): Affix[] {
     .map((line) => line.text)
     .filter((text) => text.length > 0)
     .map(toAffix);
+}
+
+/** Header line that starts a random bonus pool, e.g. "1-2 of the following:". */
+const BONUS_POOL_HEADER = /\bof the following:?$/i;
+
+/**
+ * Parses the random bonus pools of a recipe bonus cell (gemwords since ESR 3.2).
+ *
+ * Such cells contain: [recipe bonuses]<br><br>[pool]<br><br>...[pool]<br><br>[ingredient bonuses],
+ * where each pool starts with an "N-M of the following:" header line. A pool is any group between
+ * the first (recipe bonuses) and last (ingredient bonuses) non-empty groups whose first line is
+ * such a header. Cells without pools return [].
+ */
+export function parseRecipeBonusPools(cell: Element): BonusPool[] {
+  const groups = splitCellLineGroups(extractCellLines(cell))
+    .map((group) =>
+      mergeWrappedCellLines(group)
+        .map((line) => line.text)
+        .filter((text) => text.length > 0)
+    )
+    .filter((group) => group.length > 0);
+
+  return groups
+    .slice(1, -1)
+    .filter(([header]) => BONUS_POOL_HEADER.test(header))
+    .map(([label, ...lines]) => ({ label, affixes: lines.map(toAffix) }));
 }
 
 /**

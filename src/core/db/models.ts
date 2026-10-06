@@ -13,6 +13,18 @@ export interface SocketableBonuses {
   readonly armorShieldsBelts: readonly Affix[];
 }
 
+/** A random bonus pool of a recipe, e.g. "1-2 of the following:" followed by the candidate affixes. */
+export interface BonusPool {
+  readonly label: string;
+  readonly affixes: readonly Affix[];
+}
+
+export interface ColumnBonusPools {
+  readonly weaponsGloves: readonly BonusPool[];
+  readonly helmsBoots: readonly BonusPool[];
+  readonly armorShieldsBelts: readonly BonusPool[];
+}
+
 // Gem types
 
 export type GemType = 'Amethyst' | 'Sapphire' | 'Emerald' | 'Ruby' | 'Diamond' | 'Topaz' | 'Skull' | 'Obsidian';
@@ -126,6 +138,7 @@ export interface Gemword {
   readonly allowedItems: readonly string[];
   readonly affixes: readonly Affix[]; // Gemword bonuses from first non-empty column (backward compat)
   readonly columnAffixes: SocketableBonuses; // Per-column gemword bonuses (weapon/helm/armor)
+  readonly columnBonusPools?: ColumnBonusPools; // Per-column random bonus pools (ESR 3.2+); undefined for old cached data
   readonly jewelInfo?: string; // Optional jewel requirement, e.g. "Jewel" (America, Canada, China)
 }
 

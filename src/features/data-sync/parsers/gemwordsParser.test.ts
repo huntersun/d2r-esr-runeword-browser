@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { parseGemsHtml } from './gemsParser';
 import { parseGemwordsHtml, calculateGemwordReqLevel } from './gemwordsParser';
+import type { BonusPool, Gemword } from '@/core/db';
 import type { GemReqLevelLookup } from './runewordsParser';
 
 const gemwordsHtml = readFileSync(resolve(__dirname, '../../../../test-fixtures/gemwords.htm'), 'utf-8');
@@ -74,6 +75,123 @@ describe('parseGemwordsHtml', () => {
     expect(armorBonuses).not.toContain('All Resists +5');
   });
 
+  it('parses the random bonus pools of the one-socket Holy item gemword, identical in both populated columns', () => {
+    const gemwords = parseGemwordsHtml(gemwordsHtml, gemReqLevelLookup);
+    const holy = gemwords.find(
+      (gemword) => gemword.name === 'Holy' && gemword.allowedItems.includes('Body Armor') && gemword.gems.join() === 'Chipped Diamond'
+    );
+    const expected = [
+      {
+        label: '1-2 of the following:',
+        lines: [
+          '+(20 to 30) Defense',
+          '+(4 to 6)% Chance of Crushing Blow',
+          'All Resists +(5 to 7)',
+          'Damage Reduced by (2 to 3)',
+          'Magic Resist +(2 to 3)%',
+          '+(15 to 22)% Damage to Undead',
+        ],
+      },
+      {
+        label: '1-2 of the following:',
+        lines: [
+          '+(10 to 15) to Life',
+          '+(10 to 15) to Mana',
+          '+(1 to 2) to All Attributes',
+          'Increase Maximum Life +(1 to 2)%',
+          'Increase Maximum Mana +(1 to 2)%',
+          '+15% Enhanced Defense',
+          '+(11 to 12)% to All Speeds',
+        ],
+      },
+    ];
+
+    expect(holy?.columnBonusPools?.weaponsGloves).toEqual([]);
+    expect(poolTexts(holy?.columnBonusPools?.helmsBoots)).toEqual(expected);
+    expect(poolTexts(holy?.columnBonusPools?.armorShieldsBelts)).toEqual(expected);
+  });
+
+  it('parses no bonus pools for Charm-only rows', () => {
+    const gemwords = parseGemwordsHtml(gemwordsHtml, gemReqLevelLookup);
+    const charms = gemwords.filter((gemword) => gemword.allowedItems.join() === 'Charm');
+
+    expect(charms.length).toBeGreaterThan(100);
+    for (const charm of charms) {
+      expect(allPools(charm), `${charm.name} #${String(charm.variant)}`).toEqual([]);
+    }
+  });
+
+  it('gives most item gemwords at least one pool in every populated column, with "N-M of the following:" headers', () => {
+    const gemwords = parseGemwordsHtml(gemwordsHtml, gemReqLevelLookup);
+    const items = gemwords.filter((gemword) => gemword.allowedItems.join() !== 'Charm');
+    const withPools = items.filter((gemword) => allPools(gemword).length > 0);
+
+    // Only the named gemwords (Rainbow, ArchDimeron, the country gemwords) have no pools in ESR 3.2
+    const withoutPools = new Set(items.filter((gemword) => allPools(gemword).length === 0).map((gemword) => gemword.name));
+    expect([...withoutPools].sort()).toEqual(
+      [
+        'America',
+        'ArchDimeron',
+        'Austria',
+        'Britain',
+        'Canada',
+        'China',
+        'France',
+        'Germany',
+        'Italy',
+        'Japan',
+        'Portugal',
+        'Rainbow',
+        'Russia',
+      ].sort()
+    );
+    expect(withPools.length).toBeGreaterThan(items.length * 0.9);
+    for (const gemword of withPools) {
+      const populated = (['weaponsGloves', 'helmsBoots', 'armorShieldsBelts'] as const).filter(
+        (column) => gemword.columnAffixes[column].length > 0
+      );
+      for (const column of populated) {
+        expect(gemword.columnBonusPools?.[column].length, `${gemword.name} #${String(gemword.variant)} ${column}`).toBeGreaterThan(0);
+      }
+    }
+    for (const pool of withPools.flatMap(allPools)) {
+      expect(pool.label).toMatch(/^\d+-\d+ of the following:$/);
+      expect(pool.affixes.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('keeps pools apart from the gemword bonuses and the trailing gem bonuses', () => {
+    const gemwords = parseGemwordsHtml(gemwordsHtml, gemReqLevelLookup);
+    const holyArmor = gemwords.find(
+      (gemword) => gemword.name === 'Holy' && gemword.allowedItems.includes('Body Armor') && gemword.gems.join() === 'Chipped Diamond'
+    );
+    const poolLines = allPools(holyArmor).flatMap((pool) => pool.affixes.map((affix) => affix.rawText));
+
+    // Chipped Diamond's own armor bonuses come after the pools
+    expect(poolLines).not.toContain('All Resists +5');
+    expect(poolLines).not.toContain('Damage Reduced by 2');
+    for (const gemword of gemwords) {
+      const fixed = gemword.affixes.map((affix) => affix.rawText);
+      expect(fixed.some((line) => /of the following/i.test(line))).toBe(false);
+      for (const pool of allPools(gemword)) {
+        expect(pool.affixes.some((affix) => /of the following/i.test(affix.rawText))).toBe(false);
+      }
+    }
+  });
+
+  it('parses one pool per "of the following:" header in the raw HTML', () => {
+    const gemwords = parseGemwordsHtml(gemwordsHtml, gemReqLevelLookup);
+    const doc = new DOMParser().parseFromString(gemwordsHtml, 'text/html');
+    const uniqueRows = new Set(Array.from(doc.querySelectorAll('tr.recipeRow'), (row) => row.innerHTML));
+    const rawHeaderCount = Array.from(uniqueRows).reduce(
+      (count, rowHtml) => count + (rowHtml.match(/of the following:/gi)?.length ?? 0),
+      0
+    );
+
+    expect(rawHeaderCount).toBeGreaterThan(1000);
+    expect(gemwords.flatMap(allPools)).toHaveLength(rawHeaderCount);
+  });
+
   it('captures the jewel requirement for recipes that need one', () => {
     const gemwords = parseGemwordsHtml(gemwordsHtml, gemReqLevelLookup);
     const america = gemwords.find((gemword) => gemword.name === 'America');
@@ -125,3 +243,12 @@ describe('parseGemwordsHtml', () => {
     expect(calculateGemwordReqLevel(['Perfect Diamond', 'Flawed Diamond'], gemReqLevelLookup)).toBe(35);
   });
 });
+
+function allPools(gemword: Gemword | undefined): readonly BonusPool[] {
+  const pools = gemword?.columnBonusPools;
+  return pools ? [...pools.weaponsGloves, ...pools.helmsBoots, ...pools.armorShieldsBelts] : [];
+}
+
+function poolTexts(pools: readonly BonusPool[] | undefined) {
+  return pools?.map((pool) => ({ label: pool.label, lines: pool.affixes.map((affix) => affix.rawText) }));
+}

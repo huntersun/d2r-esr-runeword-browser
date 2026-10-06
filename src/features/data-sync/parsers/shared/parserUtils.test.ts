@@ -10,6 +10,7 @@ import {
   getItemName,
   normalizeRuneName,
   parseRecipeAffixes,
+  parseRecipeBonusPools,
   isWrappedContinuation,
   mergeWrappedLines,
   mergeWrappedCellLines,
@@ -418,6 +419,36 @@ describe('parseRecipeAffixes with hard-wrapped lines', () => {
       'You gain a random amount of total spell damage between 1% and 50% every 3 seconds',
       '+5 to All Skills',
     ]);
+  });
+});
+
+describe('parseRecipeBonusPools', () => {
+  const poolCell =
+    '<font color="8080E6">\n+1 to All Skills<br><FONT COLOR="LIGHTGRAY">Sockets cannot be removed</FONT><br><br>' +
+    '<FONT COLOR="WHITE">1-2 of the following:</FONT><br>+(20 to 30) Defense <br>All Resists +(5 to 7) <br><br>' +
+    '<FONT COLOR="WHITE">2-3 of the following:</FONT><br>+(10 to 15) to Life <br><br>' +
+    '+20 Defense <br>All Resists +5 <br><br>\n</font>';
+
+  it('returns each header-led group between the recipe bonuses and the ingredient bonuses', () => {
+    const pools = parseRecipeBonusPools(cellFrom(poolCell));
+    expect(pools.map((pool) => ({ label: pool.label, lines: pool.affixes.map((a) => a.rawText) }))).toEqual([
+      { label: '1-2 of the following:', lines: ['+(20 to 30) Defense', 'All Resists +(5 to 7)'] },
+      { label: '2-3 of the following:', lines: ['+(10 to 15) to Life'] },
+    ]);
+  });
+
+  it('does not change the recipe bonuses', () => {
+    expect(parseRecipeAffixes(cellFrom(poolCell)).map((a) => a.rawText)).toEqual(['+1 to All Skills', 'Sockets cannot be removed']);
+  });
+
+  it('returns no pools for cells with only recipe and ingredient bonuses (extra blank lines included)', () => {
+    expect(parseRecipeBonusPools(cellFrom('+1 to All Skills<br><br><br>+20 Defense<br><br><br><br>'))).toEqual([]);
+    expect(parseRecipeBonusPools(cellFrom('\n'))).toEqual([]);
+  });
+
+  it('never treats the first or the trailing (ingredient) group as a pool', () => {
+    expect(parseRecipeBonusPools(cellFrom('+1 to All Skills<br><br>1-2 of the following:<br>+20 Defense'))).toEqual([]);
+    expect(parseRecipeBonusPools(cellFrom('1-2 of the following:<br>+20 Defense<br><br>+5 Life'))).toEqual([]);
   });
 });
 

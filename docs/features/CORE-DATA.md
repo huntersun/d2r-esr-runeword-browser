@@ -313,8 +313,9 @@ helpers in `parsers/shared/parserUtils.ts` instead of splitting `innerHTML` on `
   parser uses this flag to route every orange line to `specialProperties` and the rest to `properties`.
 - `splitCellLineGroups(lines)` splits on `<br><br>` (recipe bonuses vs. ingredient bonuses in
   runeword/gemword cells; `parseRecipeAffixes` keeps only the first group). Since ESR 3.2, gemword
-  cells for non-Charm items also list "1-2 of the following:" random bonus pools between the two;
-  these are not parsed.
+  cells for most non-Charm items also list "1-2 of the following:" random bonus pools between the two;
+  `parseRecipeBonusPools` returns every group between the first and last non-empty group that starts
+  with an "… of the following:" header (stored as `Gemword.columnBonusPools`).
 - `mergeWrappedCellLines(lines)` / `mergeWrappedLines(strings)` re-join affixes that the ESR pages
   hard-wrap with `<br>` mid-sentence (mostly long orange "special" affixes, e.g. Obsession, Death
   Cleaver, Tal Rasha's Final Whisper).

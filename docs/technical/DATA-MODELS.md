@@ -150,6 +150,7 @@ Stores all gemword definitions (gem-based socket recipes, analogous to runewords
 | allowedItems | string[] | No | "Body Armor", "Any Shield" |
 | affixes | Affix[] | No | Backward compat: first non-empty column |
 | columnAffixes | SocketableBonuses | No | Per-column bonuses (weapon/helm/armor) |
+| columnBonusPools | ColumnBonusPools? | No | Per-column random bonus pools (ESR 3.2+): `{ label: "1-2 of the following:", affixes }[]` per column; undefined in data cached before it existed |
 | jewelInfo | string? | No | Optional jewel requirement, e.g. "Jewel" (America, Canada, China) |
 
 ### htmUniqueItems

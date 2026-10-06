@@ -1,11 +1,12 @@
-import type { Affix, Gemword, SocketableBonuses } from '@/core/db';
+import type { Affix, ColumnBonusPools, Gemword, SocketableBonuses } from '@/core/db';
 import { extractName, extractSockets, extractAllowedItems, type GemReqLevelLookup } from './runewordsParser';
 import { isGemName } from './gemsParser';
-import { parseRecipeAffixes } from './shared/parserUtils';
+import { parseRecipeAffixes, parseRecipeBonusPools } from './shared/parserUtils';
 
 interface ExtractedGemwordAffixes {
   readonly affixes: Affix[];
   readonly columnAffixes: SocketableBonuses;
+  readonly columnBonusPools: ColumnBonusPools;
 }
 
 export interface ExtractedGemwordIngredients {
@@ -48,7 +49,7 @@ export function calculateGemwordReqLevel(gems: readonly string[], gemReqLevelLoo
 
 function extractGemwordAffixes(cells: NodeListOf<Element>): ExtractedGemwordAffixes {
   // Gemword cells contain [gemword bonuses]<br><br>[gem bonuses]; keep only the gemword's own bonuses.
-  // Since ESR 3.2 non-Charm rows also list "1-2 of the following:" random pools in between (not parsed)
+  // Since ESR 3.2 most non-Charm rows also list "1-2 of the following:" random pools in between
   const weaponsGloves = parseRecipeAffixes(cells[3]);
   const helmsBoots = parseRecipeAffixes(cells[4]);
   const armorShieldsBelts = parseRecipeAffixes(cells[5]);
@@ -57,6 +58,11 @@ function extractGemwordAffixes(cells: NodeListOf<Element>): ExtractedGemwordAffi
   return {
     affixes,
     columnAffixes: { weaponsGloves, helmsBoots, armorShieldsBelts },
+    columnBonusPools: {
+      weaponsGloves: parseRecipeBonusPools(cells[3]),
+      helmsBoots: parseRecipeBonusPools(cells[4]),
+      armorShieldsBelts: parseRecipeBonusPools(cells[5]),
+    },
   };
 }
 
@@ -85,7 +91,7 @@ export function parseGemwordsHtml(html: string, gemReqLevelLookup?: GemReqLevelL
     const sockets = extractSockets(cells[0]);
     const { gems, jewelInfo } = extractGemwordIngredients(cells[1]);
     const { allowedItems } = extractAllowedItems(cells[2]);
-    const { affixes, columnAffixes } = extractGemwordAffixes(cells);
+    const { affixes, columnAffixes, columnBonusPools } = extractGemwordAffixes(cells);
     const reqLevel = calculateGemwordReqLevel(gems, gemReqLevelLookup);
 
     gemwords.push({
@@ -99,6 +105,7 @@ export function parseGemwordsHtml(html: string, gemReqLevelLookup?: GemReqLevelL
       allowedItems,
       affixes,
       columnAffixes,
+      columnBonusPools,
       ...(jewelInfo !== undefined && { jewelInfo }),
     });
   }
