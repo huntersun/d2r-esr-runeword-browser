@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.14.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.13.0...v1.14.0) (2026-10-06)
+
+
+### Features
+
+* **builds:** add Warlock class ([f23aed7](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/f23aed701d56cb007ce049d1f51312a1cc05e210))
+* **gemwords:** include random bonus pool lines in text search ([72fe42f](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/72fe42fb273cc1655ae54464f013bdd29aee1f97))
+* **gemwords:** parse random bonus pools ([bc85eff](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/bc85eff556bcf0c56f12b446aa5b113beb59f7ad))
+* **gemwords:** show random bonus pools on cards ([25e06f0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/25e06f0091fba0c6e067108fa951e7b22f1804b5))
+
+
+### Bug Fixes
+
+* **data-sync:** detect Kanji runes after ESR 3.2 colour change ([f3c8c9a](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/f3c8c9a84041dfdc5d906aa33a570be40d2780e8)), closes [#EED68](https://github.com/istvan-panczel/d2r-esr-runeword-browser/issues/EED68)
+* **data-sync:** parse ascendancy tier labels with a footnote marker ([fbca3a3](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/fbca3a35016b2be8c77c611aaaa31493fe9c6c2b))
+* **data-sync:** parse required-jewel runeword rows added in ESR 3.2 ([882c61d](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/882c61d5a6a29ba75935232c88c6ce027683ad19))
+* **data-sync:** skip verbatim duplicate gemword rows ([742a842](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/742a842d08b502a003d7f19adc214903296a14b2))
+* **runewords:** classify renamed two-handed melee weapon type ([7921384](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/79213849e8c1ace9d2ce073074c73261a0f49d38))
+* **unique-items:** group ESR 3.2 unique item categories ([0e45144](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/0e4514423ce85a8455dd2a7fe357376dae18ce05))
+
+
+### Documentation
+
+* **data-sync:** note the unparsed ESR 3.2 gemword bonus pools ([eb592a5](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/eb592a5480fa6d17cb670cf5adf41ca3654d8d0e))
+
+
+### Tests
+
+* **api:** expect ESR 3.2.02 as the newest changelog version ([d72ee3f](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/d72ee3f9219ff5f829ef6f309374f6a0cca9d6f7))
+* **data-sync:** align gemword expectations with ESR 3.2 ([7c931a3](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/7c931a3c11fe08158312e86c30fbd240f37087a2))
+* **data-sync:** align unique item expectations with ESR 3.2 ([5f6fad3](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/5f6fad3b055b98ebc0fd53f3c0b78ee170ed997b))
+
 ## [1.13.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.12.1...v1.13.0) (2026-10-05)
 
 
