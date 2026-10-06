@@ -284,6 +284,16 @@ describe('Known items', () => {
     expect(item!.baseItemCode).toBe('p01');
     expect(item!.properties.length).toBeGreaterThan(0);
   });
+
+  it('should parse Wilting Petal (Warlock ring, added in ESR 3.2)', () => {
+    const item = others.find((o) => o.name === 'Wilting Petal');
+    expect(item).toBeDefined();
+    expect(item!.category).toBe('War Ring');
+    expect(item!.baseItem).toBe("Warlock's Sigil");
+    expect(item!.baseItemCode).toBe('wrn');
+    expect(item!.gambleItem).toBe("Warlock's Sigil");
+    expect(item!.properties).toContain('+1 to Warlock Skills');
+  });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -418,7 +428,7 @@ describe('Hard-wrapped properties', () => {
 
   it('Death Cleaver: a 3-line orange property becomes one entry', () => {
     expect(findIn(weapons, 'Death Cleaver').properties).toContain(
-      'On melee attack, gain maximum base attack speed. Every attack lowers your base attack speed by 10% and increases your total physical attack damage by 2%. Maximum stacks: 25'
+      'On melee attack, gain 150% base attack speed. Every attack lowers your base attack speed by 10% and increases your total physical attack damage by 2%. Maximum stacks: 25'
     );
   });
 
@@ -436,12 +446,26 @@ describe('Hard-wrapped properties', () => {
     );
   });
 
-  it('no property should start with a lowercase letter (missed wrap)', () => {
+  it('no property should start with a lowercase letter (missed wrap), except known upstream data errors', () => {
+    // Upstream lists these lines in reversed order (ESR 3.2), and "descfunc23 ..." is an
+    // unrendered placeholder in the source page — left as they are, not fixed in-app
+    const upstreamErrors = new Set([
+      "Artemis' Wrath: but lose 50% while not running",
+      'Fangs of the King Cobra: to gain 500% poison spell damage',
+      'Boots of Aether: descfunc23 descval 2 not implemented',
+      'Wraithstep: descfunc23 descval 2 not implemented',
+    ]);
     for (const item of [...weapons, ...armors, ...others]) {
       for (const prop of item.properties) {
+        if (upstreamErrors.has(`${item.name}: ${prop}`)) continue;
         expect(prop, `${item.name}: "${prop}"`).not.toMatch(/^[a-z]/);
       }
     }
+  });
+
+  it("Artemis' Wrath: upstream line order is reversed, so the two lines are left as they are", () => {
+    const props = findIn(weapons, "Artemis' Wrath").properties;
+    expect(props.slice(0, 2)).toEqual(['but lose 50% while not running', 'Gain 75% total physical attack damage while running,']);
   });
 
   it('synthetic: joins wrapped lines without crossing the orange boundary', () => {
