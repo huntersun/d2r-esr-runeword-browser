@@ -451,7 +451,7 @@ select exists(
 
 ## Character Classes
 
-The standard 7 Diablo 2 Resurrected classes:
+The 8 Diablo 2 Resurrected classes playable in ESR (Warlock added in ESR 3.2):
 
 - Amazon
 - Necromancer
@@ -460,6 +460,7 @@ The standard 7 Diablo 2 Resurrected classes:
 - Paladin
 - Druid
 - Assassin
+- Warlock
 
 Each class can have an ascendancy (see below).
 

@@ -14,6 +14,7 @@ export const CLASS_STYLES: Record<CharacterClass, ClassStyle> = {
   Necromancer: { badge: 'border-slate-500/40 bg-slate-500/10 text-slate-700 dark:text-slate-300' },
   Paladin: { badge: 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300' },
   Sorceress: { badge: 'border-sky-500/40 bg-sky-500/10 text-sky-700 dark:text-sky-300' },
+  Warlock: { badge: 'border-fuchsia-500/40 bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300' },
 };
 
 /** Looks up the style for a class string (builds store `class` as a plain string). */

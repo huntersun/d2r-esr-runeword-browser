@@ -1,5 +1,5 @@
-// The standard 7 Diablo 2 Resurrected classes (see FEATURE-BUILD-SHARING.md).
-export const CHARACTER_CLASSES = ['Amazon', 'Necromancer', 'Barbarian', 'Sorceress', 'Paladin', 'Druid', 'Assassin'] as const;
+// The 8 Diablo 2 Resurrected classes playable in ESR (see FEATURE-BUILD-SHARING.md).
+export const CHARACTER_CLASSES = ['Amazon', 'Necromancer', 'Barbarian', 'Sorceress', 'Paladin', 'Druid', 'Assassin', 'Warlock'] as const;
 export type CharacterClass = (typeof CHARACTER_CLASSES)[number];
 
 /** Builds fetched per page (cursor-based infinite scroll). */
