@@ -12,14 +12,15 @@ describe('parseGemwordsHtml', () => {
   const gems = parseGemsHtml(gemsHtml);
   const gemReqLevelLookup: GemReqLevelLookup = new Map(gems.map((gem) => [gem.name, gem.reqLevel]));
 
-  it('should parse all gemword rows (approximately 580-610)', () => {
+  it('should parse all gemword rows (approximately 720-750)', () => {
     const gemwords = parseGemwordsHtml(gemwordsHtml, gemReqLevelLookup);
 
-    expect(gemwords.length).toBeGreaterThanOrEqual(580);
-    expect(gemwords.length).toBeLessThanOrEqual(610);
+    // ESR 3.2: 8 families x 90 rows (18 Charm-only rows + 72 item rows) + 14 named gemwords
+    expect(gemwords.length).toBeGreaterThanOrEqual(720);
+    expect(gemwords.length).toBeLessThanOrEqual(750);
   });
 
-  it('parses a one-socket Holy gemword with allowed items and per-column bonuses', () => {
+  it('parses a one-socket Holy charm gemword (Charm rows are listed separately since ESR 3.2)', () => {
     const gemwords = parseGemwordsHtml(gemwordsHtml, gemReqLevelLookup);
     const holy = gemwords.find((gemword) => gemword.name === 'Holy' && gemword.variant === 1);
 
@@ -28,22 +29,49 @@ describe('parseGemwordsHtml', () => {
     expect(holy?.reqLevel).toBe(1);
     expect(holy?.gems).toEqual(['Chipped Diamond']);
     expect(holy?.ingredients).toEqual(['Chipped Diamond']);
-    expect(holy?.allowedItems).toEqual(['Body Armor', 'Any Shield', 'Helm', 'Charm', 'Boots', 'Belt']);
+    expect(holy?.allowedItems).toEqual(['Charm']);
+    expect(holy?.affixes.map((affix) => affix.rawText)).toEqual(['5% Chance to Cast Level 5 Magic Surge when Struck']);
     expect(holy?.columnAffixes.weaponsGloves).toEqual([]);
-    expect(holy?.columnAffixes.helmsBoots.map((affix) => affix.rawText)).toEqual(['5% Chance to Cast Level 5 Magic Surge when Struck']);
+    expect(holy?.columnAffixes.armorShieldsBelts).toEqual([]);
+  });
+
+  it('parses a one-socket Holy item gemword with allowed items and per-column bonuses', () => {
+    const gemwords = parseGemwordsHtml(gemwordsHtml, gemReqLevelLookup);
+    const holy = gemwords.find(
+      (gemword) => gemword.name === 'Holy' && gemword.allowedItems.includes('Body Armor') && gemword.gems.join() === 'Chipped Diamond'
+    );
+
+    expect(holy).toBeDefined();
+    expect(holy?.sockets).toBe(1);
+    expect(holy?.reqLevel).toBe(1);
+    expect(holy?.allowedItems).toEqual(['Body Armor', 'Any Shield', 'Helm', 'Boots', 'Belt']);
+    expect(holy?.columnAffixes.weaponsGloves).toEqual([]);
+    expect(holy?.columnAffixes.helmsBoots.map((affix) => affix.rawText)).toEqual([
+      '5% Chance to Cast Level 5 Magic Surge when Struck',
+      'Sockets cannot be removed',
+    ]);
     expect(holy?.columnAffixes.armorShieldsBelts.map((affix) => affix.rawText)).toEqual([
       '5% Chance to Cast Level 5 Magic Surge when Struck',
+      'Sockets cannot be removed',
     ]);
   });
 
-  it('keeps only the gemword bonuses, not the gem bonuses after the <br><br> separator', () => {
+  it('keeps only the gemword bonuses, not the random bonus pools or gem bonuses after the <br><br> separator', () => {
     const gemwords = parseGemwordsHtml(gemwordsHtml, gemReqLevelLookup);
-    const holy = gemwords.find((gemword) => gemword.name === 'Holy' && gemword.variant === 1);
+    const holy = gemwords.find(
+      (gemword) => gemword.name === 'Holy' && gemword.allowedItems.includes('Body Armor') && gemword.gems.join() === 'Chipped Diamond'
+    );
+    const armorBonuses = holy?.columnAffixes.armorShieldsBelts.map((affix) => affix.rawText);
 
-    // The armor cell also lists Chipped Diamond's own bonuses (e.g. "Cold Resist +5%")
-    // after a <br><br> separator — those belong to the gem, not the gemword
-    expect(holy?.affixes.map((affix) => affix.rawText)).toEqual(['5% Chance to Cast Level 5 Magic Surge when Struck']);
-    expect(holy?.columnAffixes.armorShieldsBelts.map((affix) => affix.rawText)).not.toContain('Cold Resist +5%');
+    // After <br><br> the armor cell lists "1-2 of the following:" random pools, then
+    // Chipped Diamond's own bonuses (e.g. "All Resists +5") — neither is the gemword's
+    expect(holy?.affixes.map((affix) => affix.rawText)).toEqual([
+      '5% Chance to Cast Level 5 Magic Surge when Struck',
+      'Sockets cannot be removed',
+    ]);
+    expect(armorBonuses).not.toContain('1-2 of the following:');
+    expect(armorBonuses).not.toContain('+(20 to 30) Defense');
+    expect(armorBonuses).not.toContain('All Resists +5');
   });
 
   it('captures the jewel requirement for recipes that need one', () => {
@@ -57,6 +85,12 @@ describe('parseGemwordsHtml', () => {
 
     const withJewel = gemwords.filter((gemword) => gemword.jewelInfo !== undefined);
     expect(withJewel.map((gemword) => gemword.name).sort()).toEqual(['America', 'Canada', 'China']);
+  });
+
+  it('skips rows that repeat an earlier row verbatim (America is listed twice since ESR 3.2)', () => {
+    const gemwords = parseGemwordsHtml(gemwordsHtml, gemReqLevelLookup);
+
+    expect(gemwords.filter((gemword) => gemword.name === 'America')).toHaveLength(1);
   });
 
   it('assigns unique (name, variant) pairs — favourite ids depend on this', () => {
