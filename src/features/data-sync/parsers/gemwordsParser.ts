@@ -47,7 +47,8 @@ export function calculateGemwordReqLevel(gems: readonly string[], gemReqLevelLoo
 }
 
 function extractGemwordAffixes(cells: NodeListOf<Element>): ExtractedGemwordAffixes {
-  // Gemword cells contain [gemword bonuses]<br><br>[gem bonuses]; keep only the gemword's own bonuses
+  // Gemword cells contain [gemword bonuses]<br><br>[gem bonuses]; keep only the gemword's own bonuses.
+  // Since ESR 3.2 non-Charm rows also list "1-2 of the following:" random pools in between (not parsed)
   const weaponsGloves = parseRecipeAffixes(cells[3]);
   const helmsBoots = parseRecipeAffixes(cells[4]);
   const armorShieldsBelts = parseRecipeAffixes(cells[5]);

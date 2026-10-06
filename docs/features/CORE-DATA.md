@@ -312,7 +312,9 @@ helpers in `parsers/shared/parserUtils.ts` instead of splitting `innerHTML` on `
   when that font spans several `<br>`-separated lines or starts with a `<br>`. The mythical uniques
   parser uses this flag to route every orange line to `specialProperties` and the rest to `properties`.
 - `splitCellLineGroups(lines)` splits on `<br><br>` (recipe bonuses vs. ingredient bonuses in
-  runeword/gemword cells; `parseRecipeAffixes` keeps only the first group).
+  runeword/gemword cells; `parseRecipeAffixes` keeps only the first group). Since ESR 3.2, gemword
+  cells for non-Charm items also list "1-2 of the following:" random bonus pools between the two;
+  these are not parsed.
 - `mergeWrappedCellLines(lines)` / `mergeWrappedLines(strings)` re-join affixes that the ESR pages
   hard-wrap with `<br>` mid-sentence (mostly long orange "special" affixes, e.g. Obsession, Death
   Cleaver, Tal Rasha's Final Whisper).
