@@ -21,7 +21,11 @@ export function matchesGemwordSearch(gemword: Gemword, searchTerms: readonly str
   if (searchTerms.length === 0) return true;
 
   const { weaponsGloves, helmsBoots, armorShieldsBelts } = gemword.columnAffixes;
-  const affixTexts = [...weaponsGloves, ...helmsBoots, ...armorShieldsBelts].map((affix) => affix.rawText);
+  const pools = gemword.columnBonusPools;
+  const poolAffixes = pools
+    ? [...pools.weaponsGloves, ...pools.helmsBoots, ...pools.armorShieldsBelts].flatMap((pool) => pool.affixes)
+    : [];
+  const affixTexts = [...weaponsGloves, ...helmsBoots, ...armorShieldsBelts, ...poolAffixes].map((affix) => affix.rawText);
   const searchableText = [gemword.name, ...gemword.gems, ...gemword.allowedItems, ...affixTexts].join(' ').toLowerCase();
 
   return searchTerms.every((term) => searchableText.includes(term));

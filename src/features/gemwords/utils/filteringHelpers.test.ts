@@ -55,6 +55,26 @@ describe('gemword filtering helpers', () => {
     expect(matchesGemwordSearch(gemword, ['missing'])).toBe(false);
   });
 
+  it('matches search against random bonus pool lines but not pool headers', () => {
+    const crushingBlow = {
+      rawText: '+(4 to 6)% Chance of Crushing Blow',
+      pattern: '+(# to #)% Chance of Crushing Blow',
+      value: 4,
+      valueType: 'percent',
+    } as const;
+    const gemword = createGemword({
+      columnBonusPools: {
+        weaponsGloves: [],
+        helmsBoots: [],
+        armorShieldsBelts: [{ label: '1-2 of the following:', affixes: [crushingBlow] }],
+      },
+    });
+
+    expect(matchesGemwordSearch(gemword, ['crushing blow'])).toBe(true);
+    expect(matchesGemwordSearch(gemword, ['following'])).toBe(false);
+    expect(matchesGemwordSearch(createGemword(), ['crushing blow'])).toBe(false);
+  });
+
   it('filters by socket count and max required level', () => {
     const gemword = createGemword({ sockets: 3, reqLevel: 21 });
 
