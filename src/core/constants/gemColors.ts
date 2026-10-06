@@ -7,6 +7,7 @@ export const GEM_BG_COLORS: Record<string, string> = {
   GOLD: 'bg-[#908858]/30 dark:bg-[#b8ae78]/30',
   WHITE: 'bg-slate-600/20 dark:bg-slate-300/20',
   BLUE: 'bg-blue-600/30 dark:bg-blue-500/30',
+  LIGHTBLUE: 'bg-blue-600/30 dark:bg-blue-500/30', // Sapphire since ESR 3.2 (was BLUE)
 };
 
 export const GEM_SWATCH_COLORS: Record<string, string> = {
@@ -18,4 +19,5 @@ export const GEM_SWATCH_COLORS: Record<string, string> = {
   GOLD: 'bg-[#b8ae78] border-[#e0d8a0]/80',
   WHITE: 'bg-slate-100 border-slate-400',
   BLUE: 'bg-blue-500 border-blue-200/70',
+  LIGHTBLUE: 'bg-blue-500 border-blue-200/70', // Sapphire since ESR 3.2 (was BLUE)
 };

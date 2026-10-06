@@ -1,7 +1,20 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import { isEsrRuneName, parseEsrRunesHtml } from './esrRunesParser';
+import { isEsrRuneName, isEsrTierColor, parseEsrRunesHtml } from './esrRunesParser';
+
+describe('isEsrTierColor', () => {
+  it('should accept the 7 tier colors case-insensitively', () => {
+    for (const color of ['WHITE', 'RED', 'YELLOW', 'ORANGE', 'GREEN', 'GOLD', 'purple']) {
+      expect(isEsrTierColor(color), color).toBe(true);
+    }
+  });
+
+  it('should reject other colors', () => {
+    expect(isEsrTierColor('#EED68D')).toBe(false);
+    expect(isEsrTierColor('BLUE')).toBe(false);
+  });
+});
 
 describe('isEsrRuneName', () => {
   it('should return true for ESR rune names with valid colors', () => {
@@ -10,8 +23,8 @@ describe('isEsrRuneName', () => {
     expect(isEsrRuneName('Null Rune', 'PURPLE')).toBe(true);
   });
 
-  it('should return false for Kanji runes (BLUE color)', () => {
-    expect(isEsrRuneName('Moon Rune', 'BLUE')).toBe(false);
+  it('should return false for Kanji runes (any non-tier color)', () => {
+    expect(isEsrRuneName('Moon Rune', '#EED68D')).toBe(false);
     expect(isEsrRuneName('Fire Rune', 'BLUE')).toBe(false);
   });
 
@@ -40,6 +53,12 @@ describe('parseEsrRunesHtml integration', () => {
     // ESR runes count may vary, but should be around 47
     expect(esrRunes.length).toBeGreaterThanOrEqual(40);
     expect(esrRunes.length).toBeLessThanOrEqual(55);
+  });
+
+  it('should find 7 runes in each of tiers 1-6 and 5 in tier 7', () => {
+    const esrRunes = parseEsrRunesHtml(html);
+    const perTier = [1, 2, 3, 4, 5, 6, 7].map((tier) => esrRunes.filter((r) => r.tier === tier).length);
+    expect(perTier).toEqual([7, 7, 7, 7, 7, 7, 5]);
   });
 
   it('should have correct tier assignments based on color', () => {
@@ -102,6 +121,7 @@ describe('parseEsrRunesHtml integration', () => {
 
     expect(esrRunes.find((r) => r.name === 'Moon Rune')).toBeUndefined();
     expect(esrRunes.find((r) => r.name === 'Fire Rune')).toBeUndefined();
+    expect(esrRunes.find((r) => r.name === 'God Rune')).toBeUndefined();
   });
 
   it('should parse bonuses for most ESR runes', () => {

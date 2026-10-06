@@ -5,15 +5,23 @@ import { isCrystalName } from './crystalsParser';
 import { ESR_COLOR_TO_TIER } from '../constants/constants.ts';
 
 /**
+ * Checks if a color is one of the ESR rune tier colors (WHITE, RED, ..., PURPLE).
+ * Colored runes in any other color are Kanji runes.
+ */
+export function isEsrTierColor(color: string): boolean {
+  return Object.hasOwn(ESR_COLOR_TO_TIER, color.toUpperCase());
+}
+
+/**
  * Checks if a name is an ESR rune.
- * ESR runes: have colored inner font (not BLUE), end with " Rune",
+ * ESR runes: have a colored inner font in one of the ESR tier colors, end with " Rune",
  * and are not gems or crystals.
  * Note: Some rune names (like "Ko") exist in both ESR and LoD - the color distinguishes them.
  */
 export function isEsrRuneName(name: string, color: string | null): boolean {
   if (!name.endsWith(' Rune')) return false;
   if (!color) return false;
-  if (color === 'BLUE') return false; // Kanji runes are blue
+  if (!isEsrTierColor(color)) return false; // Kanji runes use a non-tier color
   if (isGemName(name)) return false;
   if (isCrystalName(name)) return false;
   return true;

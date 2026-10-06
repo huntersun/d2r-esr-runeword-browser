@@ -11,10 +11,8 @@ export interface ExtractedSocketable {
  * This is used for completeness verification - ensuring no socketables are missed by parsers.
  *
  * The HTML structure has header cells with colspan="3" containing item names.
- * Colors indicate rune type:
  * - No colored inner font → LoD rune
- * - BLUE → Kanji rune
- * - Other colors (WHITE, RED, YELLOW, etc.) → ESR rune
+ * - Colored inner font → ESR or Kanji rune (see categorizeSocketables)
  * - Non-runes → gems or crystals
  */
 export function extractAllSocketableNames(html: string): ExtractedSocketable[] {
@@ -47,6 +45,10 @@ export function extractAllSocketableNames(html: string): ExtractedSocketable[] {
 
 /**
  * Groups extracted socketables by their expected parser category.
+ *
+ * Deliberately uses page order instead of colors, so it stays an independent check of the
+ * color-based parsers: gems.htm lists ESR runes, then the uncolored LoD runes, then Kanji runes.
+ * A colored rune is therefore ESR before the first LoD rune and Kanji after it.
  */
 export function categorizeSocketables(socketables: ExtractedSocketable[]): {
   lodRunes: string[];
@@ -64,11 +66,11 @@ export function categorizeSocketables(socketables: ExtractedSocketable[]): {
       if (color === null) {
         // No color = LoD rune
         lodRunes.push(name);
-      } else if (color === 'BLUE') {
-        // Blue = Kanji rune
+      } else if (lodRunes.length > 0) {
+        // Colored rune after the LoD runes = Kanji rune
         kanjiRunes.push(name);
       } else {
-        // Other colors = ESR rune
+        // Colored rune before the LoD runes = ESR rune
         esrRunes.push(name);
       }
     } else {

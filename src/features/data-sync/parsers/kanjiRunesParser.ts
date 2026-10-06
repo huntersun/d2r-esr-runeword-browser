@@ -1,13 +1,16 @@
 import type { KanjiRune } from '@/core/db';
 import { parseReqLevel, parseBonuses, hasColoredInnerFont, getInnerFontColor, getItemName } from './shared/parserUtils';
+import { isEsrTierColor } from './esrRunesParser';
 
 /**
  * Checks if a name is a Kanji rune.
- * Kanji runes: have BLUE colored inner font and end with " Rune".
+ * Kanji runes: end with " Rune" and have a colored inner font that is not an ESR tier color.
+ * The exact color is not matched because the site has changed it before (BLUE until ESR 3.12, #EED68D since 3.2).
  */
 export function isKanjiRuneName(name: string, color: string | null): boolean {
   if (!name.endsWith(' Rune')) return false;
-  return color === 'BLUE';
+  if (!color) return false;
+  return !isEsrTierColor(color);
 }
 
 export function parseKanjiRunesHtml(html: string): KanjiRune[] {

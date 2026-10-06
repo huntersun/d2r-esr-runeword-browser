@@ -10,6 +10,7 @@ const COLOR_CLASS_MAP: Record<string, string> = {
   GOLD: 'text-amber-700 dark:text-amber-400',
   WHITE: 'text-slate-600 dark:text-slate-300',
   BLUE: 'text-blue-700 dark:text-blue-400',
+  LIGHTBLUE: 'text-blue-700 dark:text-blue-400', // Sapphire since ESR 3.2 (was BLUE)
 };
 
 // Default colors for categories without stored color

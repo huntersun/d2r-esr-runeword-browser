@@ -4,30 +4,47 @@ import { resolve } from 'path';
 import { isKanjiRuneName, parseKanjiRunesHtml } from './kanjiRunesParser';
 
 describe('isKanjiRuneName', () => {
-  it('should return true for Kanji rune names with BLUE color', () => {
-    expect(isKanjiRuneName('Moon Rune', 'BLUE')).toBe(true);
-    expect(isKanjiRuneName('Fire Rune', 'BLUE')).toBe(true);
+  it('should return true for rune names in a non-tier color (#EED68D since ESR 3.2, BLUE before)', () => {
+    expect(isKanjiRuneName('Moon Rune', '#EED68D')).toBe(true);
+    expect(isKanjiRuneName('Fire Rune', '#eed68d')).toBe(true);
     expect(isKanjiRuneName('Water Rune', 'BLUE')).toBe(true);
   });
 
-  it('should return false for non-BLUE colors', () => {
+  it('should return false for ESR tier colors and uncolored (LoD) runes', () => {
     expect(isKanjiRuneName('Moon Rune', 'WHITE')).toBe(false);
     expect(isKanjiRuneName('Fire Rune', 'RED')).toBe(false);
+    expect(isKanjiRuneName('Su Rune', 'PURPLE')).toBe(false);
     expect(isKanjiRuneName('Water Rune', null)).toBe(false);
   });
 
   it('should return false for names without " Rune" suffix', () => {
-    expect(isKanjiRuneName('Moon', 'BLUE')).toBe(false);
+    expect(isKanjiRuneName('Moon', '#EED68D')).toBe(false);
+    // Skull gems share the Kanji color since ESR 3.2
+    expect(isKanjiRuneName('Chipped Skull', '#EED68D')).toBe(false);
   });
 });
 
 describe('parseKanjiRunesHtml integration', () => {
   const html = readFileSync(resolve(__dirname, '../../../../test-fixtures/gems.htm'), 'utf-8');
 
-  it('should parse Kanji runes (approximately 11-14)', () => {
+  it('should parse all 14 Kanji runes', () => {
     const kanjiRunes = parseKanjiRunesHtml(html);
-    expect(kanjiRunes.length).toBeGreaterThanOrEqual(10);
-    expect(kanjiRunes.length).toBeLessThanOrEqual(16);
+    expect(kanjiRunes.map((r) => r.name)).toEqual([
+      'Moon Rune',
+      'Fire Rune',
+      'Water Rune',
+      'Wood Rune',
+      'Metal Rune',
+      'Earth Rune',
+      'Sun Rune',
+      'Thunder Rune',
+      'Wind Rune',
+      'Dragon Rune',
+      'Life Rune',
+      'Death Rune',
+      'Heaven Rune',
+      'God Rune',
+    ]);
   });
 
   it('should have all runes at level 60', () => {

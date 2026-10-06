@@ -69,20 +69,13 @@ if (lodRunes.length > 0) {
   console.log('');
 }
 
-// Kanji runes (BLUE)
-const kanjiRunes = runesByColor.get('BLUE') || [];
-if (kanjiRunes.length > 0) {
-  console.log(`Kanji Runes (BLUE): ${kanjiRunes.length}`);
-  console.log(kanjiRunes.join(', '));
-  console.log('');
-}
-
-// ESR runes (other colors - dynamically discovered)
-const esrRunes = [];
+// Colored runes, grouped by color (dynamically discovered).
+// ESR runes use the 7 tier colors (WHITE ... PURPLE); Kanji runes use another color (BLUE until ESR 3.12, #EED68D since 3.2).
+const coloredRunes = [];
 for (const [color, names] of runesByColor) {
-  if (color !== 'NO_COLOR' && color !== 'BLUE') {
-    esrRunes.push(...names);
-    console.log(`ESR Runes (${color}): ${names.length}`);
+  if (color !== 'NO_COLOR') {
+    coloredRunes.push(...names);
+    console.log(`Colored Runes (${color}): ${names.length}`);
     console.log(names.join(', '));
     console.log('');
   }
@@ -96,7 +89,6 @@ console.log('');
 // Summary
 console.log('=== SUMMARY ===');
 console.log(`LoD Runes: ${lodRunes.length}`);
-console.log(`Kanji Runes: ${kanjiRunes.length}`);
-console.log(`ESR Runes: ${esrRunes.length}`);
+console.log(`Colored Runes (ESR + Kanji): ${coloredRunes.length}`);
 console.log(`Non-Runes (gems/crystals): ${nonRunes.length}`);
 console.log(`Total: ${runes.length + nonRunes.length} socketables`);

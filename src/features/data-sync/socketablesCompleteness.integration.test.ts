@@ -81,9 +81,14 @@ describe('Socketables Completeness', () => {
   });
 
   describe('Socketables are categorized correctly', () => {
-    it('should categorize runes by color correctly', () => {
+    it('should categorize runes like the parsers do (page order vs color)', () => {
       const allSocketables = extractAllSocketableNames(gemsHtml);
       const categorized = categorizeSocketables(allSocketables);
+
+      // Snapshot counts as of ESR 3.2 — catches both parsers and the extractor going wrong together
+      expect(categorized.esrRunes).toHaveLength(47);
+      expect(categorized.lodRunes).toHaveLength(33);
+      expect(categorized.kanjiRunes).toHaveLength(14);
 
       const lodRunes = parseLodRunesHtml(gemsHtml);
       const esrRunes = parseEsrRunesHtml(gemsHtml);
