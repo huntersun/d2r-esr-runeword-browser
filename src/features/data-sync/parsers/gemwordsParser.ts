@@ -64,9 +64,14 @@ export function parseGemwordsHtml(html: string, gemReqLevelLookup?: GemReqLevelL
   const doc = parser.parseFromString(html, 'text/html');
   const gemwords: Gemword[] = [];
   const variantCounters = new Map<string, number>();
+  const seenRows = new Set<string>();
   const rows = doc.querySelectorAll('tr.recipeRow');
 
   for (const row of rows) {
+    // ESR 3.2 lists a few recipes (America, Canada, China) twice with identical markup
+    if (seenRows.has(row.innerHTML)) continue;
+    seenRows.add(row.innerHTML);
+
     const cells = row.querySelectorAll('td');
     if (cells.length < 6) continue;
 
