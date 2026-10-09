@@ -30,4 +30,24 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/game-data/bases</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/game-data/best-base</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/game-data/affixes</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/game-data/types</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
 </urlset>

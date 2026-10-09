@@ -31,6 +31,10 @@ npm run release          # Create a new version (runs lint + build first)
 npm run compiler:check   # Check React Compiler optimization issues
 npm run compiler:health  # Run React Compiler health check
 
+# Game data (txt game files → public/game-data/*.json; needs ../Eastern_Sun_Resurrected clone)
+npm run game-data:generate  # Regenerate the static game-data bundles
+npm run game-data:check     # Exit 1 if the committed bundles are stale
+
 # Testing
 npm run test:fixtures    # Fetch test fixtures (required once after checkout)
 npm run test             # Run tests once (CI mode)

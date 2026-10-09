@@ -84,7 +84,7 @@ features/runewords/
 
 ## Data Flow
 
-The app uses a single HTM-based data system. All data is fetched from the ESR documentation site, parsed with `DOMParser`, and stored in IndexedDB.
+The app has two data systems. The main one is HTM-based: data is fetched from the ESR documentation site, parsed with `DOMParser`, and stored in IndexedDB (below). The Game Data pages use static bundles built from the ESR game files (see [Game-file data](#game-file-data)).
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -123,6 +123,25 @@ The app uses a single HTM-based data system. All data is fetched from the ESR do
 │     - Components stay in sync automatically                 │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+### Game-file data
+
+The Game Data pages (`/game-data/*`) read static JSON bundles generated at build time from the ESR txt game tables:
+
+```
+ESR clone (excel/*.txt, strings/*.json)
+   │  npm run game-data:generate  (scripts/generate-game-data.ts, Node type stripping)
+   ▼
+public/game-data/{manifest,types,bases,runewords,affixes}.json   committed, pinned to an ESR git tag
+   │  fetch(…?v=<sha256>) with a module-level promise cache (engine/browser/loadGameData.ts)
+   ▼
+useGameData(files) → pages (bundles stay out of Redux and IndexedDB)
+```
+
+`src/features/game-data/engine/` holds pure logic used both by the pages and the generator (schema, type ancestors,
+socket caps, runeword matching, best base, affix eligibility); `build/` is generator-only (txt parser, string tables,
+stat renderer, bundle writers) and is excluded from the app build. Both use relative `.ts` imports and no DOM.
+Details: [GAME-DATA.md](../features/GAME-DATA.md).
 
 ## Core vs Features
 

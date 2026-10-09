@@ -29,7 +29,7 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
       parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        project: ['./tsconfig.node.json', './tsconfig.app.json', './tsconfig.scripts.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -48,6 +48,13 @@ export default defineConfig([
 
       // Allow unused variables/params prefixed with underscore
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    },
+  },
+  {
+    // Node scripts run with Node's built-in type stripping (see tsconfig.scripts.json)
+    files: ['scripts/**/*.ts'],
+    languageOptions: {
+      globals: globals.node,
     },
   },
 ])

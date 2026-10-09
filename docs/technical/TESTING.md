@@ -53,6 +53,17 @@ Test individual functions alongside source files. Focus on inputs/outputs, edge 
 
 Test full flows at feature level: parse → store → query. Use real HTML fixtures from `test-fixtures/` (see below).
 
+### Game Data Tests
+
+- `src/features/game-data/bundleIntegrity.test.ts` reads the committed `public/game-data/*.json` (counts, sha256 hashes,
+  schema, type references). When the ESR clone is present (`../Eastern_Sun_Resurrected` or `ESR_SOURCE_DIR`), it also
+  regenerates the bundles in memory and requires them to equal the committed files; without the clone that part is
+  skipped (`describe.skipIf`).
+- `runewordMatching.integration.test.ts` matches the parsed `runewords.htm` fixture against `runewords.json` (≥ 95 %).
+- `statRenderer.oracle.test.ts` compares the rendered runeword stats with the docs page lines, prints the identical
+  share and the most frequent mismatches, and asserts a floor.
+- Both skip when a fixture or bundle is missing.
+
 ## Key Patterns
 
 ### Database Testing

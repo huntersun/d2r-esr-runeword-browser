@@ -12,6 +12,11 @@ Documentation for routing, layout, and navigation patterns.
 | `/uniques` | HtmUniqueItemsScreen | Unique items with category & coupon filters |
 | `/mythicals` | MythicalUniquesScreen | Mythical unique items |
 | `/ascendancies` | AscendanciesScreen | Ascendancies with their tier bonuses |
+| `/game-data` | GameDataLayout | Game-file data section; index redirects to `bases` |
+| `/game-data/bases` | BasesScreen | Base items browser (txt game files) |
+| `/game-data/best-base` | BestBaseScreen | Placeholder (Phase 2) |
+| `/game-data/affixes` | AffixesScreen | Placeholder (Phase 3) |
+| `/game-data/types` | ItemTypesScreen | Item type tree + socket caps, `?type=<code>` focus |
 | `/builds` | BuildsScreen | Shared builds list (Supabase only) |
 | `/builds/new` | CreateBuildScreen | Create a build (sign-in required) |
 | `/builds/:buildId/edit` | EditBuildScreen | Edit an own build |
@@ -35,8 +40,26 @@ Documentation for routing, layout, and navigation patterns.
 ### Header Components
 
 - **Logo/Title**: "D2R ESR" or similar branding
-- **Navigation Links**: Runewords, Gemwords, Socketables, Uniques, Mythicals, Ascendancies, Builds (only when Supabase is configured), plus external ESR Documentation / Changelog links; items that don't fit collapse into a "More" menu (priority-plus, see `Header.tsx`)
+- **Navigation Links**: Runewords, Gemwords, Socketables, Uniques, Mythicals, Ascendancies, Game Data, Builds (only when Supabase is configured), plus external ESR Documentation / Changelog links; items that don't fit collapse into a "More" menu (priority-plus, see `Header.tsx`)
 - **Settings Button**: Cog icon in top-right corner
+
+### Sub-tab layouts
+
+`/game-data` is the only nested section. It has a single header entry (`{ key: 'game-data', to: '/game-data', end: false }`,
+so it stays active on every sub-page) and a lazy `GameDataLayout` that renders:
+
+```
+Game Data
+Game files: ESR 3.2.10 (tag 3.2.10 @ 10b540e, generated 2026-10-09)
+[amber note when the HTM docs ESR version differs]
+[Bases] [Best Base] [Affixes] [Item Types]      <- NavLinks, same classes as the header links
+----------------------------------------------
+<Outlet />                                        <- child route screen
+```
+
+Each child route is its own lazy screen wrapped in `<Suspense>` (all from `@/features/game-data`, so they share one chunk).
+The version line comes from `public/game-data/manifest.json`; the docs version from Dexie `metadata.esrVersion`. The note
+never says which version is newer (HTM and git-tag version strings do not compare).
 
 ### Navigation Style
 
@@ -119,6 +142,15 @@ export const router = createBrowserRouter(
         { index: true, element: routeElement(RunewordsScreen) },
         { path: 'gemwords', element: routeElement(GemwordsScreen) },
         { path: 'socketables', element: routeElement(SocketablesScreen) },
+        {
+          path: 'game-data',
+          element: routeElement(GameDataLayout),
+          children: [
+            { index: true, element: <Navigate to="bases" replace /> },
+            { path: 'bases', element: routeElement(GameDataBasesScreen) },
+            // ... best-base, affixes, types
+          ],
+        },
         // ... uniques, mythicals, ascendancies, builds, builds/new,
         //     builds/:buildId/edit, build/:buildId, user/:userId
         { path: '*', element: <NotFoundScreen /> },

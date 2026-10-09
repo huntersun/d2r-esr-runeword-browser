@@ -344,6 +344,21 @@ function EsrRuneList() {
 }
 ```
 
+## Game Data Bundles
+
+The Game Data pages do not use Dexie. Their data is static JSON under `public/game-data/`, typed in
+`src/features/game-data/engine/schema.ts` (`GAME_DATA_SCHEMA`, bumped on incompatible shape changes):
+
+| File | Type | Contents |
+|------|------|----------|
+| `manifest.json` | `GameDataManifest` | schema, ESR version / tag / commit, `generatedAt`, sha256 + bytes per file, counts, warnings |
+| `types.json` | `TypesBundle` | `ItemTypeInfo[]` (parents, ancestors, socket caps, class, categories) + `ClassInfo[]` |
+| `bases.json` | `BasesBundle` | `BaseItem[]`: spawnable weapons, armor, accessories (tier, family, requirements, damage/defense, socket caps) |
+| `runewords.json` | `TxtRunewordsBundle` | `TxtRuneword[]` keyed `RunewordNNN`, one `TxtRunewordRow` per socket variant (ingredients, item types, rendered `text`) |
+| `affixes.json` | `AffixesBundle` | `Affix[]`: magic prefixes/suffixes/automods with levels, frequency, group, item types, `mods` and rendered `text` |
+
+See [GAME-DATA.md](../features/GAME-DATA.md) for the generation rules.
+
 ## Migration Strategy
 
 When schema changes are needed:

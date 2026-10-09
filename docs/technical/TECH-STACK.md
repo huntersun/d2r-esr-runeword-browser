@@ -107,6 +107,12 @@ npm run compiler:check    # Check if compiler can optimize all components
 npm run compiler:health   # Run health check on the codebase
 ```
 
+## Build Scripts
+
+`scripts/generate-game-data.ts` runs directly with Node's built-in TypeScript type stripping (Node ≥ 22.18, see
+`engines`): `npm run game-data:generate` / `npm run game-data:check`. It and the shared `src/features/game-data/{engine,build}`
+code are type-checked by `tsconfig.scripts.json` (Node types, ES2023, no DOM; relative imports ending in `.ts`).
+
 ## Development Tools
 
 Already configured in project:

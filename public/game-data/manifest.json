@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "esrVersion": "3.2.10",
+  "esrTag": "3.2.10",
+  "esrCommit": "10b540e9614d282f12463db5410b88eb89110dd7",
+  "generatedAt": "2026-10-09T13:22:36.907Z",
+  "files": {
+    "types": {
+      "hash": "9375f59541d1f738f4667ed197abb61dd6a50cbc7c48c25519a9ab94dc7c6c81",
+      "bytes": 44796
+    },
+    "bases": {
+      "hash": "8ed9d7aead39a4e8653ed8a60002b38bc417c2681faa162f182a03ece998fef6",
+      "bytes": 299099
+    },
+    "runewords": {
+      "hash": "b14726731c7ddca9ae729f99bc6c204e7fda015b1f4de829b23b34208c00acbc",
+      "bytes": 201816
+    },
+    "affixes": {
+      "hash": "2eb6b7b29fd394c7ee7eb3ae03b842aaf08e167e1c9e975a99e47c44cc058e57",
+      "bytes": 816100
+    }
+  },
+  "counts": {
+    "types": 188,
+    "classes": 8,
+    "bases": 653,
+    "weapons": 369,
+    "armors": 255,
+    "misc": 29,
+    "strings": 14730,
+    "stringConflicts": 85,
+    "duplicateBases": 3,
+    "runewords": 391,
+    "runewordRows": 449,
+    "affixes": 2533,
+    "affixesPrefix": 885,
+    "affixesSuffix": 1509,
+    "affixesAutomagic": 139,
+    "affixesDropped": 106,
+    "affixesPlaceholdersDropped": 4
+  },
+  "warnings": [
+    "bases: q86 (Scissors Suwayyah) is not in its own tier family [skr, 9qr, 7qr]; treated as normal",
+    "bases: qdf (Hunter's Guise) is not in its own tier family [dr3, dr8, drd]; treated as normal",
+    "bases: mam is mythical but its name string is \"Amulet\"; using \"Mythical Amulet\"",
+    "bases: mrn is mythical but its name string is \"Ring\"; using \"Mythical Ring\"",
+    "bases: mjw is mythical but its name string is \"Jewel\"; using \"Mythical Jewel\"",
+    "bases: dropped cx1 (duplicate of cm1), cx2 (duplicate of cm2), cx3 (duplicate of cm3)"
+  ]
+}

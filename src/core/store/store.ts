@@ -12,6 +12,7 @@ import ascendanciesReducer from '@/features/ascendancies/store/ascendanciesSlice
 import authReducer from '@/features/auth/store/authSlice';
 import buildsReducer from '@/features/builds/store/buildsSlice';
 import favoritesReducer from '@/features/favorites/store/favoritesSlice';
+import gameDataReducer from '@/features/game-data/store/gameDataSlice';
 import { startSagas } from './sagaRegistry';
 
 const sagaMiddleware = createSagaMiddleware();
@@ -30,6 +31,7 @@ const store = configureStore({
     auth: authReducer,
     builds: buildsReducer,
     favorites: favoritesReducer,
+    gameData: gameDataReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(sagaMiddleware),
 });

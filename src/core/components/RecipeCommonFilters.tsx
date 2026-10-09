@@ -154,7 +154,7 @@ export function RecipeCommonFilters({ selectors, actions, itemTypes, getShareUrl
   );
 }
 
-interface NumberFilterInputProps {
+export interface NumberFilterInputProps {
   readonly id: string;
   readonly hint: string;
   readonly label: string;
@@ -167,7 +167,7 @@ interface NumberFilterInputProps {
 }
 
 /** Optional integer input in [1, max] with a clear button; empty means "no filter". */
-function NumberFilterInput({ id, hint, label, placeholder, max, value, onChange, onClear, clearLabel }: NumberFilterInputProps) {
+export function NumberFilterInput({ id, hint, label, placeholder, max, value, onChange, onClear, clearLabel }: NumberFilterInputProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
     if (raw === '') {

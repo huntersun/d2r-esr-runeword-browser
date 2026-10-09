@@ -1,0 +1,89 @@
+import { describe, it, expect } from 'vitest';
+import { buildStringTable, sortStringFiles, stripColorCodes } from './strings.ts';
+
+function file(name: string, entries: { Key: string; enUS: string }[], bom = false) {
+  return { name, text: `${bom ? '﻿' : ''}${JSON.stringify(entries.map((e, id) => ({ id, ...e, deDE: 'x' })))}` };
+}
+
+describe('stripColorCodes', () => {
+  it('removes ÿc colour codes', () => {
+    expect(stripColorCodes('ÿc4Hand Axeÿc0 of ÿc;Doom')).toBe('Hand Axe of Doom');
+  });
+});
+
+describe('buildStringTable', () => {
+  it('reads files with and without a UTF-8 BOM', () => {
+    const { strings } = buildStringTable([
+      file('a.json', [{ Key: 'k1', enUS: 'One' }], true),
+      file('b.json', [{ Key: 'k2', enUS: 'Two' }]),
+    ]);
+    expect(strings.get('k1')).toBe('One');
+    expect(strings.get('k2')).toBe('Two');
+  });
+
+  it('strips colour codes from values', () => {
+    const { strings } = buildStringTable([file('item-names.json', [{ Key: 'hax', enUS: 'ÿc3Hand Axe' }])]);
+    expect(strings.get('hax')).toBe('Hand Axe');
+  });
+
+  it('resolves duplicates by file priority and warns only when the text differs', () => {
+    const { strings, warnings } = buildStringTable([
+      file('chinese-overlay.json', [{ Key: 'skc', enUS: 'Chipped Quartz' }]),
+      file('item-gems.json', [{ Key: 'skc', enUS: 'Chipped Skull' }]),
+      file('item-names.json', [
+        { Key: 'same', enUS: 'Same' },
+        { Key: 'dup', enUS: 'From names' },
+      ]),
+      file('item-runes.json', [
+        { Key: 'same', enUS: 'Same' },
+        { Key: 'dup', enUS: 'From runes' },
+      ]),
+    ]);
+    expect(strings.get('dup')).toBe('From runes');
+    expect(strings.get('skc')).toBe('Chipped Skull');
+    expect(warnings).toHaveLength(2);
+    expect(warnings.some((w) => w.includes('"dup"') && w.includes('item-runes.json'))).toBe(true);
+    expect(warnings.some((w) => w.includes('"same"'))).toBe(false);
+  });
+
+  it('keeps the first entry for duplicates inside one file', () => {
+    const { strings, warnings } = buildStringTable([
+      file('ui.json', [
+        { Key: 'k', enUS: 'first' },
+        { Key: 'k', enUS: 'second' },
+      ]),
+    ]);
+    expect(strings.get('k')).toBe('first');
+    expect(warnings).toHaveLength(1);
+  });
+
+  it('skips malformed entries', () => {
+    const { strings } = buildStringTable([{ name: 'x.json', text: '[{"Key":"a"},null,{"Key":"b","enUS":"B"}]' }]);
+    expect([...strings.keys()]).toEqual(['b']);
+  });
+});
+
+describe('sortStringFiles', () => {
+  it('orders priority files first, the rest alphabetically, chinese-overlay last', () => {
+    const names = [
+      'ui.json',
+      'chinese-overlay.json',
+      'skills.json',
+      'bnet.json',
+      'item-names.json',
+      'item-modifiers.json',
+      'item-nameaffixes.json',
+      'item-runes.json',
+    ];
+    expect(sortStringFiles(names.map((name) => ({ name }))).map((f) => f.name)).toEqual([
+      'item-runes.json',
+      'item-nameaffixes.json',
+      'item-modifiers.json',
+      'item-names.json',
+      'skills.json',
+      'bnet.json',
+      'ui.json',
+      'chinese-overlay.json',
+    ]);
+  });
+});

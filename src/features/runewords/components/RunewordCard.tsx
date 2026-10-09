@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+import { Hammer } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RuneBadge } from './RuneBadge';
@@ -12,6 +14,11 @@ import { getRelevantCategories } from '@/core/utils/itemCategoryMapping';
 import { isGemName } from '@/features/data-sync/parsers/gemsParser';
 import { LOD_SORT_KEY_OFFSET } from '@/features/data-sync/parsers/runewordsParser';
 import type { Runeword } from '@/core/db/models';
+
+/** Best Base finder link (game-data feature; plain path so the runewords chunk does not import it). */
+function bestBasePath(runeword: Pick<Runeword, 'name' | 'variant'>): string {
+  return `/game-data/best-base?${new URLSearchParams({ rw: runeword.name, v: String(runeword.variant) }).toString()}`;
+}
 
 interface RunewordCardProps {
   readonly runeword: Runeword;
@@ -65,6 +72,14 @@ function RunewordCardContent({
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="min-w-0 text-lg text-amber-700 dark:text-amber-400">{name}</CardTitle>
           <div className="flex shrink-0 items-center gap-1">
+            <Link
+              to={bestBasePath(runeword)}
+              className="inline-flex h-8 items-center rounded-md px-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+              title="Find best base"
+              aria-label={`Find best base for ${name}`}
+            >
+              <Hammer className="size-4" />
+            </Link>
             {onToggleFavorite && (
               <FavoriteButton
                 isFavorite={isFavorite}

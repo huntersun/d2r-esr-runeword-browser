@@ -9,6 +9,7 @@ const routeScreenImports = [
   '@/features/htm-unique-items',
   '@/features/mythical-uniques',
   '@/features/ascendancies',
+  '@/features/game-data',
 ] as const;
 
 function readRouterSource(): string {

@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ComponentType, type LazyExoticComponent } from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppLayout } from '@/core/layouts/AppLayout';
 import { RouteErrorScreen } from './RouteErrorScreen';
 import { NotFoundScreen } from './NotFoundScreen';
@@ -60,6 +60,31 @@ const UserProfileScreen = lazy(async () => {
   return { default: module.UserProfileScreen };
 });
 
+const GameDataLayout = lazy(async () => {
+  const module = await import('@/features/game-data');
+  return { default: module.GameDataLayout };
+});
+
+const GameDataBasesScreen = lazy(async () => {
+  const module = await import('@/features/game-data');
+  return { default: module.BasesScreen };
+});
+
+const GameDataBestBaseScreen = lazy(async () => {
+  const module = await import('@/features/game-data');
+  return { default: module.BestBaseScreen };
+});
+
+const GameDataAffixesScreen = lazy(async () => {
+  const module = await import('@/features/game-data');
+  return { default: module.AffixesScreen };
+});
+
+const GameDataItemTypesScreen = lazy(async () => {
+  const module = await import('@/features/game-data');
+  return { default: module.ItemTypesScreen };
+});
+
 const routeLoadingFallback = (
   <div className="flex min-h-80 flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
     <Spinner className="size-8" />
@@ -88,6 +113,17 @@ export const router = createBrowserRouter(
         { path: 'uniques', element: routeElement(HtmUniqueItemsScreen) },
         { path: 'mythicals', element: routeElement(MythicalUniquesScreen) },
         { path: 'ascendancies', element: routeElement(AscendanciesScreen) },
+        {
+          path: 'game-data',
+          element: routeElement(GameDataLayout),
+          children: [
+            { index: true, element: <Navigate to="bases" replace /> },
+            { path: 'bases', element: routeElement(GameDataBasesScreen) },
+            { path: 'best-base', element: routeElement(GameDataBestBaseScreen) },
+            { path: 'affixes', element: routeElement(GameDataAffixesScreen) },
+            { path: 'types', element: routeElement(GameDataItemTypesScreen) },
+          ],
+        },
         { path: 'builds', element: routeElement(BuildsScreen) },
         { path: 'builds/new', element: routeElement(CreateBuildScreen) },
         { path: 'builds/:buildId/edit', element: routeElement(EditBuildScreen) },
