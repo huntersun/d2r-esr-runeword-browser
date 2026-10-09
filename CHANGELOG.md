@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.15.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.14.0...v1.15.0) (2026-10-09)
+
+
+### Features
+
+* **game-data:** add Game Data section built from the ESR txt game files ([37d8a30](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/37d8a30f1c1815821b1be7201f6d0b6654342d49))
+* **game-data:** add one-shot game-data:update script for ESR releases ([a104a3f](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/a104a3f71855354d976d614f54f36577ef1e5e61))
+
 ## [1.14.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.13.0...v1.14.0) (2026-10-06)
 
 
