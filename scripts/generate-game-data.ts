@@ -7,26 +7,16 @@
  * Source: --esr <dir> | ESR_SOURCE_DIR | ../Eastern_Sun_Resurrected (relative to the repo root).
  * --check regenerates in memory and exits 1 when the committed files are stale.
  */
-import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import type { GameDataManifest } from '../src/features/game-data/engine/schema.ts';
 import { readEsrSources } from '../src/features/game-data/build/esrSources.ts';
 import { generateBundles } from '../src/features/game-data/build/generateBundles.ts';
 import { buildManifest, serializeBundle } from '../src/features/game-data/build/writeBundle.ts';
+import { git, REPO_ROOT, resolveEsrDir } from './lib/esrClone.ts';
 
-const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUTPUT_DIR = join(REPO_ROOT, 'public', 'game-data');
-
-function git(esrDir: string, args: string[]): string | null {
-  try {
-    return execFileSync('git', ['-C', esrDir, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
-  } catch {
-    return null;
-  }
-}
 
 function readPreviousManifest(): GameDataManifest | null {
   const path = join(OUTPUT_DIR, 'manifest.json');
@@ -46,10 +36,10 @@ function main(): void {
     },
   });
 
-  const esrDir = resolve(REPO_ROOT, values.esr ?? process.env.ESR_SOURCE_DIR ?? '../Eastern_Sun_Resurrected');
+  const esrDir = resolveEsrDir(values.esr);
   if (!existsSync(esrDir)) {
     console.error(`ESR clone not found: ${esrDir}`);
-    console.error('Clone CelestialRayOne/Eastern_Sun_Resurrected next to this repo or pass --esr <dir>.');
+    console.error('Run npm run game-data:update (clones it), or pass --esr <dir>.');
     process.exit(1);
   }
 

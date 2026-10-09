@@ -35,7 +35,12 @@ npm run dev              # start dev server
 npm run build            # typecheck + production build
 npm run test:fixtures    # fetch test fixtures (once, after checkout)
 npm run test             # run tests
+npm run game-data:update # refresh game-file bundles after an ESR release
 ```
+
+The Game Data pages use static bundles converted from the ESR repo's txt game files. They are regenerated locally with
+`npm run game-data:update` and committed under `public/game-data/` (CI does not generate them); the first run creates
+the ESR clone at `../Eastern_Sun_Resurrected` automatically.
 
 See [docs/README.md](./docs/README.md) for full project documentation and [docs/CONTRIBUTING.md](./docs/CONTRIBUTING.md) for contribution guidelines.
 

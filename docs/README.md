@@ -77,6 +77,10 @@ clone at `../Eastern_Sun_Resurrected`) into JSON committed under `public/game-da
 `bases.json`). The browser fetches these lazily; they never go through the HTM parsers or IndexedDB. The game-file
 version (ESR git tag, e.g. `3.2.10`) is independent of the HTM changelog version. See [Game Data](./features/GAME-DATA.md).
 
+After an ESR release, run `npm run game-data:update`: it clones or pulls the ESR repo, regenerates the bundles, refreshes
+the test fixtures, runs the game-data tests and the staleness check, and prints a summary. Flags and the manual fallback
+are in [Game Data → Regenerating](./features/GAME-DATA.md#regenerating).
+
 ---
 
 ## Status

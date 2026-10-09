@@ -26,7 +26,8 @@
     "socketables:names": "node scripts/extract-socketable-names.js",
     "version:extract": "node scripts/extract-version.js",
     "game-data:generate": "node scripts/generate-game-data.ts",
-    "game-data:check": "node scripts/generate-game-data.ts --check"
+    "game-data:check": "node scripts/generate-game-data.ts --check",
+    "game-data:update": "node scripts/update-game-data.ts"
   },
   "commit-and-tag-version": {
     "scripts": {

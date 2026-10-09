@@ -84,6 +84,33 @@ placeholders named "null" are kept with an empty name when a stat is visible, ot
 
 ## Regenerating
 
+Recommended: one command after an ESR release.
+
+```bash
+npm run game-data:update                       # clone/pull ESR main, generate, fixtures, tests, check, summary
+npm run game-data:update -- --tag 3.2.10       # pin a specific release tag (detached HEAD)
+npm run game-data:update -- --no-fixtures      # skip re-downloading the HTM test fixtures
+npm run game-data:update -- --esr <dir>        # use another clone directory
+```
+
+`scripts/update-game-data.ts` steps:
+
+1. **ESR clone**: when the directory is missing it creates a shallow, blobless, sparse clone (excel tables, strings,
+   `d2rloader/metadata.json`, `docs/weapons.htm`, `docs/armors.htm`). Otherwise it aborts if the clone is dirty or on a
+   branch other than `main`, fetches `main` and fast-forwards (a detached HEAD from an earlier `--tag` run goes back
+   to `main`); with `--tag` it fetches that tag and checks it out detached. It does not run `git fetch --tags`: on a
+   shallow clone that downloads the full history of every old release; the tag pointing at the new HEAD is fetched
+   instead. Works with plain (non-sparse) clones too.
+2. Records the previous `manifest.json`.
+3. Runs `generate-game-data.ts --esr <dir>`. A failure skips the verify step and exits 1.
+4. Runs `fetch-test-fixtures.js` (skippable with `--no-fixtures`). A download failure is only a warning; tests that
+   need a missing fixture skip themselves.
+5. Runs `npx vitest run src/features/game-data` (with `ESR_SOURCE_DIR` set to the clone) and `--check`.
+6. Prints a summary: version/tag/commit before → after, changed counts (incl. warnings), generator warnings, step
+   results and changed files under `public/game-data/`, then the commit command to run. It never runs `git add`/`commit`.
+
+Manual fallback:
+
 ```bash
 npm run game-data:generate   # writes public/game-data/*.json
 npm run game-data:check      # exits 1 when the committed files are stale
@@ -94,17 +121,17 @@ The script reads `d2rloader/metadata.json` (mod version), the commit (`git rev-p
 (`git describe --tags --exact-match`, `null` when HEAD is not tagged). `generatedAt` only changes when a file hash
 changes, so regenerating unchanged data produces no diff.
 
-A minimal clone only needs:
+A minimal clone only needs (this is what `game-data:update` creates):
 
 ```bash
 git clone --depth 1 --filter=blob:none --sparse https://github.com/CelestialRayOne/Eastern_Sun_Resurrected.git
-git -C Eastern_Sun_Resurrected sparse-checkout set Eastern_Sun_Resurrected.mpq/data/global/excel \
-  Eastern_Sun_Resurrected.mpq/data/local/lng/strings d2rloader/metadata.json docs
+git -C Eastern_Sun_Resurrected sparse-checkout set --no-cone /Eastern_Sun_Resurrected.mpq/data/global/excel/ \
+  /Eastern_Sun_Resurrected.mpq/data/local/lng/strings/ /d2rloader/metadata.json /docs/weapons.htm /docs/armors.htm
 ```
 
 (`docs` is only needed for the clone-dependent name oracle test.)
 
-### Bumping the ESR version
+### Bumping the ESR version (manual)
 
 1. `git -C ../Eastern_Sun_Resurrected fetch --tags && git -C ../Eastern_Sun_Resurrected checkout <tag>` (tags have no `v` prefix, e.g. `3.2.10`)
 2. `npm run game-data:generate` and read the printed counts and warnings
@@ -502,3 +529,4 @@ constants/affixes.ts              kinds, sort keys, labels, level range, page si
 - `runewordMatching.integration.test.ts`: skips without `test-fixtures/runewords.htm`, `runewords.json` or `types.json`;
   prints the match histogram and unmatched lists, asserts ≥ 95 %.
 - `statRenderer.oracle.test.ts`: see "Oracle"; skips without the fixtures or bundles.
+- `scripts/lib/updateSummary.test.ts`: summary formatting of `game-data:update` (count diffs, porcelain parsing).

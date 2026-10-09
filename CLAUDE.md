@@ -34,6 +34,7 @@ npm run compiler:health  # Run React Compiler health check
 # Game data (txt game files → public/game-data/*.json; needs ../Eastern_Sun_Resurrected clone)
 npm run game-data:generate  # Regenerate the static game-data bundles
 npm run game-data:check     # Exit 1 if the committed bundles are stale
+npm run game-data:update    # After an ESR release: clone/pull ESR, generate, fetch fixtures, run game-data tests + check
 
 # Testing
 npm run test:fixtures    # Fetch test fixtures (required once after checkout)

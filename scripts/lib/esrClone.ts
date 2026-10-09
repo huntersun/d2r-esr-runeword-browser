@@ -1,0 +1,99 @@
+/**
+ * Shared helpers for the local Eastern Sun Resurrected clone used by the game-data scripts.
+ */
+import { execFileSync } from 'node:child_process';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+export const ESR_REPO_URL = 'https://github.com/CelestialRayOne/Eastern_Sun_Resurrected.git';
+export const DEFAULT_ESR_DIR = '../Eastern_Sun_Resurrected';
+
+/**
+ * Paths the generator and the tests read (non-cone sparse-checkout patterns). docs/weapons.htm and docs/armors.htm
+ * are the base-name oracle of bundleIntegrity.test.ts.
+ */
+export const ESR_SPARSE_PATHS = [
+  '/Eastern_Sun_Resurrected.mpq/data/global/excel/',
+  '/Eastern_Sun_Resurrected.mpq/data/local/lng/strings/',
+  '/d2rloader/metadata.json',
+  '/docs/weapons.htm',
+  '/docs/armors.htm',
+];
+
+/** --esr <dir> | ESR_SOURCE_DIR | ../Eastern_Sun_Resurrected, relative to the repo root. */
+export function resolveEsrDir(cliValue: string | undefined): string {
+  return resolve(REPO_ROOT, cliValue ?? process.env.ESR_SOURCE_DIR ?? DEFAULT_ESR_DIR);
+}
+
+/** Runs a git command in the clone and returns trimmed stdout, or null when it fails. */
+export function git(esrDir: string, args: string[]): string | null {
+  try {
+    return execFileSync('git', ['-C', esrDir, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+  } catch {
+    return null;
+  }
+}
+
+/** Runs a git command with inherited stdio (progress visible); throws when it fails. */
+export function gitLoud(args: string[]): void {
+  console.log(`$ git ${args.join(' ')}`);
+  execFileSync('git', args, { stdio: 'inherit' });
+}
+
+export interface EsrRevision {
+  commit: string | null;
+  tag: string | null;
+}
+
+export function readRevision(esrDir: string): EsrRevision {
+  return { commit: git(esrDir, ['rev-parse', 'HEAD']), tag: git(esrDir, ['describe', '--tags', '--exact-match']) };
+}
+
+/** Shallow, blobless, sparse clone limited to ESR_SPARSE_PATHS; checks out `tag` when given, else main. */
+export function cloneEsr(esrDir: string, tag: string | undefined): void {
+  const branchArgs = tag === undefined ? [] : ['--branch', tag];
+  gitLoud(['clone', '--depth', '1', '--filter=blob:none', '--sparse', ...branchArgs, ESR_REPO_URL, esrDir]);
+  gitLoud(['-C', esrDir, 'sparse-checkout', 'set', '--no-cone', ...ESR_SPARSE_PATHS]);
+}
+
+/**
+ * Updates an existing clone (plain or sparse, shallow or full). Without `tag` it fast-forwards main; with `tag` it
+ * detaches at that tag. Avoids `git fetch --tags`: on a shallow clone that would pull the full history of every old
+ * release tag. Fetching main auto-follows tags that point at the fetched commits.
+ */
+export function updateEsr(esrDir: string, tag: string | undefined): void {
+  const dirty = git(esrDir, ['status', '--porcelain']);
+  if (dirty === null) throw new Error(`Not a git checkout: ${esrDir}`);
+  if (dirty !== '') throw new Error(`The ESR clone has uncommitted changes; clean it first (git -C ${esrDir} status).`);
+
+  if (tag !== undefined) {
+    gitLoud(['-C', esrDir, 'fetch', '--depth', '1', '--no-tags', 'origin', 'tag', tag]);
+    gitLoud(['-C', esrDir, 'checkout', '--detach', `refs/tags/${tag}`]);
+    return;
+  }
+
+  const branch = git(esrDir, ['symbolic-ref', '--short', '-q', 'HEAD']);
+  if (branch !== null && branch !== 'main') {
+    throw new Error(`The ESR clone is on branch "${branch}", expected main (git -C ${esrDir} checkout main).`);
+  }
+  gitLoud(['-C', esrDir, 'fetch', 'origin', 'main']);
+  // A detached HEAD (left by an earlier --tag run) goes back to main.
+  if (branch === null) gitLoud(['-C', esrDir, 'checkout', 'main']);
+  gitLoud(['-C', esrDir, 'merge', '--ff-only', 'origin/main']);
+  fetchTagOfHead(esrDir);
+}
+
+/** Fetches the release tag pointing at HEAD when fetching main did not bring it along (shallow clones). */
+function fetchTagOfHead(esrDir: string): void {
+  const head = git(esrDir, ['rev-parse', 'HEAD']);
+  if (head === null || git(esrDir, ['describe', '--tags', '--exact-match']) !== null) return;
+  const remoteTags = git(esrDir, ['ls-remote', '--tags', 'origin']) ?? '';
+  for (const line of remoteTags.split('\n')) {
+    const [sha, ref = ''] = line.split('\t');
+    if (sha !== head) continue;
+    const tag = ref.replace(/^refs\/tags\//, '').replace(/\^\{\}$/, '');
+    gitLoud(['-C', esrDir, 'fetch', '--depth', '1', '--no-tags', 'origin', 'tag', tag]);
+    return;
+  }
+}
