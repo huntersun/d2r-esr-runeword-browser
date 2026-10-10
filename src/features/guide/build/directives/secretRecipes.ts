@@ -1,10 +1,10 @@
 /**
- * `::secret-recipes` / `::secret-recipe[50]`: the `[SECRETnn]` rows of cubemain.txt, collapsed to one row per recipe
+ * `::secret-recipes` / `::secret-recipe[50]`: the `[SECRETnn]` rows of cubemain.txt, merged per recipe
  * number (the txt repeats a recipe per base type, quality or socket count).
  */
 import type { DataBlock } from '../../engine/schema.ts';
 import type { EsrGuideTables } from '../esrGuideSources.ts';
-import { formatInput, formatOutput, mergeInputs, options, unique, visibleOutputs } from './cubeText.ts';
+import { capGroup, clusterVariants, formatInput, formatOutput, unique, visibleOutputs, type RecipeVariant } from './cubeText.ts';
 import { requireEsr, type DirectiveResolver } from './types.ts';
 
 type RecipeRow = Extract<DataBlock, { kind: 'recipes' }>['rows'][number];
@@ -12,33 +12,36 @@ type RecipeRow = Extract<DataBlock, { kind: 'recipes' }>['rows'][number];
 const SECRET = /^\[SECRET(\d+)\]\s*(.*)$/;
 const RETURNED = '(the Ancient Scroll is returned)';
 
-/** Secret recipes keyed by number, in file order. */
-export function collectSecretRecipes(esr: EsrGuideTables): Map<number, RecipeRow> {
-  const groups = new Map<number, { inputs: string[][]; outputs: string[]; descriptions: string[] }>();
+/** Secret recipes keyed by number (each one or more rows, see clusterVariants), in file order. */
+export function collectSecretRecipes(esr: EsrGuideTables): Map<number, RecipeRow[]> {
+  const groups = new Map<number, { variants: RecipeVariant[]; descriptions: string[] }>();
   for (const row of esr.cube) {
     const match = SECRET.exec(row.description);
     if (match === null) continue;
     const number = Number(match[1]);
     let group = groups.get(number);
     if (group === undefined) {
-      group = { inputs: [], outputs: [], descriptions: [] };
+      group = { variants: [], descriptions: [] };
       groups.set(number, group);
     }
-    group.inputs.push(row.inputs.map((input) => formatInput(input, esr)));
     // An output identical to an input (the Ancient Scroll) is returned unchanged; the caption says so instead.
     const outputs = visibleOutputs(row.outputs).filter((output) => !row.inputs.includes(output.spec));
-    if (outputs.length > 0) group.outputs.push(outputs.map((output) => formatOutput(output, esr)).join(' + '));
+    group.variants.push({
+      inputs: row.inputs.map((input) => formatInput(input, esr)),
+      output: outputs.map((output) => formatOutput(output, esr)).join(' + '),
+    });
     group.descriptions.push(match[2].trim());
   }
 
-  const recipes = new Map<number, RecipeRow>();
+  const recipes = new Map<number, RecipeRow[]>();
   for (const [number, group] of groups) {
-    const inputs = unique(group.inputs.map((list) => JSON.stringify(list))).map((json) => JSON.parse(json) as string[]);
-    const output = options(group.outputs);
-    const descriptions = unique(group.descriptions);
-    const more = descriptions.length - 1;
-    const note = `#${String(number)}: ${descriptions[0] ?? ''}${more > 0 ? ` (+${String(more)} variant${more > 1 ? 's' : ''})` : ''}`;
-    recipes.set(number, { inputs: mergeInputs(inputs), output, note });
+    // The txt descriptions are dev labels ("Socket(4) Weapon: High-Q …"); players only see the recipe number.
+    const more = unique(group.descriptions).length - 1;
+    const first = `#${String(number)}${more > 0 ? ` (+${String(more)} variant${more > 1 ? 's' : ''})` : ''}`;
+    recipes.set(
+      number,
+      capGroup(clusterVariants(group.variants), (i) => (i === 0 ? first : `#${String(number)}`))
+    );
   }
   return recipes;
 }
@@ -49,7 +52,7 @@ export const resolveSecretRecipes: DirectiveResolver = (arg, ctx) => {
   if ('error' in esr) return esr;
   const recipes = collectSecretRecipes(esr);
   if (recipes.size === 0) return { error: '::secret-recipes found no [SECRETnn] rows in cubemain.txt' };
-  return { kind: 'recipes', caption: `Secret recipes ${RETURNED}`, rows: [...recipes.values()] };
+  return { kind: 'recipes', caption: `Secret recipes ${RETURNED}`, rows: [...recipes.values()].flat() };
 };
 
 export const resolveSecretRecipe: DirectiveResolver = (arg, ctx) => {
@@ -60,5 +63,5 @@ export const resolveSecretRecipe: DirectiveResolver = (arg, ctx) => {
   if ('error' in esr) return esr;
   const recipe = collectSecretRecipes(esr).get(number);
   if (recipe === undefined) return { error: `::secret-recipe[${arg}]: no [SECRET${arg.padStart(2, '0')}] rows in cubemain.txt` };
-  return { kind: 'recipes', caption: `Secret recipe ${String(number)} ${RETURNED}`, rows: [recipe] };
+  return { kind: 'recipes', caption: `Secret recipe ${String(number)} ${RETURNED}`, rows: recipe };
 };

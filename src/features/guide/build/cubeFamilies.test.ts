@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { CUBE_FAMILIES, collectFamily, familyBlock, familyRows, findCubeFamily, MAX_FAMILY_ROWS, type CubeFamily } from './cubeFamilies.ts';
+import { capGroup, clusterVariants, MAX_GROUP_ROWS } from './directives/cubeText.ts';
 import { buildEsrGuideTables, readEsrGuideSources, type EsrGuideTables } from './esrGuideSources.ts';
 import { LEAF_DIRECTIVES } from './directives/index.ts';
 import { markdownToBlocks } from './markdown.ts';
@@ -32,6 +33,7 @@ const ITEMTYPES = tsv([
   ['ItemType', 'Code'],
   ['Weapon', 'weap'],
   ['Gem Can 8', 'can8'],
+  ['Coupon norm', 'cpn1'],
 ]);
 
 /** Filler rows for the row cap test (matched by no curated family) */
@@ -40,7 +42,7 @@ const FILLER = Array.from({ length: MAX_FAMILY_ROWS + 2 }, (_, i) => [
   '1',
   '',
   '1',
-  'ppp',
+  `"ppp,qty=${String(i + 1)}"`,
   '',
   '',
   `"hly,qty=${String(i + 1)}"`,
@@ -62,7 +64,7 @@ const CUBEMAIN = tsv([
   ["Adventurer's Pack", '1', 'ama', '1', 'ag8', '', '', 'qqq', '', '', '0'],
   ["Adventurer's Pack", '1', 'sor', '1', 'ag8', '', '', 'qqq', '', '', '0'],
   ['Anvil Stone', '1', '', '1', '"ppp,qty=4"', '', '', 'qqq', '', '', '0'],
-  ['"Stocker + Key -> +1 Anvil Stone"', '1', '', '2', 't70', 'key', '', 'useitem', 'qqq', 'key', '0'],
+  ['"Multi Stocker + Key -> +1 Anvil Stone"', '1', '', '2', 't70', 'key', '', 'useitem', 'qqq', 'key', '0'],
   ['Coupon', '1', '', '1', '"cpn1,qty=8"', '', '', '99j', '', '', '0'],
   ['Coupon', '1', '', '1', '"01c,qty=3"', '', '', 'Pelta Lunata', '', '', '0'],
   ['Coupon', '1', '', '1', '"02c,qty=3"', '', '', "Biggin's Bonnet", '', '', '0'],
@@ -84,13 +86,12 @@ const MISC = tsv([
   ['Chipped Sapphire', 'gcb', 'gcb'],
   ['Ring', 'ring', 'ring'],
   ["Starter's Pack", 'ag8', 'ag8'],
-  ['Coupon norm', 'cpn1', 'cpn1'],
   ['Coupon Wild Card', '99j', '99j'],
   ['Multi Stocker', 't70', 'can8', 'can8'],
   ['Multi Stocker', 't71', 'can8', 'can8'],
   ['Randomize Stone', 'rnd', 'rnd'],
-  ['Coupon nor Armor 1', '01c', '01c'],
-  ['Coupon nor Armor 2', '02c', '02c'],
+  ['Coupon nor Armor 1', '01c', '01c', 'cpn1'],
+  ['Coupon nor Armor 2', '02c', '02c', 'cpn1'],
   ['Inarius Everburning Halo', 'u40', 'u40'],
   ['Skeleton Key', 'key', 'key'],
 ]);
@@ -138,37 +139,33 @@ describe('cube families', () => {
     expect(collectFamily(family('skill-forging'), esr())).toEqual([
       {
         inputs: ['Weapon (no runeword) / Ring', '2× Anvil Stone', 'Chipped Emerald'],
-        output: 'The same item',
-        note: 'Weapon Skill Forging Ama (+1 variant)',
+        output: 'The same item (+Amazon skills)',
+        note: null,
       },
-      { inputs: ['Weapon (no runeword)', '2× Anvil Stone', 'Chipped Sapphire'], output: 'The same item', note: 'Weapon Skill Forging Sor' },
+      { inputs: ['Weapon (no runeword)', '2× Anvil Stone', 'Chipped Sapphire'], output: 'The same item (+Sorceress skills)', note: null },
     ]);
     expect(collectFamily(family('remove-forging'), esr())).toEqual([
       {
         inputs: ['Weapon (no runeword)', '3× Thawing Potion'],
         output: 'The same item + 2× Anvil Stone',
-        note: 'Remove Weapon Skill Forging Ama',
+        note: null,
       },
     ]);
   });
 
-  it('leaves out returned items and strips quotes from notes', () => {
+  it('leaves out returned items and shows no txt descriptions', () => {
     expect(collectFamily(family('anvil-stone'), esr())).toEqual([
-      { inputs: ['4× Dragon Stone'], output: 'Anvil Stone', note: 'Anvil Stone' },
-      { inputs: ['Multi Stocker', 'Skeleton Key'], output: 'The same item + Anvil Stone', note: 'Stocker + Key -> +1 Anvil Stone' },
+      { inputs: ['4× Dragon Stone'], output: 'Anvil Stone', note: null },
+      { inputs: ['Multi Stocker', 'Skeleton Key'], output: 'The same item + Anvil Stone', note: null },
     ]);
   });
 
   it('makes the per-unique coupon rows generic and keeps the Wild Card trade apart', () => {
     expect(collectFamily(family('coupon-tiers'), esr())).toEqual([
-      { inputs: ['8× Coupon norm'], output: 'Ancient Coupon (Wild Card)', note: 'Coupon' },
-      { inputs: ['3× Ancient Coupon (matching)'], output: 'The LoD unique named on the coupons', note: 'Coupon' },
-      {
-        inputs: ['2× Ancient Coupon (matching)', 'Ancient Coupon (Wild Card)'],
-        output: 'The LoD unique named on the coupons',
-        note: 'Coupon',
-      },
-      { inputs: ['Randomizing Stone', '3× Coupon norm'], output: 'A random Ancient Coupon of that tier', note: 'Coupon Reroll' },
+      { inputs: ['8× normal coupons (any)'], output: 'Ancient Coupon (Wild Card)', note: null },
+      { inputs: ['3× matching coupons (any tier)'], output: 'The LoD unique named on the coupons', note: null },
+      { inputs: ['2× matching normal coupons', '1 Wild Card'], output: 'The LoD unique named on the coupons', note: null },
+      { inputs: ['Randomizing Stone', '3× normal coupons (any)'], output: 'A random normal coupon', note: null },
     ]);
   });
 
@@ -177,7 +174,7 @@ describe('cube families', () => {
       {
         inputs: ['Ring / Multi Stocker', "Inarius' Everburning Halo"],
         output: 'The same item (Branded)',
-        note: "Inarius' Everburning Halo Ring (+1 variant)",
+        note: null,
       },
     ]);
   });
@@ -186,8 +183,36 @@ describe('cube families', () => {
     const many: CubeFamily = { id: 'many', label: 'Many', match: /^Filler / };
     const block = familyBlock(many, esr());
     expect(block.rows).toHaveLength(MAX_FAMILY_ROWS);
-    expect(block.rows[0]).toEqual({ inputs: ['Dragon Stone'], output: 'Holy Symbol', note: 'Filler 0' });
+    expect(block.rows[0]).toEqual({ inputs: ['Dragon Stone'], output: 'Holy Symbol', note: null });
     expect(block.caption).toBe('Many (… and 2 more)');
+  });
+});
+
+describe('clusterVariants', () => {
+  it('pools outputs of identical inputs, merges one differing slot and keeps everything else apart', () => {
+    expect(
+      clusterVariants([
+        { inputs: ['A', 'Gem'], output: 'X' },
+        { inputs: ['B', 'Gem'], output: 'X' },
+        { inputs: ['C', 'Gem'], output: 'Y' },
+        { inputs: ['C', 'Gem'], output: 'Z' },
+        { inputs: ['C', 'Gem'], output: 'Z' },
+        { inputs: ['D', 'Rune'], output: 'X' },
+      ])
+    ).toEqual([
+      { inputs: ['A / B', 'Gem'], output: 'X' },
+      { inputs: ['C', 'Gem'], output: 'Z / Y' },
+      { inputs: ['D', 'Rune'], output: 'X' },
+    ]);
+  });
+
+  it('caps a merged group at MAX_GROUP_ROWS rows', () => {
+    const rows = capGroup(
+      ['a', 'b', 'c', 'd', 'e'].map((input) => ({ inputs: [input], output: input })),
+      () => null
+    );
+    expect(rows).toHaveLength(MAX_GROUP_ROWS);
+    expect(rows.at(-1)?.note).toBe('… and 2 more');
   });
 });
 

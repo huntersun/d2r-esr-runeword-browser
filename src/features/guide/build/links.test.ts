@@ -30,13 +30,28 @@ describe('resolveLink', () => {
 
   it('rejects unique, mythical and socketable names missing from sources.json, case-insensitively', () => {
     expect(resolveLink('unique:annihilus', ctx)).toEqual({ kind: 'app', href: '/uniques?name=annihilus' });
-    expect(resolveLink('unique:Nope', ctx)).toEqual({ error: 'unknown unique item "Nope" (unique:, checked against sources.json)' });
+    expect(resolveLink('unique:Nope', ctx)).toEqual({
+      error: 'unknown unique item "Nope" (unique:, checked against sources.json and the ESR item tables)',
+    });
     expect(resolveLink('mythical:Nope', ctx)).toHaveProperty('error');
     expect(resolveLink('socketable:Annihilus', ctx)).toEqual({
-      error: 'unknown socketable "Annihilus" (socketable:, checked against sources.json)',
+      error: 'unknown socketable (gem, rune or crystal) "Annihilus" (socketable:, checked against sources.json and the ESR item tables)',
     });
     expect(resolveLink('unique:El%20Rune', ctx)).toHaveProperty('error');
     expect(resolveLink('gw:Anything', ctx)).toEqual({ kind: 'app', href: '/gemwords?name=Anything' });
+  });
+
+  it('tells uniques, mythicals and socketables apart with the ESR tables', () => {
+    const targets = (name: string) =>
+      (['unique', 'mythical', 'socketable'] as const).filter((scheme) => !('error' in resolveLink(`${scheme}:${name}`, ctx)));
+    expect(targets('Frostmourne')).toEqual(['mythical']);
+    expect(targets('Pelta Lunata')).toEqual(['unique']);
+    expect(targets('Zod Rune')).toEqual(['socketable']);
+    expect(targets('Anvil Stone')).toEqual([]);
+    // Without the clone the kinds cannot be told apart
+    const lenient = fixtureContext({ esr: null });
+    expect(resolveLink('unique:Frostmourne', lenient)).toHaveProperty('kind', 'app');
+    expect(resolveLink('socketable:Anvil Stone', lenient)).toHaveProperty('kind', 'app');
   });
 
   it('rejects unknown runewords, bases, types and schemes', () => {

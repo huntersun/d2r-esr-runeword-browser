@@ -7,7 +7,8 @@ import { cn } from '@/lib/utils';
 import type { DataBlock, GuideBlock, GuideInline } from '../engine/schema';
 import { findNote, sourceCells } from '../utils/guideUtils';
 import { AppLinkIcon } from './AppLinkIcon';
-import { GuideCardLoading } from './GuideCardPlaceholder';
+import { GuideCardBoundary } from './GuideCardBoundary';
+import { GuideCardFailed, GuideCardLoading } from './GuideCardPlaceholder';
 import { useLoadedGuide } from './guideContext';
 import { useHoverPopover } from './useHoverPopover';
 
@@ -248,9 +249,11 @@ function DataBlockView({ block }: { readonly block: DataBlock }) {
       );
     case 'card':
       return (
-        <Suspense fallback={<GuideCardLoading name={block.name} />}>
-          <GuideItemCard block={block} />
-        </Suspense>
+        <GuideCardBoundary fallback={<GuideCardFailed name={block.name} href={block.href} />}>
+          <Suspense fallback={<GuideCardLoading name={block.name} />}>
+            <GuideItemCard block={block} />
+          </Suspense>
+        </GuideCardBoundary>
       );
     case 'source':
       return <SourceBlock item={block.item} labels={block.labels} />;

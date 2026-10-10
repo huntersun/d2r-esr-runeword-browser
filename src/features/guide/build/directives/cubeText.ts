@@ -121,9 +121,72 @@ export function options(values: readonly string[]): string {
   return `${distinct.slice(0, MAX_OPTIONS).join(' / ')} / … (${String(distinct.length)} variants)`;
 }
 
-/** Position-wise " / " join when every variant has the same number of inputs; otherwise the first variant. */
-export function mergeInputs(variants: readonly string[][]): string[] {
-  const first = variants[0] ?? [];
-  if (variants.some((inputs) => inputs.length !== first.length)) return first;
-  return first.map((_, i) => options(variants.map((inputs) => inputs[i] ?? '')));
+export interface RecipeVariant {
+  inputs: string[];
+  output: string;
+}
+
+/** Distinct values, most frequent first (ties in first-seen order) */
+export function byFrequency(values: readonly string[]): string[] {
+  const counts = new Map<string, number>();
+  for (const value of values) counts.set(value, (counts.get(value) ?? 0) + 1);
+  return [...counts].sort((a, b) => b[1] - a[1]).map(([value]) => value);
+}
+
+/**
+ * Merges the variants of one recipe into as few honest rows as possible:
+ * 1. variants with the same inputs but different outputs are one random pool (`pool` formats its outputs, most
+ *    frequent first);
+ * 2. variants with the same output that differ in exactly one input slot (always the same slot) merge into one row
+ *    with that slot's values joined ("Weapon / Ring / …"); anything else stays a separate row.
+ */
+export function clusterVariants(variants: readonly RecipeVariant[], pool: (ranked: string[]) => string = options): RecipeVariant[] {
+  const pools = new Map<string, { inputs: string[]; outputs: string[] }>();
+  for (const variant of variants) {
+    const key = JSON.stringify(variant.inputs);
+    const entry = pools.get(key) ?? { inputs: variant.inputs, outputs: [] };
+    entry.outputs.push(variant.output);
+    pools.set(key, entry);
+  }
+
+  const clusters: { base: string[]; output: string; slot: number | null; values: string[] }[] = [];
+  for (const { inputs, outputs } of pools.values()) {
+    const output = pool(byFrequency(outputs));
+    const cluster = clusters.find((candidate) => {
+      if (candidate.output !== output || candidate.base.length !== inputs.length) return false;
+      const diffs = inputs.flatMap((input, i) => (i !== candidate.slot && input !== candidate.base[i] ? [i] : []));
+      return candidate.slot === null ? diffs.length === 1 : diffs.length === 0;
+    });
+    if (cluster === undefined) {
+      clusters.push({ base: inputs, output, slot: null, values: [] });
+      continue;
+    }
+    if (cluster.slot === null) {
+      cluster.slot = inputs.findIndex((input, i) => input !== cluster.base[i]);
+      cluster.values.push(cluster.base[cluster.slot] ?? '');
+    }
+    cluster.values.push(inputs[cluster.slot] ?? '');
+  }
+  return clusters.map(({ base, output, slot, values }) => ({
+    inputs: slot === null ? base : base.map((input, i) => (i === slot ? options(values) : input)),
+    output,
+  }));
+}
+
+/** Rows shown per merged recipe before "… and N more" */
+export const MAX_GROUP_ROWS = 3;
+
+/** The first MAX_GROUP_ROWS rows with notes from `note(index)`; the last shown row says how many were left out. */
+export function capGroup(
+  variants: readonly RecipeVariant[],
+  note: (index: number) => string | null
+): { inputs: string[]; output: string; note: string | null }[] {
+  const shown = variants.slice(0, MAX_GROUP_ROWS);
+  const more = variants.length - shown.length;
+  return shown.map((variant, i) => {
+    const text = note(i);
+    if (more === 0 || i !== shown.length - 1) return { ...variant, note: text };
+    const rest = `… and ${String(more)} more`;
+    return { ...variant, note: text === null ? rest : `${text} ${rest}` };
+  });
 }

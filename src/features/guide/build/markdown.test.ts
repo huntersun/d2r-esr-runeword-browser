@@ -176,6 +176,9 @@ describe('::card in a note', () => {
     const result = markdownToBlocks("::card[rw:Enigma]\n\n::card[unique:Artemis' Wrath]", fixtureContext(), 'notes/test.md');
     expect(result.errors).toEqual([]);
     expect(result.dataBlocks.map((block) => block.key)).toEqual(['card:rw:Enigma', "card:unique:Artemis' Wrath"]);
+    const spaced = markdownToBlocks('::card[ rw : Enigma ]', fixtureContext(), 'notes/test.md');
+    expect(spaced.errors).toEqual([]);
+    expect(spaced.dataBlocks.map((block) => block.key)).toEqual(['card:rw:Enigma']);
     expect(result.blocks[1]).toEqual({
       type: 'data',
       block: { kind: 'card', item: 'unique', name: "Artemis' Wrath", href: "/uniques?name=Artemis'%20Wrath" },

@@ -15,7 +15,7 @@ import { gfm } from 'micromark-extension-gfm';
 import type { DataBlock, GuideBlock, GuideInline } from '../engine/schema.ts';
 import type { GuideContext } from './context.ts';
 import { compareCodeUnits } from './compare.ts';
-import { LEAF_DIRECTIVES, resolveTerm } from './directives/index.ts';
+import { cardKeyArg, LEAF_DIRECTIVES, resolveTerm } from './directives/index.ts';
 import { resolveLink } from './links.ts';
 import { splitWikilinks } from './wikilinks.ts';
 
@@ -204,7 +204,9 @@ function convertLeafDirective(node: LeafDirective, state: State): GuideBlock[] {
     fail(state, node, block.error);
     return [];
   }
-  state.result.dataBlocks.push({ key: directiveKey(node.name, arg, attributes), block });
+  // A card's key ignores spacing, so `::card[ rw : Enigma ]` and `::card[rw:Enigma]` record the same block.
+  const keyArg = node.name === 'card' && arg !== null ? cardKeyArg(arg) : arg;
+  state.result.dataBlocks.push({ key: directiveKey(node.name, keyArg, attributes), block });
   return [{ type: 'data', block }];
 }
 

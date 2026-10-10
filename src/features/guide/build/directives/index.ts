@@ -8,6 +8,7 @@ import { resolveSource } from './source.ts';
 import type { DirectiveResolver } from './types.ts';
 import { resolveVendor } from './vendor.ts';
 
+export { cardKeyArg } from './card.ts';
 export { resolveTerm } from './glossary.ts';
 export type { DirectiveResolver } from './types.ts';
 

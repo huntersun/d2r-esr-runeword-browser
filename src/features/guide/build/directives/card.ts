@@ -19,6 +19,13 @@ const CARD_SCHEMES: Readonly<Record<string, CardItem>> = {
 
 const USAGE = `use ::card[${Object.keys(CARD_SCHEMES).join('|')}:Name], e.g. ::card[rw:Enigma]`;
 
+/** `scheme:name` with the spaces around the colon dropped and runs of spaces collapsed (the block key) */
+export function cardKeyArg(arg: string): string {
+  const colon = arg.indexOf(':');
+  const tidy = (text: string) => text.trim().replace(/\s+/g, ' ');
+  return colon === -1 ? tidy(arg) : `${tidy(arg.slice(0, colon))}:${tidy(arg.slice(colon + 1))}`;
+}
+
 export const resolveCard: DirectiveResolver = (arg, ctx, attributes = {}) => {
   if (arg === null) return { error: `::card needs an item (${USAGE})` };
   const colon = arg.indexOf(':');

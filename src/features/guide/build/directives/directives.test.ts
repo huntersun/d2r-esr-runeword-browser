@@ -21,15 +21,18 @@ describe('cube text', () => {
 });
 
 describe('secret recipes', () => {
-  it('collapses the variants of one recipe number into one row and skips disabled rows', () => {
+  it('merges the variants of one recipe number and skips disabled rows', () => {
     const recipes = collectSecretRecipes(fixtureEsr());
     expect([...recipes.keys()]).toEqual([1, 2]);
-    expect(recipes.get(1)).toEqual({
-      inputs: ['Crafted Ring', '2× Perfect Gem', 'Ancient Scroll 1'],
-      output: 'Ring (Unique) / Unique item of the same type',
-      note: '#1: Unique Ring: Crafted Ring + P-Gem',
-    });
-    expect(recipes.get(2)?.output).toBe('An item of the same type (keeps its stats, 1 socket)');
+    // Identical inputs with different outputs are one pool; the note is only the recipe number (no dev label)
+    expect(recipes.get(1)).toEqual([
+      {
+        inputs: ['Crafted Ring', '2× Perfect Gem', 'Ancient Scroll 1'],
+        output: 'Ring (Unique) / Unique item of the same type',
+        note: '#1',
+      },
+    ]);
+    expect(recipes.get(2)?.[0]?.output).toBe('An item of the same type (keeps its stats, 1 socket)');
   });
 
   it('resolves all recipes and a single recipe', () => {

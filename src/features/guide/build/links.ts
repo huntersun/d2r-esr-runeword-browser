@@ -85,16 +85,15 @@ export function resolveLink(url: string, ctx: GuideContext): ResolvedLink | Buil
     // Not validated: no game-data bundle carries gemword names.
     case 'gw':
       return { kind: 'app', href: exactName(NAME_FOCUS_PAGES.gw, target) };
-    // Validated against sources.json like ::source (exact name, case-insensitive): uniques and mythicals are unique
-    // items there, socketables (runes, gems, jewels …) are misc items.
+    // Validated against sources.json like ::source (exact name, case-insensitive), split into what each page shows
+    // (see linkTargetNames): uniques without the mythicals, mythicals, socketables (gems, runes, crystals).
     case 'unique':
     case 'mythical':
     case 'socketable': {
-      const kind = scheme === 'socketable' ? 'misc' : 'unique';
-      if (!ctx.sourceNames[kind].has(target.toLowerCase())) {
-        return {
-          error: `unknown ${scheme === 'socketable' ? 'socketable' : 'unique item'} "${target}" (${scheme}:, checked against sources.json)`,
-        };
+      if (!ctx.linkNames[scheme].has(target.toLowerCase())) {
+        const what =
+          scheme === 'socketable' ? 'socketable (gem, rune or crystal)' : scheme === 'mythical' ? 'mythical unique' : 'unique item';
+        return { error: `unknown ${what} "${target}" (${scheme}:, checked against sources.json and the ESR item tables)` };
       }
       return { kind: 'app', href: exactName(NAME_FOCUS_PAGES[scheme] ?? '/', target) };
     }

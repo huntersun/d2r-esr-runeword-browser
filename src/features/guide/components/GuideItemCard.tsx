@@ -1,9 +1,8 @@
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/core/db';
 import type { Gemword, HtmUniqueItem, MythicalUnique, Runeword } from '@/core/db';
-import { selectIsInitialized } from '@/core/store';
+import { selectError, selectIsInitialized } from '@/core/store';
 import { useItemSources } from '@/features/game-data/hooks/useItemSources';
 import { GemwordCard, useGemBonusMap } from '@/features/gemwords';
 import { HtmUniqueItemCard } from '@/features/htm-unique-items';
@@ -15,7 +14,7 @@ import type { UnifiedSocketable } from '@/features/socketables/types';
 import type { DataBlock } from '../engine/schema';
 import { findCardRecord, findSocketable, pickCardVariants } from '../utils/cardRecord';
 import { AppLinkIcon } from './AppLinkIcon';
-import { GuideCardLoading, GuideCardNotice } from './GuideCardPlaceholder';
+import { GuideCardAppLink, GuideCardFailed, GuideCardLoading, GuideCardNotice } from './GuideCardPlaceholder';
 
 export type CardBlock = Extract<DataBlock, { kind: 'card' }>;
 
@@ -90,18 +89,21 @@ function RecordCards({ record }: { readonly record: CardRecord }) {
 /**
  * An item card embedded in a guide note: the same card as the browse screens, resolved by name from the viewer's
  * local HTM data. Guide routes render before the first data sync finishes, so until the sync is initialised a
- * missing item shows a loading placeholder (the live query re-runs as the sync writes the tables).
+ * missing item shows a loading placeholder (the live query re-runs as the sync writes the tables); if that sync fails
+ * (nothing cached, fetch/parse/store error) it shows a "could not be loaded" box with the app link instead.
  */
 // Default export for lazy() in GuideBody (the cards and their data hooks stay out of the guide chunk).
 export default function GuideItemCard({ block }: { readonly block: CardBlock }) {
   const isInitialized = useSelector(selectIsInitialized);
+  const syncError = useSelector(selectError);
   // isInitialized is a dependency too, so the lookup re-runs once the sync reports done even if no write was observed.
   const record = useLiveQuery(() => resolveCard(block.item, block.name), [block.item, block.name, isInitialized]);
-  const appLink = (
-    <Link to={block.href} className="font-medium text-primary underline-offset-2 hover:underline">
-      In the app →
-    </Link>
-  );
+  const appLink = <GuideCardAppLink href={block.href} />;
+
+  // Not found while the first sync has failed (it never initialises then): stop spinning and offer the app link.
+  if (record == null && !isInitialized && syncError !== null) {
+    return <GuideCardFailed name={block.name} href={block.href} />;
+  }
 
   if (record === undefined || (record === null && !isInitialized)) {
     return <GuideCardLoading name={block.name} />;

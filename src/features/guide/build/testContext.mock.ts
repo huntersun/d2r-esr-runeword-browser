@@ -65,13 +65,16 @@ export const CUBEMAIN = tsv([
 ]);
 
 export const MISC = tsv([
-  ['name', 'code', 'namestr', 'TMogMin', 'GheedMin', 'GheedMax', 'GheedMagicMin', 'GheedMagicMax', 'CharsiMin', 'CharsiMax'],
-  ['Ring', 'rin', 'rin', '1', '0', '0', '0', '0', '0', '0'],
-  ['Jewel', 'jew', 'jew', '0', '0', '0', '1', '1', '0', '0'],
-  ['Scroll 1', '01a', '01a', '0', '0', '0', '0', '0', '0', '0'],
-  ["Starter's Pack", 'ag8', 'ag8', '0', '0', '0', '0', '0', '0', '0'],
-  ["Noob's Charm New", 'c11', 'cm8', '0', '0', '0', '0', '0', '0', '0'],
-  ['Rerolling Orb', 't01', 't01', '0', '1', '1', '0', '0', '0', '0'],
+  ['name', 'code', 'namestr', 'TMogMin', 'GheedMin', 'GheedMax', 'GheedMagicMin', 'GheedMagicMax', 'CharsiMin', 'CharsiMax', 'type'],
+  ['Ring', 'rin', 'rin', '1', '0', '0', '0', '0', '0', '0', 'ring'],
+  ['Jewel', 'jew', 'jew', '0', '0', '0', '1', '1', '0', '0', 'jewl'],
+  ['Scroll 1', '01a', '01a', '0', '0', '0', '0', '0', '0', '0', 'scrl'],
+  ["Starter's Pack", 'ag8', 'ag8', '0', '0', '0', '0', '0', '0', '0', 'misc'],
+  ["Noob's Charm New", 'c11', 'cm8', '0', '0', '0', '0', '0', '0', '0', 'char'],
+  ['Rerolling Orb', 't01', 't01', '0', '1', '1', '0', '0', '0', '0', 'cube'],
+  ['El Rune', 'r51', 'r51', '0', '0', '0', '0', '0', '0', '0', 'rune'],
+  ['Zod Rune', 'r83', 'r83', '0', '0', '0', '0', '0', '0', '0', 'rune'],
+  ['Anvil Stone', 'qqq', 'qqq', '0', '0', '0', '0', '0', '0', '0', 'cube'],
 ]);
 
 export const ARMOR = tsv([
@@ -82,6 +85,7 @@ export const ARMOR = tsv([
 export const WEAPONS = tsv([
   ['name', 'code', 'namestr', 'CharsiMin', 'CharsiMax'],
   ['Crystal Sword', 'crs', 'crs', '1', '1'],
+  ['Mythical Death Blade Frostmourne', 'dd1', 'dd1', '0', '0'],
 ]);
 
 export const ITEMTYPES = tsv([
@@ -125,13 +129,23 @@ export function fixtureGameData(): GameDataInputs {
   return {
     runewords: { runewords: [{ key: 'Runeword1', name: 'Enigma', rows: [] }] },
     bases: { bases: [{ code: 'crs', name: 'Crystal Sword' }] },
-    types: { types: [{ code: 'swor', name: 'Sword' }], classes: [] },
+    types: {
+      types: [
+        { code: 'swor', name: 'Sword', ancestors: ['swor', 'mele', 'weap'] },
+        { code: 'rune', name: 'Rune', ancestors: ['rune', 'sock', 'misc'] },
+        { code: 'cube', name: 'Cube Ingredient', ancestors: ['cube', 'misc'] },
+      ],
+      classes: [],
+    },
     sources: {
       items: [
         { name: 'Annihilus', code: 'cm1', item: 'unique', labels: [{ kind: 'boss', text: 'Drops from Diablo Clone' }] },
         { name: "Artemis' Wrath", code: 'amc', item: 'unique', labels: [] },
         { name: 'Frostmourne', code: 'dd1', item: 'unique', labels: [] },
+        { name: 'Pelta Lunata', code: 'buc', item: 'unique', labels: [] },
         { name: 'El Rune', code: 'r51', item: 'misc', labels: [] },
+        { name: 'Zod Rune', code: 'r83', item: 'misc', labels: [] },
+        { name: 'Anvil Stone', code: 'qqq', item: 'misc', labels: [] },
         { name: 'Worldstone Shard', code: 'amu', item: 'set', labels: [{ kind: 'drop', text: 'Drops (random)' }] },
         { name: 'Worldstone Shard', code: 'xa1', item: 'misc', labels: [{ kind: 'boss', text: 'Drops from Baal' }] },
       ],
