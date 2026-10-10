@@ -4,27 +4,28 @@ Documentation for routing, layout, and navigation patterns.
 
 ## Routes
 
-| Path | Screen | Description |
-|------|--------|-------------|
-| `/` | RunewordsScreen | Home page - browse and filter runewords, `?name=<Name>` focus |
-| `/guide` | GuideSpineScreen | New-player guide: "Start here" journey spine, note search, "I found something" row |
-| `/guide/:slug` | GuideNoteScreen | One guide note; unknown slug shows a "Note not found" block linking back to `/guide` |
-| `/gemwords` | GemwordsScreen | Gem-based socket recipes with filters, `?name=<Name>` focus |
-| `/socketables` | SocketablesScreen | All socketables with category filters & search, `?name=<Name>` focus |
-| `/uniques` | HtmUniqueItemsScreen | Unique items with category & coupon filters, `?name=<Name>` focus |
-| `/mythicals` | MythicalUniquesScreen | Mythical unique items, `?name=<Name>` focus |
-| `/ascendancies` | AscendanciesScreen | Ascendancies with their tier bonuses |
-| `/game-data` | GameDataLayout | Game-file data section; index redirects to `bases` |
-| `/game-data/bases` | BasesScreen | Base items browser (txt game files) |
-| `/game-data/best-base` | BestBaseScreen | Placeholder (Phase 2) |
-| `/game-data/affixes` | AffixesScreen | Placeholder (Phase 3) |
-| `/game-data/types` | ItemTypesScreen | Item type tree + socket caps, `?type=<code>` focus |
-| `/builds` | BuildsScreen | Shared builds list (Supabase only) |
-| `/builds/new` | CreateBuildScreen | Create a build (sign-in required) |
-| `/builds/:buildId/edit` | EditBuildScreen | Edit an own build |
-| `/build/:buildId` | BuildDetailScreen | Build detail page |
-| `/user/:userId` | UserProfileScreen | A user's public builds |
-| `*` | NotFoundScreen | Catch-all for unknown URLs, with a link back home |
+| Path                    | Screen                | Description                                                                             |
+| ----------------------- | --------------------- | --------------------------------------------------------------------------------------- |
+| `/`                     | RunewordsScreen       | Home page - browse and filter runewords, `?name=<Name>` focus                           |
+| `/guide`                | GuideLayout           | Guide frame: a small "Experimental" notice above every guide page, then the child route |
+| `/guide` (index)        | GuideSpineScreen      | New-player guide: "Start here" journey spine, note search, "I found something" row      |
+| `/guide/:slug`          | GuideNoteScreen       | One guide note; unknown slug shows a "Note not found" block linking back to `/guide`    |
+| `/gemwords`             | GemwordsScreen        | Gem-based socket recipes with filters, `?name=<Name>` focus                             |
+| `/socketables`          | SocketablesScreen     | All socketables with category filters & search, `?name=<Name>` focus                    |
+| `/uniques`              | HtmUniqueItemsScreen  | Unique items with category & coupon filters, `?name=<Name>` focus                       |
+| `/mythicals`            | MythicalUniquesScreen | Mythical unique items, `?name=<Name>` focus                                             |
+| `/ascendancies`         | AscendanciesScreen    | Ascendancies with their tier bonuses                                                    |
+| `/game-data`            | GameDataLayout        | Game-file data section; index redirects to `bases`                                      |
+| `/game-data/bases`      | BasesScreen           | Base items browser (txt game files)                                                     |
+| `/game-data/best-base`  | BestBaseScreen        | Placeholder (Phase 2)                                                                   |
+| `/game-data/affixes`    | AffixesScreen         | Placeholder (Phase 3)                                                                   |
+| `/game-data/types`      | ItemTypesScreen       | Item type tree + socket caps, `?type=<code>` focus                                      |
+| `/builds`               | BuildsScreen          | Shared builds list (Supabase only)                                                      |
+| `/builds/new`           | CreateBuildScreen     | Create a build (sign-in required)                                                       |
+| `/builds/:buildId/edit` | EditBuildScreen       | Edit an own build                                                                       |
+| `/build/:buildId`       | BuildDetailScreen     | Build detail page                                                                       |
+| `/user/:userId`         | UserProfileScreen     | A user's public builds                                                                  |
+| `*`                     | NotFoundScreen        | Catch-all for unknown URLs, with a link back home                                       |
 
 **`?name=<Name>` focus** (runewords, gemwords, socketables, uniques, mythicals): shows only the items whose name equals `<Name>`
 (`normaliseItemName` in `src/core/utils/itemName.ts`: case, whitespace, quotes/apostrophes and dashes unified; all variants of a
@@ -190,8 +191,8 @@ Uses `createBrowserRouter` (not hash-based) with `basename` set from Vite's `BAS
 
 ```typescript
 interface SettingsState {
-  readonly theme: Theme;           // 'dark' | 'light'
-  readonly textSize: TextSize;     // 'small' | 'normal' | 'large' | 'extralarge'
+  readonly theme: Theme; // 'dark' | 'light'
+  readonly textSize: TextSize; // 'small' | 'normal' | 'large' | 'extralarge'
   readonly useDiabloFont: boolean;
   readonly isDrawerOpen: boolean;
 }

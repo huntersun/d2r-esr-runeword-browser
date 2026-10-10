@@ -9,10 +9,11 @@ directives that regenerate with the game data), and the official docs stay canon
 
 ## Routes
 
-| Path           | Screen           | Notes                                                                                                            |
-| -------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `/guide`       | GuideSpineScreen | "Start here": the five-step journey spine, each step expands to its note cards; an "I found something" row below |
-| `/guide/:slug` | GuideNoteScreen  | One note (anatomy below); unknown slug shows a "note not found" block with a link back to `/guide`               |
+| Path              | Screen           | Notes                                                                                                                |
+| ----------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `/guide` (layout) | GuideLayout      | Every guide page shows a small amber "Experimental" notice at the top: the guide is still being written and reviewed |
+| `/guide`          | GuideSpineScreen | "Start here": the five-step journey spine, each step expands to its note cards; an "I found something" row below     |
+| `/guide/:slug`    | GuideNoteScreen  | One note (anatomy below); unknown slug shows a "note not found" block with a link back to `/guide`                   |
 
 Guide routes render **before** the HTM data sync finishes (`AppLayout` skips the "Loading data..." gate for paths
 under `/guide`). The guide bundle is static JSON and needs no Dexie data.
