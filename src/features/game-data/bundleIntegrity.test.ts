@@ -11,6 +11,7 @@ import {
   type BaseItem,
   type BasesBundle,
   type GameDataManifest,
+  type SourcesBundle,
   type TxtRunewordsBundle,
   type TypesBundle,
 } from './engine/schema.ts';
@@ -27,10 +28,12 @@ const typesText = readText('types');
 const basesText = readText('bases');
 const runewordsText = readText('runewords');
 const affixesText = readText('affixes');
+const sourcesText = readText('sources');
 const { types } = JSON.parse(typesText) as TypesBundle;
 const { bases } = JSON.parse(basesText) as BasesBundle;
 const { runewords } = JSON.parse(runewordsText) as TxtRunewordsBundle;
 const { affixes } = JSON.parse(affixesText) as AffixesBundle;
+const { items: sourceItems } = JSON.parse(sourcesText) as SourcesBundle;
 
 describe('committed game-data bundles', () => {
   it('match the app schema', () => {
@@ -43,6 +46,7 @@ describe('committed game-data bundles', () => {
       ['bases', basesText],
       ['runewords', runewordsText],
       ['affixes', affixesText],
+      ['sources', sourcesText],
     ] as const) {
       expect(manifest.files[name]?.hash).toBe(createHash('sha256').update(text, 'utf8').digest('hex'));
       expect(manifest.files[name]?.bytes).toBe(Buffer.byteLength(text, 'utf8'));
@@ -95,7 +99,7 @@ describe('committed game-data bundles', () => {
       ).toBe(true);
   });
 
-  it('contain every runes.txt Runeword* key with its rows (391 keys / 449 rows in ESR 3.2.10)', () => {
+  it('contain every runes.txt Runeword* key with its rows (391 keys / 449 rows in ESR 3.2.12)', () => {
     expect(runewords).toHaveLength(391);
     expect(runewords.flatMap((runeword) => runeword.rows)).toHaveLength(449);
     expect(manifest.counts.runewords).toBe(runewords.length);
@@ -120,6 +124,16 @@ describe('committed game-data bundles', () => {
     expect(affixes.filter((affix) => affix.text.length > 0).length / affixes.length).toBeGreaterThan(0.95);
     expect(affixes.flatMap((affix) => affix.text).some((line) => /%[+di0-9s]|undefined|NaN/.test(line))).toBe(false);
     expect(runewords.flatMap((rw) => rw.rows).filter((row) => row.text.length > 0).length).toBeGreaterThan(400);
+  });
+
+  it('contain a source label for every unique, set and misc entry', () => {
+    expect(manifest.counts.sourcesUnique).toBe(sourceItems.filter((item) => item.item === 'unique').length);
+    expect(manifest.counts.sourcesSet).toBe(sourceItems.filter((item) => item.item === 'set').length);
+    expect(manifest.counts.sourcesMisc).toBe(sourceItems.filter((item) => item.item === 'misc').length);
+    expect(sourceItems.filter((item) => item.item === 'unique').length).toBeGreaterThan(1300);
+    expect(sourceItems.every((item) => item.labels.length > 0 && item.name !== '')).toBe(true);
+    // "Unknown" stays rare (Voidforge, a few internal ore/charm rows, …)
+    expect(manifest.counts.sourcesUnknown).toBeLessThan(50);
   });
 
   it('resolve the merc/helm name collision and class-only bases', () => {
@@ -164,6 +178,7 @@ describe.skipIf(!existsSync(ESR_DIR))('game data generated from the ESR clone', 
     expect(serializeBundle(generated.bases)).toBe(basesText);
     expect(serializeBundle(generated.runewords)).toBe(runewordsText);
     expect(serializeBundle(generated.affixes)).toBe(affixesText);
+    expect(serializeBundle(generated.sources)).toBe(sourcesText);
   });
 
   it('names spawnable bases like the ESR docs pages (≥ 95 % overlap)', () => {

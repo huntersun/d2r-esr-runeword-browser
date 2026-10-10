@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { StringsFile } from './strings.ts';
 
@@ -6,6 +6,8 @@ import type { StringsFile } from './strings.ts';
 export const ESR_EXCEL_DIR = 'Eastern_Sun_Resurrected.mpq/data/global/excel';
 export const ESR_STRINGS_DIR = 'Eastern_Sun_Resurrected.mpq/data/local/lng/strings';
 export const ESR_METADATA_FILE = 'd2rloader/metadata.json';
+/** D2RLoader plugin config naming uniques dropped by boss sets (Hellfire Torch, …); optional */
+export const ESR_BOSS_SET_UNIQUE_DROP_FILE = 'd2rloader/config/celestialrayone.boss-set-unique-drop.toml';
 
 const TABLES = [
   'itemtypes',
@@ -25,6 +27,13 @@ const TABLES = [
   'skilldesc',
   'monstats',
   'montype',
+  // sources.json
+  'uniqueitems',
+  'setitems',
+  'cubemain',
+  'treasureclassex',
+  'superuniques',
+  'gamble',
 ] as const;
 export type EsrTableName = (typeof TABLES)[number];
 
@@ -33,6 +42,8 @@ export interface EsrSources {
   esrVersion: string;
   tables: Record<EsrTableName, string>;
   strings: StringsFile[];
+  /** Launcher plugin configs (raw text; null when the file is missing) */
+  plugins: { bossSetUniqueDrop: string | null };
 }
 
 function readModVersion(esrDir: string): string {
@@ -54,5 +65,8 @@ export function readEsrSources(esrDir: string): EsrSources {
     .sort()
     .map((name) => ({ name, text: readFileSync(join(stringsDir, name), 'utf8') }));
 
-  return { esrVersion: readModVersion(esrDir), tables, strings };
+  const pluginFile = join(esrDir, ESR_BOSS_SET_UNIQUE_DROP_FILE);
+  const bossSetUniqueDrop = existsSync(pluginFile) ? readFileSync(pluginFile, 'utf8') : null;
+
+  return { esrVersion: readModVersion(esrDir), tables, strings, plugins: { bossSetUniqueDrop } };
 }

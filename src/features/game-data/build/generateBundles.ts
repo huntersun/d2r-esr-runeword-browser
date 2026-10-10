@@ -1,7 +1,8 @@
-import type { AffixesBundle, BasesBundle, TxtRunewordsBundle, TypesBundle } from '../engine/schema.ts';
+import type { AffixesBundle, BasesBundle, SourcesBundle, TxtRunewordsBundle, TypesBundle } from '../engine/schema.ts';
 import { buildAffixesBundle } from './bundleAffixes.ts';
 import { buildBasesBundle } from './bundleBases.ts';
 import { buildRunewordsBundle } from './bundleRunewords.ts';
+import { buildSourcesBundle } from './bundleSources.ts';
 import { buildTypesBundle } from './bundleTypes.ts';
 import type { EsrSources } from './esrSources.ts';
 import { readAffixes, readCharStats, readItems, readItemTypes, readRuneRecipes } from './model.ts';
@@ -14,6 +15,7 @@ export interface GeneratedBundles {
   bases: BasesBundle;
   runewords: TxtRunewordsBundle;
   affixes: AffixesBundle;
+  sources: SourcesBundle;
   counts: Record<string, number>;
   /** Build warnings stored in the manifest */
   warnings: string[];
@@ -45,12 +47,31 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
   const affixes = buildAffixesBundle(affixRows, types.bundle, strings, renderMods);
   const countAffixes = (kind: string) => affixes.bundle.affixes.filter((affix) => affix.kind === kind).length;
 
+  const sourceItems = buildSourcesBundle(
+    {
+      uniqueitems: table('uniqueitems'),
+      setitems: table('setitems'),
+      weapons: table('weapons'),
+      armor: table('armor'),
+      misc: table('misc'),
+      cubemain: table('cubemain'),
+      treasureclassex: table('treasureclassex'),
+      monstats: table('monstats'),
+      superuniques: table('superuniques'),
+      gamble: table('gamble'),
+    },
+    strings,
+    sources.plugins.bossSetUniqueDrop
+  );
+  const countSources = (item: string) => sourceItems.bundle.items.filter((source) => source.item === item).length;
+
   const countKind = (kind: string) => bases.bundle.bases.filter((base) => base.kind === kind).length;
   return {
     types: types.bundle,
     bases: bases.bundle,
     runewords: runewords.bundle,
     affixes: affixes.bundle,
+    sources: sourceItems.bundle,
     counts: {
       types: types.bundle.types.length,
       classes: types.bundle.classes.length,
@@ -69,8 +90,12 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       affixesAutomagic: countAffixes('a'),
       affixesDropped: affixes.dropped,
       affixesPlaceholdersDropped: affixes.droppedPlaceholders,
+      sourcesUnique: countSources('unique'),
+      sourcesSet: countSources('set'),
+      sourcesMisc: countSources('misc'),
+      sourcesUnknown: sourceItems.bundle.items.filter((source) => source.labels.some((entry) => entry.kind === 'unknown')).length,
     },
-    warnings: [...types.warnings, ...bases.warnings, ...runewords.warnings, ...affixes.warnings],
+    warnings: [...types.warnings, ...bases.warnings, ...runewords.warnings, ...affixes.warnings, ...sourceItems.warnings],
     stringWarnings: [...stringWarnings],
   };
 }

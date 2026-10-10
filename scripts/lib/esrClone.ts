@@ -17,6 +17,7 @@ export const ESR_SPARSE_PATHS = [
   '/Eastern_Sun_Resurrected.mpq/data/global/excel/',
   '/Eastern_Sun_Resurrected.mpq/data/local/lng/strings/',
   '/d2rloader/metadata.json',
+  '/d2rloader/config/celestialrayone.boss-set-unique-drop.toml',
   '/docs/weapons.htm',
   '/docs/armors.htm',
 ];

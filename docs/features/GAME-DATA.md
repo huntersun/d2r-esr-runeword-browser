@@ -29,18 +29,20 @@ lazily (`src/features/game-data/engine/browser/loadGameData.ts`).
 | `types.json`     | item types (Equiv parents, ancestors, socket caps per ilvl band, class, UI/runeword categories) + 8 classes with skill-tab names |
 | `bases.json`     | spawnable weapons (369) and armors (255) plus 29 equippable accessories (rings, amulets, charms, jewels)                         |
 | `runewords.json` | runes.txt runeword recipes: 391 `Runeword*` keys with 449 rows and rendered stats (see "Runewords")                              |
-| `affixes.json`   | 2533 spawnable magic prefixes, suffixes and automods with rendered text (see "Affixes")                                          |
+| `affixes.json`   | 2528 spawnable magic prefixes, suffixes and automods with rendered text (see "Affixes")                                          |
+| `sources.json`   | "where does it come from" labels for uniques, set items and crafting-relevant misc items (see "Sources")                         |
 
 Arrays are written one element per line so diffs stay readable. Bundle URLs carry the manifest hash (`?v=<sha256>`);
 the manifest itself is always revalidated. The shape is defined in `src/features/game-data/engine/schema.ts`
 (`GAME_DATA_SCHEMA`); bump it whenever a bundle shape changes incompatibly.
 
-| Bundle           | ESR 3.2.10 size (raw / gzip) |
+| Bundle           | ESR 3.2.12 size (raw / gzip) |
 | ---------------- | ---------------------------- |
 | `types.json`     | 44 KB / 5 KB                 |
 | `bases.json`     | 292 KB / 26 KB               |
-| `runewords.json` | 197 KB / 27 KB               |
-| `affixes.json`   | 785 KB / 57 KB               |
+| `runewords.json` | 197 KB / 28 KB               |
+| `affixes.json`   | 795 KB / 61 KB               |
+| `sources.json`   | 330 KB / 30 KB               |
 
 ### Bases and types
 
@@ -75,12 +77,47 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 ### Affixes
 
 `affixes.json` (`AffixesBundle`, ~785 KB / 57 KB gzip) holds the spawnable rows of `magicprefix.txt` (kind `p`),
-`magicsuffix.txt` (`s`) and `automagic.txt` (`a`): ESR 3.2.10 → 2533 affixes (885 / 1509 / 139). Per affix: `id` (0-based
+`magicsuffix.txt` (`s`) and `automagic.txt` (`a`): ESR 3.2.12 → 2528 affixes (885 / 1504 / 139). Per affix: `id` (0-based
 row index within its file, unique together with `kind`), string-resolved `name`, `lvl`, `maxLvl`, `reqLvl`, `cls`
 (`classspecific`), `reqCls` + `clsReqLvl` (`class` / `classlevelreq`), `freq`, `group`, `rare`, `itypes`, `etypes`,
-structured `mods` and rendered `text`. Rows with `spawnable != 1` are dropped (`counts.affixesDropped`, 106); automagic
+structured `mods` and rendered `text`. Rows with `spawnable != 1` are dropped (`counts.affixesDropped`, 111); automagic
 placeholders named "null" are kept with an empty name when a stat is visible, otherwise dropped
 (`counts.affixesPlaceholdersDropped`, 4). `runewords.json` rows also carry `text`, rendered from `T1Code1-7`.
+
+### Sources
+
+`sources.json` (`SourcesBundle`, built by `build/bundleSources.ts`) answers "where does this item come from" with
+qualitative labels derived from the game files. The guide reads it through `::source[...]` (see GUIDE.md). Each entry
+has the display `name`, `code` (base code for uniques/sets, item code for misc), `item` (`unique` / `set` / `misc`) and
+one or more `labels` (`{ kind, text }`), always in this order:
+
+| kind      | text                            | rule                                                                                                                                                                                                                                                                                                                                                           |
+| --------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cube`    | `Cube: Ancient Coupon` / `Cube` | An enabled `cubemain.txt` row outputs the item (`output`, `output b`, `output c`; unique/set by index, misc by code) and none of its inputs is the item itself (rerolls do not count). Rows with an Ancient Coupon input (misc `name` starting `Coupon `, the Wild Card excluded) → `Cube: Ancient Coupon`, other rows → `Cube` (both labels when both exist). |
+| `boss`    | `Drops from <monsters>`         | The item (unique/set index or misc code) is named in a treasure class reachable from the `TreasureClass*` columns (all difficulties, Champ/Unique/Quest/Desecrated/Herald) of `monstats.txt` or the `TC*` columns of `superuniques.txt` of at most 5 distinct monster display names. Sub-TCs are followed.                                                     |
+| `maps`    | `Drops in Endgame Maps`         | Named in the TCs of more than 5 monsters that are all map monsters (one of their TCs leads to an `EGM …` / `Endgame Map …` TC); or a randomly dropping unique/set of level ≥ 100 (only monster level ≥ 100 rolls it, e.g. the mythical bases); or a unique on a misc base that only map monsters drop.                                                         |
+| `drop`    | `Drops (random)`                | Named in the TCs of more than 5 monsters, not all map monsters. Uniques: not disabled, `spawnable`, `rarity > 0`, base `spawnable` and either a weapon/armor (auto-TCs) or a misc base named in a reachable TC. Set items: `spawnable`.                                                                                                                        |
+| `buy`     | `Buy: <NPC>`                    | Misc only: the item row has `<Npc>Min` or `<Npc>Max` > 0 (17 NPC columns, plain items, not the `Magic` columns). One label per NPC.                                                                                                                                                                                                                            |
+| `gamble`  | `Gamble`                        | Unique with `rarity > 0` whose base code, `normcode`, `ubercode` or `ultracode` is in `gamble.txt`.                                                                                                                                                                                                                                                            |
+| `plugin`  | `Boss drop (launcher plugin)`   | The unique is named in `d2rloader/config/celestialrayone.boss-set-unique-drop.toml` (`unique = "…"` lines; nothing when the file is missing or `enabled = false`).                                                                                                                                                                                             |
+| `unknown` | `Unknown`                       | Nothing above matched.                                                                                                                                                                                                                                                                                                                                         |
+
+Items covered: every `uniqueitems.txt` row with an `index` and `disabled != 1` (the `*Skip Generation` comment column
+is ignored: it is set on 96 playable rows such as Mephisto's Will), every `setitems.txt` row, and every `misc.txt` row
+that is a cube input or output, sold by a vendor, or named in a monster-reachable TC, except potions, scrolls, tomes,
+keys, gold and ammo (`NOISE_TYPES`). Misc rows with the same name and labels (47 "Rune Stocker" variants, …) keep only
+the first. Names come from the string tables; multi-line names are read bottom-up ("Ancient Coupon (Buckler, Pelta
+Lunata)"). `diabloclone` is shown as "Diablo Clone" (its name string is plain "Diablo"). Counts: `counts.sourcesUnique`,
+`sourcesSet`, `sourcesMisc`, `sourcesUnknown` (ESR 3.2.12: 1383 / 270 / 808 / 29).
+
+Limitations (the UI says "Derived from the game files; may be incomplete"):
+
+- No percentages or drop rates, no monster → area mapping.
+- No replica of the engine auto-TCs (`weapN` / `armoN` level bands) or of `lvl ≤ mlvl`: a random unique drop only
+  checks the flags above, and level ≥ 100 is the only level rule (→ maps).
+- Only one launcher plugin config is parsed; other plugins (cow set drops, drop caps, shrines) and DLL hard-codes are
+  invisible. Items given by `useitem` cube rows (Starter's Pack → Character Augmenter) and drop-only duplicates (the
+  `cx1-3` charms) show as `Unknown`.
 
 ## Regenerating
 
@@ -463,7 +500,8 @@ src/features/game-data/
                affixEligibility.ts
   engine/browser/loadGameData.ts         browser-only loader (fetch, import.meta.env)
   build/       build only: tsv.ts, strings.ts, model.ts, esrSources.ts, bundleTypes.ts, bundleBases.ts,
-               bundleRunewords.ts, bundleAffixes.ts, generateBundles.ts, writeBundle.ts
+               bundleRunewords.ts, bundleAffixes.ts, bundleSources.ts (+ treasureClasses.ts, pluginDrops.ts,
+               itemNames.ts), generateBundles.ts, writeBundle.ts
   build/stats/ stat renderer (see "Stat renderer")
 ```
 
@@ -518,6 +556,8 @@ constants/affixes.ts              kinds, sort keys, labels, level range, page si
 ## Tests
 
 - Build: `build/tsv.test.ts`, `build/strings.test.ts`, `build/bundleRunewords.test.ts`, `build/bundleAffixes.test.ts`,
+  `build/bundleSources.test.ts` (each label rule on inline TSV; with the ESR clone, the verified examples Pelta Lunata,
+  Krok's Basher, Mephisto's Will, Frostmourne, Annihilus, Hellfire Torch, Kill Ledger, Orb of Anointment, Forging Hammer),
   `build/stats/*.test.ts` (sprintf, expandProperty, descfunc, renderLines, propertyGroups)
 - Engine: `engine/itemTypes.test.ts`, `engine/sockets.test.ts`, `engine/matchRunewords.test.ts`,
   `engine/bestBase.test.ts`, `engine/affixEligibility.test.ts`, `engine/browser/loadGameData.test.ts`

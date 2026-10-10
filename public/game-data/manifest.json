@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "esrVersion": "3.2.10",
-  "esrTag": "3.2.10",
-  "esrCommit": "10b540e9614d282f12463db5410b88eb89110dd7",
-  "generatedAt": "2026-10-09T13:22:36.907Z",
+  "esrVersion": "3.2.12",
+  "esrTag": "3.2.12",
+  "esrCommit": "8c2bb1c1a50fe35e96ce8804120613bb3ae74d1b",
+  "generatedAt": "2026-10-10T09:42:01.031Z",
   "files": {
     "types": {
       "hash": "9375f59541d1f738f4667ed197abb61dd6a50cbc7c48c25519a9ab94dc7c6c81",
@@ -14,12 +14,16 @@
       "bytes": 299099
     },
     "runewords": {
-      "hash": "b14726731c7ddca9ae729f99bc6c204e7fda015b1f4de829b23b34208c00acbc",
-      "bytes": 201816
+      "hash": "676f160c2aa3a0914a2acf5e0339b74d55527ad0ba0b5dbd0b89bbc684065a65",
+      "bytes": 201811
     },
     "affixes": {
-      "hash": "2eb6b7b29fd394c7ee7eb3ae03b842aaf08e167e1c9e975a99e47c44cc058e57",
-      "bytes": 816100
+      "hash": "24b4a13f4f5c482c16e45ae90240b6887a734ebf62e5512f97d99ce11d29210f",
+      "bytes": 814423
+    },
+    "sources": {
+      "hash": "abbc334e6d022515e3b0ad4024e0dc54037108b091b70c0e9151b36ea8ec282d",
+      "bytes": 338078
     }
   },
   "counts": {
@@ -29,17 +33,21 @@
     "weapons": 369,
     "armors": 255,
     "misc": 29,
-    "strings": 14730,
+    "strings": 14737,
     "stringConflicts": 85,
     "duplicateBases": 3,
     "runewords": 391,
     "runewordRows": 449,
-    "affixes": 2533,
+    "affixes": 2528,
     "affixesPrefix": 885,
-    "affixesSuffix": 1509,
+    "affixesSuffix": 1504,
     "affixesAutomagic": 139,
-    "affixesDropped": 106,
-    "affixesPlaceholdersDropped": 4
+    "affixesDropped": 111,
+    "affixesPlaceholdersDropped": 4,
+    "sourcesUnique": 1383,
+    "sourcesSet": 270,
+    "sourcesMisc": 808,
+    "sourcesUnknown": 29
   },
   "warnings": [
     "bases: q86 (Scissors Suwayyah) is not in its own tier family [skr, 9qr, 7qr]; treated as normal",
