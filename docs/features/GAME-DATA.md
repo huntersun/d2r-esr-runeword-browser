@@ -113,6 +113,14 @@ Lunata)"). `diabloclone` is shown as "Diablo Clone" (its name string is plain "D
 `sourcesSet`, `sourcesMisc`, `sourcesMerged` (rows folded into an earlier entry), `sourcesUnknown` (ESR 3.2.12:
 1107 / 270 / 795 / 516 / 13).
 
+Shown on cards: the Unique Items, Mythical Uniques and Socketables cards show a "Source: …" line
+(`components/ItemSourceLine.tsx`). Each screen calls `useItemSources()` once (loads `['sources']`, builds a
+name → entries index via `engine/sourceLookup.ts`, cached per bundle object) and passes the index down;
+`findItemSource(index, name, kind)` normalises the name (trim, whitespace, quotes/apostrophes/dashes, case) and
+prefers the given kind (`unique` for uniques/mythicals, `misc` for socketables) on cross-kind collisions such as Ore
+or Worldstone Shard. Coverage against the HTM fixtures (ESR 3.2.12): 1065/1065 uniques, 41/41 mythicals,
+178/178 socketables.
+
 Limitations (the UI says "Derived from the game files; may be incomplete"):
 
 - No percentages or drop rates, no monster → area mapping.

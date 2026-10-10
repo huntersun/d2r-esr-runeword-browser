@@ -2,7 +2,8 @@ import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { FILTER_URL_PARAM_KEYS, MAX_REQ_LEVEL_RANGE, decodeCategoryListParam, parseBoundedIntParam } from '@/core/utils/filterUrlParams';
-import { setSearchText, setMaxReqLevel, setSelectedCategories, setIncludeCouponItems } from '../store';
+import { parseExactNameParam } from '@/core/utils/exactName';
+import { setSearchText, setExactName, setMaxReqLevel, setSelectedCategories, setIncludeCouponItems } from '../store';
 
 export const HTM_URL_PARAM_KEYS = {
   CATS: 'cats',
@@ -27,10 +28,20 @@ export function useUrlInitialize(): void {
     const urlMaxLvl = searchParams.get(FILTER_URL_PARAM_KEYS.MAXLVL);
     const urlCats = searchParams.get(HTM_URL_PARAM_KEYS.CATS);
     const urlCoupon = searchParams.get(HTM_URL_PARAM_KEYS.COUPON);
+    const exactName = parseExactNameParam(searchParams.get(FILTER_URL_PARAM_KEYS.NAME));
 
-    const hasUrlParams = urlSearch !== null || urlMaxLvl !== null || urlCats !== null || urlCoupon !== null;
+    const hasUrlParams = urlSearch !== null || urlMaxLvl !== null || urlCats !== null || urlCoupon !== null || exactName !== null;
 
     if (hasUrlParams) {
+      dispatch(setExactName(exactName));
+      if (exactName !== null) {
+        // A name focus starts from default filters (URL params below still apply) so leftover state can't hide the item
+        dispatch(setSearchText(''));
+        dispatch(setMaxReqLevel(null));
+        dispatch(setSelectedCategories([]));
+        dispatch(setIncludeCouponItems(true));
+      }
+
       if (urlSearch !== null) {
         dispatch(setSearchText(urlSearch));
       }

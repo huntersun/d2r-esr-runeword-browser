@@ -7,6 +7,7 @@ import {
   selectSelectedItemTypes,
   selectSelectedRunes,
   selectMaxTierPoints,
+  selectExactName,
 } from '../store/runewordsSlice';
 
 /**
@@ -20,11 +21,13 @@ export function useShareUrl(): () => string {
   const selectedItemTypes = useSelector(selectSelectedItemTypes);
   const selectedRunes = useSelector(selectSelectedRunes);
   const maxTierPoints = useSelector(selectMaxTierPoints);
+  const exactName = useSelector(selectExactName);
 
   return () => {
     const params = new URLSearchParams();
     appendCommonFilterParams(params, { searchText, socketCount, maxReqLevel, selectedItemTypes });
     appendSelectionParam(params, FILTER_URL_PARAM_KEYS.RUNES, selectedRunes);
+    if (exactName !== null) params.set(FILTER_URL_PARAM_KEYS.NAME, exactName);
 
     // Tier points: serialize non-null entries as "esrRunes:1=64,lodRunes:2=128"
     const tierPtsEntries = Object.entries(maxTierPoints)

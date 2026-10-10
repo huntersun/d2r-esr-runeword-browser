@@ -9,6 +9,9 @@ import { FavoritesToggleButton } from '@/core/components/FavoritesToggleButton';
 import { useItemFavorites } from '@/features/favorites';
 import { buildRecipeFavoriteId } from '@/core/utils/recipeFavorites';
 import type { Runeword } from '@/core/db/models';
+import { useDispatch, useSelector } from 'react-redux';
+import { ExactNameChip } from '@/core/components/ExactNameChip';
+import { selectExactName, setExactName } from '../store/runewordsSlice';
 
 const getRunewordFavoriteId = (runeword: Runeword) => buildRecipeFavoriteId('runeword', runeword);
 
@@ -17,6 +20,8 @@ export function RunewordsScreen() {
   // Loaded once for the whole screen: search filtering, badges, tooltips and bonuses
   const socketableLookup = useSocketableLookupQuery();
   const runewords = useFilteredRunewords(socketableLookup);
+  const dispatch = useDispatch();
+  const exactName = useSelector(selectExactName);
   const favorites = useItemFavorites<Runeword>({
     getId: getRunewordFavoriteId,
     kindPrefix: 'runeword:',
@@ -40,7 +45,10 @@ export function RunewordsScreen() {
       <RunewordFilters />
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">Showing {filteredRunewords.length} runewords</p>
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-sm text-muted-foreground">Showing {filteredRunewords.length} runewords</p>
+          {exactName !== null && <ExactNameChip name={exactName} onClear={() => dispatch(setExactName(null))} />}
+        </div>
         {favorites.isAuthenticated && (
           <FavoritesToggleButton
             favoriteCount={favorites.favoriteCount}

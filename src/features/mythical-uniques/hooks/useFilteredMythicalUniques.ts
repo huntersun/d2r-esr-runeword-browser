@@ -2,7 +2,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useSelector } from 'react-redux';
 import { db } from '@/core/db';
 import type { MythicalUnique } from '@/core/db';
-import { selectSearchText, selectSelectedCategories } from '../store';
+import { selectSearchText, selectExactName, selectSelectedCategories } from '../store';
+import { matchesExactName } from '@/core/utils/exactName';
 import { parseSearchTerms } from '@/core/utils/searchTerms';
 import { matchesCategory } from '@/core/store/categorySelection';
 
@@ -13,6 +14,7 @@ import { matchesCategory } from '@/core/store/categorySelection';
 export function useFilteredMythicalUniques(): readonly MythicalUnique[] | undefined {
   const searchText = useSelector(selectSearchText);
   const selectedCategories = useSelector(selectSelectedCategories);
+  const exactName = useSelector(selectExactName);
 
   const allItems = useLiveQuery(() => db.mythicalUniques.toArray());
 
@@ -23,6 +25,7 @@ export function useFilteredMythicalUniques(): readonly MythicalUnique[] | undefi
   const searchTerms = parseSearchTerms(searchText);
 
   const filtered = allItems
+    .filter((item) => matchesExactName(item.name, exactName))
     .filter((item) => matchesCategory(item.category, selectedCategories))
     .filter((item) => matchesSearch(item, searchTerms));
 

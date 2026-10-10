@@ -126,6 +126,17 @@ Some unique items cannot be obtained as drops - they are created using Ancient C
 
 **UI Display:** Ancient Coupon items show a distinct visual indicator on the card.
 
+## Source Line
+
+The Unique Items and Mythical Uniques screens each load the game-data `sources` bundle once (`useItemSources()`)
+and pass the name index (`sourceIndex`) to their cards. At the bottom of the card, the shared `ItemSourceLine`
+shows `Source: <labels joined by " · ">` (e.g. "Cube: Ancient Coupon · Gamble"), looked up by item name with the
+`unique` kind preferred (`findItemSource(index, name, 'unique')`; names are compared after `normaliseItemName`:
+trim, collapsed whitespace, unified apostrophes/quotes/dashes, case-folded). Nothing is shown while the bundle loads,
+when it fails, or when the name is not found; an entry whose only label is `Unknown` shows "Source: Unknown". The prop
+is optional, so other users of the cards (builds) render them without a source line. Same-named uniques are merged
+in the bundle, so the base item is not used to disambiguate. See GAME-DATA.md → Sources.
+
 ## Hooks
 
 ### useCategoryFilters

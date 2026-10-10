@@ -9,9 +9,10 @@ import {
   decodeSelectionParam,
   parseBoundedIntParam,
 } from '@/core/utils/filterUrlParams';
+import { parseExactNameParam } from '@/core/utils/exactName';
 import { useAvailableItemTypes } from './useAvailableItemTypes';
 import { useGemGroups } from './useGemGroups';
-import { setSearchText, setSocketCount, setMaxReqLevel, setAllItemTypes, setAllGems } from '../store/gemwordsSlice';
+import { setSearchText, setExactName, setSocketCount, setMaxReqLevel, setAllItemTypes, setAllGems } from '../store/gemwordsSlice';
 
 export const GEMWORD_FILTER_STORAGE_KEY = 'd2r-esr.gemwords.filters.v1';
 
@@ -83,9 +84,19 @@ export function useUrlInitialize(): void {
     const urlMaxLvl = searchParams.get(FILTER_URL_PARAM_KEYS.MAXLVL);
     const urlItems = searchParams.get(FILTER_URL_PARAM_KEYS.ITEMS);
     const urlGems = searchParams.get(FILTER_URL_PARAM_KEYS.GEMS);
-    const hasUrlParams = urlSearch !== null || urlSockets !== null || urlMaxLvl !== null || urlItems !== null || urlGems !== null;
+    const exactName = parseExactNameParam(searchParams.get(FILTER_URL_PARAM_KEYS.NAME));
+    const hasUrlParams =
+      urlSearch !== null || urlSockets !== null || urlMaxLvl !== null || urlItems !== null || urlGems !== null || exactName !== null;
 
     if (hasUrlParams) {
+      dispatch(setExactName(exactName));
+      if (exactName !== null) {
+        // A name focus starts from default filters (URL params below still apply) so leftover state can't hide the item
+        dispatch(setSearchText(''));
+        dispatch(setSocketCount(null));
+        dispatch(setMaxReqLevel(null));
+      }
+
       if (urlSearch !== null) {
         dispatch(setSearchText(urlSearch));
       }

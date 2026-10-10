@@ -8,9 +8,19 @@ import {
   decodeSelectionParam,
   parseBoundedIntParam,
 } from '@/core/utils/filterUrlParams';
+import { parseExactNameParam } from '@/core/utils/exactName';
 import { useRuneGroups } from './useRuneGroups';
 import { useAvailableItemTypes } from './useAvailableItemTypes';
-import { setSearchText, setSocketCount, setMaxReqLevel, setAllRunes, setAllItemTypes, setMaxTierPoints } from '../store/runewordsSlice';
+import {
+  setSearchText,
+  setExactName,
+  setSocketCount,
+  setMaxReqLevel,
+  setAllRunes,
+  setAllItemTypes,
+  setMaxTierPoints,
+  clearAllTierPoints,
+} from '../store/runewordsSlice';
 
 /**
  * Initializes runeword filter state from URL query parameters (one-time on mount).
@@ -53,11 +63,27 @@ export function useUrlInitialize(): void {
     const urlItems = searchParams.get(FILTER_URL_PARAM_KEYS.ITEMS);
     const urlRunes = searchParams.get(FILTER_URL_PARAM_KEYS.RUNES);
     const urlTierPts = searchParams.get(FILTER_URL_PARAM_KEYS.TIERPTS);
+    const exactName = parseExactNameParam(searchParams.get(FILTER_URL_PARAM_KEYS.NAME));
 
     const hasUrlParams =
-      urlSearch !== null || urlSockets !== null || urlMaxLvl !== null || urlItems !== null || urlRunes !== null || urlTierPts !== null;
+      urlSearch !== null ||
+      urlSockets !== null ||
+      urlMaxLvl !== null ||
+      urlItems !== null ||
+      urlRunes !== null ||
+      urlTierPts !== null ||
+      exactName !== null;
 
     if (hasUrlParams) {
+      dispatch(setExactName(exactName));
+      if (exactName !== null) {
+        // A name focus starts from default filters (URL params below still apply) so leftover state can't hide the item
+        dispatch(setSearchText(''));
+        dispatch(setSocketCount(null));
+        dispatch(setMaxReqLevel(null));
+        dispatch(clearAllTierPoints());
+      }
+
       // Initialize from URL params
       if (urlSearch !== null) {
         dispatch(setSearchText(urlSearch));

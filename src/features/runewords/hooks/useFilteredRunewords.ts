@@ -10,7 +10,9 @@ import {
   selectSelectedItemTypes,
   selectSelectedRunes,
   selectMaxTierPoints,
+  selectExactName,
 } from '../store/runewordsSlice';
+import { matchesExactName } from '@/core/utils/exactName';
 import { parseSearchTerms } from '@/core/utils/searchTerms';
 import {
   matchesSearch,
@@ -33,6 +35,7 @@ export function useFilteredRunewords(lookup: SocketableLookup | undefined): read
   const selectedItemTypes = useSelector(selectSelectedItemTypes);
   const selectedRunes = useSelector(selectSelectedRunes);
   const maxTierPoints = useSelector(selectMaxTierPoints);
+  const exactName = useSelector(selectExactName);
 
   // Fetch runewords pre-sorted by sortKey from IndexedDB (ESR/Kanji first by reqLevel, then LoD by reqLevel)
   const runewords = useLiveQuery(() => db.runewords.orderBy('sortKey').toArray(), []);
@@ -50,6 +53,7 @@ export function useFilteredRunewords(lookup: SocketableLookup | undefined): read
 
   // Filter preserves the pre-sorted order from IndexedDB
   return expandedRunewords.filter((runeword) => {
+    if (!matchesExactName(runeword.name, exactName)) return false;
     if (!matchesSearch(runeword, searchTerms, runeBonusMap, gemBonusMap)) return false;
     if (!matchesSockets(runeword, socketCount)) return false;
     if (!matchesMaxReqLevel(runeword, maxReqLevel)) return false;

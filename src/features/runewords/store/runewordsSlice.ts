@@ -8,6 +8,7 @@ interface RunewordsState {
   readonly socketCount: number | null;
   readonly maxReqLevel: number | null;
   readonly selectedItemTypes: Record<string, boolean>;
+  readonly exactName: string | null;
   readonly selectedRunes: Record<string, boolean>;
   readonly maxTierPoints: Record<string, number | null>;
 }
@@ -59,6 +60,7 @@ const runewordsSlice = createSlice({
 
 export const {
   setSearchText,
+  setExactName,
   setSocketCount,
   setMaxReqLevel,
   toggleItemType,
@@ -80,7 +82,7 @@ export default runewordsSlice.reducer;
 // Selectors
 const selectRunewordsState = (state: RootState) => state.runewords;
 
-export const { selectSearchText, selectSocketCount, selectMaxReqLevel, selectSelectedItemTypes } =
+export const { selectSearchText, selectSocketCount, selectMaxReqLevel, selectSelectedItemTypes, selectExactName } =
   createItemTypeFilterSelectors(selectRunewordsState);
 
 export const selectSelectedRunes = createSelector([selectRunewordsState], (runewords) => runewords.selectedRunes);

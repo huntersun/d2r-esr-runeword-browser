@@ -2,7 +2,7 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSelector } from 'reselect';
 
 /**
- * Shared search/sockets/level/item-type filter state used by recipe list slices
+ * Shared search/sockets/level/item-type filter state (plus the `?name=` exact-name focus) used by recipe list slices
  * (runewords, gemwords). Spread `itemTypeFilterInitialState` into the slice's
  * initial state, `itemTypeFilterReducers` into its reducers, and build the
  * matching selectors with `createItemTypeFilterSelectors`.
@@ -12,6 +12,8 @@ export interface ItemTypeFilterState {
   socketCount: number | null;
   maxReqLevel: number | null;
   selectedItemTypes: Record<string, boolean>;
+  /** Exact-name focus from the `name` URL param; set only by URL init, never by the search box */
+  exactName: string | null;
 }
 
 export const itemTypeFilterInitialState: ItemTypeFilterState = {
@@ -19,11 +21,15 @@ export const itemTypeFilterInitialState: ItemTypeFilterState = {
   socketCount: null,
   maxReqLevel: null,
   selectedItemTypes: {},
+  exactName: null,
 };
 
 export const itemTypeFilterReducers = {
   setSearchText(state: ItemTypeFilterState, action: PayloadAction<string>) {
     state.searchText = action.payload;
+  },
+  setExactName(state: ItemTypeFilterState, action: PayloadAction<string | null>) {
+    state.exactName = action.payload;
   },
   setSocketCount(state: ItemTypeFilterState, action: PayloadAction<number | null>) {
     state.socketCount = action.payload;
@@ -61,6 +67,7 @@ interface ItemTypeFilterStateSlice {
   readonly socketCount: number | null;
   readonly maxReqLevel: number | null;
   readonly selectedItemTypes: Record<string, boolean>;
+  readonly exactName: string | null;
 }
 
 export function createItemTypeFilterSelectors<RootStateT>(selectFilterState: (state: RootStateT) => ItemTypeFilterStateSlice) {
@@ -69,5 +76,6 @@ export function createItemTypeFilterSelectors<RootStateT>(selectFilterState: (st
     selectSocketCount: createSelector([selectFilterState], (filterState) => filterState.socketCount),
     selectMaxReqLevel: createSelector([selectFilterState], (filterState) => filterState.maxReqLevel),
     selectSelectedItemTypes: createSelector([selectFilterState], (filterState) => filterState.selectedItemTypes),
+    selectExactName: createSelector([selectFilterState], (filterState) => filterState.exactName),
   };
 }

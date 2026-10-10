@@ -2,7 +2,8 @@ import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { FILTER_URL_PARAM_KEYS, decodeCategoryListParam } from '@/core/utils/filterUrlParams';
-import { setSearchText, setSelectedCategories } from '../store';
+import { parseExactNameParam } from '@/core/utils/exactName';
+import { setSearchText, setExactName, setSelectedCategories } from '../store';
 
 export const MYTHICAL_URL_PARAM_KEYS = {
   CATS: 'cats',
@@ -24,10 +25,18 @@ export function useUrlInitialize(): void {
 
     const urlSearch = searchParams.get(FILTER_URL_PARAM_KEYS.SEARCH);
     const urlCats = searchParams.get(MYTHICAL_URL_PARAM_KEYS.CATS);
+    const exactName = parseExactNameParam(searchParams.get(FILTER_URL_PARAM_KEYS.NAME));
 
-    const hasUrlParams = urlSearch !== null || urlCats !== null;
+    const hasUrlParams = urlSearch !== null || urlCats !== null || exactName !== null;
 
     if (hasUrlParams) {
+      dispatch(setExactName(exactName));
+      if (exactName !== null) {
+        // A name focus starts from default filters (URL params below still apply) so leftover state can't hide the item
+        dispatch(setSearchText(''));
+        dispatch(setSelectedCategories([]));
+      }
+
       if (urlSearch !== null) {
         dispatch(setSearchText(urlSearch));
       }

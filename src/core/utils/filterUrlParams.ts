@@ -13,6 +13,7 @@ export const FILTER_URL_PARAM_KEYS = {
   RUNES: 'runes',
   TIERPTS: 'tierpts',
   GEMS: 'gems',
+  NAME: 'name',
 } as const;
 
 export const SOCKET_COUNT_RANGE = { min: 1, max: 6 } as const;

@@ -1,7 +1,8 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useSelector } from 'react-redux';
 import { db } from '@/core/db';
-import { selectEnabledCategories, selectSearchText, selectOnlyHighestQuality } from '../store/socketablesSlice';
+import { selectEnabledCategories, selectSearchText, selectOnlyHighestQuality, selectExactName } from '../store/socketablesSlice';
+import { matchesExactName } from '@/core/utils/exactName';
 import type { UnifiedSocketable, SocketableCategory } from '../types';
 import { parseSearchTerms } from '@/core/utils/searchTerms';
 import { matchesSearch } from '../utils/filteringHelpers';
@@ -36,6 +37,7 @@ export function useFilteredSocketables(): readonly UnifiedSocketable[] | undefin
   const enabledCategories = useSelector(selectEnabledCategories);
   const searchText = useSelector(selectSearchText);
   const onlyHighestQuality = useSelector(selectOnlyHighestQuality);
+  const exactName = useSelector(selectExactName);
 
   // Fetch all socketables from IndexedDB
   const allSocketables = useLiveQuery(async () => {
@@ -138,6 +140,8 @@ export function useFilteredSocketables(): readonly UnifiedSocketable[] | undefin
   const searchTerms = parseSearchTerms(searchText);
 
   return allSocketables.filter((item) => {
+    if (!matchesExactName(item.name, exactName)) return false;
+
     // Check category filter
     if (!enabledCategories[item.category]) return false;
 

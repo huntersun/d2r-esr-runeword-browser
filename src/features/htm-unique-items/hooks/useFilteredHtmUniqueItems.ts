@@ -2,7 +2,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useSelector } from 'react-redux';
 import { db } from '@/core/db';
 import type { HtmUniqueItem } from '@/core/db';
-import { selectSearchText, selectMaxReqLevel, selectSelectedCategories, selectIncludeCouponItems } from '../store';
+import { selectSearchText, selectExactName, selectMaxReqLevel, selectSelectedCategories, selectIncludeCouponItems } from '../store';
+import { matchesExactName } from '@/core/utils/exactName';
 import { parseSearchTerms } from '@/core/utils/searchTerms';
 import { matchesCategory } from '@/core/store/categorySelection';
 
@@ -15,6 +16,7 @@ export function useFilteredHtmUniqueItems(): readonly HtmUniqueItem[] | undefine
   const maxReqLevel = useSelector(selectMaxReqLevel);
   const selectedCategories = useSelector(selectSelectedCategories);
   const includeCouponItems = useSelector(selectIncludeCouponItems);
+  const exactName = useSelector(selectExactName);
 
   const allItems = useLiveQuery(() => db.htmUniqueItems.toArray());
 
@@ -25,6 +27,7 @@ export function useFilteredHtmUniqueItems(): readonly HtmUniqueItem[] | undefine
   const searchTerms = parseSearchTerms(searchText);
 
   const filtered = allItems
+    .filter((item) => matchesExactName(item.name, exactName))
     .filter((item) => includeCouponItems || !item.isAncientCoupon)
     .filter((item) => maxReqLevel === null || item.reqLevel <= maxReqLevel)
     .filter((item) => matchesCategory(item.category, selectedCategories))

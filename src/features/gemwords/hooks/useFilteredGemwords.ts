@@ -9,7 +9,9 @@ import {
   selectMaxReqLevel,
   selectSelectedItemTypes,
   selectSelectedGems,
+  selectExactName,
 } from '../store/gemwordsSlice';
+import { matchesExactName } from '@/core/utils/exactName';
 import {
   matchesGemSelection,
   matchesGemwordItemTypes,
@@ -24,6 +26,7 @@ export function useFilteredGemwords(): readonly Gemword[] | undefined {
   const maxReqLevel = useSelector(selectMaxReqLevel);
   const selectedItemTypes = useSelector(selectSelectedItemTypes);
   const selectedGems = useSelector(selectSelectedGems);
+  const exactName = useSelector(selectExactName);
 
   const gemwords = useLiveQuery(() => db.gemwords.orderBy('sortKey').toArray(), []);
 
@@ -32,6 +35,7 @@ export function useFilteredGemwords(): readonly Gemword[] | undefined {
   const searchTerms = parseSearchTerms(searchText);
 
   return gemwords.filter((gemword) => {
+    if (!matchesExactName(gemword.name, exactName)) return false;
     if (!matchesGemwordSearch(gemword, searchTerms)) return false;
     if (!matchesGemwordSockets(gemword, socketCount)) return false;
     if (!matchesGemwordMaxReqLevel(gemword, maxReqLevel)) return false;

@@ -57,6 +57,14 @@ Each socketable displays:
   - Weapons/Gloves
   - Helms/Boots
   - Armor/Shields/Belts
+- Source line (see below)
+
+### Source Line
+The screen loads the game-data `sources` bundle once (`useItemSources()`) and passes the name index to every card.
+Each card shows `Source: <labels joined by " · ">` (e.g. "Cube · Drops (random) · Buy: Akara") via the shared
+`ItemSourceLine` component, matching the socketable name against `misc` entries (`findItemSource(index, name, 'misc')`).
+Nothing is shown while the bundle loads, when it fails, or when the name is not in it. The help icon explains that
+the line is derived from the ESR game files and may be incomplete. See GAME-DATA.md → Sources.
 
 ### Order
 Fixed order: items displayed by category (Gems -> ESR -> LoD -> Kanji -> Crystals), then by tier/name within category. No user sorting options.

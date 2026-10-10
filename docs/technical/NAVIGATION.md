@@ -6,13 +6,13 @@ Documentation for routing, layout, and navigation patterns.
 
 | Path | Screen | Description |
 |------|--------|-------------|
-| `/` | RunewordsScreen | Home page - browse and filter runewords |
+| `/` | RunewordsScreen | Home page - browse and filter runewords, `?name=<Name>` focus |
 | `/guide` | GuideSpineScreen | New-player guide: "Start here" journey spine, note search, "I found something" row |
 | `/guide/:slug` | GuideNoteScreen | One guide note; unknown slug shows a "Note not found" block linking back to `/guide` |
-| `/gemwords` | GemwordsScreen | Gem-based socket recipes with filters |
-| `/socketables` | SocketablesScreen | All socketables with category filters & search |
-| `/uniques` | HtmUniqueItemsScreen | Unique items with category & coupon filters |
-| `/mythicals` | MythicalUniquesScreen | Mythical unique items |
+| `/gemwords` | GemwordsScreen | Gem-based socket recipes with filters, `?name=<Name>` focus |
+| `/socketables` | SocketablesScreen | All socketables with category filters & search, `?name=<Name>` focus |
+| `/uniques` | HtmUniqueItemsScreen | Unique items with category & coupon filters, `?name=<Name>` focus |
+| `/mythicals` | MythicalUniquesScreen | Mythical unique items, `?name=<Name>` focus |
 | `/ascendancies` | AscendanciesScreen | Ascendancies with their tier bonuses |
 | `/game-data` | GameDataLayout | Game-file data section; index redirects to `bases` |
 | `/game-data/bases` | BasesScreen | Base items browser (txt game files) |
@@ -25,6 +25,13 @@ Documentation for routing, layout, and navigation patterns.
 | `/build/:buildId` | BuildDetailScreen | Build detail page |
 | `/user/:userId` | UserProfileScreen | A user's public builds |
 | `*` | NotFoundScreen | Catch-all for unknown URLs, with a link back home |
+
+**`?name=<Name>` focus** (runewords, gemwords, socketables, uniques, mythicals): shows only the items whose name equals `<Name>`
+(case-insensitive, curly/straight apostrophes alike; all variants of a runeword), unlike `?search=`, which also matches affix text.
+It is read once on mount like the other filter params (the URL is then cleaned), resets the screen's other filters to their
+defaults (params given alongside still apply; socketables also show all qualities), is not changed by the search box, and is
+shown as a dismissible "Showing: <Name> ×" chip that scrolls into view. Copy Link keeps it. Guide `rw:`/`gw:`/`unique:`/
+`mythical:`/`socketable:` links use it.
 
 ## App Shell Layout
 

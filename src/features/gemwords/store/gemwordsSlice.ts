@@ -8,6 +8,7 @@ interface GemwordsState {
   readonly socketCount: number | null;
   readonly maxReqLevel: number | null;
   readonly selectedItemTypes: Record<string, boolean>;
+  readonly exactName: string | null;
   readonly selectedGems: Record<string, boolean>;
 }
 
@@ -49,6 +50,7 @@ const gemwordsSlice = createSlice({
 
 export const {
   setSearchText,
+  setExactName,
   setSocketCount,
   setMaxReqLevel,
   toggleItemType,
@@ -67,7 +69,7 @@ export default gemwordsSlice.reducer;
 
 const selectGemwordsState = (state: RootState) => state.gemwords;
 
-export const { selectSearchText, selectSocketCount, selectMaxReqLevel, selectSelectedItemTypes } =
+export const { selectSearchText, selectSocketCount, selectMaxReqLevel, selectSelectedItemTypes, selectExactName } =
   createItemTypeFilterSelectors(selectGemwordsState);
 
 export const selectSelectedGems = createSelector([selectGemwordsState], (gemwords) => gemwords.selectedGems);

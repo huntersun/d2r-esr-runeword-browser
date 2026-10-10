@@ -2,9 +2,13 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { MythicalUnique } from '@/core/db';
 import { ESR_BASE_URL } from '@/core/api';
+import { ItemSourceLine } from '@/features/game-data/components/ItemSourceLine';
+import type { SourceIndex } from '@/features/game-data/engine/sourceLookup';
 
 interface MythicalUniqueCardProps {
   readonly item: MythicalUnique;
+  /** Name index of the game-data sources bundle (from `useItemSources()`); omitted → no source line */
+  readonly sourceIndex?: SourceIndex | null;
 }
 
 const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
@@ -23,7 +27,7 @@ function resolveImageUrl(relativeUrl: string): string {
   return `${ESR_BASE_URL}/${relativeUrl.replace(/^\.\//, '')}`;
 }
 
-export function MythicalUniqueCard({ item }: MythicalUniqueCardProps) {
+export function MythicalUniqueCard({ item, sourceIndex }: MythicalUniqueCardProps) {
   return (
     <Card className="h-full">
       <CardHeader className="pb-0">
@@ -77,6 +81,8 @@ export function MythicalUniqueCard({ item }: MythicalUniqueCardProps) {
             </ul>
           </div>
         )}
+
+        <ItemSourceLine index={sourceIndex} name={item.name} kind="unique" />
       </CardContent>
     </Card>
   );

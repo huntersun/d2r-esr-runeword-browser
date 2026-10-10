@@ -1,6 +1,7 @@
 export {
   default as htmUniqueItemsReducer,
   setSearchText,
+  setExactName,
   setMaxReqLevel,
   toggleCategory,
   toggleGroup,
@@ -9,6 +10,7 @@ export {
   setSelectedCategories,
   setIncludeCouponItems,
   selectSearchText,
+  selectExactName,
   selectMaxReqLevel,
   selectSelectedCategories,
   selectSelectedCategoriesRaw,

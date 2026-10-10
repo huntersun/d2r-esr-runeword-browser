@@ -12,11 +12,14 @@ import { createCategorySelectionSelectors, toggleCategoryInSelection } from '@/c
 interface MythicalUniquesState {
   readonly searchText: string;
   readonly selectedCategories: readonly string[];
+  /** Exact-name focus from the `name` URL param; set only by URL init, never by the search box */
+  readonly exactName: string | null;
 }
 
 const initialState: MythicalUniquesState = {
   searchText: '',
   selectedCategories: [], // Empty = all selected
+  exactName: null,
 };
 
 const mythicalUniquesSlice = createSlice({
@@ -25,6 +28,9 @@ const mythicalUniquesSlice = createSlice({
   reducers: {
     setSearchText(state, action: PayloadAction<string>) {
       state.searchText = action.payload;
+    },
+    setExactName(state, action: PayloadAction<string | null>) {
+      state.exactName = action.payload;
     },
     toggleCategory(
       state,
@@ -48,7 +54,7 @@ const mythicalUniquesSlice = createSlice({
   },
 });
 
-export const { setSearchText, toggleCategory, selectAllCategories, deselectAllCategories, setSelectedCategories } =
+export const { setSearchText, setExactName, toggleCategory, selectAllCategories, deselectAllCategories, setSelectedCategories } =
   mythicalUniquesSlice.actions;
 export default mythicalUniquesSlice.reducer;
 
@@ -56,6 +62,8 @@ export default mythicalUniquesSlice.reducer;
 const selectMythicalUniquesState = (state: RootState) => state.mythicalUniques;
 
 export const selectSearchText = createSelector([selectMythicalUniquesState], (s) => s.searchText);
+
+export const selectExactName = createSelector([selectMythicalUniquesState], (s) => s.exactName);
 
 export const selectSelectedCategoriesRaw = createSelector([selectMythicalUniquesState], (s) => s.selectedCategories);
 

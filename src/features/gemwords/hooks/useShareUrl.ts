@@ -6,6 +6,7 @@ import {
   selectMaxReqLevel,
   selectSelectedItemTypes,
   selectSelectedGems,
+  selectExactName,
 } from '../store/gemwordsSlice';
 
 /**
@@ -18,11 +19,13 @@ export function useShareUrl(): () => string {
   const maxReqLevel = useSelector(selectMaxReqLevel);
   const selectedItemTypes = useSelector(selectSelectedItemTypes);
   const selectedGems = useSelector(selectSelectedGems);
+  const exactName = useSelector(selectExactName);
 
   return () => {
     const params = new URLSearchParams();
     appendCommonFilterParams(params, { searchText, socketCount, maxReqLevel, selectedItemTypes });
     appendSelectionParam(params, FILTER_URL_PARAM_KEYS.GEMS, selectedGems);
+    if (exactName !== null) params.set(FILTER_URL_PARAM_KEYS.NAME, exactName);
     return buildShareUrl('gemwords', params);
   };
 }

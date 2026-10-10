@@ -3,12 +3,16 @@ import { cn } from '@/lib/utils';
 import { CategoryBadge } from './CategoryBadge';
 import { getSocketableColorClass } from '../utils/socketableColors';
 import type { UnifiedSocketable } from '../types';
+import { ItemSourceLine } from '@/features/game-data/components/ItemSourceLine';
+import type { SourceIndex } from '@/features/game-data/engine/sourceLookup';
 
 interface SocketableCardProps {
   readonly socketable: UnifiedSocketable;
+  /** Name index of the game-data sources bundle (from `useItemSources()`); omitted → no source line */
+  readonly sourceIndex?: SourceIndex | null;
 }
 
-export function SocketableCard({ socketable }: SocketableCardProps) {
+export function SocketableCard({ socketable, sourceIndex }: SocketableCardProps) {
   const { name, category, color, reqLevel, bonuses, points } = socketable;
 
   // Get theme-aware color class for the name
@@ -62,6 +66,8 @@ export function SocketableCard({ socketable }: SocketableCardProps) {
             </ul>
           </div>
         )}
+
+        <ItemSourceLine index={sourceIndex} name={name} kind="misc" />
       </CardContent>
     </Card>
   );

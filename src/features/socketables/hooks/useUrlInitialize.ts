@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { FILTER_URL_PARAM_KEYS, decodeSelectionParam } from '@/core/utils/filterUrlParams';
+import { parseExactNameParam } from '@/core/utils/exactName';
 import { initializeFromUrl, SOCKETABLE_CATEGORIES } from '../store/socketablesSlice';
 
 export const SOCKETABLE_URL_PARAM_KEYS = {
@@ -29,15 +30,18 @@ export function useUrlInitialize(): void {
     const urlSearch = searchParams.get(FILTER_URL_PARAM_KEYS.SEARCH);
     const urlCategories = searchParams.get(SOCKETABLE_URL_PARAM_KEYS.CATEGORIES);
     const urlOnlyHighest = searchParams.get(SOCKETABLE_URL_PARAM_KEYS.ONLY_HIGHEST);
+    const exactName = parseExactNameParam(searchParams.get(FILTER_URL_PARAM_KEYS.NAME));
 
-    const hasUrlParams = urlSearch !== null || urlCategories !== null || urlOnlyHighest !== null;
+    const hasUrlParams = urlSearch !== null || urlCategories !== null || urlOnlyHighest !== null || exactName !== null;
 
     if (hasUrlParams) {
       dispatch(
         initializeFromUrl({
           searchText: urlSearch ?? '',
           enabledCategories: decodeSelectionParam(SOCKETABLE_CATEGORIES, urlCategories),
-          onlyHighestQuality: urlOnlyHighest !== null ? urlOnlyHighest !== 'false' : undefined,
+          // A name focus shows lower gem/crystal qualities too, unless the URL says otherwise
+          onlyHighestQuality: urlOnlyHighest !== null ? urlOnlyHighest !== 'false' : exactName !== null ? false : undefined,
+          exactName,
         })
       );
 

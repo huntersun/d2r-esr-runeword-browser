@@ -14,6 +14,8 @@ interface HtmUniqueItemsState {
   readonly maxReqLevel: number | null;
   readonly selectedCategories: readonly string[];
   readonly includeCouponItems: boolean;
+  /** Exact-name focus from the `name` URL param; set only by URL init, never by the search box */
+  readonly exactName: string | null;
 }
 
 const initialState: HtmUniqueItemsState = {
@@ -21,6 +23,7 @@ const initialState: HtmUniqueItemsState = {
   maxReqLevel: null,
   selectedCategories: [], // Empty = all selected
   includeCouponItems: true,
+  exactName: null,
 };
 
 const htmUniqueItemsSlice = createSlice({
@@ -29,6 +32,9 @@ const htmUniqueItemsSlice = createSlice({
   reducers: {
     setSearchText(state, action: PayloadAction<string>) {
       state.searchText = action.payload;
+    },
+    setExactName(state, action: PayloadAction<string | null>) {
+      state.exactName = action.payload;
     },
     setMaxReqLevel(state, action: PayloadAction<number | null>) {
       state.maxReqLevel = action.payload;
@@ -71,6 +77,7 @@ const htmUniqueItemsSlice = createSlice({
 
 export const {
   setSearchText,
+  setExactName,
   setMaxReqLevel,
   toggleCategory,
   toggleGroup,
@@ -85,6 +92,8 @@ export default htmUniqueItemsSlice.reducer;
 const selectHtmUniqueItemsState = (state: RootState) => state.htmUniqueItems;
 
 export const selectSearchText = createSelector([selectHtmUniqueItemsState], (s) => s.searchText);
+
+export const selectExactName = createSelector([selectHtmUniqueItemsState], (s) => s.exactName);
 
 export const selectMaxReqLevel = createSelector([selectHtmUniqueItemsState], (s) => s.maxReqLevel);
 

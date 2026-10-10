@@ -2,6 +2,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FavoriteButton } from '@/core/components/FavoriteButton';
 import type { HtmUniqueItem } from '@/core/db';
+import { ItemSourceLine } from '@/features/game-data/components/ItemSourceLine';
+import type { SourceIndex } from '@/features/game-data/engine/sourceLookup';
 
 interface HtmUniqueItemCardProps {
   readonly item: HtmUniqueItem;
@@ -9,6 +11,8 @@ interface HtmUniqueItemCardProps {
   readonly favoriteCount?: number;
   readonly favoritePending?: boolean;
   readonly onToggleFavorite?: (item: HtmUniqueItem) => void;
+  /** Name index of the game-data sources bundle (from `useItemSources()`); omitted → no source line */
+  readonly sourceIndex?: SourceIndex | null;
 }
 
 export function HtmUniqueItemCard({
@@ -17,6 +21,7 @@ export function HtmUniqueItemCard({
   favoriteCount = 0,
   favoritePending = false,
   onToggleFavorite,
+  sourceIndex,
 }: HtmUniqueItemCardProps) {
   return (
     <Card className="h-full">
@@ -61,6 +66,8 @@ export function HtmUniqueItemCard({
 
         {/* Notes (rare annotation from the source "Notes" column) */}
         {item.notes && <p className="border-t pt-2 text-center text-sm text-muted-foreground">{item.notes}</p>}
+
+        <ItemSourceLine index={sourceIndex} name={item.name} kind="unique" />
       </CardContent>
     </Card>
   );

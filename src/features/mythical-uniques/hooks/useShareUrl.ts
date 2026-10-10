@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
 import { FILTER_URL_PARAM_KEYS, appendCategoryListParam, buildShareUrl } from '@/core/utils/filterUrlParams';
-import { selectSearchText, selectSelectedCategoriesRaw } from '../store';
+import { selectSearchText, selectExactName, selectSelectedCategoriesRaw } from '../store';
 import { MYTHICAL_URL_PARAM_KEYS } from './useUrlInitialize';
 
 /**
@@ -10,6 +10,7 @@ import { MYTHICAL_URL_PARAM_KEYS } from './useUrlInitialize';
 export function useShareUrl(): () => string {
   const searchText = useSelector(selectSearchText);
   const selectedCategories = useSelector(selectSelectedCategoriesRaw);
+  const exactName = useSelector(selectExactName);
 
   return () => {
     const params = new URLSearchParams();
@@ -17,6 +18,9 @@ export function useShareUrl(): () => string {
       params.set(FILTER_URL_PARAM_KEYS.SEARCH, searchText);
     }
     appendCategoryListParam(params, MYTHICAL_URL_PARAM_KEYS.CATS, selectedCategories);
+    if (exactName !== null) {
+      params.set(FILTER_URL_PARAM_KEYS.NAME, exactName);
+    }
     return buildShareUrl('mythicals', params);
   };
 }
