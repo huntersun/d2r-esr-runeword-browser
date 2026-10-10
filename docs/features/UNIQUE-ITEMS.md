@@ -35,18 +35,18 @@ category header used `colspan="3"`. The parser accepts both layouts (it matches 
 type HtmUniqueItemPage = 'weapons' | 'armors' | 'other';
 
 interface HtmUniqueItem {
-  readonly id?: number;           // Auto-increment primary key
-  readonly name: string;          // "Titan's Revenge", "Windforce"
-  readonly baseItem: string;      // "Ceremonial Javelin", "Hydra Bow"
-  readonly baseItemCode: string;  // Item code for resolution
+  readonly id?: number; // Auto-increment primary key
+  readonly name: string; // "Titan's Revenge", "Windforce"
+  readonly baseItem: string; // "Ceremonial Javelin", "Hydra Bow"
+  readonly baseItemCode: string; // Item code for resolution
   readonly page: HtmUniqueItemPage; // Which page it came from
-  readonly category: string;      // "Amazon Javelin", "Bow", etc.
-  readonly itemLevel: number;     // Item level
-  readonly reqLevel: number;      // Required level
+  readonly category: string; // "Amazon Javelin", "Bow", etc.
+  readonly itemLevel: number; // Item level
+  readonly reqLevel: number; // Required level
   readonly properties: readonly string[]; // Human-readable property strings
   readonly isAncientCoupon: boolean; // True if coupon-only item
-  readonly gambleItem: string;    // Gamble item identifier
-  readonly notes: string;         // "Notes" column (ESR 3.12+), e.g. "Blessed Edge Variant"; '' for most items
+  readonly gambleItem: string; // Gamble item identifier
+  readonly notes: string; // "Notes" column (ESR 3.12+), e.g. "Blessed Edge Variant"; '' for most items
 }
 ```
 
@@ -59,24 +59,24 @@ vast majority of items (16 of ~1031 items carry a note in ESR 3.12) and is only 
 
 Categories are organized into groups defined in `src/features/htm-unique-items/constants/htmCategoryGroups.ts`:
 
-| Group | Label | Example Categories |
-|-------|-------|--------------------|
-| `missile-weapons` | Missile Weapons | Bow, Crossbow, Javelin, Throwing Knife, etc. |
-| `class-weapons` | Class Specific | Amazon Bow, Assassin 2H Katana, Orb, etc. |
-| `weapons` | Weapons | Axe, Sword, Mace, Polearm, Staff, etc. |
-| `armors` | Armors | Belt, Body Armor, Boots, Helm, Shield, etc. |
-| `class-armors` | Class Specific | Auric Shields, Pelt, Spirit Crown, etc. |
-| `rings` | Rings | Ring, Ama Ring, Bar Ring, Coupon Rings, etc. |
-| `amulets` | Amulets | Amulet, Ama Amulet, Coupon Amulets, etc. |
-| `charms` | Charms | Grand Charm, Large Charm, Odd Charm, Small Charm |
-| `jewels` | Jewels | Jewel |
+| Group             | Label           | Example Categories                               |
+| ----------------- | --------------- | ------------------------------------------------ |
+| `missile-weapons` | Missile Weapons | Bow, Crossbow, Javelin, Throwing Knife, etc.     |
+| `class-weapons`   | Class Specific  | Amazon Bow, Assassin 2H Katana, Orb, etc.        |
+| `weapons`         | Weapons         | Axe, Sword, Mace, Polearm, Staff, etc.           |
+| `armors`          | Armors          | Belt, Body Armor, Boots, Helm, Shield, etc.      |
+| `class-armors`    | Class Specific  | Auric Shields, Pelt, Spirit Crown, etc.          |
+| `rings`           | Rings           | Ring, Ama Ring, Bar Ring, Coupon Rings, etc.     |
+| `amulets`         | Amulets         | Amulet, Ama Amulet, Coupon Amulets, etc.         |
+| `charms`          | Charms          | Grand Charm, Large Charm, Odd Charm, Small Charm |
+| `jewels`          | Jewels          | Jewel                                            |
 
 Any new category not in the known list is placed in a "New" group so that newly added categories are never silently hidden.
 
 ```typescript
 interface HtmFilterGroup {
-  readonly id: string;           // 'weapons', 'rings', etc.
-  readonly label: string;        // 'Weapons', 'Rings', etc.
+  readonly id: string; // 'weapons', 'rings', etc.
+  readonly label: string; // 'Weapons', 'Rings', etc.
   readonly categories: readonly string[];
 }
 ```
@@ -84,20 +84,24 @@ interface HtmFilterGroup {
 ## Filters
 
 ### Text Search
+
 - Searches item name, base item, category, properties, and notes
 - AND logic: all words must match
 - Supports quoted phrases: `"exact phrase"`
 
 ### Max Required Level
+
 - Number input to cap the required level of shown items
 
 ### Category Filters
+
 - Grouped checkboxes organized by filter groups
 - Group-level toggle (all/none within a group)
 - "All" / "None" buttons for selecting/deselecting all categories
 - `__none__` sentinel value represents "no categories selected"
 
 ### Ancient Coupon Toggle
+
 - `includeCouponItems` (default: true)
 - When disabled, hides items marked as `isAncientCoupon: true`
 
@@ -107,7 +111,7 @@ interface HtmFilterGroup {
 interface HtmUniqueItemsState {
   readonly searchText: string;
   readonly maxReqLevel: number | null;
-  readonly selectedCategories: readonly string[];  // Empty = all selected
+  readonly selectedCategories: readonly string[]; // Empty = all selected
   readonly includeCouponItems: boolean;
 }
 ```
@@ -144,7 +148,7 @@ in the bundle, so the base item is not used to disambiguate. See GAME-DATA.md â†
 Builds filter groups from the available categories in IndexedDB:
 
 ```typescript
-function useCategoryFilters(): readonly HtmFilterGroup[] | undefined
+function useCategoryFilters(): readonly HtmFilterGroup[] | undefined;
 ```
 
 ### useFilteredHtmUniqueItems
@@ -152,7 +156,7 @@ function useCategoryFilters(): readonly HtmFilterGroup[] | undefined
 Returns filtered and sorted unique items based on current Redux state:
 
 ```typescript
-function useFilteredHtmUniqueItems(): readonly HtmUniqueItem[] | undefined
+function useFilteredHtmUniqueItems(): readonly HtmUniqueItem[] | undefined;
 ```
 
 ### useShareUrl / useUrlInitialize

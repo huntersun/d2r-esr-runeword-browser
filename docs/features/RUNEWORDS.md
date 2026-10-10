@@ -12,12 +12,14 @@ The primary feature - browse and filter all Eastern Sun Resurrected runewords.
 ## Filters
 
 ### Text Search
+
 - Searches runeword name + affix text
 - Split by spaces, trimmed, AND logic
 - Supports quoted phrases: `"exact phrase"`
 - Example: `resist life` matches runewords with both "resist" AND "life"
 
 ### Socket Count
+
 - Single-digit number input (1-6)
 - Default: empty (shows all runewords)
 - If set: only runewords that can be made with that socket count
@@ -25,16 +27,19 @@ The primary feature - browse and filter all Eastern Sun Resurrected runewords.
   (shown as "3-6 Socket") match any count in `[sockets, socketsMax]`
 
 ### Max Required Level
+
 - Number input to cap the required level of shown runewords
 - Default: empty (no cap)
 
 ### Item Type Filter
+
 - Data-driven checkboxes organized into categories (Weapons, Armors, Shields, etc.)
 - Group-level toggles (`toggleItemTypeGroup`) to select/deselect entire categories
 - All checked by default
 - Runeword shown if its `allowedItems` matches ANY checked type
 
 ### Rune Checkbox Filter
+
 - All runes (ESR, LoD, Kanji) in a tiered list
 - Rune names displayed with colors
 - **3-way tier checkbox**: all selected / some selected / none selected
@@ -44,6 +49,7 @@ The primary feature - browse and filter all Eastern Sun Resurrected runewords.
 - **Logic**: Runeword hidden if ANY of its runes are unchecked (strict)
 
 ### Tier Points Filter
+
 - Filter by maximum tier points per rune category (ESR/LoD)
 - "Clear All" button (`clearAllTierPoints`) to reset all tier point filters
 
@@ -60,24 +66,25 @@ interface TierPointTotal {
 
 interface Runeword {
   readonly name: string;
-  readonly variant: number;                     // 1, 2, 3... for multi-variant runewords
-  readonly sockets: number;                     // Base/minimum socket count (= ingredients + required jewels)
-  readonly socketsMax?: number;                 // Only set when the source shows a range, e.g. "(2-3 Socket)"
-  readonly reqLevel: number;                    // Highest required level among all runes and gems
-  readonly sortKey: number;                     // Pre-calculated sort key
-  readonly runes: readonly string[];            // Rune names in order
-  readonly gems: readonly string[];             // Gem names (e.g. ["Perfect Topaz"])
-  readonly ingredients: readonly string[];      // All items in original order (runes + gems interleaved)
+  readonly variant: number; // 1, 2, 3... for multi-variant runewords
+  readonly sockets: number; // Base/minimum socket count (= ingredients + required jewels)
+  readonly socketsMax?: number; // Only set when the source shows a range, e.g. "(2-3 Socket)"
+  readonly reqLevel: number; // Highest required level among all runes and gems
+  readonly sortKey: number; // Pre-calculated sort key
+  readonly runes: readonly string[]; // Rune names in order
+  readonly gems: readonly string[]; // Gem names (e.g. ["Perfect Topaz"])
+  readonly ingredients: readonly string[]; // All items in original order (runes + gems interleaved)
   readonly allowedItems: readonly string[];
-  readonly excludedItems: readonly string[];    // Items excluded from this variant
-  readonly affixes: readonly Affix[];           // Backward compat: bonuses from first non-empty column
-  readonly columnAffixes: SocketableBonuses;    // Per-column bonuses (weapon/helm/armor)
+  readonly excludedItems: readonly string[]; // Items excluded from this variant
+  readonly affixes: readonly Affix[]; // Backward compat: bonuses from first non-empty column
+  readonly columnAffixes: SocketableBonuses; // Per-column bonuses (weapon/helm/armor)
   readonly tierPointTotals: readonly TierPointTotal[];
-  readonly jewelInfo?: string;                  // Jewel info, e.g. "(0-3) Jewels" (optional) or "(2) Jewels" (required)
+  readonly jewelInfo?: string; // Jewel info, e.g. "(0-3) Jewels" (optional) or "(2) Jewels" (required)
 }
 ```
 
 **Key model details:**
+
 - **Compound primary key**: `[name+variant]` - some runewords have multiple variants with different recipes
 - **gems**: Runewords can require gems in addition to runes (added in v1.4.0)
 - **ingredients**: The original order of runes + gems interleaved in the recipe
@@ -108,7 +115,7 @@ interface RunewordsState {
   readonly socketCount: number | null;
   readonly maxReqLevel: number | null;
   readonly selectedItemTypes: Record<string, boolean>;
-  readonly selectedRunes: Record<string, boolean>;  // "category:runeName" → checked
+  readonly selectedRunes: Record<string, boolean>; // "category:runeName" → checked
   readonly maxTierPoints: Record<string, number | null>;
 }
 ```

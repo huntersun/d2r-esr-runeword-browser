@@ -6,13 +6,13 @@ The project uses [Vitest](https://vitest.dev/) with native ESM support and Vite 
 
 ## Tech Stack
 
-| Package | Purpose |
-|---------|---------|
-| `vitest` | Test runner and assertions |
-| `@vitest/ui` | Visual UI for interactive testing |
-| `@vitest/coverage-v8` | Code coverage |
-| `jsdom` | DOM environment |
-| `fake-indexeddb` | IndexedDB mock |
+| Package               | Purpose                           |
+| --------------------- | --------------------------------- |
+| `vitest`              | Test runner and assertions        |
+| `@vitest/ui`          | Visual UI for interactive testing |
+| `@vitest/coverage-v8` | Code coverage                     |
+| `jsdom`               | DOM environment                   |
+| `fake-indexeddb`      | IndexedDB mock                    |
 
 ## Commands
 
@@ -81,11 +81,13 @@ beforeEach(async () => {
 Integration tests use real HTML files fetched from the ESR documentation site. These files are stored in `test-fixtures/` (gitignored).
 
 **Setup (required once after checkout):**
+
 ```bash
 npm run test:fixtures
 ```
 
 This downloads:
+
 - `gems.htm` - Socketables data (gems, runes, crystals)
 - `gemwords.htm` - Gemword definitions
 - `runewords.htm` - Runeword definitions
@@ -97,6 +99,7 @@ This downloads:
 - `ascendancies.htm` - Ascendancies and their tier bonuses
 
 **Loading fixtures in tests:**
+
 ```typescript
 const html = readFileSync(resolve(__dirname, '../../../test-fixtures/gems.htm'), 'utf-8');
 ```
@@ -108,12 +111,14 @@ Use `async/await` for database operations and promises.
 ## Best Practices
 
 **Do:**
+
 - Colocate tests with source files
 - Clear database in `beforeEach`
 - Use descriptive test names
 - Test expected quantities and edge cases
 
 **Don't:**
+
 - Share state between tests
 - Test implementation details
 - Mock unnecessarily
@@ -126,4 +131,4 @@ Use `async/await` for database operations and promises.
 
 ---
 
-*See [CODING-GUIDELINES.md](./CODING-GUIDELINES.md) for general conventions.*
+_See [CODING-GUIDELINES.md](./CODING-GUIDELINES.md) for general conventions._

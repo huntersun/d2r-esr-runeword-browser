@@ -3,6 +3,7 @@
 ## Component Organization
 
 ### Base Components (shadcn/ui)
+
 Location: `src/components/ui/`
 
 Foundational components installed via shadcn/ui CLI, styled with Tailwind CSS:
@@ -22,6 +23,7 @@ Foundational components installed via shadcn/ui CLI, styled with Tailwind CSS:
 - `textarea.tsx` - Multi-line text inputs
 
 ### Shared Components
+
 Location: `src/components/`
 
 Reusable components used across features:
@@ -32,6 +34,7 @@ Reusable components used across features:
 - `SearchHelpButton.tsx` - Search syntax help (quoted phrases, AND logic)
 
 ### Feature Components
+
 Location: `src/features/[feature-name]/components/`
 
 Feature-specific components that build on top of base components. These are not reusable across features.
@@ -39,6 +42,7 @@ Feature-specific components that build on top of base components. These are not 
 ## Theming
 
 ### Two Themes
+
 1. **Dark (default)** - Primary theme, Diablo 2 inspired
 2. **Light** - Warm, yellowish-brown tones (not pure white)
 
@@ -82,16 +86,7 @@ Optional toggle for thematic font rendering applied via a `.diablo-font` CSS cla
 import { cn } from '@/lib/utils';
 
 function Button({ variant, className, ...props }) {
-  return (
-    <button
-      className={cn(
-        'base-styles',
-        variant === 'primary' && 'primary-styles',
-        className
-      )}
-      {...props}
-    />
-  );
+  return <button className={cn('base-styles', variant === 'primary' && 'primary-styles', className)} {...props} />;
 }
 ```
 
@@ -123,6 +118,7 @@ Prefer controlled components where the parent manages state.
 ## Accessibility
 
 shadcn/ui components are built on Radix UI primitives, which provide:
+
 - Keyboard navigation
 - Focus management
 - ARIA attributes

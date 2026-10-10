@@ -158,6 +158,9 @@ npm run game-data:update -- --esr <dir>        # use another clone directory
 6. Prints a summary: version/tag/commit before → after, changed counts (incl. warnings), generator warnings, step
    results and changed files under `public/game-data/`, then the commit command to run. It never runs `git add`/`commit`.
 
+**After an ESR release** the `/esr-update` Claude Code skill (`.claude/skills/esr-update/SKILL.md`) runs this command
+plus the release diff, explains the count changes, proposes guide note edits and asks the owner before committing.
+
 Manual fallback:
 
 ```bash
@@ -179,6 +182,36 @@ git -C Eastern_Sun_Resurrected sparse-checkout set --no-cone /Eastern_Sun_Resurr
 ```
 
 (`docs` is only needed for the clone-dependent name oracle test.)
+
+### Release diff
+
+`npm run esr:diff` (`scripts/esr-release-diff.ts`) prints what changed in the ESR repository between the revision the
+committed game data was built from and the clone's HEAD. It is read-only and the input for reviewing a release.
+
+```bash
+npm run esr:diff                                 # from esrCommit of manifest.json in git HEAD → clone HEAD
+npm run esr:diff -- --from 3.2.10 --to 3.2.12    # any revisions (tags, commits)
+npm run esr:diff -- --json                       # the same facts as one JSON object (sections as keys)
+npm run esr:diff -- --esr <dir>                  # another clone directory
+```
+
+`--from` defaults to the `esrCommit` of `public/game-data/manifest.json` **as committed in HEAD** (after
+`game-data:update` the working-tree manifest already holds the new commit), falling back to the working-tree file.
+When `--from` is missing from a shallow clone the script tries `git fetch --depth 1 origin <rev>` once and exits 2 if
+that fails. Sections, in order:
+
+1. **Patch notes**: added `patchnotes/*.md` in full, a unified diff for changed ones.
+2. **Changelog page**: new entries of `docs/changelogs.html` (version, date, label, Google Doc link).
+3. **Game tables**: per changed `excel/*.txt` (`excel/base/` is a duplicate and only counted): row counts before →
+   after, added/removed/changed rows (rows paired by first column + occurrence), added/removed row keys (20 shown),
+   column changes.
+4. **Strings**: added/removed/changed keys per file and up to 20 `Key: old → new` enUS changes.
+5. **Official docs pages**: byte-size delta per changed `docs/` file, hand-written pages flagged `[HAND-WRITTEN]`.
+6. **Launcher configs**: changed `d2rloader/` files, with a unified diff for text files up to 200 lines.
+7. **Everything else**: the remaining changed files with line counts.
+
+Exit codes: 0 (also when nothing changed), 1 (missing clone, bad `--to`, git failure), 2 (`--from` not available).
+Helpers and tests: `scripts/lib/releaseDiff.ts`, `scripts/lib/releaseDiff.test.ts`.
 
 ### Bumping the ESR version (manual)
 

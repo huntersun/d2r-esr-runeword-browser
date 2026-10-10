@@ -62,6 +62,7 @@ src/
 Each feature is self-contained. **Create subfolders only as needed**, not upfront.
 
 ### Minimum Feature Structure
+
 ```
 features/[feature]/
 ├── store/
@@ -70,6 +71,7 @@ features/[feature]/
 ```
 
 ### Full Feature Structure (as it grows)
+
 ```
 features/runewords/
 ├── components/              # Feature-specific UI components
@@ -145,12 +147,12 @@ Details: [GAME-DATA.md](../features/GAME-DATA.md).
 
 ## Core vs Features
 
-| Location | Contains | Example |
-|----------|----------|---------|
-| `core/` | App infrastructure, singletons | Store setup, DB instance, API config, router |
-| `core/utils/` | Shared stateless utilities | Version utils, string helpers |
-| `features/` | Domain-specific modules | Runewords, Socketables, Unique Items, Settings |
-| `components/ui/` | Shared UI components | Buttons, cards, badges (shadcn/ui) |
+| Location         | Contains                       | Example                                        |
+| ---------------- | ------------------------------ | ---------------------------------------------- |
+| `core/`          | App infrastructure, singletons | Store setup, DB instance, API config, router   |
+| `core/utils/`    | Shared stateless utilities     | Version utils, string helpers                  |
+| `features/`      | Domain-specific modules        | Runewords, Socketables, Unique Items, Settings |
+| `components/ui/` | Shared UI components           | Buttons, cards, badges (shadcn/ui)             |
 
 ## Naming Conventions
 

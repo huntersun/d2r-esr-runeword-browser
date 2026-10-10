@@ -9,6 +9,7 @@ D2R ESR Runeword Browser - A React SPA for browsing Diablo 2 Resurrected runewor
 ## Documentation
 
 See [docs/README.md](./docs/README.md) for comprehensive project documentation including:
+
 - Feature specifications (Core Data, Runewords, Socketables, Unique Items)
 - Technical documentation (Architecture, Data Models, Navigation, UI Components)
 - Coding guidelines and conventions
@@ -35,12 +36,15 @@ npm run compiler:health  # Run React Compiler health check
 npm run game-data:generate  # Regenerate the static game-data bundles
 npm run game-data:check     # Exit 1 if the committed bundles are stale
 npm run game-data:update    # After an ESR release: clone/pull ESR, generate, fetch fixtures, run game-data tests + check
+npm run esr:diff            # What changed in ESR since the committed game data (patch notes, tables, strings, docs, launcher); --json, --from/--to <rev>
 
 # Testing
 npm run test:fixtures    # Fetch test fixtures (required once after checkout)
 npm run test             # Run tests once (CI mode)
 npm run test:coverage    # Generate code coverage report
 ```
+
+- After an ESR release, run the `/esr-update` skill (`.claude/skills/esr-update/SKILL.md`): it runs `game-data:update` and the release diff, reviews the bundles, proposes guide note edits and asks before committing.
 
 ## React Compiler
 
@@ -66,5 +70,6 @@ The project uses React Compiler for automatic memoization. Do NOT use manual `us
 ## Versioning
 
 Uses `commit-and-tag-version` for semantic versioning based on conventional commits.
+
 - Tags use `v` prefix (e.g., v1.0.0)
 - CHANGELOG.md is auto-generated

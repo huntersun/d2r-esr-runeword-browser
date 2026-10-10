@@ -28,6 +28,7 @@
     "game-data:generate": "node scripts/generate-game-data.ts",
     "game-data:check": "node scripts/generate-game-data.ts --check",
     "game-data:update": "node scripts/update-game-data.ts",
+    "esr:diff": "node scripts/esr-release-diff.ts",
     "guide:generate": "node scripts/generate-guide.ts",
     "guide:check": "node scripts/generate-guide.ts --check",
     "guide:watch": "node scripts/generate-guide.ts --watch",

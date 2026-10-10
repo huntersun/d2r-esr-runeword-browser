@@ -11,12 +11,15 @@ This document defines coding conventions for consistency across the project. It 
 ## TypeScript
 
 ### Strict Mode
+
 The project uses strict TypeScript. Avoid:
+
 - `any` type (use `unknown` if truly unknown)
 - Non-null assertions (`!`) - use proper null checks
 - Type assertions (`as`) unless necessary
 
 ### Prefer Readonly
+
 Use `readonly` wherever possible. ESLint enforces this via `@typescript-eslint/prefer-readonly`.
 
 ```typescript
@@ -58,6 +61,7 @@ type RunewordId = string;
 ```
 
 ### Export Types
+
 Export types from a feature's `types/index.ts`:
 
 ```typescript
@@ -70,6 +74,7 @@ export type RunewordFilter = { ... };
 ## React Components
 
 ### React Compiler - No Manual Memoization
+
 The project uses React Compiler for automatic optimization. **Do not use manual memoization APIs:**
 
 ```typescript
@@ -85,17 +90,20 @@ function MyComponent() { ... }
 ```
 
 **Exceptions (when manual optimization may be needed):**
+
 - Complex computations the compiler can't analyze (rare)
 - Third-party library edge cases
 - Explicit performance tuning after profiling
 
 If you must use manual memoization, add a comment explaining why:
+
 ```typescript
 // Manual memoization needed: third-party library requires stable reference
 const stableRef = useCallback(() => externalLib.doSomething(), []);
 ```
 
 ### Function Components Only
+
 Use function components with hooks. No class components.
 
 ```typescript
@@ -111,6 +119,7 @@ const RunewordCard = ({ runeword }: RunewordCardProps) => (
 ```
 
 ### Props Interface Naming
+
 Name props interfaces as `[ComponentName]Props`:
 
 ```typescript
@@ -121,6 +130,7 @@ interface RunewordCardProps {
 ```
 
 ### Destructure Props
+
 Always destructure props in the function signature:
 
 ```typescript
@@ -132,6 +142,7 @@ function RunewordCard(props: RunewordCardProps) { ... }
 ```
 
 ### Hooks Dependencies
+
 ESLint enforces `react-hooks/exhaustive-deps` as an error. All dependencies must be specified for hooks like `useEffect`.
 
 ```typescript
@@ -147,9 +158,11 @@ Note: With React Compiler handling memoization automatically, `useMemo` and `use
 ## File Organization
 
 ### One Component Per File
+
 Each component gets its own file. Exception: tightly coupled sub-components.
 
 ### Index Files
+
 Use `index.ts` for public exports from a folder:
 
 ```typescript
@@ -159,6 +172,7 @@ export { RunewordFilters } from './RunewordFilters';
 ```
 
 ### Import Order
+
 1. React/external libraries
 2. Internal absolute imports (@/)
 3. Relative imports
@@ -173,12 +187,13 @@ import { formatStats } from './utils';
 ```
 
 ### Path Aliases
+
 Use path aliases instead of relative imports for cross-folder imports:
 
-| Alias | Path | Use for |
-|-------|------|---------|
-| `@/*` | `src/*` | All src imports (components, core, features, etc.) |
-| `@public/*` | `public/*` | Public assets |
+| Alias       | Path       | Use for                                            |
+| ----------- | ---------- | -------------------------------------------------- |
+| `@/*`       | `src/*`    | All src imports (components, core, features, etc.) |
+| `@public/*` | `public/*` | Public assets                                      |
 
 ```typescript
 // Good - use aliases for cross-folder imports
@@ -258,6 +273,7 @@ export function* runewordsSaga() {
 Use `createSelector` from reselect for memoized selectors. This prevents unnecessary re-renders when derived state hasn't changed.
 
 **Pattern:**
+
 1. Create a base selector for the slice state
 2. Derive all other selectors from the base selector using `createSelector`
 
@@ -271,21 +287,12 @@ import type { RootState } from '@/core/store';
 const selectRunewordsState = (state: RootState) => state.runewords;
 
 // Derived selectors using createSelector
-export const selectFilters = createSelector(
-  [selectRunewordsState],
-  (runewords) => runewords.filters
-);
+export const selectFilters = createSelector([selectRunewordsState], (runewords) => runewords.filters);
 
-export const selectIsLoading = createSelector(
-  [selectRunewordsState],
-  (runewords) => runewords.isLoading
-);
+export const selectIsLoading = createSelector([selectRunewordsState], (runewords) => runewords.isLoading);
 
 // Selectors can compose other selectors
-export const selectHasActiveFilters = createSelector(
-  [selectFilters],
-  (filters) => Object.keys(filters).length > 0
-);
+export const selectHasActiveFilters = createSelector([selectFilters], (filters) => Object.keys(filters).length > 0);
 
 // Selectors with multiple inputs
 export const selectFilteredCount = createSelector(
@@ -295,12 +302,14 @@ export const selectFilteredCount = createSelector(
 ```
 
 **Benefits:**
+
 - Memoization: Selectors only recompute when their input selectors return new values
 - Composability: Build complex selectors from simpler ones
 - Testability: Pure functions that are easy to test
 - Performance: Prevents unnecessary component re-renders
 
 **Avoid:**
+
 ```typescript
 // ❌ Don't create selectors inline in components
 const isLoading = useSelector((state) => state.runewords.isLoading);
@@ -309,23 +318,20 @@ const isLoading = useSelector((state) => state.runewords.isLoading);
 const selectIsLoading = (state: RootState) => state.runewords.isLoading;
 
 // ✅ Do use createSelector
-const selectIsLoading = createSelector(
-  [selectRunewordsState],
-  (runewords) => runewords.isLoading
-);
+const selectIsLoading = createSelector([selectRunewordsState], (runewords) => runewords.isLoading);
 ```
 
 ## Naming Conventions
 
-| Item | Convention | Example |
-|------|------------|---------|
-| Components | PascalCase | `RunewordCard.tsx` |
-| Hooks | camelCase, use prefix | `useRunewordSearch.ts` |
-| Utilities | camelCase | `formatStats.ts` |
-| Constants | UPPER_SNAKE_CASE | `MAX_RUNES` |
-| Types/Interfaces | PascalCase | `Runeword` |
-| Slices | camelCase + Slice | `runewordsSlice.ts` |
-| Sagas | camelCase + Saga | `buildsSaga.ts` |
+| Item             | Convention            | Example                |
+| ---------------- | --------------------- | ---------------------- |
+| Components       | PascalCase            | `RunewordCard.tsx`     |
+| Hooks            | camelCase, use prefix | `useRunewordSearch.ts` |
+| Utilities        | camelCase             | `formatStats.ts`       |
+| Constants        | UPPER_SNAKE_CASE      | `MAX_RUNES`            |
+| Types/Interfaces | PascalCase            | `Runeword`             |
+| Slices           | camelCase + Slice     | `runewordsSlice.ts`    |
+| Sagas            | camelCase + Saga      | `buildsSaga.ts`        |
 
 ## Comments
 
@@ -345,4 +351,4 @@ function parseRunewordTable(table: HTMLTableElement): Runeword[] {
 
 ---
 
-*This document will be updated as new patterns and conventions are established during development.*
+_This document will be updated as new patterns and conventions are established during development._

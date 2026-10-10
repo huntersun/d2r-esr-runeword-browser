@@ -14,8 +14,8 @@ class AppDatabase extends Dexie {
   lodRunes!: EntityTable<LodRune, 'name'>;
   kanjiRunes!: EntityTable<KanjiRune, 'name'>;
   crystals!: EntityTable<Crystal, 'name'>;
-  runewords!: Table<Runeword, [string, number]>;  // Compound key: [name, variant]
-  gemwords!: Table<Gemword, [string, number]>;    // Compound key: [name, variant]
+  runewords!: Table<Runeword, [string, number]>; // Compound key: [name, variant]
+  gemwords!: Table<Gemword, [string, number]>; // Compound key: [name, variant]
   htmUniqueItems!: EntityTable<HtmUniqueItem, 'id'>;
   mythicalUniques!: EntityTable<MythicalUnique, 'id'>;
   ascendancies!: EntityTable<Ascendancy, 'name'>;
@@ -51,136 +51,137 @@ export const db = new AppDatabase();
 
 Stores all gem data (8 types x 6 tiers = 48 items).
 
-| Column | Type | Index | Description |
-|--------|------|-------|-------------|
-| name | string | Primary | "Chipped Ruby", "Perfect Sapphire" |
-| type | GemType | Yes | "Amethyst", "Sapphire", etc. |
-| quality | GemQuality | Yes | "Chipped" -> "Perfect" |
-| color | string | Yes | Gem color |
-| reqLevel | number | No | Required level (1-35) |
-| bonuses | SocketableBonuses | No | Bonuses by item type |
+| Column   | Type              | Index   | Description                        |
+| -------- | ----------------- | ------- | ---------------------------------- |
+| name     | string            | Primary | "Chipped Ruby", "Perfect Sapphire" |
+| type     | GemType           | Yes     | "Amethyst", "Sapphire", etc.       |
+| quality  | GemQuality        | Yes     | "Chipped" -> "Perfect"             |
+| color    | string            | Yes     | Gem color                          |
+| reqLevel | number            | No      | Required level (1-35)              |
+| bonuses  | SocketableBonuses | No      | Bonuses by item type               |
 
 ### esrRunes
 
 Stores ESR-specific runes (~50 items).
 
-| Column | Type | Index | Description |
-|--------|------|-------|-------------|
-| name | string | Primary | "I Rune", "Ka Rune", "Null Rune" |
-| order | number | Yes | Order in source file (1-based) |
-| tier | number | Yes | Derived from color |
-| color | string | Yes | HTML color (determines tier) |
-| reqLevel | number | No | Required level (2-60) |
-| points | number? | No | Rune points from "(X points)" suffix |
-| bonuses | SocketableBonuses | No | Bonuses by item type |
+| Column   | Type              | Index   | Description                          |
+| -------- | ----------------- | ------- | ------------------------------------ |
+| name     | string            | Primary | "I Rune", "Ka Rune", "Null Rune"     |
+| order    | number            | Yes     | Order in source file (1-based)       |
+| tier     | number            | Yes     | Derived from color                   |
+| color    | string            | Yes     | HTML color (determines tier)         |
+| reqLevel | number            | No      | Required level (2-60)                |
+| points   | number?           | No      | Rune points from "(X points)" suffix |
+| bonuses  | SocketableBonuses | No      | Bonuses by item type                 |
 
 ### lodRunes
 
 Stores original LoD runes (35 items).
 
-| Column | Type | Index | Description |
-|--------|------|-------|-------------|
-| name | string | Primary | "El Rune" -> "Zod Rune" |
-| order | number | Yes | Sequential position (1-35) |
-| tier | number | No | 1=Low, 2=Mid, 3=High |
-| reqLevel | number | No | Required level (11-69) |
-| points | number? | No | Rune points from "(X points)" suffix |
-| bonuses | SocketableBonuses | No | Bonuses by item type |
+| Column   | Type              | Index   | Description                          |
+| -------- | ----------------- | ------- | ------------------------------------ |
+| name     | string            | Primary | "El Rune" -> "Zod Rune"              |
+| order    | number            | Yes     | Sequential position (1-35)           |
+| tier     | number            | No      | 1=Low, 2=Mid, 3=High                 |
+| reqLevel | number            | No      | Required level (11-69)               |
+| points   | number?           | No      | Rune points from "(X points)" suffix |
+| bonuses  | SocketableBonuses | No      | Bonuses by item type                 |
 
 ### kanjiRunes
 
 Stores Kanji thematic runes (~14 items).
 
-| Column | Type | Index | Description |
-|--------|------|-------|-------------|
-| name | string | Primary | "Moon Rune", "God Rune" |
-| reqLevel | number | No | All level 60 |
-| bonuses | SocketableBonuses | No | Bonuses by item type |
+| Column   | Type              | Index   | Description             |
+| -------- | ----------------- | ------- | ----------------------- |
+| name     | string            | Primary | "Moon Rune", "God Rune" |
+| reqLevel | number            | No      | All level 60            |
+| bonuses  | SocketableBonuses | No      | Bonuses by item type    |
 
 ### crystals
 
 Stores all crystals (12 types x 3 tiers = 36 items).
 
-| Column | Type | Index | Description |
-|--------|------|-------|-------------|
-| name | string | Primary | "Chipped Shadow Quartz" |
-| type | CrystalType | Yes | Base crystal type |
-| quality | CrystalQuality | Yes | "Chipped", "Flawed", "Standard" |
-| color | string | Yes | Each type has unique color |
-| reqLevel | number | No | Required level (6, 24, 42) |
-| bonuses | SocketableBonuses | No | Bonuses by item type |
+| Column   | Type              | Index   | Description                     |
+| -------- | ----------------- | ------- | ------------------------------- |
+| name     | string            | Primary | "Chipped Shadow Quartz"         |
+| type     | CrystalType       | Yes     | Base crystal type               |
+| quality  | CrystalQuality    | Yes     | "Chipped", "Flawed", "Standard" |
+| color    | string            | Yes     | Each type has unique color      |
+| reqLevel | number            | No      | Required level (6, 24, 42)      |
+| bonuses  | SocketableBonuses | No      | Bonuses by item type            |
 
 ### runewords
 
 Stores all runeword definitions.
 
-| Column | Type | Index | Description |
-|--------|------|-------|-------------|
-| [name+variant] | [string, number] | Compound PK | Primary key |
-| name | string | Yes | "Stone", "Spirit" |
-| variant | number | (part of PK) | 1, 2, 3... for multi-variant runewords |
-| sockets | number | Yes | Base/minimum socket count (= ingredients + required jewels) |
-| socketsMax | number? | No | Only when the source shows a range, e.g. "(2-3 Socket)" for optional jewels |
-| reqLevel | number | Yes | Highest req level among ingredients |
-| sortKey | number | Yes | Pre-calculated sort key |
-| runes | string[] | No | Rune names in order |
-| gems | string[] | No | Gem names in recipe |
-| ingredients | string[] | No | All items in original order |
-| allowedItems | string[] | No | "Any Armor", "Weapon" |
-| excludedItems | string[] | No | Items excluded from variant |
-| affixes | Affix[] | No | Backward compat: first non-empty column |
-| columnAffixes | SocketableBonuses | No | Per-column bonuses (weapon/helm/armor) |
-| tierPointTotals | TierPointTotal[] | No | Pre-calculated tier point totals |
-| jewelInfo | string? | No | Jewel info: optional "(0-3) Jewels" (with socketsMax) or required "(2) Jewels" |
+| Column          | Type              | Index        | Description                                                                    |
+| --------------- | ----------------- | ------------ | ------------------------------------------------------------------------------ |
+| [name+variant]  | [string, number]  | Compound PK  | Primary key                                                                    |
+| name            | string            | Yes          | "Stone", "Spirit"                                                              |
+| variant         | number            | (part of PK) | 1, 2, 3... for multi-variant runewords                                         |
+| sockets         | number            | Yes          | Base/minimum socket count (= ingredients + required jewels)                    |
+| socketsMax      | number?           | No           | Only when the source shows a range, e.g. "(2-3 Socket)" for optional jewels    |
+| reqLevel        | number            | Yes          | Highest req level among ingredients                                            |
+| sortKey         | number            | Yes          | Pre-calculated sort key                                                        |
+| runes           | string[]          | No           | Rune names in order                                                            |
+| gems            | string[]          | No           | Gem names in recipe                                                            |
+| ingredients     | string[]          | No           | All items in original order                                                    |
+| allowedItems    | string[]          | No           | "Any Armor", "Weapon"                                                          |
+| excludedItems   | string[]          | No           | Items excluded from variant                                                    |
+| affixes         | Affix[]           | No           | Backward compat: first non-empty column                                        |
+| columnAffixes   | SocketableBonuses | No           | Per-column bonuses (weapon/helm/armor)                                         |
+| tierPointTotals | TierPointTotal[]  | No           | Pre-calculated tier point totals                                               |
+| jewelInfo       | string?           | No           | Jewel info: optional "(0-3) Jewels" (with socketsMax) or required "(2) Jewels" |
 
 ### gemwords
 
 Stores all gemword definitions (gem-based socket recipes, analogous to runewords).
 
-| Column | Type | Index | Description |
-|--------|------|-------|-------------|
-| [name+variant] | [string, number] | Compound PK | Primary key |
-| name | string | Yes | "Holy", "Razor" |
-| variant | number | (part of PK) | 1, 2, 3... for multi-variant gemwords |
-| sockets | number | Yes | Socket count required |
-| reqLevel | number | Yes | Highest req level among the recipe's gems |
-| sortKey | number | Yes | Pre-calculated sort key (= reqLevel) |
-| gems | string[] | No | Gem names in recipe |
-| ingredients | string[] | No | Same as gems (model symmetry with Runeword) |
-| allowedItems | string[] | No | "Body Armor", "Any Shield" |
-| affixes | Affix[] | No | Backward compat: first non-empty column |
-| columnAffixes | SocketableBonuses | No | Per-column bonuses (weapon/helm/armor) |
-| columnBonusPools | ColumnBonusPools? | No | Per-column random bonus pools (ESR 3.2+): `{ label: "1-2 of the following:", affixes }[]` per column; undefined in data cached before it existed |
-| jewelInfo | string? | No | Optional jewel requirement, e.g. "Jewel" (America, Canada, China) |
+| Column           | Type              | Index        | Description                                                                                                                                      |
+| ---------------- | ----------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [name+variant]   | [string, number]  | Compound PK  | Primary key                                                                                                                                      |
+| name             | string            | Yes          | "Holy", "Razor"                                                                                                                                  |
+| variant          | number            | (part of PK) | 1, 2, 3... for multi-variant gemwords                                                                                                            |
+| sockets          | number            | Yes          | Socket count required                                                                                                                            |
+| reqLevel         | number            | Yes          | Highest req level among the recipe's gems                                                                                                        |
+| sortKey          | number            | Yes          | Pre-calculated sort key (= reqLevel)                                                                                                             |
+| gems             | string[]          | No           | Gem names in recipe                                                                                                                              |
+| ingredients      | string[]          | No           | Same as gems (model symmetry with Runeword)                                                                                                      |
+| allowedItems     | string[]          | No           | "Body Armor", "Any Shield"                                                                                                                       |
+| affixes          | Affix[]           | No           | Backward compat: first non-empty column                                                                                                          |
+| columnAffixes    | SocketableBonuses | No           | Per-column bonuses (weapon/helm/armor)                                                                                                           |
+| columnBonusPools | ColumnBonusPools? | No           | Per-column random bonus pools (ESR 3.2+): `{ label: "1-2 of the following:", affixes }[]` per column; undefined in data cached before it existed |
+| jewelInfo        | string?           | No           | Optional jewel requirement, e.g. "Jewel" (America, Canada, China)                                                                                |
 
 ### htmUniqueItems
 
 Stores unique items parsed from HTM pages.
 
-| Column | Type | Index | Description |
-|--------|------|-------|-------------|
-| id | number | Auto-PK | Auto-increment primary key |
-| name | string | Yes | "Titan's Revenge", "Windforce" |
-| baseItem | string | No | "Ceremonial Javelin", "Hydra Bow" |
-| baseItemCode | string | No | Item code for resolution |
-| page | HtmUniqueItemPage | Yes | 'weapons', 'armors', 'other' |
-| category | string | Yes | "Amazon Javelin", "Bow", etc. |
-| itemLevel | number | No | Item level |
-| reqLevel | number | Yes | Required level |
-| properties | string[] | No | Human-readable property strings, one per property (hard-wrapped source lines re-joined, see CORE-DATA "Splitting Cells") |
-| isAncientCoupon | boolean | No | True if coupon-only item |
-| gambleItem | string | No | Gamble item identifier |
+| Column          | Type              | Index   | Description                                                                                                              |
+| --------------- | ----------------- | ------- | ------------------------------------------------------------------------------------------------------------------------ |
+| id              | number            | Auto-PK | Auto-increment primary key                                                                                               |
+| name            | string            | Yes     | "Titan's Revenge", "Windforce"                                                                                           |
+| baseItem        | string            | No      | "Ceremonial Javelin", "Hydra Bow"                                                                                        |
+| baseItemCode    | string            | No      | Item code for resolution                                                                                                 |
+| page            | HtmUniqueItemPage | Yes     | 'weapons', 'armors', 'other'                                                                                             |
+| category        | string            | Yes     | "Amazon Javelin", "Bow", etc.                                                                                            |
+| itemLevel       | number            | No      | Item level                                                                                                               |
+| reqLevel        | number            | Yes     | Required level                                                                                                           |
+| properties      | string[]          | No      | Human-readable property strings, one per property (hard-wrapped source lines re-joined, see CORE-DATA "Splitting Cells") |
+| isAncientCoupon | boolean           | No      | True if coupon-only item                                                                                                 |
+| gambleItem      | string            | No      | Gamble item identifier                                                                                                   |
 
 ### metadata
 
 Key-value store for app metadata.
 
-| Column | Type | Index | Description |
-|--------|------|-------|-------------|
-| key | string | Primary | Metadata key |
-| value | string | No | Metadata value |
+| Column | Type   | Index   | Description    |
+| ------ | ------ | ------- | -------------- |
+| key    | string | Primary | Metadata key   |
+| value  | string | No      | Metadata value |
 
 **Used Keys:**
+
 - `esrVersion` - Current parsed version (e.g., "3.9.07 - 18/12/2025")
 - `lastUpdated` - ISO timestamp of the last successful store
 - `appVersion` - App version that wrote the cache (an app upgrade triggers a refetch)
@@ -294,6 +295,7 @@ interface Metadata {
 ```
 
 **Notes:**
+
 - Runewords reference runes by name (string lookup across ESR/LoD/Kanji tables)
 - Runewords can also reference gems by name
 - Affixes are embedded in all socketable items via SocketableBonuses
@@ -305,28 +307,19 @@ interface Metadata {
 ### Get all ESR runes by tier
 
 ```typescript
-const tier2Runes = await db.esrRunes
-  .where('tier')
-  .equals(2)
-  .toArray();
+const tier2Runes = await db.esrRunes.where('tier').equals(2).toArray();
 ```
 
 ### Get runewords by socket count
 
 ```typescript
-const fourSocket = await db.runewords
-  .where('sockets')
-  .equals(4)
-  .toArray();
+const fourSocket = await db.runewords.where('sockets').equals(4).toArray();
 ```
 
 ### Get unique items by page
 
 ```typescript
-const weapons = await db.htmUniqueItems
-  .where('page')
-  .equals('weapons')
-  .toArray();
+const weapons = await db.htmUniqueItems.where('page').equals('weapons').toArray();
 ```
 
 ### Reactive query with useLiveQuery
@@ -349,13 +342,13 @@ function EsrRuneList() {
 The Game Data pages do not use Dexie. Their data is static JSON under `public/game-data/`, typed in
 `src/features/game-data/engine/schema.ts` (`GAME_DATA_SCHEMA`, bumped on incompatible shape changes):
 
-| File | Type | Contents |
-|------|------|----------|
-| `manifest.json` | `GameDataManifest` | schema, ESR version / tag / commit, `generatedAt`, sha256 + bytes per file, counts, warnings |
-| `types.json` | `TypesBundle` | `ItemTypeInfo[]` (parents, ancestors, socket caps, class, categories) + `ClassInfo[]` |
-| `bases.json` | `BasesBundle` | `BaseItem[]`: spawnable weapons, armor, accessories (tier, family, requirements, damage/defense, socket caps) |
+| File             | Type                 | Contents                                                                                                                |
+| ---------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `manifest.json`  | `GameDataManifest`   | schema, ESR version / tag / commit, `generatedAt`, sha256 + bytes per file, counts, warnings                            |
+| `types.json`     | `TypesBundle`        | `ItemTypeInfo[]` (parents, ancestors, socket caps, class, categories) + `ClassInfo[]`                                   |
+| `bases.json`     | `BasesBundle`        | `BaseItem[]`: spawnable weapons, armor, accessories (tier, family, requirements, damage/defense, socket caps)           |
 | `runewords.json` | `TxtRunewordsBundle` | `TxtRuneword[]` keyed `RunewordNNN`, one `TxtRunewordRow` per socket variant (ingredients, item types, rendered `text`) |
-| `affixes.json` | `AffixesBundle` | `Affix[]`: magic prefixes/suffixes/automods with levels, frequency, group, item types, `mods` and rendered `text` |
+| `affixes.json`   | `AffixesBundle`      | `Affix[]`: magic prefixes/suffixes/automods with levels, frequency, group, item types, `mods` and rendered `text`       |
 
 See [GAME-DATA.md](../features/GAME-DATA.md) for the generation rules.
 
@@ -364,11 +357,13 @@ See [GAME-DATA.md](../features/GAME-DATA.md) for the generation rules.
 When schema changes are needed:
 
 ```typescript
-this.version(15).stores({
-  // Updated schema
-}).upgrade(tx => {
-  // Migration logic
-});
+this.version(15)
+  .stores({
+    // Updated schema
+  })
+  .upgrade((tx) => {
+    // Migration logic
+  });
 ```
 
 Always increment version and provide upgrade path for existing data.

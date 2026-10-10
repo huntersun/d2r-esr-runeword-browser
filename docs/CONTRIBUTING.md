@@ -5,6 +5,7 @@ This document serves as the entry point for continuing documentation sessions wi
 ## Purpose
 
 This project uses an iterative documentation process where:
+
 1. The developer shares project details, requirements, and decisions
 2. Claude maintains and updates documentation in the `docs/` folder
 3. Documentation evolves as the project develops
@@ -27,6 +28,7 @@ This project uses an iterative documentation process where:
 ## Current Status
 
 ### Completed
+
 - Initial documentation structure created
 - Tech stack documented (React 19, Vite 7, shadcn/ui, Redux Toolkit + Saga, Dexie.js)
 - Architecture documented (folder structure, feature modules, single HTM-based data flow)
@@ -53,6 +55,7 @@ This project uses an iterative documentation process where:
 ## Notes for Claude
 
 When continuing documentation:
+
 1. Read this file first to understand current status
 2. Review existing docs in subdirectories for context
 3. Ask clarifying questions when requirements are ambiguous

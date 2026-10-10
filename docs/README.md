@@ -85,7 +85,8 @@ version (ESR git tag, e.g. `3.2.10`) is independent of the HTM changelog version
 
 After an ESR release, run `npm run game-data:update`: it clones or pulls the ESR repo, regenerates the bundles, refreshes
 the test fixtures, runs the game-data tests and the staleness check, and prints a summary. Flags and the manual fallback
-are in [Game Data → Regenerating](./features/GAME-DATA.md#regenerating).
+are in [Game Data → Regenerating](./features/GAME-DATA.md#regenerating). The `/esr-update` Claude Code skill
+(`.claude/skills/esr-update/SKILL.md`) runs the whole update with review and asks before committing.
 
 ---
 

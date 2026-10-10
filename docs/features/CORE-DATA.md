@@ -8,17 +8,17 @@ The core data feature handles fetching HTML sources, parsing game data, and stor
 
 Data is fetched from the ESR documentation site:
 
-| Data | URL |
-|------|-----|
-| Changelog | `https://easternsunresurrected.com/changelogs.html` |
-| Socketables | `https://easternsunresurrected.com/gems.htm` |
-| Runewords | `https://easternsunresurrected.com/runewords.htm` |
-| Gemwords | `https://easternsunresurrected.com/gemwords.htm` |
-| Unique Weapons | `https://easternsunresurrected.com/unique_weapons.htm` |
-| Unique Armors | `https://easternsunresurrected.com/unique_armors.htm` |
-| Unique Others | `https://easternsunresurrected.com/unique_others.htm` |
+| Data             | URL                                                      |
+| ---------------- | -------------------------------------------------------- |
+| Changelog        | `https://easternsunresurrected.com/changelogs.html`      |
+| Socketables      | `https://easternsunresurrected.com/gems.htm`             |
+| Runewords        | `https://easternsunresurrected.com/runewords.htm`        |
+| Gemwords         | `https://easternsunresurrected.com/gemwords.htm`         |
+| Unique Weapons   | `https://easternsunresurrected.com/unique_weapons.htm`   |
+| Unique Armors    | `https://easternsunresurrected.com/unique_armors.htm`    |
+| Unique Others    | `https://easternsunresurrected.com/unique_others.htm`    |
 | Mythical Uniques | `https://easternsunresurrected.com/unique_mythicals.htm` |
-| Ascendancies | `https://easternsunresurrected.com/ascendancies.htm` |
+| Ascendancies     | `https://easternsunresurrected.com/ascendancies.htm`     |
 
 Remote URLs are configured in `src/core/api/remoteConfig.ts`.
 
@@ -28,13 +28,13 @@ Remote URLs are configured in `src/core/api/remoteConfig.ts`.
 
 The gems.htm file contains **5 distinct categories** of socketable items:
 
-| Category | Items | Tiers | Level Range | Description |
-|----------|-------|-------|-------------|-------------|
-| **Gems** | 8 types | 6 tiers | 1-35 | Amethyst, Sapphire, Emerald, Ruby, Diamond, Topaz, Skull, Obsidian |
-| **ESR Runes** | ~50 runes | By color | 2-60 | I Rune -> Null Rune (ESR-specific runes) |
-| **LoD Runes** | 35 runes | Sequential | 11-69 | El Rune -> Zod Rune (original D2 runes) |
-| **Kanji Runes** | ~14 runes | All high-tier | 60 | Moon Rune -> God Rune (thematic runes) |
-| **Crystals** | 12 types | 3 tiers | 6-42 | Shadow Quartz -> Tainted Tourmaline |
+| Category        | Items     | Tiers         | Level Range | Description                                                        |
+| --------------- | --------- | ------------- | ----------- | ------------------------------------------------------------------ |
+| **Gems**        | 8 types   | 6 tiers       | 1-35        | Amethyst, Sapphire, Emerald, Ruby, Diamond, Topaz, Skull, Obsidian |
+| **ESR Runes**   | ~50 runes | By color      | 2-60        | I Rune -> Null Rune (ESR-specific runes)                           |
+| **LoD Runes**   | 35 runes  | Sequential    | 11-69       | El Rune -> Zod Rune (original D2 runes)                            |
+| **Kanji Runes** | ~14 runes | All high-tier | 60          | Moon Rune -> God Rune (thematic runes)                             |
+| **Crystals**    | 12 types  | 3 tiers       | 6-42        | Shadow Quartz -> Tainted Tourmaline                                |
 
 Each category is stored in its own Dexie table for clean separation.
 
@@ -109,26 +109,26 @@ Each stage dispatches a success action that triggers the next stage, with indepe
 
 ### Network Error Handling
 
-| Scenario | Cached Data? | Behavior |
-|----------|--------------|----------|
-| Network error | Yes | Show warning (`networkWarning`), use cached data |
-| Force refresh fails | Yes | Warning + toast ("Refresh failed: …"), keep cached data |
-| Network error | No | Show fatal error with retry button |
-| Version matches | Yes | Use cached data immediately |
-| Version differs | Yes/No | Fetch fresh data from remote |
-| Parse or store throws | Yes | Warning + toast, use cached data |
-| Parse or store throws | No | Show fatal error with retry button |
+| Scenario              | Cached Data? | Behavior                                                |
+| --------------------- | ------------ | ------------------------------------------------------- |
+| Network error         | Yes          | Show warning (`networkWarning`), use cached data        |
+| Force refresh fails   | Yes          | Warning + toast ("Refresh failed: …"), keep cached data |
+| Network error         | No           | Show fatal error with retry button                      |
+| Version matches       | Yes          | Use cached data immediately                             |
+| Version differs       | Yes/No       | Fetch fresh data from remote                            |
+| Parse or store throws | Yes          | Warning + toast, use cached data                        |
+| Parse or store throws | No           | Show fatal error with retry button                      |
 
 ### Store Sanity Check
 
 Parsers return `[]` (or far fewer rows) instead of throwing when the upstream HTML format drifts. Before the store transaction, `handleStoreData` compares each parsed dataset (gems, ESR/LoD/Kanji runes, crystals, runewords, gemwords, unique items, mythical uniques, ascendancies) against the row count already cached in its table. A dataset is **bad** when it parsed empty, or when it has a cache and parsed below 50% of the cached count (`store/storeSanity.ts`).
 
-| Bad datasets | Cached Data? | Behavior |
-|--------------|--------------|----------|
-| None | Yes/No | Clear and rewrite all tables, write `esrVersion`, `lastUpdated`, `appVersion` |
-| Some | Yes | Write nothing; warning + toast naming the datasets; use cached data. `esrVersion` is unchanged, so the next startup refetches and retries |
-| Some (not all) | No | Store what parsed, write `lastUpdated`/`appVersion` but **not** `esrVersion` (next startup retries); warning + toast; app continues |
-| All | No | Fatal store error with retry button |
+| Bad datasets   | Cached Data? | Behavior                                                                                                                                  |
+| -------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| None           | Yes/No       | Clear and rewrite all tables, write `esrVersion`, `lastUpdated`, `appVersion`                                                             |
+| Some           | Yes          | Write nothing; warning + toast naming the datasets; use cached data. `esrVersion` is unchanged, so the next startup refetches and retries |
+| Some (not all) | No           | Store what parsed, write `lastUpdated`/`appVersion` but **not** `esrVersion` (next startup retries); warning + toast; app continues       |
+| All            | No           | Fatal store error with retry button                                                                                                       |
 
 The same check applies to a manual force refresh. Warnings from the sanity check and from parse/store failures are shown once as a toast ("See Settings for details.") and kept in `networkWarning` for the Settings drawer; the ordinary offline warning is drawer-only.
 
@@ -172,6 +172,7 @@ See [DATA-MODELS.md](../technical/DATA-MODELS.md) for the full schema.
 ## Data Models
 
 All socketable items share a common bonus structure with three categories:
+
 - Weapons / Gloves
 - Helms / Boots
 - Armor / Shields / Belts
@@ -180,11 +181,11 @@ All socketable items share a common bonus structure with three categories:
 
 ```typescript
 interface Gem {
-  readonly name: string;             // Primary key. "Chipped Ruby", "Perfect Sapphire"
-  readonly type: GemType;            // "Amethyst", "Sapphire", etc.
-  readonly quality: GemQuality;      // "Chipped", "Flawed", etc.
-  readonly color: string;            // Color string
-  readonly reqLevel: number;         // Required level (1-35)
+  readonly name: string; // Primary key. "Chipped Ruby", "Perfect Sapphire"
+  readonly type: GemType; // "Amethyst", "Sapphire", etc.
+  readonly quality: GemQuality; // "Chipped", "Flawed", etc.
+  readonly color: string; // Color string
+  readonly reqLevel: number; // Required level (1-35)
   readonly bonuses: SocketableBonuses;
 }
 
@@ -206,12 +207,12 @@ type GemQuality = 'Chipped' | 'Flawed' | 'Standard' | 'Flawless' | 'Blemished' |
 
 ```typescript
 interface EsrRune {
-  readonly name: string;             // Primary key. "I Rune", "Ka Rune"
-  readonly order: number;            // Order in source file (1-based)
-  readonly tier: number;             // Derived from color
-  readonly color: string;            // HTML color attribute
-  readonly reqLevel: number;         // Required level (2-60)
-  readonly points?: number;          // Rune points from "(X points)" suffix
+  readonly name: string; // Primary key. "I Rune", "Ka Rune"
+  readonly order: number; // Order in source file (1-based)
+  readonly tier: number; // Derived from color
+  readonly color: string; // HTML color attribute
+  readonly reqLevel: number; // Required level (2-60)
+  readonly points?: number; // Rune points from "(X points)" suffix
   readonly bonuses: SocketableBonuses;
 }
 ```
@@ -220,11 +221,11 @@ interface EsrRune {
 
 ```typescript
 interface LodRune {
-  readonly name: string;             // Primary key. "El Rune" -> "Zod Rune"
-  readonly order: number;            // Position in sequence (1-35)
-  readonly tier: number;             // 1=Low (El-Dol), 2=Mid (Hel-Gul), 3=High (Vex-Zod)
-  readonly reqLevel: number;         // Required level (11-69)
-  readonly points?: number;          // Rune points from "(X points)" suffix
+  readonly name: string; // Primary key. "El Rune" -> "Zod Rune"
+  readonly order: number; // Position in sequence (1-35)
+  readonly tier: number; // 1=Low (El-Dol), 2=Mid (Hel-Gul), 3=High (Vex-Zod)
+  readonly reqLevel: number; // Required level (11-69)
+  readonly points?: number; // Rune points from "(X points)" suffix
   readonly bonuses: SocketableBonuses;
 }
 ```
@@ -233,8 +234,8 @@ interface LodRune {
 
 ```typescript
 interface KanjiRune {
-  readonly name: string;             // Primary key. "Moon Rune", "God Rune"
-  readonly reqLevel: number;         // All level 60
+  readonly name: string; // Primary key. "Moon Rune", "God Rune"
+  readonly reqLevel: number; // All level 60
   readonly bonuses: SocketableBonuses;
 }
 ```
@@ -243,11 +244,11 @@ interface KanjiRune {
 
 ```typescript
 interface Crystal {
-  readonly name: string;             // Primary key. "Chipped Shadow Quartz"
-  readonly type: CrystalType;        // Base crystal type
-  readonly quality: CrystalQuality;  // "Chipped", "Flawed", "Standard"
-  readonly color: string;            // Each type has unique color
-  readonly reqLevel: number;         // Required level (6, 24, 42)
+  readonly name: string; // Primary key. "Chipped Shadow Quartz"
+  readonly type: CrystalType; // Base crystal type
+  readonly quality: CrystalQuality; // "Chipped", "Flawed", "Standard"
+  readonly color: string; // Each type has unique color
+  readonly reqLevel: number; // Required level (6, 24, 42)
   readonly bonuses: SocketableBonuses;
 }
 ```
@@ -274,6 +275,7 @@ interface Affix {
 ### Automatic Refresh
 
 On app startup, the app automatically:
+
 1. Fetches the changelog to get the latest version
 2. Compares with the stored version in IndexedDB
 3. Re-fetches data only if versions differ
@@ -285,6 +287,7 @@ A "Force Refresh Data" button in Settings allows users to bypass version checkin
 ### Offline Support
 
 The app uses IndexedDB as a client-side cache:
+
 - If network is unavailable but cached data exists, a warning is shown and cached data is used
 - If network is unavailable and no cached data exists, a fatal error is shown with a retry button
 
@@ -326,8 +329,8 @@ space) to the previous line when
 1. it starts with a lowercase letter (`…to Attacks` ⏎ `per 4 Dexterity`), or
 2. the previous line ends with a comma, or
 3. the previous line ends with a lowercase function word: conjunctions (`and or but when while if
-   than that as`), prepositions (`with per to of for from by in on at into during after before until
-   against upon over under within without`) or determiners (`the a an your all each every no not`).
+than that as`), prepositions (`with per to of for from by in on at into during after before until
+against upon over under within without`) or determiners (`the a an your all each every no not`).
    The match is case-sensitive so Title Case affix endings never trigger it; `you` is deliberately
    excluded ("…and return to you"). The list is intentionally limited to function words: a handful
    of upstream wraps after a verb ("…attacks deal" ⏎ "10 additional damage") stay split rather than

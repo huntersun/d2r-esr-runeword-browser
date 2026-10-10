@@ -88,18 +88,19 @@ yield call(() => db.table.bulkPut(items));
 
 ## Effect Types Reference
 
-| Effect | Usage |
-|--------|-------|
-| `takeLatest` | Cancel previous, run latest (user actions) |
-| `takeEvery` | Run all without cancellation (analytics) |
-| `all([...])` | Run in parallel |
-| `call(fn)` | Call function/Promise |
-| `put(action)` | Dispatch action |
-| `select(selector)` | Read from Redux store |
+| Effect             | Usage                                      |
+| ------------------ | ------------------------------------------ |
+| `takeLatest`       | Cancel previous, run latest (user actions) |
+| `takeEvery`        | Run all without cancellation (analytics)   |
+| `all([...])`       | Run in parallel                            |
+| `call(fn)`         | Call function/Promise                      |
+| `put(action)`      | Dispatch action                            |
+| `select(selector)` | Read from Redux store                      |
 
 ## Best Practices
 
 **Do:**
+
 - Use `takeLatest` for user-triggered actions
 - Use `all()` for independent parallel operations
 - Type payloads with `PayloadAction<T>`
@@ -107,6 +108,7 @@ yield call(() => db.table.bulkPut(items));
 - Pass data between stages via action payloads
 
 **Don't:**
+
 - Use `takeEvery` unless processing every action is needed
 - Put complex logic in sagas - delegate to utility functions
 - Read from Redux state when data is in the action payload
@@ -119,4 +121,4 @@ yield call(() => db.table.bulkPut(items));
 
 ---
 
-*See [CODING-GUIDELINES.md](./CODING-GUIDELINES.md) for additional Redux conventions.*
+_See [CODING-GUIDELINES.md](./CODING-GUIDELINES.md) for additional Redux conventions._

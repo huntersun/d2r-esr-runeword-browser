@@ -12,31 +12,34 @@ Unified view of all socketable items (gems, runes, crystals) with filtering.
 
 ## Data Sources
 
-| Category | Table | Count |
-|----------|-------|-------|
-| Gems | `gems` | 48 |
-| ESR Runes | `esrRunes` | ~46 |
-| LoD Runes | `lodRunes` | 33 |
-| Kanji Runes | `kanjiRunes` | 14 |
-| Crystals | `crystals` | 36 |
+| Category    | Table        | Count |
+| ----------- | ------------ | ----- |
+| Gems        | `gems`       | 48    |
+| ESR Runes   | `esrRunes`   | ~46   |
+| LoD Runes   | `lodRunes`   | 33    |
+| Kanji Runes | `kanjiRunes` | 14    |
+| Crystals    | `crystals`   | 36    |
 
 **Total:** ~177 socketable items
 
 ## Filter Controls
 
 ### Checkbox Group
+
 - 5 checkboxes: Gems, ESR Runes, LoD Runes, Kanji Runes, Crystals
 - All checked by default
 - "All" button resets all checkboxes to checked
 - Toggling updates results immediately
 
 ### Only Highest Quality
+
 - Toggle to show only the highest tier of each gem/crystal type
 - Default: **true** (shows only Perfect gems and Standard crystals)
 - When disabled, shows all quality tiers (Chipped through Perfect for gems, Chipped through Standard for crystals)
 - Does not affect runes (runes have no quality tiers)
 
 ### Text Search
+
 - Searches against item **name** and **bonus text**
 - Input is split by spaces, trimmed
 - All words must match (AND logic)
@@ -44,12 +47,15 @@ Unified view of all socketable items (gems, runes, crystals) with filtering.
 - Example: `resist life` matches items containing both "resist" AND "life"
 
 ### Item Count
+
 Item count is displayed in the page title showing the number of visible items.
 
 ## Display
 
 ### Item Card
+
 Each socketable displays:
+
 - Name (with item color if available)
 - Category badge (Gem, ESR, LoD, Kanji, Crystal)
 - Required level
@@ -60,6 +66,7 @@ Each socketable displays:
 - Source line (see below)
 
 ### Source Line
+
 The screen loads the game-data `sources` bundle once (`useItemSources()`) and passes the name index to every card.
 Each card shows `Source: <labels joined by " · ">` (e.g. "Cube · Drops (random) · Buy: Akara") via the shared
 `ItemSourceLine` component, matching the socketable name against `misc` entries (`findItemSource(index, name, 'misc')`).
@@ -67,6 +74,7 @@ Nothing is shown while the bundle loads, when it fails, or when the name is not 
 the line is derived from the ESR game files and may be incomplete. See GAME-DATA.md → Sources.
 
 ### Order
+
 Fixed order: items displayed by category (Gems -> ESR -> LoD -> Kanji -> Crystals), then by tier/name within category. No user sorting options.
 
 ## State Management
