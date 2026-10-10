@@ -5,24 +5,11 @@
  */
 import { sha256 } from '../../game-data/build/writeBundle.ts';
 import type { DataBlock, GlossaryEntry, GuideNote } from '../engine/schema.ts';
-import { compareVersions, noteFreshness, type NoteFreshness } from '../engine/freshness.ts';
-import { compareCodeUnits } from './compare.ts';
-import type { BuildError } from './context.ts';
+import { compareVersions } from '../../../core/utils/versionUtils.ts';
+import type { BlockHashes, VerifyLock } from './verifyLock.ts';
 
-export const LOCK_FILE = '.verify-lock.json';
-export const MAX_STALE_REASONS = 5;
-export const NOT_RECORDED = 'Verified, but the data behind this note was not recorded; it may have changed';
-
-/** Block key → sha256 of the resolved DataBlock JSON */
-export type BlockHashes = Record<string, string>;
-
-export interface LockEntry {
-  verified: string;
-  blocks: BlockHashes;
-}
-
-/** content/guide/.verify-lock.json: slug → what guide:verify recorded */
-export type VerifyLock = Record<string, LockEntry>;
+const MAX_STALE_REASONS = 5;
+const NOT_RECORDED = 'Verified, but the data behind this note was not recorded; it may have changed';
 
 export interface PatchNote {
   /** From the file name, e.g. `3.2.11` */
@@ -61,7 +48,7 @@ export function hashDataBlocks(blocks: readonly { key: string; block: DataBlock 
 }
 
 /** What the reader sees as the block's title. */
-export function blockCaption(block: DataBlock): string {
+function blockCaption(block: DataBlock): string {
   switch (block.kind) {
     case 'source':
       return `Where it comes from: ${block.item}`;
@@ -72,52 +59,6 @@ export function blockCaption(block: DataBlock): string {
     default:
       return block.caption;
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-/** Parses the lock file; a missing file (null) is an empty lock. */
-export function parseVerifyLock(text: string | null, where: string, errors: string[]): VerifyLock {
-  if (text === null || text.trim() === '') return {};
-  let data: unknown;
-  try {
-    data = JSON.parse(text);
-  } catch (error) {
-    errors.push(`${where}: invalid JSON (${error instanceof Error ? error.message : String(error)})`);
-    return {};
-  }
-  if (!isRecord(data)) {
-    errors.push(`${where}: expected an object of slug → { verified, blocks }`);
-    return {};
-  }
-  const lock: VerifyLock = {};
-  for (const [slug, entry] of Object.entries(data)) {
-    const blocks = isRecord(entry) ? entry.blocks : undefined;
-    if (!isRecord(entry) || typeof entry.verified !== 'string' || !isRecord(blocks)) {
-      errors.push(`${where}: "${slug}" must be { verified: string, blocks: { key: hash } }`);
-      continue;
-    }
-    const hashes: BlockHashes = {};
-    for (const [key, hash] of Object.entries(blocks)) {
-      if (typeof hash === 'string') hashes[key] = hash;
-      else errors.push(`${where}: "${slug}".blocks["${key}"] must be a string`);
-    }
-    lock[slug] = { verified: entry.verified, blocks: hashes };
-  }
-  return lock;
-}
-
-/** Stable output: slugs and block keys sorted, two-space JSON, trailing newline (Prettier leaves it alone). */
-export function serializeVerifyLock(lock: VerifyLock): string {
-  const sorted: VerifyLock = {};
-  for (const [slug, entry] of Object.entries(lock).sort(([a], [b]) => compareCodeUnits(a, b))) {
-    const blocks: BlockHashes = {};
-    for (const [key, hash] of Object.entries(entry.blocks).sort(([a], [b]) => compareCodeUnits(a, b))) blocks[key] = hash;
-    sorted[slug] = { verified: entry.verified, blocks };
-  }
-  return `${JSON.stringify(sorted, null, 2)}\n`;
 }
 
 /** Reasons for blocks that changed, appeared or disappeared since the lock entry (in note order, removed last). */
@@ -144,7 +85,7 @@ function escapeRegExp(text: string): string {
 }
 
 /** Shorter terms ("Key", "Ore") match too many generic patch-note lines. */
-export const MIN_TERM_LENGTH = 4;
+const MIN_TERM_LENGTH = 4;
 
 /**
  * Case-insensitive whole word: the term may not be glued to a letter, digit or hyphen on either side
@@ -209,79 +150,4 @@ export function noteStaleReasons(input: StalenessInput): { reasons: string[]; un
   }
   reasons.push(...scanPatchNotes(input.patchNotes, verified, noteSearchTerms(note, input.glossary)));
   return { reasons: capReasons([...new Set(reasons)]), unrecorded };
-}
-
-// ---------------------------------------------------------------------------
-// guide:verify: the in-place frontmatter edit
-// ---------------------------------------------------------------------------
-
-/**
- * Sets `verified: '<version>'` in the note's frontmatter: replaces the existing `verified:` (or `verified :`) value,
- * keeping a trailing `# comment`, or adds the line before the closing `---`. Every other byte (BOM, line endings,
- * comments, the body) is kept.
- */
-export function setVerifiedInFrontmatter(text: string, version: string): string | BuildError {
-  const open = /^(\uFEFF?)---[ \t]*(\r?\n)/.exec(text);
-  if (open === null) return { error: 'missing frontmatter (the file must start with a --- block)' };
-  const eol = open[2];
-  const start = open[0].length;
-  const close = /^---[ \t]*(?:\r?\n|$)/m.exec(text.slice(start));
-  if (close === null) return { error: 'frontmatter is not closed with ---' };
-  const yamlEnd = start + close.index;
-  const yaml = text.slice(start, yamlEnd);
-  const line = `verified: '${version}'`;
-  const existing = /^verified[ \t]*:[^\r\n]*/m;
-  const updated = existing.test(yaml)
-    ? // keep a trailing `# comment` (a # after whitespace; versions never contain one)
-      yaml.replace(existing, (old) => `${line}${/[ \t]+#.*$/.exec(old)?.[0] ?? ''}`)
-    : `${yaml}${line}${eol}`;
-  return text.slice(0, start) + updated + text.slice(yamlEnd);
-}
-
-// ---------------------------------------------------------------------------
-// guide:report
-// ---------------------------------------------------------------------------
-
-function wrapList(items: readonly string[], indent = '  ', width = 116): string[] {
-  const lines: string[] = [];
-  let line = '';
-  for (const item of items) {
-    const next = line === '' ? item : `${line}, ${item}`;
-    if (line !== '' && indent.length + next.length > width) {
-      lines.push(`${indent}${line},`);
-      line = item;
-    } else {
-      line = next;
-    }
-  }
-  if (line !== '') lines.push(`${indent}${line}`);
-  return lines;
-}
-
-const STATE_HEADINGS: Record<NoteFreshness, string> = { review: 'Review', old: 'Old', fresh: 'Fresh', draft: 'Drafts' };
-
-/** Plain-text maintainer report: notes by freshness state with their reasons, volatile notes, drafts. */
-export function formatGuideReport(notes: readonly GuideNote[], current: string): string[] {
-  const states = notes.map((note) => ({ note, state: noteFreshness(note.verified, current, note.staleReasons) }));
-  const count = (state: NoteFreshness) => states.filter((entry) => entry.state === state).length;
-  const lines = [
-    `Guide report against ESR ${current}: ${String(notes.length)} notes`,
-    `  review ${String(count('review'))} · old ${String(count('old'))} · fresh ${String(count('fresh'))} · draft ${String(count('draft'))}`,
-  ];
-  for (const state of ['review', 'old', 'fresh'] as const) {
-    const group = states.filter((entry) => entry.state === state);
-    if (group.length === 0) continue;
-    lines.push('', `${STATE_HEADINGS[state]} (${String(group.length)}):`);
-    for (const { note } of group) {
-      lines.push(`  ${note.slug} (verified ${note.verified ?? ''})`);
-      for (const reason of note.staleReasons) lines.push(`    - ${reason}`);
-    }
-  }
-  const volatile = states.filter((entry) => entry.note.volatility === 'high');
-  lines.push('', `Volatility high (${String(volatile.length)}): re-check these after every patch`);
-  lines.push(...wrapList(volatile.map(({ note, state }) => `${note.slug} [${state}]`)));
-  const drafts = states.filter((entry) => entry.state === 'draft');
-  lines.push('', `Drafts (${String(drafts.length)}): verify in-game, then npm run guide:verify -- <slug>`);
-  lines.push(...wrapList(drafts.map(({ note }) => note.slug)));
-  return lines;
 }

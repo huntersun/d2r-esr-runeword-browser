@@ -51,7 +51,7 @@ export function useFilteredRunewords(lookup: SocketableLookup | undefined): read
 
   const searchTerms = parseSearchTerms(searchText);
 
-  // Filter preserves the pre-sorted order from IndexedDB; a name focus overrides every other filter
+  // Filter preserves the pre-sorted order from IndexedDB
   return applyExactNameFocus(expandedRunewords, exactName, (list) =>
     list.filter((runeword) => {
       if (!matchesSearch(runeword, searchTerms, runeBonusMap, gemBonusMap)) return false;

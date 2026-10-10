@@ -5,8 +5,8 @@
  * a unique/set index, or an engine auto-TC (`weap54`, `armo96`, …). Auto-TCs are not rows of the table, so they end
  * up as plain item references that never match an item; they are deliberately not expanded (no level-band replica).
  */
-import { displayName } from './itemNames.ts';
-import type { TsvTable } from './tsv.ts';
+import { resolveName } from './itemNames.ts';
+import type { TsvRow, TsvTable } from './tsv.ts';
 
 export interface DropMonster {
   /** `m:<monstats Id>` or `s:<superuniques Superunique>` */
@@ -23,6 +23,9 @@ export interface TreasureClassIndex {
 
 /** Endgame-map TC families. "Endgame Maps Tier N Campaign" (the maps themselves dropping in the campaign) is not one. */
 const MAP_TC = /^(EGM |Endgame Map )/;
+
+/** treasureclassex.txt has `Item1` … `Item10` */
+const TC_ITEM_COLUMNS = 10;
 
 /** Monster display names that would be ambiguous (the clone reuses Diablo's name string). */
 const NAME_OVERRIDES: Readonly<Record<string, string>> = { diabloclone: 'Diablo Clone' };
@@ -50,7 +53,7 @@ export function createTreasureClassIndex(
   for (const row of treasureClasses.rows) {
     const tc = row.str('Treasure Class');
     if (tc === '') continue;
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= TC_ITEM_COLUMNS; i++) {
       const column = `Item${String(i)}`;
       if (!row.has(column)) continue;
       const ref = refOf(row.str(column));
@@ -62,7 +65,7 @@ export function createTreasureClassIndex(
   // Root TC → monsters using it in any TreasureClass*/TC* column
   const monsters = new Map<string, DropMonster>();
   const roots = new Map<string, Set<string>>();
-  const addMonster = (key: string, name: string, tcColumns: string[], row: { str(column: string): string }) => {
+  const addMonster = (key: string, name: string, tcColumns: string[], row: TsvRow) => {
     monsters.set(key, { key, name, map: false });
     for (const column of tcColumns) {
       const tc = row.str(column);
@@ -73,14 +76,14 @@ export function createTreasureClassIndex(
   for (const row of monstats.rows) {
     const id = row.str('Id');
     if (id === '') continue;
-    const name = NAME_OVERRIDES[id] ?? displayName(strings.get(row.str('NameStr')) ?? id);
+    const name = NAME_OVERRIDES[id] ?? resolveName(strings, row.str('NameStr'), id);
     addMonster(`m:${id}`, name, monsterColumns, row);
   }
   const superColumns = superuniques.columns.filter((column) => column.startsWith('TC'));
   for (const row of superuniques.rows) {
     const id = row.str('Superunique');
     if (id === '') continue;
-    addMonster(`s:${id}`, displayName(strings.get(row.str('Name')) ?? id), superColumns, row);
+    addMonster(`s:${id}`, resolveName(strings, row.str('Name'), id), superColumns, row);
   }
 
   /** TCs reachable upward (towards the monster columns) from the start TCs, the start TCs included. */

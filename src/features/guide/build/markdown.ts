@@ -12,10 +12,11 @@ import { fromMarkdown } from 'mdast-util-from-markdown';
 import { gfmFromMarkdown } from 'mdast-util-gfm';
 import { directive } from 'micromark-extension-directive';
 import { gfm } from 'micromark-extension-gfm';
+import { LINK_SCHEMES } from '../engine/linkSchemes.ts';
 import type { DataBlock, GuideBlock, GuideInline } from '../engine/schema.ts';
 import type { GuideContext } from './context.ts';
 import { compareCodeUnits } from './compare.ts';
-import { cardKeyArg, LEAF_DIRECTIVES, resolveTerm } from './directives/index.ts';
+import { cardKeyArg, isLeafDirective, LEAF_DIRECTIVES, resolveTerm } from './directives/index.ts';
 import { resolveLink } from './links.ts';
 import { splitWikilinks } from './wikilinks.ts';
 
@@ -31,7 +32,7 @@ export interface MarkdownResult {
 
 const HTML_COMMENT = /^<!--[\s\S]*-->$/;
 /** A `[label](scheme:…)` the parser did not turn into a link (usually a space in the target) */
-const BROKEN_LINK = /\]\((?:rw|gw|unique|mythical|socketable|base|type|bestbase|affixes|page|docs):/;
+const BROKEN_LINK = new RegExp(`\\]\\((?:${LINK_SCHEMES.join('|')}):`);
 /** `[[slug|label]]` inside a GFM table row: the pipe would split the cell */
 const TABLE_WIKILINK_PIPE = /(\[\[[^[\]|]+)(?<!\\)\|(?=[^[\]]*\]\])/g;
 
@@ -97,7 +98,7 @@ function checkLeftovers(value: string, node: Nodes, state: State): void {
 }
 
 /** Escapes the pipe of `[[slug|label]]` in table rows so GFM keeps the cell together. */
-export function escapeTableWikilinks(markdown: string): string {
+function escapeTableWikilinks(markdown: string): string {
   return markdown
     .split('\n')
     .map((line) => (/^\s*\|/.test(line) ? line.replace(TABLE_WIKILINK_PIPE, '$1\\|') : line))
@@ -126,7 +127,7 @@ function convertTextDirective(node: TextDirective, state: State): GuideInline[] 
     }
     return [term];
   }
-  if (node.name in LEAF_DIRECTIVES) {
+  if (isLeafDirective(node.name)) {
     fail(state, node, `::${node.name} is a block directive and must stand alone on its own line`);
     return [];
   }
@@ -141,7 +142,7 @@ function convertInline(node: PhrasingContent, state: State): GuideInline[] {
   switch (node.type) {
     case 'text': {
       for (const match of node.value.matchAll(/::([a-z-]+)/g)) {
-        if (match[1] in LEAF_DIRECTIVES) fail(state, node, `::${match[1]} is a block directive and must stand alone on its own line`);
+        if (isLeafDirective(match[1])) fail(state, node, `::${match[1]} is a block directive and must stand alone on its own line`);
       }
       const { inlines, links } = splitWikilinks(node.value);
       state.result.noteLinks.push(...links.map((link) => link.slug));
@@ -197,11 +198,11 @@ export function directiveKey(name: string, arg: string | null, attributes: Reado
 }
 
 function convertLeafDirective(node: LeafDirective, state: State): GuideBlock[] {
-  const resolver = LEAF_DIRECTIVES[node.name];
-  if (resolver === undefined) {
+  if (!isLeafDirective(node.name)) {
     fail(state, node, `unknown directive "::${node.name}" (known: ${Object.keys(LEAF_DIRECTIVES).join(', ')})`);
     return [];
   }
+  const resolver = LEAF_DIRECTIVES[node.name];
   const arg = node.children.length === 0 ? null : argumentText(node).trim();
   const attributes: Record<string, string> = {};
   for (const [key, value] of Object.entries(node.attributes ?? {})) attributes[key] = value ?? '';

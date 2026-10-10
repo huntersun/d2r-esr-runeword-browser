@@ -2,6 +2,7 @@
  * `::source[Annihilus]`: the "where it comes from" labels of an item from public/game-data/sources.json.
  * Names can collide across item kinds (a set item and a misc item called "Worldstone Shard"); `{item=misc}` picks one.
  */
+import { normaliseItemName } from '../../../../core/utils/itemName.ts';
 import type { ItemSource } from '../../../game-data/engine/schema.ts';
 import type { DirectiveResolver } from './types.ts';
 
@@ -16,9 +17,9 @@ export const resolveSource: DirectiveResolver = (arg, ctx, attributes = {}) => {
     return { error: `::source[${arg}]: item must be one of ${ITEM_KINDS.join(' | ')} (got "${kind}")` };
   }
 
-  const lower = arg.toLowerCase();
+  const normalised = normaliseItemName(arg);
   const exact = ctx.sources.items.filter((candidate) => candidate.name === arg);
-  const named = exact.length > 0 ? exact : ctx.sources.items.filter((candidate) => candidate.name.toLowerCase() === lower);
+  const named = exact.length > 0 ? exact : ctx.sources.items.filter((candidate) => normaliseItemName(candidate.name) === normalised);
   const matches = kind === undefined ? named : named.filter((candidate) => candidate.item === kind);
   const item = matches.at(0);
   if (item === undefined) {

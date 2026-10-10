@@ -13,10 +13,8 @@ export function AppLayout() {
   const error = useSelector(selectError);
   const isSupabaseEnabled = useSelector(selectAuthIsConfigured);
   const { pathname } = useLocation();
-  // The guide is a static JSON bundle that needs none of the HTM/Dexie data, so its routes skip both startup
-  // gates below: the "Loading data..." spinner (the sync keeps running in the background) and the fatal
-  // sync-error screen (a failed first sync must not hide the guide). Header and SettingsDrawer only read
-  // settings/auth state and Dexie metadata with fallbacks, so they render without synced data too.
+  // Guide routes (a static JSON bundle, no HTM/Dexie data) skip both startup gates below: the loading spinner and
+  // the fatal sync-error screen. See docs/technical/NAVIGATION.md "Startup loading gate".
   const isGuidePath = pathname === '/guide' || pathname.startsWith('/guide/');
 
   // Fatal error state - error occurred and app is not initialized (guide routes still render, see above)

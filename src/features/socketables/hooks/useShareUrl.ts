@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { FILTER_URL_PARAM_KEYS, appendSelectionParam, buildShareUrl } from '@/core/utils/filterUrlParams';
+import { FILTER_URL_PARAM_KEYS, appendSelectionParam, buildShareUrl, appendExactNameParam } from '@/core/utils/filterUrlParams';
 import { selectSearchText, selectExactName, selectEnabledCategories, selectOnlyHighestQuality } from '../store/socketablesSlice';
 import { SOCKETABLE_URL_PARAM_KEYS } from './useUrlInitialize';
 
@@ -28,9 +28,7 @@ export function useShareUrl(): () => string {
       params.set(SOCKETABLE_URL_PARAM_KEYS.ONLY_HIGHEST, 'false');
     }
 
-    if (exactName !== null) {
-      params.set(FILTER_URL_PARAM_KEYS.NAME, exactName);
-    }
+    appendExactNameParam(params, exactName);
 
     return buildShareUrl('socketables', params);
   };

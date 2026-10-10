@@ -10,7 +10,7 @@ interface ExactNameChipProps {
   readonly name: string;
   readonly onClear: () => void;
   /** Scroll into view on mount: only when the focus was just set from the visit's URL */
-  readonly scrollIntoView: boolean;
+  readonly scrollOnMount: boolean;
 }
 
 /**
@@ -18,11 +18,11 @@ interface ExactNameChipProps {
  * filter is never invisible. Scrolls itself (and thus the matching cards right below it)
  * into view when it appears after a `?name=` deep link.
  */
-export function ExactNameChip({ name, onClear, scrollIntoView }: ExactNameChipProps) {
+export function ExactNameChip({ name, onClear, scrollOnMount }: ExactNameChipProps) {
   const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    if (!scrollIntoView) return;
+    if (!scrollOnMount) return;
     const scroll = () => ref.current?.scrollIntoView({ block: 'center' });
     scroll();
     // The chip can mount before the filters above it finish rendering, which pushes it back out of view.
@@ -37,7 +37,7 @@ export function ExactNameChip({ name, onClear, scrollIntoView }: ExactNameChipPr
     const timer = setTimeout(stop, SETTLE_MS);
     for (const type of USER_SCROLL_EVENTS) window.addEventListener(type, stop, { passive: true });
     return stop;
-  }, [name, scrollIntoView]);
+  }, [name, scrollOnMount]);
 
   return (
     <span

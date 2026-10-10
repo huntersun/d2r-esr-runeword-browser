@@ -2,7 +2,8 @@
  * Everything the markdown converter, link resolver and directive resolvers look things up in.
  * Built once per generation from the committed game-data bundles, the guide's glossary and (when present) the ESR clone.
  */
-import type { BasesBundle, SourcesBundle, TxtRunewordsBundle, TypesBundle } from '../../game-data/engine/schema.ts';
+import { normaliseItemName } from '../../../core/utils/itemName.ts';
+import type { BasesBundle, ItemSource, SourcesBundle, TxtRunewordsBundle, TypesBundle } from '../../game-data/engine/schema.ts';
 import type { GlossaryEntry } from '../engine/schema.ts';
 import type { EsrGuideTables } from './esrGuideSources.ts';
 
@@ -22,9 +23,9 @@ export interface GuideContext {
   baseNames: ReadonlyMap<string, string>;
   typeCodes: ReadonlySet<string>;
   sources: SourcesBundle;
-  /** Lower-cased names of sources.json items by kind (mentions) */
-  sourceNames: Readonly<Record<'unique' | 'set' | 'misc', ReadonlySet<string>>>;
-  /** Lower-cased names a `unique:` / `mythical:` / `socketable:` link or card may target (see linkTargetNames) */
+  /** Names of sources.json items by kind (mentions), normalised with normaliseItemName */
+  sourceNames: Readonly<Record<ItemSource['item'], ReadonlySet<string>>>;
+  /** Normalised names (normaliseItemName) a `unique:` / `mythical:` / `socketable:` link or card may target (see linkTargetNames) */
   linkNames: Readonly<Record<LinkTargetKind, ReadonlySet<string>>>;
   glossary: readonly GlossaryEntry[];
   /** null when the ESR clone is missing (ESR-backed directives then fail) */
@@ -40,8 +41,8 @@ export interface ContextInput {
   docs: DocsIndex | null;
 }
 
-function sourceNames(sources: SourcesBundle, kind: 'unique' | 'set' | 'misc'): Set<string> {
-  return new Set(sources.items.filter((item) => item.item === kind).map((item) => item.name.toLowerCase()));
+function sourceNames(sources: SourcesBundle, kind: ItemSource['item']): Set<string> {
+  return new Set(sources.items.filter((item) => item.item === kind).map((item) => normaliseItemName(item.name)));
 }
 
 export type LinkTargetKind = 'unique' | 'mythical' | 'socketable';
@@ -61,7 +62,7 @@ export function linkTargetNames(
   const ancestors = new Map(types.types.map((type) => [type.code, type.ancestors]));
   const items = esr === null ? null : new Map(esr.items.map((item) => [item.code, item]));
   for (const source of sources.items) {
-    const name = source.name.toLowerCase();
+    const name = normaliseItemName(source.name);
     const item = items?.get(source.code);
     if (source.item === 'unique') {
       if (items === null) {
@@ -97,8 +98,4 @@ export function createGuideContext(input: ContextInput): GuideContext {
 /** Result of a build step that can fail with a message for the author. */
 export interface BuildError {
   error: string;
-}
-
-export function isBuildError(value: object): value is BuildError {
-  return 'error' in value && typeof value.error === 'string';
 }

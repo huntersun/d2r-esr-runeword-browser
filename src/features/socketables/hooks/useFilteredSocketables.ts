@@ -139,7 +139,6 @@ export function useFilteredSocketables(): readonly UnifiedSocketable[] | undefin
 
   const searchTerms = parseSearchTerms(searchText);
 
-  // A name focus overrides every other filter
   return applyExactNameFocus(allSocketables, exactName, (list) =>
     list.filter((item) => {
       // Check category filter

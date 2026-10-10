@@ -2,7 +2,8 @@
  * Readable text for cubemain input/output cells, e.g. `jewl,uni,qty=2` → "2× Unique Jewel",
  * `weap,bas,crf` → "Crafted Weapon (normal tier)", `usetype,uni` → "Unique item of the same type".
  */
-import type { CubeMod, CubeOutput, EsrGuideTables } from '../esrGuideSources.ts';
+import type { RecipeRow } from '../engine/schema.ts';
+import type { CubeMod, CubeOutput, EsrGuideTables } from './esrGuideSources.ts';
 
 /** Qualifiers written before the name */
 const ADJECTIVES: Record<string, string> = {
@@ -33,6 +34,19 @@ const NOTES: Record<string, string> = {
   mod: 'keeps its stats',
 };
 
+/** A cubemain input/output cell split into its item token, `qty=` count (default 1) and raw qualifiers. */
+export interface CubeCell {
+  token: string;
+  qty: number;
+  qualifiers: string[];
+}
+
+export function parseCubeCell(spec: string): CubeCell {
+  const [token = '', ...qualifiers] = spec.split(',').map((part) => part.trim());
+  const qty = Number(qualifiers.find((part) => part.startsWith('qty='))?.slice('qty='.length));
+  return { token, qty: Number.isInteger(qty) && qty > 0 ? qty : 1, qualifiers };
+}
+
 interface ParsedSpec {
   token: string;
   qty: number;
@@ -41,20 +55,20 @@ interface ParsedSpec {
 }
 
 function parseSpec(spec: string): ParsedSpec {
-  const [token = '', ...qualifiers] = spec.split(',').map((part) => part.trim());
-  const parsed: ParsedSpec = { token, qty: 1, adjectives: [], notes: [] };
+  const { token, qty, qualifiers } = parseCubeCell(spec);
+  const parsed: ParsedSpec = { token, qty, adjectives: [], notes: [] };
   for (const qualifier of qualifiers) {
     const [key = '', value = ''] = qualifier.split('=');
-    if (key === 'qty') parsed.qty = Number(value) || 1;
+    if (key === 'qty') continue;
     // A bare `sock` means "has sockets"; `sock=N` an exact count.
-    else if (key === 'sock') parsed.notes.push(value === '' ? 'socketed' : value === '1' ? '1 socket' : `${value} sockets`);
+    if (key === 'sock') parsed.notes.push(value === '' ? 'socketed' : value === '1' ? '1 socket' : `${value} sockets`);
     else if (key in ADJECTIVES) parsed.adjectives.push(ADJECTIVES[key] ?? key);
     else if (key in NOTES) parsed.notes.push(NOTES[key] ?? key);
   }
   return parsed;
 }
 
-function join(adjectives: string[], name: string, notes: string[]): string {
+function withQualifiers(adjectives: string[], name: string, notes: string[]): string {
   const text = [...adjectives, name].join(' ');
   return notes.length === 0 ? text : `${text} (${notes.join(', ')})`;
 }
@@ -62,7 +76,7 @@ function join(adjectives: string[], name: string, notes: string[]): string {
 export function formatInput(spec: string, esr: Pick<EsrGuideTables, 'nameOf'>): string {
   const parsed = parseSpec(spec);
   const name = parsed.token === 'any' ? 'Any item' : esr.nameOf(parsed.token);
-  const text = join(parsed.adjectives, name, parsed.notes);
+  const text = withQualifiers(parsed.adjectives, name, parsed.notes);
   return parsed.qty > 1 ? `${String(parsed.qty)}× ${text}` : text;
 }
 
@@ -89,7 +103,7 @@ export function describeOutput(output: CubeOutput, esr: Pick<EsrGuideTables, 'na
 }
 
 function outputToken(output: CubeOutput): string {
-  return output.spec.split(',')[0]?.trim() ?? '';
+  return parseCubeCell(output.spec).token;
 }
 
 /** A `cloneitem` output is the input item with the row's mods, so a `useitem` next to it is not a second item. */
@@ -110,15 +124,15 @@ export function formatOutput(output: CubeOutput, esr: Pick<EsrGuideTables, 'name
 /** Variants shown per input position / for the output before "…" */
 const MAX_OPTIONS = 3;
 
-export function unique(values: readonly string[]): string[] {
+export function distinct(values: readonly string[]): string[] {
   return [...new Set(values)];
 }
 
 /** "a / b / c / … (7 variants)" */
-export function options(values: readonly string[]): string {
-  const distinct = unique(values);
-  if (distinct.length <= MAX_OPTIONS) return distinct.join(' / ');
-  return `${distinct.slice(0, MAX_OPTIONS).join(' / ')} / … (${String(distinct.length)} variants)`;
+export function joinOptions(values: readonly string[]): string {
+  const options = distinct(values);
+  if (options.length <= MAX_OPTIONS) return options.join(' / ');
+  return `${options.slice(0, MAX_OPTIONS).join(' / ')} / … (${String(options.length)} variants)`;
 }
 
 export interface RecipeVariant {
@@ -126,11 +140,16 @@ export interface RecipeVariant {
   output: string;
 }
 
-/** Distinct values, most frequent first (ties in first-seen order) */
-export function byFrequency(values: readonly string[]): string[] {
+/** Occurrences per distinct value, in first-seen order */
+export function countValues(values: readonly string[]): Map<string, number> {
   const counts = new Map<string, number>();
   for (const value of values) counts.set(value, (counts.get(value) ?? 0) + 1);
-  return [...counts].sort((a, b) => b[1] - a[1]).map(([value]) => value);
+  return counts;
+}
+
+/** Distinct values, most frequent first (ties in first-seen order) */
+function byFrequency(values: readonly string[]): string[] {
+  return [...countValues(values)].sort((a, b) => b[1] - a[1]).map(([value]) => value);
 }
 
 /**
@@ -140,7 +159,7 @@ export function byFrequency(values: readonly string[]): string[] {
  * 2. variants with the same output that differ in exactly one input slot (always the same slot) merge into one row
  *    with that slot's values joined ("Weapon / Ring / …"); anything else stays a separate row.
  */
-export function clusterVariants(variants: readonly RecipeVariant[], pool: (ranked: string[]) => string = options): RecipeVariant[] {
+export function clusterVariants(variants: readonly RecipeVariant[], pool: (ranked: string[]) => string = joinOptions): RecipeVariant[] {
   const pools = new Map<string, { inputs: string[]; outputs: string[] }>();
   for (const variant of variants) {
     const key = JSON.stringify(variant.inputs);
@@ -168,7 +187,7 @@ export function clusterVariants(variants: readonly RecipeVariant[], pool: (ranke
     cluster.values.push(inputs[cluster.slot] ?? '');
   }
   return clusters.map(({ base, output, slot, values }) => ({
-    inputs: slot === null ? base : base.map((input, i) => (i === slot ? options(values) : input)),
+    inputs: slot === null ? base : base.map((input, i) => (i === slot ? joinOptions(values) : input)),
     output,
   }));
 }
@@ -177,10 +196,7 @@ export function clusterVariants(variants: readonly RecipeVariant[], pool: (ranke
 export const MAX_GROUP_ROWS = 3;
 
 /** The first MAX_GROUP_ROWS rows with notes from `note(index)`; the last shown row says how many were left out. */
-export function capGroup(
-  variants: readonly RecipeVariant[],
-  note: (index: number) => string | null
-): { inputs: string[]; output: string; note: string | null }[] {
+export function capGroup(variants: readonly RecipeVariant[], note: (index: number) => string | null): RecipeRow[] {
   const shown = variants.slice(0, MAX_GROUP_ROWS);
   const more = variants.length - shown.length;
   return shown.map((variant, i) => {

@@ -24,7 +24,6 @@ export function useFilteredMythicalUniques(): readonly MythicalUnique[] | undefi
 
   const searchTerms = parseSearchTerms(searchText);
 
-  // A name focus overrides every other filter
   const filtered = applyExactNameFocus(allItems, exactName, (list) =>
     list.filter((item) => matchesCategory(item.category, selectedCategories)).filter((item) => matchesSearch(item, searchTerms))
   );

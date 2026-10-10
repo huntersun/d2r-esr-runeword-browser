@@ -2,19 +2,18 @@ import { MythicalUniqueFilters } from '../components/MythicalUniqueFilters';
 import { MythicalUniqueCard } from '../components/MythicalUniqueCard';
 import { useFilteredMythicalUniques } from '../hooks/useFilteredMythicalUniques';
 import { useUrlInitialize } from '../hooks/useUrlInitialize';
-import { selectExactName, setExactName } from '../store';
-import { useDispatch, useSelector } from 'react-redux';
+import { selectExactName } from '../store';
+import { useSelector } from 'react-redux';
 import { ExactNameChip } from '@/core/components/ExactNameChip';
 import { Spinner } from '@/components/ui/spinner';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 import { useItemSources } from '@/features/game-data/hooks/useItemSources';
 
 export function MythicalUniquesScreen() {
-  const nameFromUrl = useUrlInitialize();
+  const { nameFromUrl, clearExactName } = useUrlInitialize();
   const items = useFilteredMythicalUniques();
-  const dispatch = useDispatch();
   const exactName = useSelector(selectExactName);
-  const { index: sourceIndex } = useItemSources();
+  const sourceIndex = useItemSources();
 
   // Loading state
   if (items === undefined) {
@@ -32,7 +31,7 @@ export function MythicalUniquesScreen() {
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <p className="text-sm text-muted-foreground">Showing {items.length} mythical uniques</p>
-        {exactName !== null && <ExactNameChip name={exactName} onClear={() => dispatch(setExactName(null))} scrollIntoView={nameFromUrl} />}
+        {exactName !== null && <ExactNameChip name={exactName} onClear={clearExactName} scrollOnMount={nameFromUrl} />}
       </div>
 
       {items.length === 0 ? (

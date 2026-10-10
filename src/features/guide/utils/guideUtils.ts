@@ -3,9 +3,9 @@
  */
 import { parseSearchTerms } from '@/core/utils/searchTerms';
 import type { SourceLabel } from '@/features/game-data/engine/schema';
-import type { GuideBlock, GuideBundle, GuideInline, GuideNote } from '../engine/schema';
+import type { GuideBlock, GuideInline, GuideNote } from '../engine/schema';
 
-export interface AppLink {
+interface AppLink {
   /** App path incl. query, without the base URL */
   readonly href: string;
   /** Plain text of the first link that pointed there */
@@ -100,9 +100,9 @@ export function searchNotes(notes: readonly GuideNote[], query: string): GuideNo
   return [...titleHits, ...otherHits];
 }
 
-export type SourceCellKey = 'drop' | 'cube' | 'buy' | 'gamble';
+type SourceCellKey = 'drop' | 'cube' | 'buy' | 'gamble';
 
-export interface SourceCell {
+interface SourceCell {
   readonly key: SourceCellKey;
   readonly title: string;
   readonly labels: string[];
@@ -138,13 +138,4 @@ export function sourceCells(labels: readonly SourceLabel[]): SourceCell[] {
     title,
     labels: [...new Set(labels.filter((label) => cellKey(label.kind) === key).map((label) => label.text))],
   }));
-}
-
-export function findNote(bundle: GuideBundle, slug: string): GuideNote | undefined {
-  return bundle.notes.find((note) => note.slug === slug);
-}
-
-/** Title of the note with that slug, or the slug itself when it is missing (should not happen: the build validates links). */
-export function noteTitle(bundle: GuideBundle, slug: string): string {
-  return findNote(bundle, slug)?.title ?? slug;
 }

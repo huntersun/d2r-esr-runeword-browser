@@ -2,17 +2,13 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { CUBE_FAMILIES, collectFamily, familyBlock, familyRows, findCubeFamily, MAX_FAMILY_ROWS, type CubeFamily } from './cubeFamilies.ts';
-import { capGroup, clusterVariants, MAX_GROUP_ROWS } from './directives/cubeText.ts';
+import { capGroup, clusterVariants, MAX_GROUP_ROWS } from './cubeText.ts';
 import { buildEsrGuideTables, readEsrGuideSources, type EsrGuideTables } from './esrGuideSources.ts';
 import { LEAF_DIRECTIVES } from './directives/index.ts';
 import { markdownToBlocks } from './markdown.ts';
-import { ARMOR, DIFFICULTYLEVELS, fixtureContext, STRINGS, WEAPONS } from './testContext.mock.ts';
+import { ARMOR, DIFFICULTYLEVELS, fixtureContext, STRINGS, tsv, WEAPONS } from './testContext.mock.ts';
 
 const ESR_DIR = resolve(__dirname, '../../../..', process.env.ESR_SOURCE_DIR ?? '../Eastern_Sun_Resurrected');
-
-function tsv(rows: string[][]): string {
-  return rows.map((row) => row.join('\t')).join('\r\n');
-}
 
 const HEADER = [
   'description',
@@ -218,7 +214,6 @@ describe('clusterVariants', () => {
 
 describe('::recipes', () => {
   const resolve = LEAF_DIRECTIVES.recipes;
-  if (resolve === undefined) throw new Error('no ::recipes resolver');
   const ctx = fixtureContext({ esr: esr() });
 
   it('resolves a family to a recipes block captioned with its label', () => {

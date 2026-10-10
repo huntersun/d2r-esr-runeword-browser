@@ -4,6 +4,7 @@
  *
  * Shared code: relative `.ts` imports only, no DOM.
  */
+import { findNote, noteTitle } from './notes.ts';
 import type { GuideBundle, GuideNote } from './schema.ts';
 
 export type LocalGraphNodeKind = 'current' | 'knowFirst' | 'related' | 'next' | 'backlink';
@@ -26,7 +27,7 @@ export interface LocalGraphEdge {
   readonly kind: LocalGraphEdgeKind;
 }
 
-export interface LocalGraph {
+export interface LocalGraphLayout {
   readonly nodes: LocalGraphNode[];
   readonly edges: LocalGraphEdge[];
 }
@@ -46,9 +47,9 @@ export const LOCAL_GRAPH_NODE_RADIUS = 6;
 /** Distance between a node's rim and its label */
 export const LOCAL_GRAPH_LABEL_GAP = 5;
 /** Estimated average glyph width in em (sans-serif, mixed case; a little generous) */
-export const LABEL_EM_FACTOR = 0.56;
+const LOCAL_GRAPH_LABEL_EM_FACTOR = 0.56;
 /** Longest label before truncation */
-export const LABEL_MAX_CHARS = 18;
+export const LOCAL_GRAPH_LABEL_MAX_CHARS = 18;
 /** Labels are never cut shorter than this, even when the box is tiny */
 const LABEL_MIN_CHARS = 8;
 /** Free space kept between a side label and the box edge */
@@ -74,7 +75,7 @@ function arcAngles(count: number, centre: number, topFirstSign: 1 | -1): number[
 const round = (value: number) => Math.round(value * 100) / 100;
 
 /** `text` cut to at most `max` characters, ending in an ellipsis when cut. */
-export function truncateLabel(text: string, max = LABEL_MAX_CHARS): string {
+export function truncateLabel(text: string, max = LOCAL_GRAPH_LABEL_MAX_CHARS): string {
   const chars = Array.from(text);
   return chars.length <= max
     ? text
@@ -86,7 +87,7 @@ export function truncateLabel(text: string, max = LABEL_MAX_CHARS): string {
 
 /** Estimated rendered width of a label. */
 export function labelWidth(label: string, fontSize: number): number {
-  return Array.from(label).length * fontSize * LABEL_EM_FACTOR;
+  return Array.from(label).length * fontSize * LOCAL_GRAPH_LABEL_EM_FACTOR;
 }
 
 /**
@@ -98,9 +99,9 @@ export function sideLabelFit(sideTitles: readonly string[], width: number, fontS
   const half = width / 2;
   const minRx = width * MIN_RX;
   const fixed = EDGE_PAD + LOCAL_GRAPH_NODE_RADIUS + LOCAL_GRAPH_LABEL_GAP;
-  const charWidth = fontSize * LABEL_EM_FACTOR;
+  const charWidth = fontSize * LOCAL_GRAPH_LABEL_EM_FACTOR;
   const fitting = Math.floor((half - minRx - fixed) / charWidth);
-  const maxChars = Math.max(LABEL_MIN_CHARS, Math.min(LABEL_MAX_CHARS, fitting));
+  const maxChars = Math.max(LABEL_MIN_CHARS, Math.min(LOCAL_GRAPH_LABEL_MAX_CHARS, fitting));
   const longest = Math.max(0, ...sideTitles.map((title) => labelWidth(truncateLabel(title, maxChars), fontSize)));
   return { rx: Math.max(minRx, half - fixed - longest), maxChars };
 }
@@ -109,10 +110,10 @@ export function sideLabelFit(sideTitles: readonly string[], width: number, fontS
  * Neighbours of `note`, deduplicated (next > knowFirst > related > backlink), without the note itself and without
  * slugs missing from the bundle, capped at LOCAL_GRAPH_MAX_NEIGHBOURS in the order knowFirst, next, related, backlinks.
  */
-function neighbours(note: GuideNote, titles: ReadonlyMap<string, string>): { slug: string; kind: LocalGraphEdgeKind }[] {
+function neighbours(note: GuideNote, bundle: Pick<GuideBundle, 'notes'>): { slug: string; kind: LocalGraphEdgeKind }[] {
   const kindOf = new Map<string, LocalGraphEdgeKind>();
   const claim = (slugs: readonly string[], kind: LocalGraphEdgeKind) => {
-    for (const slug of slugs) if (slug !== note.slug && titles.has(slug) && !kindOf.has(slug)) kindOf.set(slug, kind);
+    for (const slug of slugs) if (slug !== note.slug && findNote(bundle, slug) !== undefined && !kindOf.has(slug)) kindOf.set(slug, kind);
   };
   // Priority order for the dedupe…
   claim(note.next === null ? [] : [note.next], 'next');
@@ -138,18 +139,17 @@ function neighbours(note: GuideNote, titles: ReadonlyMap<string, string>): { slu
  * Positions in a `size` box: the current note in the centre, knowFirst nodes on the left arc, related and backlink nodes
  * on the right arc (related first), the next note at the bottom. Nodes of an arc are spread evenly around its middle.
  */
-export function layoutLocalGraph(note: GuideNote, bundle: GuideBundle, size: LocalGraphSize): LocalGraph {
-  const titles = new Map(bundle.notes.map((n) => [n.slug, n.title]));
+export function layoutLocalGraph(note: GuideNote, bundle: GuideBundle, size: LocalGraphSize): LocalGraphLayout {
   const cx = size.width / 2;
   const cy = size.height / 2;
   const fontSize = size.fontSize ?? 12;
   const ry = size.height * (0.5 - VERTICAL_ROOM);
 
-  const chosen = neighbours(note, titles);
+  const chosen = neighbours(note, bundle);
   const left = chosen.filter((n) => n.kind === 'knowFirst');
   const right = [...chosen.filter((n) => n.kind === 'related'), ...chosen.filter((n) => n.kind === 'backlink')];
   const bottom = chosen.filter((n) => n.kind === 'next');
-  const titleOf = (slug: string) => titles.get(slug) ?? slug;
+  const titleOf = (slug: string) => noteTitle(bundle, slug);
   const { rx, maxChars } = sideLabelFit(
     [...left, ...right].map((n) => titleOf(n.slug)),
     size.width,
@@ -158,7 +158,7 @@ export function layoutLocalGraph(note: GuideNote, bundle: GuideBundle, size: Loc
   // Centred labels (current, next) may use the whole width.
   const centredChars = Math.max(
     LABEL_MIN_CHARS,
-    Math.min(LABEL_MAX_CHARS, Math.floor((size.width - 2 * EDGE_PAD) / (fontSize * LABEL_EM_FACTOR)))
+    Math.min(LOCAL_GRAPH_LABEL_MAX_CHARS, Math.floor((size.width - 2 * EDGE_PAD) / (fontSize * LOCAL_GRAPH_LABEL_EM_FACTOR)))
   );
 
   const place = (slug: string, kind: LocalGraphNodeKind, degrees: number): LocalGraphNode => ({

@@ -1,20 +1,28 @@
 import { useEffect, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowRight, ArrowUpRight, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { LoadedGuide } from '../engine/browser/loadGuide';
+import { findNote, findSourceRef, noteTitle } from '../engine/notes';
 import type { GuideNote } from '../engine/schema';
 import { AppLinkIcon } from '../components/AppLinkIcon';
+import { ExternalLink } from '../components/ExternalLink';
 import { FreshnessBadge } from '../components/FreshnessBadge';
-import { GUIDE_PROSE_FONT, GuideBody } from '../components/GuideBody';
+import { GuideBody } from '../components/GuideBody';
 import { GuideGate } from '../components/GuideGate';
 import { LocalGraph } from '../components/LocalGraph';
 import { NoteChip } from '../components/NoteChip';
+import { SectionLabel } from '../components/SectionLabel';
+import { FOCUS_RING, GUIDE_PROSE_FONT } from '../components/styles';
 import { useVisitedNotes } from '../hooks/useVisitedNotes';
-import { collectAppLinks, findNote, noteTitle } from '../utils/guideUtils';
+import { collectAppLinks } from '../utils/guideUtils';
 
-function NoteNotFound({ slug }: { readonly slug: string }) {
+interface NoteNotFoundProps {
+  readonly slug: string;
+}
+
+function NoteNotFound({ slug }: NoteNotFoundProps) {
   return (
     <div className="flex min-h-80 flex-col items-center justify-center p-4">
       <div className="max-w-md text-center">
@@ -28,16 +36,26 @@ function NoteNotFound({ slug }: { readonly slug: string }) {
   );
 }
 
-function Section({ title, children }: { readonly title: string; readonly children: ReactNode }) {
+interface SectionProps {
+  readonly title: string;
+  readonly children: ReactNode;
+}
+
+function Section({ title, children }: SectionProps) {
   return (
     <section className="space-y-2">
-      <h2 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{title}</h2>
+      <SectionLabel>{title}</SectionLabel>
       {children}
     </section>
   );
 }
 
-function Chips({ slugs, visited }: { readonly slugs: readonly string[]; readonly visited: ReadonlySet<string> }) {
+interface ChipsProps {
+  readonly slugs: readonly string[];
+  readonly visited: ReadonlySet<string>;
+}
+
+function Chips({ slugs, visited }: ChipsProps) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {slugs.map((slug) => (
@@ -47,16 +65,26 @@ function Chips({ slugs, visited }: { readonly slugs: readonly string[]; readonly
   );
 }
 
-function NextOnPath({ guide, next }: { readonly guide: LoadedGuide; readonly next: string }) {
+interface NextOnPathProps {
+  readonly guide: LoadedGuide;
+  readonly next: string;
+}
+
+function NextOnPath({ guide, next }: NextOnPathProps) {
   return (
     // Phone: a sticky bar at the bottom of the viewport (the article reserves space for it); sm+: an inline button.
     <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-card/95 px-4 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur sm:static sm:z-auto sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
       <Link
         to={`/guide/${next}`}
-        className="flex w-full items-center justify-between gap-3 rounded-md border bg-background px-3 py-2 transition-colors hover:border-primary/50 hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none sm:w-auto sm:max-w-md"
+        className={cn(
+          'flex w-full items-center justify-between gap-3 rounded-md border bg-background px-3 py-2 transition-colors hover:border-primary/50 hover:bg-accent/40 sm:w-auto sm:max-w-md',
+          FOCUS_RING
+        )}
       >
         <span className="min-w-0">
-          <span className="block text-xs font-semibold tracking-wide text-muted-foreground uppercase">Next on your path</span>
+          <SectionLabel as="span" className="block">
+            Next on your path
+          </SectionLabel>
           <span className="block truncate font-medium">{noteTitle(guide.bundle, next)}</span>
         </span>
         <ArrowRight className="size-4 shrink-0 text-primary" aria-hidden />
@@ -65,10 +93,16 @@ function NextOnPath({ guide, next }: { readonly guide: LoadedGuide; readonly nex
   );
 }
 
-function Note({ guide, note, visited }: { readonly guide: LoadedGuide; readonly note: GuideNote; readonly visited: ReadonlySet<string> }) {
+interface NoteProps {
+  readonly guide: LoadedGuide;
+  readonly note: GuideNote;
+  readonly visited: ReadonlySet<string>;
+}
+
+function Note({ guide, note, visited }: NoteProps) {
   const { bundle, manifest } = guide;
   const appLinks = collectAppLinks(note.body);
-  const sources = note.sources.map((id) => bundle.sourceRefs.find((ref) => ref.id === id) ?? { id, title: id, url: null });
+  const sources = note.sources.map((id) => findSourceRef(bundle, id));
 
   // Note-to-note navigation reuses this component; start each note at the top.
   useEffect(() => {
@@ -134,16 +168,13 @@ function Note({ guide, note, visited }: { readonly guide: LoadedGuide; readonly 
             <ul className="space-y-1">
               {note.officialDocs.map((doc) => (
                 <li key={doc.href}>
-                  <a
+                  <ExternalLink
                     href={doc.href}
-                    target="_blank"
-                    rel="noreferrer"
                     className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                    iconClassName="size-3.5"
                   >
                     {doc.label}
-                    <ArrowUpRight className="size-3.5" aria-hidden />
-                    <span className="sr-only"> (opens in a new tab)</span>
-                  </a>
+                  </ExternalLink>
                 </li>
               ))}
             </ul>
@@ -194,7 +225,12 @@ function Note({ guide, note, visited }: { readonly guide: LoadedGuide; readonly 
   );
 }
 
-function NoteRoute({ guide, slug }: { readonly guide: LoadedGuide; readonly slug: string }) {
+interface NoteRouteProps {
+  readonly guide: LoadedGuide;
+  readonly slug: string;
+}
+
+function NoteRoute({ guide, slug }: NoteRouteProps) {
   const note = findNote(guide.bundle, slug);
   const found = note !== undefined;
   // Read once per screen (it stays mounted across note-to-note navigation) and passed down, so chips and graph agree.

@@ -30,6 +30,12 @@ describe('compareVersions', () => {
       expect(compareVersions(releases[i - 1], releases[i]), `${releases[i - 1]} < ${releases[i]}`).toBe(-1);
     }
   });
+
+  it('should ignore leading zeros, surrounding whitespace and non-numeric parts', () => {
+    expect(compareVersions('3.2.04', '3.2.4')).toBe(0);
+    expect(compareVersions(' 3.2.12 ', '3.2.12')).toBe(0);
+    expect(compareVersions('3.2.x', '3.2.0')).toBe(0);
+  });
 });
 
 describe('isVersionDifferent', () => {

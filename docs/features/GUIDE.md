@@ -27,7 +27,7 @@ Guide › <title>                                             [Checked on ESR 3.
 <title>
 <summary>
 KNOW FIRST  [chip] [chip]                 (knowFirst, ≤3)
-<body: paragraphs, ###/#### headings, lists, ≤1 table, data blocks>
+<body: paragraphs, ###/#### headings, lists, tables, data blocks>
 IN THE APP  [icon link] …                 (links of kind "app" collected from the body, deduplicated, ≤4 shown)
 OFFICIAL DOCS  <label> ↗                  (officialDocs, usually 1)
 RELATED  [chip] …                          (related, ≤5)   ·  Mentioned in (n) ▸ collapsed backlinks
@@ -38,7 +38,7 @@ Sources: <sourceRefs titles>              (small, muted)
 Phone: single column; "Next on your path" becomes a sticky bottom bar.
 
 **Local graph** (`lg+` only; `components/LocalGraph.tsx`, layout in `engine/localGraph.ts`): on wide screens the note
-sits in a two-column grid (body 2/3, a sticky "Connections" column 1/3). `layoutLocalGraph(note, bundle, size)` places
+sits in a two-column grid (the body plus a sticky 22rem "Connections" column at `lg`, 2/3 + 1/3 from `xl`). `layoutLocalGraph(note, bundle, size)` places
 the note in the centre, `knowFirst` on the left arc, `related` then backlinks on the right arc and `next` at the
 bottom; each slug appears once (next > knowFirst > related > backlink), at most 8 neighbours (knowFirst, next, related,
 then backlinks). Inline SVG with rem labels (truncated to 18 chars, full title in `<title>`): know-first edges have an
@@ -95,10 +95,10 @@ Markdown (GFM tables and lists) with these additions. Anything else that is not 
 `#`/`##` headings) is a build error.
 
 | Syntax                                                                                                            | Meaning                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------------------------------------------------------------- |
-| `[[slug]]`, `[[slug\|label]]`                                                                                     | Link to another note. Validated; a missing slug fails the build. Inside a GFM table cell write the label pipe as `\\                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | ` (`[[slug\\ | label]]`) so Prettier and the build agree on the column count. |
+| ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `[[slug]]`, `[[slug\|label]]`                                                                                     | Link to another note. Validated; a missing slug fails the build. Inside a table cell escape the label pipe (see below).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `[label](rw:Enigma)`                                                                                              | App link to the runewords page focused on that runeword (`/?name=Enigma`: exact name, all its variants). Validated against the runewords bundle.                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `[label](gw:Name)`, `(unique:Name)`, `(mythical:Name)`, `(socketable:Name)`                                       | App links to the gemwords / uniques / mythicals / socketables pages focused on that name (`?name=Name`). The name must be in `public/game-data/sources.json` (case-insensitive, like `::source`) and on that page: with the ESR clone, `mythical:` takes uniques whose base is a "Mythical …" item, `unique:` the other uniques and `socketable:` misc items of a gem or rune type (crystals are runes); without the clone any unique / misc item passes. Unknown names fail the build. `gw:` is not validated (no bundle has gemword names).                                                                              |
+| `[label](gw:Name)`, `(unique:Name)`, `(mythical:Name)`, `(socketable:Name)`                                       | App links to the gemwords / uniques / mythicals / socketables pages focused on that name (`?name=Name`). The name must be in `public/game-data/sources.json` (matched like `?name=`: case, whitespace, quotes and dashes are unified; same as `::source`) and on that page: with the ESR clone, `mythical:` takes uniques whose base is a "Mythical …" item, `unique:` the other uniques and `socketable:` misc items of a gem or rune type (crystals are runes); without the clone any unique / misc item passes. Unknown names fail the build. `gw:` is not validated (no bundle has gemword names).                     |
 | `[label](base:crs)`, `(type:swor)`                                                                                | App links to Game Data bases (by base code → `?search="<name>"`) / item types (`?type=code`). Validated against the bundles.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `[label](bestbase:Enigma)`, `(affixes:base=7cr&ilvl=85)`, `(page:/game-data/bases)`                               | App links to Best Base, Affixes, or any raw app path.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `[label](docs:gems.htm#anchor)`                                                                                   | Link to the official docs (`https://easternsunresurrected.com/<file>#<anchor>`). When the ESR clone is present the file and anchor are checked offline (warning when missing).                                                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -115,8 +115,9 @@ Markdown (GFM tables and lists) with these additions. Anything else that is not 
 
 Link targets with spaces must be wrapped in angle brackets or use `%20`: `[x](<rw:Breath of the Dying>)`,
 `[x](<docs:Eastern Sun Resurrected Cube Recipes.html#sec>)`. A link the parser leaves as text (`](rw:…` or `[[`
-remaining in the output) is a build error, as is formatting inside a `[[slug|label]]` label. In table cells
-`[[slug|label]]` works as is (the generator escapes the pipe). `page:` only accepts the app's routes (`/`,
+remaining in the output) is a build error, as is formatting inside a `[[slug|label]]` label. Inside a GFM table cell
+write the label pipe escaped, `[[slug\|label]]`: the generator would escape a bare pipe for the build, but Prettier
+formats the notes too and splits the cell at a bare pipe. `page:` only accepts the app's routes (`/`,
 `/gemwords`, `/socketables`, `/uniques`, `/mythicals`, `/ascendancies`, `/game-data/{bases,best-base,affixes,types}`,
 `/guide`; a query string is allowed).
 
@@ -197,16 +198,29 @@ Code layout:
 
 ```
 src/features/guide/
-  engine/schema.ts            bundle types (GUIDE_SCHEMA, GuideBundle, GuideNote, GuideBlock, DataBlock …)
-  engine/freshness.ts         noteFreshness(), compareVersions()
-  engine/browser/loadGuide.ts browser loader (promise cache, schema check)
-  build/                      generator-only code (excluded from the app tsconfig, included in tsconfig.scripts)
-  build/staleness.ts          block hashes, lock file, patch-note scan, staleReasons, verify edit, report
-  hooks/useGuide.ts
+  engine/schema.ts              bundle types (GUIDE_SCHEMA, GuideBundle, GuideNote, GuideBlock, DataBlock …)
+  engine/freshness.ts           noteFreshness() (versions compared with core/utils/versionUtils)
+  engine/notes.ts               findNote(), noteTitle(), findSourceRef()
+  engine/linkSchemes.ts         LINK_SCHEMES, NAME_FOCUS_PAGES (shared by the generator and the app-link icons)
+  engine/localGraph.ts          layoutLocalGraph()
+  engine/browser/loadGuide.ts   browser loader (promise cache, schema check)
+  build/                        generator-only code (excluded from the app tsconfig, included in tsconfig.scripts)
+  build/generateGuide.ts        content + game data + ESR tables → bundle (pure; fs reads in readGuideInputs.ts)
+  build/parseNote.ts            frontmatter (fields.ts: YAML validators; content.ts: spine, glossary, sources)
+  build/markdown.ts             body → GuideBlock[] (links.ts: link schemes; wikilinks.ts: [[slug]])
+  build/graph.ts                backlinks, next, spine step, orphans
+  build/directives/             one resolver per leaf directive (index.ts: LEAF_DIRECTIVES)
+  build/cubeFamilies.ts         ::recipes families (cubeText.ts: readable cubemain cells, variant merging)
+  build/esrGuideSources.ts      the ESR tables the directives read
+  build/staleness.ts            block hashes, patch-note scan, staleReasons
+  build/verifyLock.ts           .verify-lock.json, the guide:verify frontmatter edit
+  build/report.ts               guide:report
+  hooks/                        useGuide, useLoadedGuide (context), useVisitedNotes, useHoverPopover
+  utils/                        pure screen helpers (app links, search, source cells, card lookup, visited list)
   screens/, components/
-  index.ts                    lazy-route exports
-scripts/generate-guide.ts     thin CLI
-public/guide/                 committed output
+  index.ts                      lazy-route exports
+scripts/generate-guide.ts       thin CLI
+public/guide/                   committed output
 ```
 
 Shared (`engine/` + `build/`) code uses relative `.ts` imports, no `@/`, and no DOM, like game-data.
@@ -275,16 +289,25 @@ Generated by the **game-data** pipeline (`src/features/game-data/build/bundleSou
 item, in this order: `cube` ("Cube: Ancient Coupon" / "Cube: <family>" / "Cube"), `boss` ("Drops from <monster>"),
 `maps` ("Drops in Endgame Maps"), `drop` ("Drops (random)"), `buy` ("Buy: <NPC>"), `gamble` ("Gamble"), `plugin`
 ("Boss drop (launcher plugin)"), `unknown`. The UI shows "Derived from the game files; may be incomplete." The guide
-consumes it through `::source[...]`; phase 2 adds a Source line to the item cards.
+consumes it through `::source[...]`; the item cards show a Source line from it too.
 
 ## Tests
 
-Logic only (no component tests): frontmatter validation, markdown → GuideBlock conversion, link resolution, backlinks
-and next computation, directive resolvers against a trimmed excel fixture, freshness states, lock-file hashing and comparison,
-staleReasons generation, patch-note scan, the byte-preserving `verified:` edit, the report, bundle
-integrity (manifest schema and sha256 of the committed files always; regenerating from `content/` in memory and
-comparing is skipped when the ESR clone or sources.json is missing), source-label rules on the verified examples (Pelta Lunata, Krok's Basher, Mephisto's Will, Frostmourne,
-Annihilus, Hellfire Torch, Kill Ledger, Orb of Anointment, Forging Hammer).
+Logic only (no component tests), colocated `*.test.ts`:
+
+- build: YAML field validation (`fields`), spine/glossary/sources parsing (`content`), frontmatter (`parseNote`),
+  markdown → GuideBlock conversion (`markdown`), link resolution (`links`), backlinks, next and orphans (`graph`),
+  directive resolvers against a trimmed excel fixture (`directives/directives`), cube families and variant merging
+  (`cubeFamilies`, plus a check against the ESR clone when present), block hashes, patch-note scan and staleReasons
+  (`staleness`), the lock file and the byte-preserving `verified:` edit (`verifyLock`), the report (`report`), the
+  manifest (`writeGuide`), whole-guide generation on fixtures (`generateGuide`).
+- engine: freshness states, note lookups, local-graph layout, the browser loader (cache eviction, schema error).
+- utils: app links, search, source cells, card name matching, the visited list.
+- `guideIntegrity.test.ts`: manifest schema and sha256 of the committed files always; regenerating from `content/` in
+  memory and comparing is skipped when the ESR clone or sources.json is missing.
+
+Shared fixtures: `build/testContext.mock.ts` (txt rows, strings, game data, `tsv()`) and `engine/testNote.mock.ts`
+(`makeNote()`). The source-label rules of `sources.json` are tested in game-data.
 
 ## Attribution
 

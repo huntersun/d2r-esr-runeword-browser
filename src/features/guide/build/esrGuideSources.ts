@@ -4,7 +4,7 @@
  */
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ESR_EXCEL_DIR, ESR_METADATA_FILE, ESR_STRINGS_DIR } from '../../game-data/build/esrSources.ts';
+import { ESR_EXCEL_DIR, readModVersion, readStringFiles } from '../../game-data/build/esrSources.ts';
 import { buildStringTable, type StringsFile } from '../../game-data/build/strings.ts';
 import { parseTsv, type TsvRow, type TsvTable } from '../../game-data/build/tsv.ts';
 
@@ -77,24 +77,11 @@ export interface EsrGuideTables {
   names: ReadonlySet<string>;
 }
 
-function readModVersion(esrDir: string): string {
-  const parsed: unknown = JSON.parse(readFileSync(join(esrDir, ESR_METADATA_FILE), 'utf8').replace(/^\uFEFF/, ''));
-  const metadata = typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, unknown>).metadata : undefined;
-  const version = typeof metadata === 'object' && metadata !== null ? (metadata as Record<string, unknown>).modVersion : undefined;
-  if (typeof version !== 'string' || version === '') throw new Error(`${ESR_METADATA_FILE}: metadata.modVersion missing`);
-  return version;
-}
-
 export function readEsrGuideSources(esrDir: string): EsrGuideSources {
   const excelDir = join(esrDir, ESR_EXCEL_DIR);
   const tables = {} as Record<GuideTableName, string>;
   for (const name of GUIDE_TABLES) tables[name] = readFileSync(join(excelDir, `${name}.txt`), 'utf8');
-  const stringsDir = join(esrDir, ESR_STRINGS_DIR);
-  const strings = readdirSync(stringsDir)
-    .filter((name) => name.endsWith('.json'))
-    .sort()
-    .map((name) => ({ name, text: readFileSync(join(stringsDir, name), 'utf8') }));
-  return { esrVersion: readModVersion(esrDir), tables, strings };
+  return { esrVersion: readModVersion(esrDir), tables, strings: readStringFiles(esrDir) };
 }
 
 /** Anchors (`id="…"` / `name="…"`) per file of the clone's docs/ folder (the official site); null without docs. */
@@ -108,7 +95,7 @@ export function readDocsIndex(esrDir: string): Map<string, Set<string>> | null {
   return index;
 }
 
-export function anchorsOf(html: string): Set<string> {
+function anchorsOf(html: string): Set<string> {
   return new Set([...html.matchAll(/\b(?:id|name)\s*=\s*["']([^"']*)["']/gi)].map((match) => match[1]));
 }
 
@@ -116,7 +103,7 @@ export function anchorsOf(html: string): Set<string> {
  * Display text of a string table entry. Multi-line item names keep the name on the last line and a subtitle above it
  * (e.g. "(Buckler, Pelta Lunata)\nAncient Coupon" → "Ancient Coupon (Buckler, Pelta Lunata)").
  */
-export function displayString(text: string): string {
+function displayString(text: string): string {
   const lines = text
     .split('\n')
     .map((line) => line.trim())

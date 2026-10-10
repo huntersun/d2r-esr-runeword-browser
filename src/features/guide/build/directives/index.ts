@@ -1,4 +1,4 @@
-import { resolveCard } from './card.ts';
+import { resolveCardDirective } from './card.ts';
 import { resolveDifficultyPenalties } from './difficultyPenalties.ts';
 import { resolveGlossary } from './glossary.ts';
 import { resolveRecipeOutput } from './recipeOutput.ts';
@@ -12,8 +12,19 @@ export { cardKeyArg } from './card.ts';
 export { resolveTerm } from './glossary.ts';
 export type { DirectiveResolver } from './types.ts';
 
+export type LeafDirectiveName =
+  | 'source'
+  | 'secret-recipes'
+  | 'secret-recipe'
+  | 'recipe-output'
+  | 'recipes'
+  | 'vendor'
+  | 'difficulty-penalties'
+  | 'glossary'
+  | 'card';
+
 /** Leaf directives (`::name[arg]`) by name */
-export const LEAF_DIRECTIVES: Readonly<Partial<Record<string, DirectiveResolver>>> = {
+export const LEAF_DIRECTIVES: Readonly<Record<LeafDirectiveName, DirectiveResolver>> = {
   source: resolveSource,
   'secret-recipes': resolveSecretRecipes,
   'secret-recipe': resolveSecretRecipe,
@@ -22,5 +33,9 @@ export const LEAF_DIRECTIVES: Readonly<Partial<Record<string, DirectiveResolver>
   vendor: resolveVendor,
   'difficulty-penalties': resolveDifficultyPenalties,
   glossary: resolveGlossary,
-  card: resolveCard,
+  card: resolveCardDirective,
 };
+
+export function isLeafDirective(name: string): name is LeafDirectiveName {
+  return Object.hasOwn(LEAF_DIRECTIVES, name);
+}

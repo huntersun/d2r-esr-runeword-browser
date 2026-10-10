@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { fixtureContext, fixtureEsr } from '../testContext.mock.ts';
-import { formatInput } from './cubeText.ts';
-import { LEAF_DIRECTIVES, resolveTerm } from './index.ts';
+import { formatInput } from '../cubeText.ts';
+import { isLeafDirective, LEAF_DIRECTIVES, resolveTerm } from './index.ts';
 import { collectSecretRecipes } from './secretRecipes.ts';
 
 function resolve(name: string, arg: string | null, ctx = fixtureContext(), attributes: Record<string, string> = {}) {
-  const resolver = LEAF_DIRECTIVES[name];
-  if (resolver === undefined) throw new Error(`no resolver ${name}`);
-  return resolver(arg, ctx, attributes);
+  if (!isLeafDirective(name)) throw new Error(`no resolver ${name}`);
+  return LEAF_DIRECTIVES[name](arg, ctx, attributes);
 }
 
 describe('cube text', () => {

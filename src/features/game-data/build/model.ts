@@ -65,11 +65,12 @@ export interface CharStatsRow {
 }
 
 /** Numeric cell of a column that only some item tables have (e.g. `minac` is armor-only); 0 when absent. */
-function optNum(row: TsvRow, column: string): number {
+export function optNum(row: TsvRow, column: string): number {
   return row.has(column) ? row.num(column) : 0;
 }
 
-function optStr(row: TsvRow, column: string): string {
+/** Text cell of a column that only some item tables have; '' when absent. */
+export function optStr(row: TsvRow, column: string): string {
   return row.has(column) ? row.str(column) : '';
 }
 

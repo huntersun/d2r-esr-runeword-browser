@@ -182,6 +182,20 @@ describe.skipIf(!existsSync(ESR_DIR))('game data generated from the ESR clone', 
     expect(serializeBundle(generated.sources)).toBe(sourcesText);
   });
 
+  it('labels the verified source examples', () => {
+    const kinds = (name: string) => generated.sources.items.find((item) => item.name === name)?.labels.map((label) => label.kind);
+    const labelTexts = (name: string) => generated.sources.items.find((item) => item.name === name)?.labels.map((label) => label.text);
+    expect(labelTexts('Pelta Lunata')).toEqual(['Cube: Ancient Coupon']);
+    expect(kinds("Krok's Basher")).toEqual(['drop', 'gamble']);
+    expect(kinds("Mephisto's Will")).toEqual(['maps']);
+    expect(labelTexts('Frostmourne')).toEqual(['Drops from The Lich King']);
+    expect(labelTexts('Annihilus')).toEqual(['Drops from Diablo Clone']);
+    expect(kinds('Hellfire Torch')).toEqual(['plugin']);
+    expect(kinds('Kill Ledger')).toEqual(['cube']);
+    expect(kinds('Orb of Anointment')).toEqual(['maps']);
+    expect(labelTexts('Forging Hammer')).toEqual(['Cube', "Drops from Bloodwitch the Wild, Uldyssian's Hound"]);
+  });
+
   it('names spawnable bases like the ESR docs pages (≥ 95 % overlap)', () => {
     const htmNames = new Set(htm.values());
     const missing = gear.filter((base) => !htmNames.has(base.name));

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildSourceIndex, findItemSource, normaliseItemName } from './sourceLookup';
+import { buildSourceIndex, findItemSource } from './sourceLookup';
 import type { ItemSource, SourcesBundle } from './schema';
 
 function entry(name: string, item: ItemSource['item'], text: string, code = 'xyz'): ItemSource {
@@ -17,23 +17,6 @@ const bundle: SourcesBundle = {
     { name: 'Character Augmenter', code: 'aug', item: 'misc', labels: [{ kind: 'unknown', text: 'Unknown' }] },
   ],
 };
-
-describe('normaliseItemName', () => {
-  it('trims, collapses whitespace and case-folds', () => {
-    expect(normaliseItemName('  The   Ties\tthat Bind ')).toBe('the ties that bind');
-  });
-
-  it('unifies typographic apostrophes and quotes', () => {
-    expect(normaliseItemName('El’Druin')).toBe("el'druin");
-    expect(normaliseItemName('El‘Druin')).toBe("el'druin");
-    expect(normaliseItemName('“Quoted”')).toBe('"quoted"');
-  });
-
-  it('unifies dashes and non-breaking spaces', () => {
-    expect(normaliseItemName('Ancient Decal (I –> El)')).toBe('ancient decal (i -> el)');
-    expect(normaliseItemName('Small Charm')).toBe('small charm');
-  });
-});
 
 describe('buildSourceIndex', () => {
   it('groups entries of the same normalised name across kinds', () => {

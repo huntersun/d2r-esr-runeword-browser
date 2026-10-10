@@ -130,12 +130,40 @@ export type GuideBlock =
   | { type: 'codeBlock'; value: string }
   | { type: 'data'; block: DataBlock };
 
+/** One entry of an `items` data block (vendor stock, recipe contents) */
+export interface ItemsBlockItem {
+  label: string;
+  detail: string | null;
+}
+
+/** One row of a `recipes` data block */
+export interface RecipeRow {
+  inputs: string[];
+  output: string;
+  note: string | null;
+}
+
+export type CardItem = 'runeword' | 'gemword' | 'unique' | 'mythical' | 'socketable';
+
+/** An embedded item card (resolved from the HTM data in the browser); `href` is the app-link fallback (`?name=`) */
+export interface CardBlock {
+  kind: 'card';
+  item: CardItem;
+  name: string;
+  href: string;
+}
+
+export interface RecipesBlock {
+  kind: 'recipes';
+  caption: string;
+  rows: RecipeRow[];
+}
+
 /** Blocks produced by directives; the browser renders them generically. */
 export type DataBlock =
   | { kind: 'table'; caption: string; header: string[]; rows: string[][] }
-  | { kind: 'items'; caption: string; items: { label: string; detail: string | null }[] }
-  | { kind: 'recipes'; caption: string; rows: { inputs: string[]; output: string; note: string | null }[] }
+  | { kind: 'items'; caption: string; items: ItemsBlockItem[] }
+  | RecipesBlock
   | { kind: 'source'; item: string; labels: SourceLabel[] }
   | { kind: 'glossary'; entries: GlossaryEntry[] }
-  /** An embedded item card (resolved from the HTM data in the browser); `href` is the app-link fallback (`?name=`) */
-  | { kind: 'card'; item: 'runeword' | 'gemword' | 'unique' | 'mythical' | 'socketable'; name: string; href: string };
+  | CardBlock;

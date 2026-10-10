@@ -4,9 +4,7 @@
  * `normaliseItemName` before matching.
  */
 import { normaliseItemName } from '../../../core/utils/itemName.ts';
-import type { ItemSource, SourcesBundle } from './schema';
-
-export { normaliseItemName };
+import type { ItemSource, SourcesBundle } from './schema.ts';
 
 export type ItemSourceKind = ItemSource['item'];
 

@@ -46,7 +46,8 @@ export interface EsrSources {
   plugins: { bossSetUniqueDrop: string | null };
 }
 
-function readModVersion(esrDir: string): string {
+/** `metadata.modVersion` of the clone's d2rloader metadata (the ESR version). */
+export function readModVersion(esrDir: string): string {
   const parsed: unknown = JSON.parse(readFileSync(join(esrDir, ESR_METADATA_FILE), 'utf8').replace(/^\uFEFF/, ''));
   const metadata = typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, unknown>).metadata : undefined;
   const version = typeof metadata === 'object' && metadata !== null ? (metadata as Record<string, unknown>).modVersion : undefined;
@@ -54,16 +55,21 @@ function readModVersion(esrDir: string): string {
   return version;
 }
 
+/** The clone's string table files (`*.json` under ESR_STRINGS_DIR), sorted by name. */
+export function readStringFiles(esrDir: string): StringsFile[] {
+  const stringsDir = join(esrDir, ESR_STRINGS_DIR);
+  return readdirSync(stringsDir)
+    .filter((name) => name.endsWith('.json'))
+    .sort()
+    .map((name) => ({ name, text: readFileSync(join(stringsDir, name), 'utf8') }));
+}
+
 export function readEsrSources(esrDir: string): EsrSources {
   const excelDir = join(esrDir, ESR_EXCEL_DIR);
   const tables = {} as Record<EsrTableName, string>;
   for (const name of TABLES) tables[name] = readFileSync(join(excelDir, `${name}.txt`), 'utf8');
 
-  const stringsDir = join(esrDir, ESR_STRINGS_DIR);
-  const strings = readdirSync(stringsDir)
-    .filter((name) => name.endsWith('.json'))
-    .sort()
-    .map((name) => ({ name, text: readFileSync(join(stringsDir, name), 'utf8') }));
+  const strings = readStringFiles(esrDir);
 
   const pluginFile = join(esrDir, ESR_BOSS_SET_UNIQUE_DROP_FILE);
   const bossSetUniqueDrop = existsSync(pluginFile) ? readFileSync(pluginFile, 'utf8') : null;

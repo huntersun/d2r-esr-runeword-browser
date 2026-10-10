@@ -10,16 +10,15 @@ import { FavoritesToggleButton } from '@/core/components/FavoritesToggleButton';
 import { useItemFavorites } from '@/features/favorites';
 import { buildRecipeFavoriteId } from '@/core/utils/recipeFavorites';
 import type { Gemword } from '@/core/db/models';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { ExactNameChip } from '@/core/components/ExactNameChip';
-import { selectExactName, setExactName } from '../store/gemwordsSlice';
+import { selectExactName } from '../store/gemwordsSlice';
 
 const getGemwordFavoriteId = (gemword: Gemword) => buildRecipeFavoriteId('gemword', gemword);
 
 export function GemwordsScreen() {
-  const nameFromUrl = useUrlInitialize();
+  const { nameFromUrl, clearExactName } = useUrlInitialize();
   const gemwords = useFilteredGemwords();
-  const dispatch = useDispatch();
   const exactName = useSelector(selectExactName);
   const gemBonusMap = useGemBonusMap();
   // Loaded once for the whole screen and shared by all gem badges/tooltips
@@ -49,9 +48,7 @@ export function GemwordsScreen() {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <p className="text-sm text-muted-foreground">Showing {filteredGemwords.length} gemwords</p>
-          {exactName !== null && (
-            <ExactNameChip name={exactName} onClear={() => dispatch(setExactName(null))} scrollIntoView={nameFromUrl} />
-          )}
+          {exactName !== null && <ExactNameChip name={exactName} onClear={clearExactName} scrollOnMount={nameFromUrl} />}
         </div>
         {favorites.isAuthenticated && (
           <FavoritesToggleButton

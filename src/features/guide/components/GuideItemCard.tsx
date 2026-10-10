@@ -11,12 +11,10 @@ import { RunewordCard } from '@/features/runewords';
 // Not exported from the socketables feature index (only the screen is), so imported by its file path.
 import { SocketableCard } from '@/features/socketables/components/SocketableCard';
 import type { UnifiedSocketable } from '@/features/socketables/types';
-import type { DataBlock } from '../engine/schema';
+import type { CardBlock } from '../engine/schema';
 import { findCardRecord, findSocketable, pickCardVariants } from '../utils/cardRecord';
 import { AppLinkIcon } from './AppLinkIcon';
 import { GuideCardAppLink, GuideCardFailed, GuideCardLoading, GuideCardNotice } from './GuideCardPlaceholder';
-
-export type CardBlock = Extract<DataBlock, { kind: 'card' }>;
 
 type CardRecord =
   | { readonly item: 'runeword'; readonly records: readonly Runeword[] }
@@ -26,7 +24,7 @@ type CardRecord =
   | { readonly item: 'socketable'; readonly record: UnifiedSocketable };
 
 /** Looks the block's item up in the local HTM data; null when it is not there (yet). */
-async function resolveCard(item: CardBlock['item'], name: string): Promise<CardRecord | null> {
+async function lookUpCardRecord(item: CardBlock['item'], name: string): Promise<CardRecord | null> {
   switch (item) {
     case 'runeword': {
       const records = pickCardVariants(await db.runewords.toArray(), name);
@@ -58,13 +56,21 @@ async function resolveCard(item: CardBlock['item'], name: string): Promise<CardR
   }
 }
 
-function GemwordCards({ records }: { readonly records: readonly Gemword[] }) {
+interface GemwordCardsProps {
+  readonly records: readonly Gemword[];
+}
+
+function GemwordCards({ records }: GemwordCardsProps) {
   const gemBonusMap = useGemBonusMap();
   return records.map((gemword) => <GemwordCard key={gemword.variant} gemword={gemword} gemBonusMap={gemBonusMap} />);
 }
 
-function SourcedCard({ record }: { readonly record: Exclude<CardRecord, { records: unknown }> }) {
-  const { index: sourceIndex } = useItemSources();
+interface SourcedCardProps {
+  readonly record: Exclude<CardRecord, { records: unknown }>;
+}
+
+function SourcedCard({ record }: SourcedCardProps) {
+  const sourceIndex = useItemSources();
   switch (record.item) {
     case 'unique':
       return <HtmUniqueItemCard item={record.record} sourceIndex={sourceIndex} />;
@@ -75,7 +81,11 @@ function SourcedCard({ record }: { readonly record: Exclude<CardRecord, { record
   }
 }
 
-function RecordCards({ record }: { readonly record: CardRecord }) {
+interface RecordCardsProps {
+  readonly record: CardRecord;
+}
+
+function RecordCards({ record }: RecordCardsProps) {
   switch (record.item) {
     case 'runeword':
       return record.records.map((runeword) => <RunewordCard key={runeword.variant} runeword={runeword} />);
@@ -92,12 +102,16 @@ function RecordCards({ record }: { readonly record: CardRecord }) {
  * missing item shows a loading placeholder (the live query re-runs as the sync writes the tables); if that sync fails
  * (nothing cached, fetch/parse/store error) it shows a "could not be loaded" box with the app link instead.
  */
-// Default export for lazy() in GuideBody (the cards and their data hooks stay out of the guide chunk).
-export default function GuideItemCard({ block }: { readonly block: CardBlock }) {
+// Default export for lazy() in GuideDataBlock (the cards and their data hooks stay out of the guide chunk).
+interface GuideItemCardProps {
+  readonly block: CardBlock;
+}
+
+export default function GuideItemCard({ block }: GuideItemCardProps) {
   const isInitialized = useSelector(selectIsInitialized);
   const syncError = useSelector(selectError);
   // isInitialized is a dependency too, so the lookup re-runs once the sync reports done even if no write was observed.
-  const record = useLiveQuery(() => resolveCard(block.item, block.name), [block.item, block.name, isInitialized]);
+  const record = useLiveQuery(() => lookUpCardRecord(block.item, block.name), [block.item, block.name, isInitialized]);
   const appLink = <GuideCardAppLink href={block.href} />;
 
   // Not found while the first sync has failed (it never initialises then): stop spinning and offer the app link.

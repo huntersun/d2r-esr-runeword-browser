@@ -17,8 +17,8 @@ Documentation for routing, layout, and navigation patterns.
 | `/ascendancies`         | AscendanciesScreen    | Ascendancies with their tier bonuses                                                    |
 | `/game-data`            | GameDataLayout        | Game-file data section; index redirects to `bases`                                      |
 | `/game-data/bases`      | BasesScreen           | Base items browser (txt game files)                                                     |
-| `/game-data/best-base`  | BestBaseScreen        | Placeholder (Phase 2)                                                                   |
-| `/game-data/affixes`    | AffixesScreen         | Placeholder (Phase 3)                                                                   |
+| `/game-data/best-base`  | BestBaseScreen        | Best base finder for a runeword and a persisted character                               |
+| `/game-data/affixes`    | AffixesScreen         | Affix browser + "what can roll" on a base                                               |
 | `/game-data/types`      | ItemTypesScreen       | Item type tree + socket caps, `?type=<code>` focus                                      |
 | `/builds`               | BuildsScreen          | Shared builds list (Supabase only)                                                      |
 | `/builds/new`           | CreateBuildScreen     | Create a build (sign-in required)                                                       |
@@ -54,7 +54,8 @@ Copy Link keeps it. Guide `rw:`/`gw:`/`unique:`/`mythical:`/`socketable:` links 
 `AppLayout` shows a full-screen "Loading data..." spinner until the HTM data sync has initialized (and a full-screen
 error with "Try Again" when it failed). Guide routes (`/guide`, `/guide/*`) skip the spinner and render the normal
 shell (Header + Outlet + SettingsDrawer) right away, because the guide is a static JSON bundle (`public/guide/`) that
-needs no Dexie data; the sync keeps running in the background. The fatal-error screen still applies to every route.
+needs no Dexie data; the sync keeps running in the background. They also skip the fatal-error screen, so a failed
+first sync does not hide the guide.
 See [GUIDE.md](../features/GUIDE.md).
 
 ### Header Components

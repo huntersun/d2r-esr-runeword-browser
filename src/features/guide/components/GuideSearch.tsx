@@ -3,11 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
 import type { GuideNote } from '../engine/schema';
 import { searchNotes } from '../utils/guideUtils';
+import { FOCUS_RING } from './styles';
+
+interface GuideSearchProps {
+  readonly notes: readonly GuideNote[];
+}
 
 /** Search trigger (looks like an input) that opens a cmdk palette over the notes; Enter opens the selected note. */
-export function GuideSearch({ notes }: { readonly notes: readonly GuideNote[] }) {
+export function GuideSearch({ notes }: GuideSearchProps) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -25,7 +31,10 @@ export function GuideSearch({ notes }: { readonly notes: readonly GuideNote[] })
         onClick={() => {
           setOpen(true);
         }}
-        className="flex h-10 w-full items-center gap-2 rounded-md border bg-background px-3 text-left text-sm text-muted-foreground shadow-xs transition-colors hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+        className={cn(
+          'flex h-10 w-full items-center gap-2 rounded-md border bg-background px-3 text-left text-sm text-muted-foreground shadow-xs transition-colors hover:bg-accent/40',
+          FOCUS_RING
+        )}
       >
         <Search className="size-4 shrink-0 opacity-60" aria-hidden />
         <span className="truncate">Search the guide…</span>

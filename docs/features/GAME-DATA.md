@@ -76,7 +76,7 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 
 ### Affixes
 
-`affixes.json` (`AffixesBundle`, ~785 KB / 57 KB gzip) holds the spawnable rows of `magicprefix.txt` (kind `p`),
+`affixes.json` (`AffixesBundle`, ~795 KB / 61 KB gzip) holds the spawnable rows of `magicprefix.txt` (kind `p`),
 `magicsuffix.txt` (`s`) and `automagic.txt` (`a`): ESR 3.2.12 → 2528 affixes (885 / 1504 / 139). Per affix: `id` (0-based
 row index within its file, unique together with `kind`), string-resolved `name`, `lvl`, `maxLvl`, `reqLvl`, `cls`
 (`classspecific`), `reqCls` + `clsReqLvl` (`class` / `classlevelreq`), `freq`, `group`, `rare`, `itypes`, `etypes`,
@@ -105,11 +105,12 @@ one or more `labels` (`{ kind, text }`), always in this order:
 Items covered: every `uniqueitems.txt` row with an `index` and `disabled != 1` (the `*Skip Generation` comment column
 is ignored: it is set on 96 playable rows such as Mephisto's Will), every `setitems.txt` row, and every `misc.txt` row
 that is a cube input or output, sold by a vendor, or named in a monster-reachable TC, except potions, scrolls, tomes,
-keys, gold and ammo (`NOISE_TYPES`). Rows with the same `item` kind and display name (the ES and Ancient Coupon LoD versions of a
-unique such as Eaglehorn, 47 "Rune Stocker" misc variants, …) merge into one entry: the first row's `code`, the union of
-all labels (deduped by kind + text, in the order above; `Unknown` only when nothing else applies). The same name across
-kinds stays separate (Worldstone Shard set item vs material; the guide disambiguates with `{item=…}`). Names come from the string tables; multi-line names are read bottom-up ("Ancient Coupon (Buckler, Pelta
-Lunata)"). `diabloclone` is shown as "Diablo Clone" (its name string is plain "Diablo"). Counts: `counts.sourcesUnique`,
+keys, gold and ammo (`NOISE_TYPES`). Rows with the same `item` kind and display name (the ES and Ancient Coupon LoD
+versions of a unique such as Eaglehorn, 47 "Rune Stocker" misc variants, …) merge into one entry: the first row's
+`code`, the union of all labels (deduped by kind + text, in the order above; `Unknown` only when nothing else
+applies). The same name across kinds stays separate (Worldstone Shard set item vs material; the guide disambiguates
+with `{item=…}`). Names come from the string tables; multi-line names are read bottom-up ("Ancient Coupon (Buckler,
+Pelta Lunata)"). `diabloclone` is shown as "Diablo Clone" (its name string is plain "Diablo"). Counts: `counts.sourcesUnique`,
 `sourcesSet`, `sourcesMisc`, `sourcesMerged` (rows folded into an earlier entry), `sourcesUnknown` (ESR 3.2.12:
 1107 / 270 / 795 / 516 / 13).
 
@@ -121,7 +122,7 @@ prefers the given kind (`unique` for uniques/mythicals, `misc` for socketables) 
 or Worldstone Shard. Coverage against the HTM fixtures (ESR 3.2.12): 1065/1065 uniques, 41/41 mythicals,
 178/178 socketables.
 
-Limitations (the UI says "Derived from the game files; may be incomplete"):
+Limitations (the help popover says "Derived from the ESR game files (ESR x.y.z); qualitative only, may be incomplete."):
 
 - No percentages or drop rates, no monster → area mapping.
 - No replica of the engine auto-TCs (`weapN` / `armoN` level bands) or of `lvl ≤ mlvl`: a random unique drop only
@@ -511,7 +512,7 @@ src/features/game-data/
                affixEligibility.ts
   engine/browser/loadGameData.ts         browser-only loader (fetch, import.meta.env)
   build/       build only: tsv.ts, strings.ts, model.ts, esrSources.ts, bundleTypes.ts, bundleBases.ts,
-               bundleRunewords.ts, bundleAffixes.ts, bundleSources.ts (+ treasureClasses.ts, pluginDrops.ts,
+               bundleRunewords.ts, bundleAffixes.ts, bundleSources.ts (+ treasureClasses.ts, pluginUniques.ts,
                itemNames.ts), generateBundles.ts, writeBundle.ts
   build/stats/ stat renderer (see "Stat renderer")
 ```

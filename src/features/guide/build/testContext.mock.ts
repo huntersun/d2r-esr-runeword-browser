@@ -3,7 +3,8 @@ import type { GlossaryEntry } from '../engine/schema.ts';
 import { createGuideContext, type DocsIndex, type GameDataInputs, type GuideContext } from './context.ts';
 import { buildEsrGuideTables, type EsrGuideTables } from './esrGuideSources.ts';
 
-function tsv(rows: string[][]): string {
+/** Tab-separated rows with CRLF line ends, like the txt files. */
+export function tsv(rows: string[][]): string {
   return rows.map((row) => row.join('\t')).join('\r\n');
 }
 

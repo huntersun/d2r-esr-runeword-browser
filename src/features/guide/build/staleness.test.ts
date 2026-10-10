@@ -1,18 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import type { DataBlock, GuideNote } from '../engine/schema.ts';
+import { makeNote } from '../engine/testNote.mock.ts';
 import {
   capReasons,
   compareBlockHashes,
-  formatGuideReport,
   hashDataBlocks,
   keyDataBlocks,
   mentionsTerm,
   noteSearchTerms,
   noteStaleReasons,
-  parseVerifyLock,
   scanPatchNotes,
-  serializeVerifyLock,
-  setVerifiedInFrontmatter,
   versionFromPatchNoteFile,
 } from './staleness.ts';
 import { directiveKey } from './markdown.ts';
@@ -21,27 +18,7 @@ const gheed: DataBlock = { kind: 'items', caption: 'Gheed sells', items: [{ labe
 const shard: DataBlock = { kind: 'source', item: 'Worldstone Shard', labels: [] };
 
 function note(overrides: Partial<GuideNote>): GuideNote {
-  return {
-    slug: 'stockers',
-    title: 'Stockers',
-    kind: 'note',
-    summary: '',
-    tags: [],
-    aliases: [],
-    verified: '3.2.10',
-    staleReasons: [],
-    volatility: 'low',
-    knowFirst: [],
-    related: [],
-    backlinks: [],
-    next: null,
-    spineStep: null,
-    officialDocs: [],
-    sources: [],
-    words: 0,
-    body: [],
-    ...overrides,
-  };
+  return makeNote({ slug: 'stockers', title: 'Stockers', verified: '3.2.10', ...overrides });
 }
 
 describe('block keys and hashes', () => {
@@ -98,28 +75,6 @@ describe('block keys and hashes', () => {
         '3.2.10'
       )
     ).toEqual(["Data in 'Gheed sells' changed since 3.2.10", "Data in 'Secret recipes' changed since 3.2.10"]);
-  });
-});
-
-describe('lock file', () => {
-  it('round-trips sorted and parses a missing file as empty', () => {
-    const errors: string[] = [];
-    const text = serializeVerifyLock({ b: { verified: '3.2.12', blocks: { z: '1', a: '2' } }, a: { verified: '3.2.11', blocks: {} } });
-    expect(text).toBe(
-      '{\n  "a": {\n    "verified": "3.2.11",\n    "blocks": {}\n  },\n  "b": {\n    "verified": "3.2.12",\n    "blocks": {\n      "a": "2",\n      "z": "1"\n    }\n  }\n}\n'
-    );
-    expect(parseVerifyLock(text, 'lock', errors)).toEqual({
-      a: { verified: '3.2.11', blocks: {} },
-      b: { verified: '3.2.12', blocks: { a: '2', z: '1' } },
-    });
-    expect(parseVerifyLock(null, 'lock', errors)).toEqual({});
-    expect(errors).toEqual([]);
-  });
-
-  it('reports malformed entries', () => {
-    const errors: string[] = [];
-    expect(parseVerifyLock('{"a": {"verified": 3}}', 'lock', errors)).toEqual({});
-    expect(errors).toEqual(['lock: "a" must be { verified: string, blocks: { key: hash } }']);
   });
 });
 
@@ -200,81 +155,6 @@ describe('noteStaleReasons', () => {
       "Patch notes 3.2.13 mention 'Stockers'",
       "Patch notes 3.2.14 mention 'Stockers'",
       '… and 1 more',
-    ]);
-  });
-});
-
-describe('setVerifiedInFrontmatter', () => {
-  it('replaces the verified line and keeps every other byte', () => {
-    const text = '---\ntitle: Forging # the title\nverified: 3.2.10 # old\nvolatility: high\n---\nBody\n\n---\nverified: body\n';
-    expect(setVerifiedInFrontmatter(text, '3.2.12')).toBe(
-      "---\ntitle: Forging # the title\nverified: '3.2.12' # old\nvolatility: high\n---\nBody\n\n---\nverified: body\n"
-    );
-  });
-
-  it('keeps a trailing comment and accepts a space before the colon', () => {
-    expect(setVerifiedInFrontmatter("---\nverified: '3.2.10' # checked on a sorc\ntitle: A\n---\n", '3.2.12')).toBe(
-      "---\nverified: '3.2.12' # checked on a sorc\ntitle: A\n---\n"
-    );
-    expect(setVerifiedInFrontmatter('---\nverified : 3.2.10\r\ntitle: A\n---\n', '3.2.12')).toBe(
-      "---\nverified: '3.2.12'\r\ntitle: A\n---\n"
-    );
-    expect(setVerifiedInFrontmatter('---\nverified :\n---\n', '3.2.12')).toBe("---\nverified: '3.2.12'\n---\n");
-  });
-
-  it('adds the field before the closing fence when missing', () => {
-    expect(setVerifiedInFrontmatter('---\ntitle: A\n---\nBody', '3.2.12')).toBe("---\ntitle: A\nverified: '3.2.12'\n---\nBody");
-    expect(setVerifiedInFrontmatter('---\n---\n', '3.2.12')).toBe("---\nverified: '3.2.12'\n---\n");
-  });
-
-  it('keeps CRLF line endings and a BOM', () => {
-    expect(setVerifiedInFrontmatter('﻿---\r\ntitle: A\r\n---\r\nBody\r\n', '3.2.12')).toBe(
-      "﻿---\r\ntitle: A\r\nverified: '3.2.12'\r\n---\r\nBody\r\n"
-    );
-    expect(setVerifiedInFrontmatter("---\r\nverified: '3.2.1'\r\n---\r\n", '3.2.12')).toBe("---\r\nverified: '3.2.12'\r\n---\r\n");
-  });
-
-  it('fails without frontmatter', () => {
-    expect(setVerifiedInFrontmatter('Body', '3.2.12')).toEqual({ error: 'missing frontmatter (the file must start with a --- block)' });
-    expect(setVerifiedInFrontmatter('---\ntitle: A\n', '3.2.12')).toEqual({ error: 'frontmatter is not closed with ---' });
-  });
-});
-
-describe('formatGuideReport', () => {
-  it('groups notes by state with reasons, volatile notes and drafts', () => {
-    const lines = formatGuideReport(
-      [
-        note({ slug: 'a', staleReasons: ["Data in 'X' changed since 3.2.10"], volatility: 'high' }),
-        note({ slug: 'b', verified: '3.1.0' }),
-        note({
-          slug: 'c',
-          verified: '3.2.12',
-          staleReasons: ['Verified, but the data behind this note was not recorded; it may have changed'],
-        }),
-        note({ slug: 'd', verified: null, volatility: 'high' }),
-      ],
-      '3.2.12'
-    );
-    expect(lines).toEqual([
-      'Guide report against ESR 3.2.12: 4 notes',
-      '  review 1 · old 1 · fresh 1 · draft 1',
-      '',
-      'Review (1):',
-      '  a (verified 3.2.10)',
-      "    - Data in 'X' changed since 3.2.10",
-      '',
-      'Old (1):',
-      '  b (verified 3.1.0)',
-      '',
-      'Fresh (1):',
-      '  c (verified 3.2.12)',
-      '    - Verified, but the data behind this note was not recorded; it may have changed',
-      '',
-      'Volatility high (2): re-check these after every patch',
-      '  a [review], d [draft]',
-      '',
-      'Drafts (1): verify in-game, then npm run guide:verify -- <slug>',
-      '  d',
     ]);
   });
 });

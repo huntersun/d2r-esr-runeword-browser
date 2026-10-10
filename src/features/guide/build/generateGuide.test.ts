@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateGuide, type GuideContentFiles } from './generateGuide.ts';
-import { serializeVerifyLock, type PatchNote, type VerifyLock } from './staleness.ts';
+import type { PatchNote } from './staleness.ts';
+import { serializeVerifyLock, type VerifyLock } from './verifyLock.ts';
 import { DOCS, fixtureEsr, fixtureGameData } from './testContext.mock.ts';
 
 const SPINE = `steps:

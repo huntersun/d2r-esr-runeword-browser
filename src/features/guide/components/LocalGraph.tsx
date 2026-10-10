@@ -1,6 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import {
   layoutLocalGraph,
@@ -10,11 +9,13 @@ import {
   type LocalGraphEdge,
   type LocalGraphNode,
 } from '../engine/localGraph';
+import { findNote } from '../engine/notes';
 import type { GuideNote } from '../engine/schema';
-import { findNote } from '../utils/guideUtils';
-import { GUIDE_PROSE_FONT } from './GuideBody';
-import { useLoadedGuide } from './guideContext';
-import { useHoverPopover } from './useHoverPopover';
+import { useHoverPopover } from '../hooks/useHoverPopover';
+import { useLoadedGuide } from '../hooks/useLoadedGuide';
+import { PeekPopover, PeekText } from './PeekPopover';
+import { SectionLabel } from './SectionLabel';
+import { GUIDE_PROSE_FONT } from './styles';
 
 /**
  * The SVG is drawn 1:1 in CSS pixels: its viewBox width is the measured column width, so the rem-sized labels render at
@@ -31,7 +32,11 @@ const LABEL_CLASS = 'fill-foreground stroke-background text-[0.75rem] [paint-ord
 
 const radiusOf = (node: LocalGraphNode) => (node.kind === 'current' ? CURRENT_RADIUS : NODE_RADIUS);
 
-function NodeLabel({ node }: { readonly node: LocalGraphNode }) {
+interface NodeLabelProps {
+  readonly node: LocalGraphNode;
+}
+
+function NodeLabel({ node }: NodeLabelProps) {
   const label = node.label;
   const r = radiusOf(node);
   if (node.kind === 'knowFirst' || node.kind === 'related' || node.kind === 'backlink') {
@@ -61,14 +66,21 @@ function NodeLabel({ node }: { readonly node: LocalGraphNode }) {
   );
 }
 
-function NeighbourNode({ node, visited }: { readonly node: LocalGraphNode; readonly visited: boolean }) {
+interface NeighbourNodeProps {
+  readonly node: LocalGraphNode;
+  readonly visited: boolean;
+}
+
+function NeighbourNode({ node, visited }: NeighbourNodeProps) {
   const { bundle } = useLoadedGuide();
   const target = findNote(bundle, node.slug);
   const peek = useHoverPopover();
 
   return (
-    <Popover open={peek.open && target !== undefined} onOpenChange={peek.setOpen}>
-      <PopoverAnchor asChild>
+    <PeekPopover
+      peek={peek}
+      enabled={target !== undefined}
+      trigger={
         <Link
           to={`/guide/${node.slug}`}
           aria-label={visited ? `${node.title} (read)` : node.title}
@@ -98,26 +110,20 @@ function NeighbourNode({ node, visited }: { readonly node: LocalGraphNode; reado
           />
           <NodeLabel node={node} />
         </Link>
-      </PopoverAnchor>
-      {target && (
-        <PopoverContent side="top" className={cn('w-72 p-3 text-sm', GUIDE_PROSE_FONT)} {...peek.contentProps}>
-          <p className="font-semibold">{target.title}</p>
-          <p className="mt-1 text-muted-foreground">{target.summary}</p>
-        </PopoverContent>
-      )}
-    </Popover>
+      }
+    >
+      {target && <PeekText title={target.title} text={target.summary} />}
+    </PeekPopover>
   );
 }
 
-function Edge({
-  edge,
-  nodes,
-  arrowId,
-}: {
+interface EdgeProps {
   readonly edge: LocalGraphEdge;
   readonly nodes: ReadonlyMap<string, LocalGraphNode>;
   readonly arrowId: string;
-}) {
+}
+
+function Edge({ edge, nodes, arrowId }: EdgeProps) {
   const from = nodes.get(edge.from);
   const to = nodes.get(edge.to);
   if (from === undefined || to === undefined) return null;
@@ -147,7 +153,12 @@ function Edge({
  * Desktop-only map of the note's direct neighbours (know first on the left, related and "mentioned in" on the right,
  * next on the path below). Supplementary: every node is also reachable through the chips and the next link.
  */
-export function LocalGraph({ note, visited }: { readonly note: GuideNote; readonly visited: ReadonlySet<string> }) {
+interface LocalGraphProps {
+  readonly note: GuideNote;
+  readonly visited: ReadonlySet<string>;
+}
+
+export function LocalGraph({ note, visited }: LocalGraphProps) {
   const { bundle } = useLoadedGuide();
   const arrowId = `guide-graph-arrow-${useId().replace(/:/g, '')}`;
   const sectionRef = useRef<HTMLElement>(null);
@@ -182,9 +193,7 @@ export function LocalGraph({ note, visited }: { readonly note: GuideNote; readon
 
   return (
     <section ref={sectionRef} aria-labelledby={`${arrowId}-heading`} className="space-y-2">
-      <h2 id={`${arrowId}-heading`} className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-        Connections
-      </h2>
+      <SectionLabel id={`${arrowId}-heading`}>Connections</SectionLabel>
       <svg
         viewBox={`0 ${String(top)} ${String(box.width)} ${String(bottom - top)}`}
         className={cn('h-auto w-full overflow-visible text-foreground', GUIDE_PROSE_FONT)}

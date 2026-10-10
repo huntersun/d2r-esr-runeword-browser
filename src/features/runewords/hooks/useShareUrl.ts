@@ -1,5 +1,11 @@
 import { useSelector } from 'react-redux';
-import { FILTER_URL_PARAM_KEYS, appendCommonFilterParams, appendSelectionParam, buildShareUrl } from '@/core/utils/filterUrlParams';
+import {
+  FILTER_URL_PARAM_KEYS,
+  appendCommonFilterParams,
+  appendSelectionParam,
+  buildShareUrl,
+  appendExactNameParam,
+} from '@/core/utils/filterUrlParams';
 import {
   selectSearchText,
   selectSocketCount,
@@ -27,7 +33,7 @@ export function useShareUrl(): () => string {
     const params = new URLSearchParams();
     appendCommonFilterParams(params, { searchText, socketCount, maxReqLevel, selectedItemTypes });
     appendSelectionParam(params, FILTER_URL_PARAM_KEYS.RUNES, selectedRunes);
-    if (exactName !== null) params.set(FILTER_URL_PARAM_KEYS.NAME, exactName);
+    appendExactNameParam(params, exactName);
 
     // Tier points: serialize non-null entries as "esrRunes:1=64,lodRunes:2=128"
     const tierPtsEntries = Object.entries(maxTierPoints)

@@ -1,12 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync } from 'fs';
-import { resolve } from 'path';
 import type { ItemSource } from '../engine/schema.ts';
 import { buildSourcesBundle, type SourceTables } from './bundleSources.ts';
-import { readEsrSources } from './esrSources.ts';
-import { generateBundles } from './generateBundles.ts';
 import { displayName } from './itemNames.ts';
-import { readPluginUniques } from './pluginDrops.ts';
+import { readBossSetUniqueDrops } from './pluginUniques.ts';
 import { parseTsv } from './tsv.ts';
 
 const table = (rows: string[][]) => parseTsv(rows.map((row) => row.join('\t')).join('\n'));
@@ -118,17 +114,13 @@ describe('buildSourcesBundle', () => {
     expect(pelta).toHaveLength(1);
     expect(pelta[0]?.code).toBe('hax');
     expect(pelta[0]?.labels.map((entry) => entry.text)).toEqual(['Cube: Ancient Coupon', 'Drops (random)', 'Gamble']);
-    // "Basher Old" alone would be Unknown
+    // "Basher Old" alone would be Unknown; Basher is a random drop + gamble (base family in gamble.txt), its cube reroll ignored
     expect(bundle.items.filter((item) => item.name === 'Basher' && item.item === 'unique')).toHaveLength(1);
     expect(texts('Basher')).toEqual(['Drops (random)', 'Gamble']);
   });
 
   it('keeps entries sharing a name across kinds separate', () => {
     expect(bundle.items.filter((item) => item.name === 'Basher').map((item) => item.item)).toEqual(['unique', 'set']);
-  });
-
-  it('labels random uniques drop + gamble (base family in gamble.txt) and ignores cube rerolls', () => {
-    expect(texts('Basher')).toEqual(['Drops (random)', 'Gamble']);
   });
 
   it('labels level ≥ 100 uniques as endgame-map drops', () => {
@@ -188,17 +180,17 @@ describe('buildSourcesBundle', () => {
   });
 });
 
-describe('readPluginUniques', () => {
+describe('readBossSetUniqueDrops', () => {
   it('reads double- and single-quoted unique names', () => {
-    expect([...readPluginUniques(`unique = "Hellfire Torch"\n  unique = 'Say "Hi"'\n# unique = "Commented"`)]).toEqual([
+    expect([...readBossSetUniqueDrops(`unique = "Hellfire Torch"\n  unique = 'Say "Hi"'\n# unique = "Commented"`)]).toEqual([
       'Hellfire Torch',
       'Say "Hi"',
     ]);
   });
 
   it('returns nothing for a missing or disabled config', () => {
-    expect(readPluginUniques(null).size).toBe(0);
-    expect(readPluginUniques('enabled = false\nunique = "Hellfire Torch"').size).toBe(0);
+    expect(readBossSetUniqueDrops(null).size).toBe(0);
+    expect(readBossSetUniqueDrops('enabled = false\nunique = "Hellfire Torch"').size).toBe(0);
   });
 });
 
@@ -206,25 +198,5 @@ describe('displayName', () => {
   it('reads multi-line names bottom-up', () => {
     expect(displayName('(Buckler, Pelta Lunata)\nAncient Coupon')).toBe('Ancient Coupon (Buckler, Pelta Lunata)');
     expect(displayName(' Forging Hammer ')).toBe('Forging Hammer');
-  });
-});
-
-const ESR_DIR = resolve(__dirname, '../../../../', process.env.ESR_SOURCE_DIR ?? '../Eastern_Sun_Resurrected');
-
-describe.skipIf(!existsSync(ESR_DIR))('sources generated from the ESR clone', () => {
-  const { sources } = generateBundles(readEsrSources(ESR_DIR));
-  const kinds = (name: string) => sources.items.find((item) => item.name === name)?.labels.map((label) => label.kind);
-  const labelTexts = (name: string) => sources.items.find((item) => item.name === name)?.labels.map((label) => label.text);
-
-  it('matches the verified examples', () => {
-    expect(labelTexts('Pelta Lunata')).toEqual(['Cube: Ancient Coupon']);
-    expect(kinds("Krok's Basher")).toEqual(['drop', 'gamble']);
-    expect(kinds("Mephisto's Will")).toEqual(['maps']);
-    expect(labelTexts('Frostmourne')).toEqual(['Drops from The Lich King']);
-    expect(labelTexts('Annihilus')).toEqual(['Drops from Diablo Clone']);
-    expect(kinds('Hellfire Torch')).toEqual(['plugin']);
-    expect(kinds('Kill Ledger')).toEqual(['cube']);
-    expect(kinds('Orb of Anointment')).toEqual(['maps']);
-    expect(labelTexts('Forging Hammer')).toEqual(['Cube', "Drops from Bloodwitch the Wild, Uldyssian's Hound"]);
   });
 });

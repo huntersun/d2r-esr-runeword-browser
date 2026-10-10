@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  LABEL_MAX_CHARS,
+  LOCAL_GRAPH_LABEL_MAX_CHARS,
   LOCAL_GRAPH_LABEL_GAP,
   LOCAL_GRAPH_MAX_NEIGHBOURS,
   LOCAL_GRAPH_NODE_RADIUS,
@@ -10,29 +10,10 @@ import {
   truncateLabel,
 } from './localGraph';
 import type { GuideBundle, GuideNote } from './schema';
+import { makeNote } from './testNote.mock';
 
 function note(slug: string, edges: Partial<Pick<GuideNote, 'knowFirst' | 'related' | 'backlinks' | 'next'>> = {}): GuideNote {
-  return {
-    slug,
-    title: `Title ${slug}`,
-    kind: 'note',
-    summary: '',
-    tags: [],
-    aliases: [],
-    verified: null,
-    staleReasons: [],
-    volatility: 'low',
-    knowFirst: [],
-    related: [],
-    backlinks: [],
-    next: null,
-    spineStep: null,
-    officialDocs: [],
-    sources: [],
-    words: 0,
-    body: [],
-    ...edges,
-  };
+  return makeNote({ slug, title: `Title ${slug}`, ...edges });
 }
 
 function bundle(notes: GuideNote[], extraSlugs: string[] = []): GuideBundle {
@@ -160,14 +141,14 @@ describe('side label fit', () => {
   }
 
   it('keeps full 18-char labels inside a wide box and spreads the arcs wider for short titles', () => {
-    expect(sideLabelFit([LONG], 420, 12).maxChars).toBe(LABEL_MAX_CHARS);
+    expect(sideLabelFit([LONG], 420, 12).maxChars).toBe(LOCAL_GRAPH_LABEL_MAX_CHARS);
     expect(sideLabelFit(['Ab'], 420, 12).rx).toBeGreaterThan(sideLabelFit([LONG], 420, 12).rx);
     expect(sideLabelFit([], 420, 12).rx).toBe(420 / 2 - offset - 4);
   });
 
   it('truncates harder instead of squeezing the arcs in a narrow box or with a large font', () => {
     const narrow = sideLabelFit([LONG], 300, 12);
-    expect(narrow.maxChars).toBeLessThan(LABEL_MAX_CHARS);
+    expect(narrow.maxChars).toBeLessThan(LOCAL_GRAPH_LABEL_MAX_CHARS);
     expect(narrow.rx).toBeGreaterThanOrEqual(300 * 0.14);
     expect(sideLabelFit([LONG], 400, 16).maxChars).toBeLessThan(sideLabelFit([LONG], 400, 12).maxChars);
   });

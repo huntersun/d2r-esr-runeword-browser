@@ -3,14 +3,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { noteFreshness, type NoteFreshness } from '../engine/freshness';
 
-export type { NoteFreshness };
-
 const AMBER = 'border-amber-500/40 text-amber-700 dark:text-amber-400';
 const BASE = 'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs';
 
 const NO_REASONS: readonly string[] = [];
 
-interface FreshnessProps {
+interface FreshnessBadgeProps {
   readonly verified: string | null;
   readonly current: string;
   /** GuideNote.staleReasons (build-time); only shown for the review state */
@@ -18,7 +16,7 @@ interface FreshnessProps {
 }
 
 /** "Checked on ESR x.y.z" / "Draft" / amber "needs review" (reasons in a popover) / amber "old" pill (see docs/features/GUIDE.md). */
-export function FreshnessBadge({ verified, current, reasons = NO_REASONS }: FreshnessProps) {
+export function FreshnessBadge({ verified, current, reasons = NO_REASONS }: FreshnessBadgeProps) {
   const freshness = noteFreshness(verified, current, reasons);
 
   switch (freshness) {
@@ -68,10 +66,10 @@ export function FreshnessBadge({ verified, current, reasons = NO_REASONS }: Fres
   }
 }
 
-const MARKER_LABEL: Record<Exclude<NoteFreshness, 'fresh'>, string> = { draft: 'draft', review: 'review', old: 'outdated' };
+const MARKER_LABEL: Record<Exclude<NoteFreshness, 'fresh'>, string> = { draft: 'draft', review: 'review', old: 'old' };
 
 /** Tiny marker for note cards: nothing when fresh. */
-export function FreshnessMarker({ verified, current, reasons = NO_REASONS }: FreshnessProps) {
+export function FreshnessMarker({ verified, current, reasons = NO_REASONS }: FreshnessBadgeProps) {
   const freshness = noteFreshness(verified, current, reasons);
   if (freshness === 'fresh') return null;
   const draft = freshness === 'draft';

@@ -8,9 +8,9 @@ import { FieldReader, isObject, parseYaml } from './fields.ts';
 import { resolveDocsLink } from './links.ts';
 import { countWords, markdownToBlocks } from './markdown.ts';
 
-export const SUMMARY_MAX = 140;
-export const KNOW_FIRST_MAX = 3;
-export const RELATED_MAX = 5;
+const SUMMARY_MAX = 140;
+const KNOW_FIRST_MAX = 3;
+const RELATED_MAX = 5;
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const VERSION = /^\d+\.\d+(?:\.\d+)*$/;
@@ -43,7 +43,7 @@ export interface ParsedNote {
   warnings: string[];
 }
 
-export function isSlug(value: string): boolean {
+function isSlug(value: string): boolean {
   return SLUG.test(value);
 }
 

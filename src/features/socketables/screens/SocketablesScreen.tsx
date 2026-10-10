@@ -1,21 +1,20 @@
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { SocketableFilters } from '../components/SocketableFilters';
 import { SocketableCard } from '../components/SocketableCard';
 import { useFilteredSocketables } from '../hooks/useFilteredSocketables';
 import { useUrlInitialize } from '../hooks/useUrlInitialize';
-import { selectEnabledCategories, selectExactName, setExactName } from '../store/socketablesSlice';
+import { selectEnabledCategories, selectExactName } from '../store/socketablesSlice';
 import { ExactNameChip } from '@/core/components/ExactNameChip';
 import { Spinner } from '@/components/ui/spinner';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 import { useItemSources } from '@/features/game-data/hooks/useItemSources';
 
 export function SocketablesScreen() {
-  const nameFromUrl = useUrlInitialize();
+  const { nameFromUrl, clearExactName } = useUrlInitialize();
   const socketables = useFilteredSocketables();
-  const { index: sourceIndex } = useItemSources();
+  const sourceIndex = useItemSources();
   const enabledCategories = useSelector(selectEnabledCategories);
   const exactName = useSelector(selectExactName);
-  const dispatch = useDispatch();
   const noCategoriesSelected = !Object.values(enabledCategories).some(Boolean);
 
   // Loading state
@@ -34,7 +33,7 @@ export function SocketablesScreen() {
 
       {exactName !== null && (
         <div className="mb-4">
-          <ExactNameChip name={exactName} onClear={() => dispatch(setExactName(null))} scrollIntoView={nameFromUrl} />
+          <ExactNameChip name={exactName} onClear={clearExactName} scrollOnMount={nameFromUrl} />
         </div>
       )}
 

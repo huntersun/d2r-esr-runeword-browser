@@ -1,19 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compareVersions, noteFreshness } from './freshness';
-
-describe('compareVersions', () => {
-  it('compares numerically per segment', () => {
-    expect(compareVersions('3.2.12', '3.2.9')).toBeGreaterThan(0);
-    expect(compareVersions('3.2.9', '3.2.12')).toBeLessThan(0);
-    expect(compareVersions('3.2.12', '3.2.12')).toBe(0);
-    expect(compareVersions('3.2.04', '3.2.4')).toBe(0);
-  });
-
-  it('treats missing segments as zero', () => {
-    expect(compareVersions('3.2', '3.2.0')).toBe(0);
-    expect(compareVersions('3.3', '3.2.12')).toBeGreaterThan(0);
-  });
-});
+import { noteFreshness } from './freshness';
 
 describe('noteFreshness', () => {
   const flagged = ["Data in 'Gheed sells' changed since 3.2.10"];

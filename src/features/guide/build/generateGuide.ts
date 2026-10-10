@@ -2,17 +2,20 @@
  * content/guide (as raw texts) + game data + ESR tables → the guide bundle, counts, errors and warnings.
  * Pure: the fs reads live in readGuideInputs.ts so tests can run this on fixtures.
  */
+import { normaliseItemName } from '../../../core/utils/itemName.ts';
 import type { GuideBlock, GuideBundle, GuideInline, GuideNote } from '../engine/schema.ts';
 import { compareCodeUnits } from './compare.ts';
 import { parseGlossary, parseSourceRefs, parseSpine } from './content.ts';
 import { createGuideContext, type DocsIndex, type GameDataInputs, type GuideContext } from './context.ts';
 import type { EsrGuideTables } from './esrGuideSources.ts';
+import type { EsrForGuide } from './readGuideInputs.ts';
 import { buildGraph } from './graph.ts';
 import { countWords } from './markdown.ts';
 import { parseNote, type ParsedNote } from './parseNote.ts';
-import { hashDataBlocks, LOCK_FILE, noteStaleReasons, parseVerifyLock, type BlockHashes, type PatchNote } from './staleness.ts';
+import { hashDataBlocks, noteStaleReasons, type PatchNote } from './staleness.ts';
+import { LOCK_FILE, parseVerifyLock, type BlockHashes } from './verifyLock.ts';
 
-export const WORDS_WARN = 400;
+const WORDS_WARN = 400;
 
 export interface GuideContentFiles {
   /** `notes/<slug>.md` files: path relative to the content dir + text */
@@ -94,15 +97,14 @@ function countDataBlocks(blocks: readonly GuideBlock[]): number {
   }, 0);
 }
 
-/** Lower-cased names `mentions` may use; the sources.json part is the same set unique:/mythical:/socketable: links use. */
+/** Normalised names (normaliseItemName) `mentions` may use; the sources.json part is the same set unique:/mythical:/socketable: links use. */
 function knownItemNames(input: GenerateGuideInput, ctx: GuideContext): Set<string> {
   const names = [...input.gameData.runewords.runewords.map((runeword) => runeword.name), ...ctx.baseNames.values()];
   return new Set([
-    ...names.map((name) => name.toLowerCase()),
+    ...[...names, ...(input.esr?.names ?? [])].map(normaliseItemName),
     ...ctx.sourceNames.unique,
     ...ctx.sourceNames.set,
     ...ctx.sourceNames.misc,
-    ...(input.esr?.names ?? []),
   ]);
 }
 
@@ -132,7 +134,7 @@ export function generateGuide(input: GenerateGuideInput): GeneratedGuide {
     seen.set(note.slug, file);
     for (const id of note.sources) if (!sourceIds.has(id)) errors.push(`${file}: sources: unknown id "${id}" (add it to _sources.yml)`);
     for (const name of mentions) {
-      if (!itemNames.has(name.toLowerCase()) && input.esr?.isKnown(name) !== true)
+      if (!itemNames.has(normaliseItemName(name)) && input.esr?.isKnown(name) !== true)
         warnings.push(`${file}: mentions: "${name}" not found in the game data`);
     }
   }
@@ -154,9 +156,11 @@ export function generateGuide(input: GenerateGuideInput): GeneratedGuide {
   const titles = new Map(parsed.map(({ note }) => [note.slug, note.title]));
   const notes: GuideNote[] = parsed.map(({ note, file, dataBlocks }) => {
     const body = labelBlocks(note.body, titles);
+    const words = countWords(body);
     const stale = noteStaleReasons({ note, dataBlocks, glossary, lock, patchNotes: input.patchNotes ?? [] });
     if (stale.unrecorded)
       warnings.push(`${file}: verified ${note.verified ?? ''} is not recorded in ${LOCK_FILE} (run npm run guide:verify -- ${note.slug})`);
+    if (words > WORDS_WARN) warnings.push(`${file}: ${String(words)} words (target 150–250, warning above ${String(WORDS_WARN)})`);
     return {
       ...note,
       staleReasons: stale.reasons,
@@ -164,15 +168,9 @@ export function generateGuide(input: GenerateGuideInput): GeneratedGuide {
       next: graph.next.get(note.slug) ?? null,
       spineStep: graph.spineStep.get(note.slug) ?? null,
       // counted again now that unlabeled [[links]] carry the target title
-      words: countWords(body),
+      words,
       body,
     };
-  });
-
-  notes.forEach((note, i) => {
-    const file = parsed[i]?.file ?? note.slug;
-    if (note.words > WORDS_WARN)
-      warnings.push(`${file}: ${String(note.words)} words (target 150–250, warning above ${String(WORDS_WARN)})`);
   });
 
   const counts = {
@@ -187,4 +185,9 @@ export function generateGuide(input: GenerateGuideInput): GeneratedGuide {
   };
   const blockHashes = new Map(parsed.map(({ note, dataBlocks }) => [note.slug, hashDataBlocks(dataBlocks)]));
   return { bundle: { notes, spine, glossary, sourceRefs }, blockHashes, counts, errors, warnings };
+}
+
+/** generateGuide with the ESR tables, docs index and patch notes of a read clone (`readEsrForGuide`; null when missing). */
+export function generateGuideWithEsr(content: GuideContentFiles, gameData: GameDataInputs, esr: EsrForGuide | null): GeneratedGuide {
+  return generateGuide({ content, gameData, esr: esr?.tables ?? null, docs: esr?.docs ?? null, patchNotes: esr?.patchNotes ?? [] });
 }

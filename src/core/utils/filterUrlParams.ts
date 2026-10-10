@@ -26,6 +26,11 @@ export interface CommonFilterState {
   readonly selectedItemTypes: Record<string, boolean>;
 }
 
+/** Adds the `name` exact-name focus param when one is set. */
+export function appendExactNameParam(params: URLSearchParams, exactName: string | null): void {
+  if (exactName !== null) params.set(FILTER_URL_PARAM_KEYS.NAME, exactName);
+}
+
 /**
  * Adds a comma-separated selection param, but only when NOT everything is
  * selected (an absent param means "all selected" when decoding).

@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { FILTER_URL_PARAM_KEYS, appendCategoryListParam, buildShareUrl } from '@/core/utils/filterUrlParams';
+import { FILTER_URL_PARAM_KEYS, appendCategoryListParam, buildShareUrl, appendExactNameParam } from '@/core/utils/filterUrlParams';
 import { selectSearchText, selectExactName, selectMaxReqLevel, selectSelectedCategoriesRaw, selectIncludeCouponItems } from '../store';
 import { HTM_URL_PARAM_KEYS } from './useUrlInitialize';
 
@@ -31,9 +31,7 @@ export function useShareUrl(): () => string {
       params.set(HTM_URL_PARAM_KEYS.COUPON, '0');
     }
 
-    if (exactName !== null) {
-      params.set(FILTER_URL_PARAM_KEYS.NAME, exactName);
-    }
+    appendExactNameParam(params, exactName);
 
     return buildShareUrl('uniques', params);
   };

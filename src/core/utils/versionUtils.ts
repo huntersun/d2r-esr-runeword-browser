@@ -1,10 +1,16 @@
 /**
- * Compare two version strings (X.Y.ZZ format)
+ * Compare two version strings (X.Y or X.Y.ZZ format; missing or non-numeric parts count as 0).
  * Returns: -1 if a < b, 0 if equal, 1 if a > b
+ *
+ * Plain TS with no DOM or `@/` imports: the guide engine and build scripts import it too.
  */
 export function compareVersions(a: string, b: string): number {
   const parseVersion = (v: string): number[] => {
-    return v.split('.').map((n) => parseInt(n, 10));
+    return v
+      .trim()
+      .split('.')
+      .map((n) => parseInt(n, 10))
+      .map((n) => (Number.isFinite(n) ? n : 0));
   };
 
   const aParts = parseVersion(a);

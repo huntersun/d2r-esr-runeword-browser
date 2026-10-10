@@ -1,7 +1,6 @@
 import { HelpCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { useManifest } from '../hooks/useManifest';
 import { findItemSource, type ItemSourceKind, type SourceIndex } from '../engine/sourceLookup';
 
@@ -11,17 +10,16 @@ interface ItemSourceLineProps {
   readonly name: string;
   /** Preferred entry kind when the name exists as several kinds (e.g. Ore unique vs Ore material) */
   readonly kind?: ItemSourceKind;
-  readonly className?: string;
 }
 
 /** "Source: Cube: Ancient Coupon · Gamble" line for item cards, from the game-data sources bundle. */
-export function ItemSourceLine({ index, name, kind, className }: ItemSourceLineProps) {
+export function ItemSourceLine({ index, name, kind }: ItemSourceLineProps) {
   if (!index) return null;
   const source = findItemSource(index, name, kind);
   if (source === null || source.labels.length === 0) return null;
 
   return (
-    <div className={cn('flex items-start gap-1 text-xs text-muted-foreground', className)}>
+    <div className="flex items-start gap-1 text-xs text-muted-foreground">
       <p className="min-w-0">Source: {source.labels.map((label) => label.text).join(' · ')}</p>
       <Popover>
         <PopoverTrigger asChild>

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { GuideSchemaError, type LoadedGuide } from '../engine/browser/loadGuide';
 import { useGuide } from '../hooks/useGuide';
-import { GuideContext } from './guideContext';
+import { GuideContext } from '../hooks/useLoadedGuide';
 
 /** Same look as the route-level Suspense fallback. */
 function GuideLoading() {
@@ -17,7 +17,12 @@ function GuideLoading() {
   );
 }
 
-function GuideError({ error, onRetry }: { readonly error: unknown; readonly onRetry: () => void }) {
+interface GuideErrorProps {
+  readonly error: unknown;
+  readonly onRetry: () => void;
+}
+
+function GuideError({ error, onRetry }: GuideErrorProps) {
   const outdated = error instanceof GuideSchemaError;
   const message = error instanceof Error ? error.message : String(error);
 
@@ -52,7 +57,11 @@ function GuideError({ error, onRetry }: { readonly error: unknown; readonly onRe
 }
 
 /** Loads the guide bundle; shows a spinner / error card until it is ready, then provides it to `children`. */
-export function GuideGate({ children }: { readonly children: (guide: LoadedGuide) => ReactNode }) {
+interface GuideGateProps {
+  readonly children: (guide: LoadedGuide) => ReactNode;
+}
+
+export function GuideGate({ children }: GuideGateProps) {
   const guide = useGuide();
   if (guide.status === 'loading') return <GuideLoading />;
   if (guide.status === 'error') return <GuideError error={guide.error} onRetry={guide.retry} />;

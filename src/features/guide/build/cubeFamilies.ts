@@ -6,19 +6,19 @@
  * Every family must match at least one row: `::recipes` fails the build otherwise, and a test checks the table
  * against the ESR clone, so a renamed recipe shows up instead of silently emptying a block.
  */
-import type { DataBlock } from '../engine/schema.ts';
+import type { RecipeRow, RecipesBlock } from '../engine/schema.ts';
 import {
   capGroup,
   clusterVariants,
+  countValues,
   formatInput,
   formatOutput,
-  options,
+  joinOptions,
+  parseCubeCell,
   visibleOutputs,
   type RecipeVariant,
-} from './directives/cubeText.ts';
+} from './cubeText.ts';
 import type { CubeRow, EsrGuideTables } from './esrGuideSources.ts';
-
-type RecipeRow = Extract<DataBlock, { kind: 'recipes' }>['rows'][number];
 
 /** What families read: the cube rows, display names and the item list (internal names, e.g. a coupon's tier) */
 export type FamilyTables = Pick<EsrGuideTables, 'cube' | 'nameOf' | 'items'>;
@@ -56,12 +56,6 @@ function internalName(esr: FamilyTables, code: string): string | undefined {
   return names.get(code);
 }
 
-function parseCell(spec: string): { token: string; qty: number; qualifiers: string[] } {
-  const [token = '', ...qualifiers] = spec.split(',').map((part) => part.trim());
-  const qty = Number(/^qty=(\d+)$/.exec(qualifiers.find((part) => part.startsWith('qty=')) ?? '')?.[1] ?? 1);
-  return { token, qty, qualifiers };
-}
-
 function plural(count: number, word: string): string {
   return `${String(count)} ${word}${count === 1 ? '' : 's'}`;
 }
@@ -97,7 +91,7 @@ function isNamedCoupon(token: string, esr: FamilyTables): boolean {
 
 /** One generic row per coupon recipe shape instead of one per unique (~380 each). */
 function genericCoupons(recipe: RecipeVariant, row: CubeRow, esr: FamilyTables): RecipeVariant {
-  const cells = row.inputs.map(parseCell);
+  const cells = row.inputs.map(parseCubeCell);
   const withWildCard = cells.some((cell) => isWildCard(cell.token, esr));
   const redeems = cells.some((cell) => isNamedCoupon(cell.token, esr));
   const inputs = cells.map((cell, i) => {
@@ -110,27 +104,27 @@ function genericCoupons(recipe: RecipeVariant, row: CubeRow, esr: FamilyTables):
     return cell.qty === 1 ? `1 ${tier} coupon (any)` : `${String(cell.qty)}× ${tier} coupons (any)`;
   });
   const out = row.outputs
-    .map((output) => parseCell(output.spec).token)
-    .find((token) => !row.inputs.some((spec) => parseCell(spec).token === token));
+    .map((output) => parseCubeCell(output.spec).token)
+    .find((token) => !row.inputs.some((spec) => parseCubeCell(spec).token === token));
   const outTier = out === undefined || !isNamedCoupon(out, esr) ? null : couponTier(out, esr);
   const output = outTier !== null ? `A random ${outTier} coupon` : redeems ? 'The LoD unique named on the coupons' : recipe.output;
   return { inputs, output };
 }
 
 function couponKey(row: CubeRow, esr: FamilyTables): string {
-  const cells = row.inputs.map(parseCell);
+  const cells = row.inputs.map(parseCubeCell);
   // Redeeming with Wild Cards: one row per tier (the Wild Card count depends on it)
   const tier = cells.some((cell) => isWildCard(cell.token, esr))
     ? cells.map((cell) => (isNamedCoupon(cell.token, esr) ? couponTier(cell.token, esr) : null)).find((found) => found !== null)
     : undefined;
-  const toWildCard = row.outputs.some((output) => isWildCard(parseCell(output.spec).token, esr));
+  const toWildCard = row.outputs.some((output) => isWildCard(parseCubeCell(output.spec).token, esr));
   return `${row.description}|${tier ?? ''}|${toWildCard ? 'wild card' : ''}`;
 }
 
 /** "A random exceptional coupon (sometimes elite / amulet or ring)" */
 function couponPool(ranked: string[]): string {
   const tiers = ranked.map((output) => /^A random (.+) coupon$/.exec(output)?.[1]);
-  if (tiers.some((tier) => tier === undefined)) return options(ranked);
+  if (tiers.some((tier) => tier === undefined)) return joinOptions(ranked);
   const [first, ...rest] = tiers;
   return `A random ${first ?? ''} coupon${rest.length > 0 ? ` (sometimes ${rest.join(' / ')})` : ''}`;
 }
@@ -153,7 +147,7 @@ const SMALL_PARTS = new Set(['belt', 'boot', 'glov']);
 function socketBase(row: CubeRow): { label: string; tier: string | null } | null {
   const first = row.inputs.at(0);
   if (first === undefined || !/Socket Donut/.test(row.description) || /^Socket Donut:|Odd Charm/.test(row.description)) return null;
-  const { token, qualifiers } = parseCell(first);
+  const { token, qualifiers } = parseCubeCell(first);
   const quality = qualifiers.map((part) => SOCKET_QUALITY[part]).find((found) => found !== undefined);
   const tier = qualifiers.map((part) => BASE_TIER[part]).find((found) => found !== undefined) ?? null;
   if (quality === undefined) return null;
@@ -172,13 +166,13 @@ function genericSockets(recipe: RecipeVariant, row: CubeRow, esr: FamilyTables):
   if (base === null) return recipe;
   const sockets = socketCount(recipe.output);
   const perGem = row.inputs.some((spec) => {
-    const cell = parseCell(spec);
+    const cell = parseCubeCell(spec);
     return /^gem\d$/.test(cell.token) && cell.qty === sockets && cell.qty > 1;
   });
   const inputs = row.inputs.map((spec, i) => {
     const text = recipe.inputs[i] ?? '';
     if (i === 0) return `${base.label} (no sockets)`;
-    const cell = parseCell(spec);
+    const cell = parseCubeCell(spec);
     if (!/^gem\d$/.test(cell.token)) return text;
     const name = esr.nameOf(cell.token);
     const where = base.tier === null ? '' : ` (${base.tier} base)`;
@@ -202,10 +196,12 @@ function mapTier(token: string, esr: FamilyTables): number | null {
 
 /** "3× Tier N map → Tier N+1 map", "Randomizing Stone + 2× Tier N map → A random Tier N map" */
 function genericMaps(recipe: RecipeVariant, row: CubeRow, esr: FamilyTables): RecipeVariant {
-  const cells = row.inputs.map(parseCell);
+  const cells = row.inputs.map(parseCubeCell);
   const tiers = cells.map((cell) => mapTier(cell.token, esr));
   const tier = tiers.find((found): found is number => found !== null);
-  const outTier = row.outputs.map((output) => mapTier(parseCell(output.spec).token, esr)).find((found): found is number => found !== null);
+  const outTier = row.outputs
+    .map((output) => mapTier(parseCubeCell(output.spec).token, esr))
+    .find((found): found is number => found !== null);
   if (tier === undefined || outTier === undefined || tiers.some((t) => t !== null && t !== tier)) return recipe;
   const maps = cells.filter((_, i) => tiers[i] !== null);
   const inputs = cells.map((cell, i) => {
@@ -358,9 +354,7 @@ function rowOutput(row: CubeRow, esr: Pick<EsrGuideTables, 'nameOf'>): string {
   const outputs = visibleOutputs(row.outputs);
   const kept = outputs.filter((output) => !row.inputs.includes(output.spec));
   const texts = (kept.length > 0 ? kept : outputs).map((output) => formatOutput(output, esr));
-  const counts = new Map<string, number>();
-  for (const text of texts) counts.set(text, (counts.get(text) ?? 0) + 1);
-  return [...counts].map(([text, count]) => (count > 1 ? `${String(count)}× ${text}` : text)).join(' + ');
+  return [...countValues(texts)].map(([text, count]) => (count > 1 ? `${String(count)}× ${text}` : text)).join(' + ');
 }
 
 /**
@@ -386,7 +380,7 @@ export function collectFamily(family: CubeFamily, esr: FamilyTables): RecipeRow[
 }
 
 /** The `recipes` block of a family: at most MAX_FAMILY_ROWS rows, the caption counting the rest. */
-export function familyBlock(family: CubeFamily, esr: FamilyTables): Extract<DataBlock, { kind: 'recipes' }> {
+export function familyBlock(family: CubeFamily, esr: FamilyTables): RecipesBlock {
   const rows = collectFamily(family, esr);
   const more = rows.length - MAX_FAMILY_ROWS;
   return {

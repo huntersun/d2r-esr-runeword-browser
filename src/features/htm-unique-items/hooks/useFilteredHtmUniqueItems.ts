@@ -26,7 +26,6 @@ export function useFilteredHtmUniqueItems(): readonly HtmUniqueItem[] | undefine
 
   const searchTerms = parseSearchTerms(searchText);
 
-  // A name focus overrides every other filter
   const filtered = applyExactNameFocus(allItems, exactName, (list) =>
     list
       .filter((item) => includeCouponItems || !item.isAncientCoupon)

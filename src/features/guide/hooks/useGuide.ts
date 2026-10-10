@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { loadGuide, type LoadedGuide } from '../engine/browser/loadGuide';
 
-export type GuideState =
+type GuideState =
   | { readonly status: 'loading'; readonly data: null; readonly error: null; readonly retry: () => void }
   | { readonly status: 'ready'; readonly data: LoadedGuide; readonly error: null; readonly retry: () => void }
   | { readonly status: 'error'; readonly data: null; readonly error: unknown; readonly retry: () => void };

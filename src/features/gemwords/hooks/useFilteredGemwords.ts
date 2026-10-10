@@ -34,7 +34,6 @@ export function useFilteredGemwords(): readonly Gemword[] | undefined {
 
   const searchTerms = parseSearchTerms(searchText);
 
-  // A name focus overrides every other filter
   return applyExactNameFocus(gemwords, exactName, (list) =>
     list.filter((gemword) => {
       if (!matchesGemwordSearch(gemword, searchTerms)) return false;

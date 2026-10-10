@@ -2,10 +2,12 @@
  * Resolves the link schemes of the guide's markdown (see docs/features/GUIDE.md) into `{ kind, href }`.
  * App hrefs are app paths without the base URL; `docs:` becomes an absolute URL of the official site.
  */
+import { normaliseItemName } from '../../../core/utils/itemName.ts';
+import { NAME_FOCUS_PAGES } from '../engine/linkSchemes.ts';
 import type { LinkKind } from '../engine/schema.ts';
 import type { BuildError, GuideContext } from './context.ts';
 
-export const OFFICIAL_SITE = 'https://easternsunresurrected.com/';
+const OFFICIAL_SITE = 'https://easternsunresurrected.com/';
 
 export interface ResolvedLink {
   kind: LinkKind;
@@ -32,7 +34,7 @@ function exactName(path: string, name: string): string {
 }
 
 /** App routes a `page:` link may point at (path only; a query string is allowed). */
-export const APP_PAGES: readonly string[] = [
+const APP_PAGES: readonly string[] = [
   '/',
   '/gemwords',
   '/socketables',
@@ -45,13 +47,6 @@ export const APP_PAGES: readonly string[] = [
   '/game-data/types',
   '/guide',
 ];
-
-const NAME_FOCUS_PAGES: Record<string, string> = {
-  gw: '/gemwords',
-  unique: '/uniques',
-  mythical: '/mythicals',
-  socketable: '/socketables',
-};
 
 /** `docs:<file>#<anchor>` → official site URL, plus a warning when the clone's docs/ folder lacks the file or anchor. */
 export function resolveDocsLink(target: string, ctx: Pick<GuideContext, 'docs'>): ResolvedLink | BuildError {
@@ -81,7 +76,7 @@ export function resolveLink(url: string, ctx: GuideContext): ResolvedLink | Buil
   switch (scheme) {
     case 'rw':
       if (!ctx.runewordNames.has(target)) return { error: `unknown runeword "${target}" (rw:)` };
-      return { kind: 'app', href: exactName('/', target) };
+      return { kind: 'app', href: exactName(NAME_FOCUS_PAGES.rw, target) };
     // Not validated: no game-data bundle carries gemword names.
     case 'gw':
       return { kind: 'app', href: exactName(NAME_FOCUS_PAGES.gw, target) };
@@ -90,12 +85,12 @@ export function resolveLink(url: string, ctx: GuideContext): ResolvedLink | Buil
     case 'unique':
     case 'mythical':
     case 'socketable': {
-      if (!ctx.linkNames[scheme].has(target.toLowerCase())) {
+      if (!ctx.linkNames[scheme].has(normaliseItemName(target))) {
         const what =
           scheme === 'socketable' ? 'socketable (gem, rune or crystal)' : scheme === 'mythical' ? 'mythical unique' : 'unique item';
         return { error: `unknown ${what} "${target}" (${scheme}:, checked against sources.json and the ESR item tables)` };
       }
-      return { kind: 'app', href: exactName(NAME_FOCUS_PAGES[scheme] ?? '/', target) };
+      return { kind: 'app', href: exactName(NAME_FOCUS_PAGES[scheme], target) };
     }
     case 'base': {
       const name = ctx.baseNames.get(target);

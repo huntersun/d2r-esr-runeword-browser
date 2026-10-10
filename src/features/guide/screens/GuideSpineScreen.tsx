@@ -1,31 +1,28 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { LoadedGuide } from '../engine/browser/loadGuide';
+import { findNote, noteTitle } from '../engine/notes';
 import type { GuideSpineStep } from '../engine/schema';
 import { FreshnessMarker } from '../components/FreshnessBadge';
 import { GuideGate } from '../components/GuideGate';
 import { GuideSearch } from '../components/GuideSearch';
-import { GUIDE_PROSE_FONT } from '../components/GuideBody';
+import { SectionLabel } from '../components/SectionLabel';
+import { FOCUS_RING, GUIDE_PROSE_FONT } from '../components/styles';
+import { VisitedMark } from '../components/VisitedMark';
 import { useVisitedNotes } from '../hooks/useVisitedNotes';
-import { findNote } from '../utils/guideUtils';
 
-function SpineStep({
-  step,
-  index,
-  guide,
-  expanded,
-  onToggle,
-  visited,
-}: {
+interface SpineStepProps {
   readonly step: GuideSpineStep;
   readonly index: number;
   readonly guide: LoadedGuide;
   readonly expanded: boolean;
   readonly onToggle: () => void;
   readonly visited: ReadonlySet<string>;
-}) {
+}
+
+function SpineStep({ step, index, guide, expanded, onToggle, visited }: SpineStepProps) {
   const panelId = `guide-step-${String(index)}`;
   const Chevron = expanded ? ChevronDown : ChevronRight;
 
@@ -36,7 +33,7 @@ function SpineStep({
         onClick={onToggle}
         aria-expanded={expanded}
         aria-controls={panelId}
-        className="flex w-full items-start gap-3 rounded-lg p-3 text-left transition-colors hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+        className={cn('flex w-full items-start gap-3 rounded-lg p-3 text-left transition-colors hover:bg-accent/40', FOCUS_RING)}
       >
         <span
           className={cn(
@@ -61,17 +58,15 @@ function SpineStep({
               <li key={slug}>
                 <Link
                   to={`/guide/${slug}`}
-                  className="block rounded-md border bg-background/60 px-3 py-2 transition-colors hover:border-primary/50 hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+                  className={cn(
+                    'block rounded-md border bg-background/60 px-3 py-2 transition-colors hover:border-primary/50 hover:bg-accent/40',
+                    FOCUS_RING
+                  )}
                 >
                   <span className="flex items-center justify-between gap-2">
                     <span className="flex min-w-0 items-center gap-1.5 font-medium">
-                      {note?.title ?? slug}
-                      {visited.has(slug) && (
-                        <>
-                          <Check className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
-                          <span className="sr-only"> (read)</span>
-                        </>
-                      )}
+                      {noteTitle(guide.bundle, slug)}
+                      {visited.has(slug) && <VisitedMark className="size-3.5" />}
                     </span>
                     {note && <FreshnessMarker verified={note.verified} current={guide.manifest.esrVersion} reasons={note.staleReasons} />}
                   </span>
@@ -86,7 +81,11 @@ function SpineStep({
   );
 }
 
-function Spine({ guide }: { readonly guide: LoadedGuide }) {
+interface SpineProps {
+  readonly guide: LoadedGuide;
+}
+
+function Spine({ guide }: SpineProps) {
   const { spine, notes } = guide.bundle;
   // Indices of the expanded steps; the first step starts open.
   const [expanded, setExpanded] = useState<ReadonlySet<number>>(() => new Set([0]));
@@ -113,9 +112,9 @@ function Spine({ guide }: { readonly guide: LoadedGuide }) {
       <GuideSearch notes={notes} />
 
       <section aria-labelledby="guide-path-heading">
-        <h2 id="guide-path-heading" className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+        <SectionLabel id="guide-path-heading" className="mb-2">
           Start here
-        </h2>
+        </SectionLabel>
         <ol className="space-y-2">
           {spine.steps.map((step, index) => (
             <SpineStep
@@ -135,15 +134,18 @@ function Spine({ guide }: { readonly guide: LoadedGuide }) {
 
       {spine.questions.length > 0 && (
         <section aria-labelledby="guide-questions-heading">
-          <h2 id="guide-questions-heading" className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <SectionLabel id="guide-questions-heading" className="mb-2">
             I found something
-          </h2>
+          </SectionLabel>
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             {spine.questions.map((question) => (
               <Link
                 key={question.note}
                 to={`/guide/${question.note}`}
-                className="inline-flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+                className={cn(
+                  'inline-flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
+                  FOCUS_RING
+                )}
               >
                 {question.label}
                 <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
@@ -161,7 +163,7 @@ function Spine({ guide }: { readonly guide: LoadedGuide }) {
             onClick={() => {
               if (window.confirm('Forget which guide notes you have read?')) resetVisited();
             }}
-            className="underline underline-offset-2 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+            className={cn('underline underline-offset-2 hover:text-foreground', FOCUS_RING)}
           >
             Reset progress
           </button>

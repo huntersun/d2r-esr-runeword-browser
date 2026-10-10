@@ -1,5 +1,11 @@
 import { useSelector } from 'react-redux';
-import { FILTER_URL_PARAM_KEYS, appendCommonFilterParams, appendSelectionParam, buildShareUrl } from '@/core/utils/filterUrlParams';
+import {
+  FILTER_URL_PARAM_KEYS,
+  appendCommonFilterParams,
+  appendSelectionParam,
+  buildShareUrl,
+  appendExactNameParam,
+} from '@/core/utils/filterUrlParams';
 import {
   selectSearchText,
   selectSocketCount,
@@ -25,7 +31,7 @@ export function useShareUrl(): () => string {
     const params = new URLSearchParams();
     appendCommonFilterParams(params, { searchText, socketCount, maxReqLevel, selectedItemTypes });
     appendSelectionParam(params, FILTER_URL_PARAM_KEYS.GEMS, selectedGems);
-    if (exactName !== null) params.set(FILTER_URL_PARAM_KEYS.NAME, exactName);
+    appendExactNameParam(params, exactName);
     return buildShareUrl('gemwords', params);
   };
 }

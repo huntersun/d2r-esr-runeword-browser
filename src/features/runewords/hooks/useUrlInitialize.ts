@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import {
@@ -9,6 +9,7 @@ import {
   parseBoundedIntParam,
 } from '@/core/utils/filterUrlParams';
 import { parseExactNameParam } from '@/core/utils/exactName';
+import { useExactNameFromUrl, type ExactNameFromUrl } from '@/core/hooks/useExactNameFromUrl';
 import { useRuneGroups } from './useRuneGroups';
 import { useAvailableItemTypes } from './useAvailableItemTypes';
 import {
@@ -26,25 +27,14 @@ import {
  * After initialization, cleans the URL to keep it tidy while browsing.
  * Use useShareUrl() to generate shareable URLs with current filter state.
  */
-export function useUrlInitialize(): boolean {
+export function useUrlInitialize(): ExactNameFromUrl {
   const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
-  // Whether this visit came with a `name` param (the URL is cleaned after init, so capture it once)
-  const [nameFromUrl] = useState(() => parseExactNameParam(searchParams.get(FILTER_URL_PARAM_KEYS.NAME)) !== null);
+  const { nameFromUrl, clearExactName } = useExactNameFromUrl(setExactName);
 
   // Available options from DB
   const runeGroups = useRuneGroups();
   const itemTypes = useAvailableItemTypes();
-
-  // The name focus is independent of the other filters (it overrides them while set, see applyExactNameFocus):
-  // set from the URL, and cleared by any visit whose URL has no `name`, so it never outlives the deep link.
-  // Applied on mount, without waiting for the filter data, so a stale focus never shows.
-  const nameAppliedRef = useRef(false);
-  useEffect(() => {
-    if (nameAppliedRef.current) return;
-    nameAppliedRef.current = true;
-    dispatch(setExactName(parseExactNameParam(searchParams.get(FILTER_URL_PARAM_KEYS.NAME))));
-  }, [searchParams, dispatch]);
 
   // Track initialization state
   const initializedRef = useRef(false);
@@ -79,7 +69,7 @@ export function useUrlInitialize(): boolean {
     const hasUrlParams =
       urlSearch !== null || urlSockets !== null || urlMaxLvl !== null || urlItems !== null || urlRunes !== null || urlTierPts !== null;
 
-    // `name` is applied by the effect below; only the URL cleaning happens here (it needs the other params first)
+    // `name` itself is applied by useExactNameFromUrl; only the URL cleaning happens here (it needs the other params)
     if (exactName !== null && !hasUrlParams) {
       setSearchParams({}, { replace: true });
     }
@@ -126,5 +116,5 @@ export function useUrlInitialize(): boolean {
     }
   }, [runeGroups, itemTypes, searchParams, setSearchParams, dispatch]);
 
-  return nameFromUrl;
+  return { nameFromUrl, clearExactName };
 }

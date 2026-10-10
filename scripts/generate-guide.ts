@@ -19,7 +19,7 @@ import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from 'node:
 import { join, relative, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import type { GuideManifest } from '../src/features/guide/engine/schema.ts';
-import { generateGuide, type GeneratedGuide } from '../src/features/guide/build/generateGuide.ts';
+import { generateGuideWithEsr, type GeneratedGuide } from '../src/features/guide/build/generateGuide.ts';
 import type { GameDataInputs } from '../src/features/guide/build/context.ts';
 import {
   readEsrForGuide,
@@ -28,13 +28,8 @@ import {
   readGameDataManifest,
   readGuideContent,
 } from '../src/features/guide/build/readGuideInputs.ts';
-import {
-  formatGuideReport,
-  LOCK_FILE,
-  parseVerifyLock,
-  serializeVerifyLock,
-  setVerifiedInFrontmatter,
-} from '../src/features/guide/build/staleness.ts';
+import { formatGuideReport } from '../src/features/guide/build/report.ts';
+import { LOCK_FILE, parseVerifyLock, serializeVerifyLock, setVerifiedInFrontmatter } from '../src/features/guide/build/verifyLock.ts';
 import { buildGuideManifest, serializeBundle } from '../src/features/guide/build/writeGuide.ts';
 import { git, REPO_ROOT, resolveEsrDir } from './lib/esrClone.ts';
 
@@ -97,13 +92,7 @@ function loadInputs(options: Options): Inputs {
 
 function generate(options: Options): { generated: GeneratedGuide; revision: Inputs['revision'] } {
   const { gameData, esr, revision } = loadInputs(options);
-  const generated = generateGuide({
-    content: readGuideContent(options.contentDir),
-    gameData,
-    esr: esr?.tables ?? null,
-    docs: esr?.docs ?? null,
-    patchNotes: esr?.patchNotes ?? [],
-  });
+  const generated = generateGuideWithEsr(readGuideContent(options.contentDir), gameData, esr);
   return { generated, revision };
 }
 

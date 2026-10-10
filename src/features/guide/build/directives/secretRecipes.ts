@@ -2,12 +2,10 @@
  * `::secret-recipes` / `::secret-recipe[50]`: the `[SECRETnn]` rows of cubemain.txt, merged per recipe
  * number (the txt repeats a recipe per base type, quality or socket count).
  */
-import type { DataBlock } from '../../engine/schema.ts';
+import type { RecipeRow } from '../../engine/schema.ts';
+import { capGroup, clusterVariants, distinct, formatInput, formatOutput, visibleOutputs, type RecipeVariant } from '../cubeText.ts';
 import type { EsrGuideTables } from '../esrGuideSources.ts';
-import { capGroup, clusterVariants, formatInput, formatOutput, unique, visibleOutputs, type RecipeVariant } from './cubeText.ts';
 import { requireEsr, type DirectiveResolver } from './types.ts';
-
-type RecipeRow = Extract<DataBlock, { kind: 'recipes' }>['rows'][number];
 
 const SECRET = /^\[SECRET(\d+)\]\s*(.*)$/;
 const RETURNED = '(the Ancient Scroll is returned)';
@@ -36,7 +34,7 @@ export function collectSecretRecipes(esr: EsrGuideTables): Map<number, RecipeRow
   const recipes = new Map<number, RecipeRow[]>();
   for (const [number, group] of groups) {
     // The txt descriptions are dev labels ("Socket(4) Weapon: High-Q …"); players only see the recipe number.
-    const more = unique(group.descriptions).length - 1;
+    const more = distinct(group.descriptions).length - 1;
     const first = `#${String(number)}${more > 0 ? ` (+${String(more)} variant${more > 1 ? 's' : ''})` : ''}`;
     recipes.set(
       number,

@@ -5,7 +5,8 @@ import type { BasesBundle, GameDataManifest, SourcesBundle, TxtRunewordsBundle, 
 import type { DocsIndex, GameDataInputs } from './context.ts';
 import { buildEsrGuideTables, readDocsIndex, readEsrGuideSources, type EsrGuideTables } from './esrGuideSources.ts';
 import type { GuideContentFiles } from './generateGuide.ts';
-import { LOCK_FILE, versionFromPatchNoteFile, type PatchNote } from './staleness.ts';
+import { versionFromPatchNoteFile, type PatchNote } from './staleness.ts';
+import { LOCK_FILE } from './verifyLock.ts';
 
 function readOptional(path: string): string | null {
   return existsSync(path) ? readFileSync(path, 'utf8') : null;
@@ -64,7 +65,7 @@ export interface EsrForGuide {
 }
 
 /** `<esr>/patchnotes/<version>.md` files (others are ignored); empty when the folder is missing. */
-export function readPatchNotes(esrDir: string): PatchNote[] {
+function readPatchNotes(esrDir: string): PatchNote[] {
   const dir = join(esrDir, 'patchnotes');
   if (!existsSync(dir)) return [];
   return readdirSync(dir)

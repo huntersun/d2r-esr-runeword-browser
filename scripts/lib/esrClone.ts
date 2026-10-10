@@ -4,6 +4,7 @@
 import { execFileSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ESR_BOSS_SET_UNIQUE_DROP_FILE } from '../../src/features/game-data/build/esrSources.ts';
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const ESR_REPO_URL = 'https://github.com/CelestialRayOne/Eastern_Sun_Resurrected.git';
@@ -18,7 +19,7 @@ export const ESR_SPARSE_PATHS = [
   '/Eastern_Sun_Resurrected.mpq/data/global/excel/',
   '/Eastern_Sun_Resurrected.mpq/data/local/lng/strings/',
   '/d2rloader/metadata.json',
-  '/d2rloader/config/celestialrayone.boss-set-unique-drop.toml',
+  `/${ESR_BOSS_SET_UNIQUE_DROP_FILE}`,
   '/docs/',
   '/patchnotes/',
 ];

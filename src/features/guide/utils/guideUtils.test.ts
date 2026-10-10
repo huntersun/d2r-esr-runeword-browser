@@ -1,31 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { GuideBlock, GuideBundle, GuideInline, GuideNote } from '../engine/schema';
-import { collectAppLinks, inlineText, noteTitle, searchNotes, sourceCells } from './guideUtils';
+import type { GuideBlock, GuideInline, GuideNote } from '../engine/schema';
+import { makeNote } from '../engine/testNote.mock';
+import { collectAppLinks, inlineText, searchNotes, sourceCells } from './guideUtils';
 
 const text = (value: string): GuideInline => ({ type: 'text', value });
 const appLink = (href: string, label: string): GuideInline => ({ type: 'link', kind: 'app', href, children: [text(label)] });
 
 function note(slug: string, title: string, summary = '', aliases: string[] = []): GuideNote {
-  return {
-    slug,
-    title,
-    kind: 'note',
-    summary,
-    tags: [],
-    aliases,
-    verified: null,
-    staleReasons: [],
-    volatility: 'low',
-    knowFirst: [],
-    related: [],
-    backlinks: [],
-    next: null,
-    spineStep: null,
-    officialDocs: [],
-    sources: [],
-    words: 0,
-    body: [],
-  };
+  return makeNote({ slug, title, summary, aliases });
 }
 
 describe('inlineText', () => {
@@ -46,14 +28,14 @@ describe('collectAppLinks', () => {
     const body: GuideBlock[] = [
       {
         type: 'paragraph',
-        children: [appLink('/?search="Enigma"', 'Enigma'), { type: 'link', kind: 'note', href: 'forging', children: [text('n')] }],
+        children: [appLink('/?name=Enigma', 'Enigma'), { type: 'link', kind: 'note', href: 'forging', children: [text('n')] }],
       },
       {
         type: 'list',
         ordered: false,
         items: [[{ type: 'paragraph', children: [{ type: 'emphasis', children: [appLink('/uniques', 'Uniques')] }] }]],
       },
-      { type: 'blockquote', children: [{ type: 'paragraph', children: [appLink('/?search="Enigma"', 'again')] }] },
+      { type: 'blockquote', children: [{ type: 'paragraph', children: [appLink('/?name=Enigma', 'again')] }] },
       { type: 'table', header: [[text('h')]], rows: [[[appLink('/game-data/bases', 'Bases')]]] },
       { type: 'heading', depth: 3, children: [appLink('/gemwords', 'Gemwords')] },
       {
@@ -62,7 +44,7 @@ describe('collectAppLinks', () => {
       },
     ];
     expect(collectAppLinks(body)).toEqual([
-      { href: '/?search="Enigma"', label: 'Enigma' },
+      { href: '/?name=Enigma', label: 'Enigma' },
       { href: '/uniques', label: 'Uniques' },
       { href: '/game-data/bases', label: 'Bases' },
       { href: '/gemwords', label: 'Gemwords' },
@@ -134,14 +116,5 @@ describe('sourceCells', () => {
       buy: ['Buy: Gheed'],
       gamble: ['Gamble'],
     });
-  });
-});
-
-describe('noteTitle', () => {
-  const bundle: GuideBundle = { notes: [note('forging', 'Forging')], spine: { steps: [], questions: [] }, glossary: [], sourceRefs: [] };
-
-  it('returns the title of a known note and the slug for an unknown one', () => {
-    expect(noteTitle(bundle, 'forging')).toBe('Forging');
-    expect(noteTitle(bundle, 'missing-note')).toBe('missing-note');
   });
 });

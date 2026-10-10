@@ -8,17 +8,16 @@ import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 import { FavoritesToggleButton } from '@/core/components/FavoritesToggleButton';
 import { useItemFavorites } from '@/features/favorites';
 import type { HtmUniqueItem } from '@/core/db';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { ExactNameChip } from '@/core/components/ExactNameChip';
-import { selectExactName, setExactName } from '../store';
+import { selectExactName } from '../store';
 import { useItemSources } from '@/features/game-data/hooks/useItemSources';
 
 export function HtmUniqueItemsScreen() {
-  const nameFromUrl = useUrlInitialize();
+  const { nameFromUrl, clearExactName } = useUrlInitialize();
   const items = useFilteredHtmUniqueItems();
-  const dispatch = useDispatch();
   const exactName = useSelector(selectExactName);
-  const { index: sourceIndex } = useItemSources();
+  const sourceIndex = useItemSources();
   const favorites = useItemFavorites<HtmUniqueItem>({
     getId: buildHtmUniqueItemFavoriteId,
     kindPrefix: 'htmUnique:',
@@ -44,9 +43,7 @@ export function HtmUniqueItemsScreen() {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <p className="text-sm text-muted-foreground">Showing {filteredItems.length} unique items</p>
-          {exactName !== null && (
-            <ExactNameChip name={exactName} onClear={() => dispatch(setExactName(null))} scrollIntoView={nameFromUrl} />
-          )}
+          {exactName !== null && <ExactNameChip name={exactName} onClear={clearExactName} scrollOnMount={nameFromUrl} />}
         </div>
         {favorites.isAuthenticated && (
           <FavoritesToggleButton

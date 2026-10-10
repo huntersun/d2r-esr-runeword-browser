@@ -11,3 +11,9 @@ export function displayName(text: string): string {
     .reverse()
     .join(' ');
 }
+
+/** Display name of a string-table key, or `fallback` when the key is missing or blank. */
+export function resolveName(strings: ReadonlyMap<string, string>, key: string, fallback: string): string {
+  const text = displayName(strings.get(key) ?? '');
+  return text === '' ? fallback : text;
+}

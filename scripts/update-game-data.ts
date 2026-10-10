@@ -99,6 +99,7 @@ function main(): void {
     // The guide's data blocks (secret recipes, vendors, sources) come from the clone and the fresh game data.
     const guide = run(process.execPath, ['scripts/generate-guide.ts', '--esr', esrDir]);
     steps.push({ name: 'guide:generate', ok: guide });
+    // --check regenerates in memory and verifies the files just written match it (catches non-deterministic output).
     steps.push({ name: 'guide:check', ok: guide && run(process.execPath, ['scripts/generate-guide.ts', '--check', '--esr', esrDir]) });
     if (guide) {
       // Which verified notes the new data or patch notes flagged for review (informational, never fails the update).
