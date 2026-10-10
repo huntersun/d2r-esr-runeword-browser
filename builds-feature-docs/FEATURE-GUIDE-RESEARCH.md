@@ -1,6 +1,6 @@
 # Feature research: new-player Guide
 
-Status: research + brainstorm, 2026-10-10. No decision taken yet; open questions are at the end.
+Status: research + brainstorm, 2026-10-10. Decisions recorded in section 5.
 ESR at the time of research: 3.2.12 (committed game-data bundles: 3.2.10).
 
 ## 1. The question
@@ -290,23 +290,21 @@ and a dismissible banner on the runewords page. Cloudflare Web Analytics counts 
 vs total visits over 4–6 weeks tell us whether anyone uses it (rough bar: ~10% of sessions reach it, and at least one
 section shows up as an external landing page).
 
-## 5. Open questions for the owner
+## 5. Decisions (owner, 2026-10-10)
 
-1. **Who writes the notes?** You, or Claude drafts that you verify in-game before `guide:verify`? This decides whether
-   phase 1 is 6 or 8+ days and whether a `volatility: high` note can ship at all.
-2. **Start page:** the five-step journey spine as `/guide`, with the "I found something" row below it. OK, or do you
-   prefer the question-driven entry first?
-3. **Graph:** ship chips only in phase 1 and add the 1-hop SVG graph in phase 2, or is the drawn graph a must-have from
-   day one because it _is_ the Obsidian feeling you want?
-4. **Source labels on existing cards** (uniques, socketables, mythicals) in phase 2, or keep "where from" inside the
-   guide only?
-5. **Loading gate:** fine to let `/guide` render before the HTM data sync finishes (a small change to `AppLayout`)?
-6. **Spoilers** (Ascendancy orb riddle, Uber key bosses, secret recipe numbers): behind a "show spoiler" toggle, open,
-   or left out?
-7. **Upstream:** should we message the mod author about a "Getting started" page on easternsunresurrected.com that links
-   here, in parallel with whatever we build?
-8. **Hard cap** of ~250 words per note (build warns at 300, fails at 400), even when it means splitting Stockers into two
-   notes?
+| Question                        | Decision                                                                                                                         |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Who writes the notes            | Claude drafts every note from the txt data and surveyed sources; the owner verifies in-game and marks `verified` before it ships |
+| Start page                      | Five-step journey spine with the "I found something" row below it                                                                |
+| Drawn local graph               | Phase 2. Phase 1 ships "Know first" / "Related" / "Next" chips only                                                              |
+| Source labels                   | Phase 1 inside guide notes; phase 2 adds a "Source:" line on unique, mythical and socketable cards                               |
+| Loading gate                    | `/guide` renders before the HTM sync; embedded cards carry their own loading state                                               |
+| Spoilers                        | Shown openly, no toggle (`spoiler` frontmatter field dropped)                                                                    |
+| Upstream "Getting started" page | Ask the mod author after phase 1 ships                                                                                           |
+| Note length                     | Soft cap: build warns above 400 words, never fails; 150–250 remains the target                                                   |
 
-Decisions I would take by default unless told otherwise: a renamed item in a _directive_ fails the build, in prose
-`mentions` only warns; the official cube page stays canonical and crafting notes link to its anchors; no d3; no MDX.
+Defaults confirmed by silence: a renamed item inside a directive fails the build while prose `mentions` only warn; the
+official cube page stays canonical and crafting notes link to its anchors; no d3; no MDX.
+
+Next step: a phase 1 implementation plan (pipeline, loader, route outside the gate, spine + note screens with chips,
+directives, cheap `sources.json`, ~12 drafted notes + ~11 link stubs).
