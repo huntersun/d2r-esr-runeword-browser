@@ -36,7 +36,34 @@ colours, keep several filters in the browser and download the result for the ESR
   optional mp3 upload to preview sounds, filter source persisted in `localStorage`.
 - Not reusable as code for our target format, but a good UX reference.
 
-### 2.3 What our app already has
+### 2.3 The D2RLAN loot filter guide and engine (the ancestor of ESR's format)
+
+Owner-supplied link: https://locbones.github.io/D2RLAN-LootFilterGuide/ (Lua format; "not guaranteed to be 100%
+accurate or complete"). Engine source: `lootfilter.lua` in https://github.com/locbones/D2RLAN-Filters (1449 lines,
+read 2026-10-10). ESR's JSON is the mod author's conversion of Sully's Lua filter for this engine, so the guide
+documents the **semantics** and the engine confirms them; it does not name ESR's JSON keys.
+
+Engine facts that matter for the editor (from `lootfilter.lua`):
+
+- Rules run **in order; every matching rule applies**. Name edits accumulate: `name_override` replaces the name built
+  so far, `prefix`/`suffix` wrap it, so a later rule can add a suffix to an earlier override. Background, border and
+  styles are last-wins. `hide` sticks once set. A rule with conditions only is a no-op (apart from debug output).
+- Missing `filter_levels` = active in every level. Missing `location` = `onground` only; the four values are
+  `onground`, `onplayer` (= stored), `equipped`, `atvendor`. Actions apply only when the item is in a listed location.
+- Quality is 1–9 (Low, Normal, Superior, Magic, Set, Rare, Unique, Crafted, Tempered); rarity 0–2 (normal,
+  exceptional, elite). Numeric conditions accept a number, a list, `"3+"` / `"3-"` strings, `NOT{}`, `OR{}` and
+  `between` for stats.
+- Stat conditions are `{index, op, value, param?}`; `pstat` reads the player (index 12 = level). A list is AND;
+  `OR { ... }` is any-of.
+- `audio`: a file name ending in .mp3/.flac/.wav is played, any other text is spoken by TTS. Only when
+  `audioPlayback` is on.
+- Placeholders: `{code}`, `{ilvl}`, `{rarity}`, `{quality}`, `{name}`, `{ethereal}`, `{sockets}`, `{index}`,
+  `{itype}`, `{maxsock}`, `{stat=(id,param)}`, `{pstat=(id)}`, `{link}` (notify only). Colour tags `{gold}` etc. map
+  to `ÿc?` codes. `$` is **not** special in this engine.
+- Conditions the engine has beyond Sully's usage: `ilvl`, `index` (unique/set id), `itype`, `ethereal`,
+  `identified`, `grail`, `difficulty`, `area` (positive and `NOT`), `maxsock` with operators.
+
+### 2.4 What our app already has
 
 - `public/game-data/bases.json`: every weapon/armor base with its 3-letter `code`, type ancestors and tier.
 - `public/game-data/sources.json`: unique / set / misc items with `code` (the base code for uniques and sets).
@@ -81,11 +108,37 @@ Placeholders seen: `{name}`, `{sockets}`, `{baseTier}`, `{stat:N}`. Colour codes
 `ÿc;`, `ÿcA`, `ÿcP` (the D2 colour-code set). A name of `$$` appears in `replaceName` (meaning unknown; it may stand
 for "the original name" in the converter's output).
 
-Unknown and needed before building: rule precedence (first match wins, last wins, or all matching rules merge),
-whether an action-less rule stops processing, `{min}` support everywhere, the full key list (ethereal, item level,
-item type/class instead of codes, unique/set ids, gold amount, map tier?), the full placeholder list, how `sound`
-interacts with `sounds.txt` entries, whether `activeInLevels` absent means all levels, how multi-line names render,
-and whether `formatVersion` 1 is frozen.
+### 3.1 Lua → ESR JSON mapping (derived by comparing the guide with Sully's converted file)
+
+| D2RLAN Lua                                                                     | ESR JSON                                                        | Note                                                   |
+| ------------------------------------------------------------------------------ | --------------------------------------------------------------- | ------------------------------------------------------ |
+| `code` / `codes`                                                               | `itemCodes`                                                     | `"allitems"` → rule without `itemCodes`                |
+| `quality` 1–9                                                                  | `quality` name or `{max}`                                       | crafted/tempered never appear in the sample            |
+| `rarity` 0–2                                                                   | `baseTier` or `{max}`                                           |                                                        |
+| `sockets`                                                                      | `sockets` or `{min}`/`{max}`                                    |                                                        |
+| `runeword`, `maxsock`                                                          | `isRuneword`, `isFullySocketed`                                 |                                                        |
+| `stat` list / `OR{}`                                                           | `itemStats` / `itemStatsAnyOf` with `{stat, op, value, param?}` | `index` → `stat`                                       |
+| `pstat`                                                                        | `playerStats`                                                   |                                                        |
+| `filter_levels`                                                                | `activeInLevels`                                                | absent = all                                           |
+| `location`                                                                     | `location` (`stored`, `atVendor`, `equipped`, `onGround`)       | `onplayer` → `stored`                                  |
+| `NOT area{}`                                                                   | `excludeAreas` (ids)                                            | names → level ids                                      |
+| `name_override`, `prefix`, `suffix`                                            | `replaceName`, `namePrefix`, `nameSuffix`                       | colour tags → raw `ÿc?`                                |
+| `notify`                                                                       | `chatMessage`                                                   |                                                        |
+| `audio`                                                                        | `sound`                                                         | file names only in the sample                          |
+| `background` `{r,g,b,a}`                                                       | `labelBackground` `[r,g,b,a]`                                   |                                                        |
+| `border` `{r,g,b,a,width}`                                                     | `labelBorder` `{color:[r,g,b,a], width}`                        |                                                        |
+| `hide`                                                                         | `hide`                                                          |                                                        |
+| `{stat=(96)}`, `{rarity}`                                                      | `{stat:96}`, `{baseTier}`                                       | placeholder spellings differ                           |
+| `name_style`, `prefix_desc`, `suffix_desc`, `background_style`                 | dropped                                                         | "rainbow names and tooltip lines are not carried over" |
+| `filter_titles`, `filter_level`                                                | `filterLevels` `[{id, name}]`, `defaultLevel`                   |                                                        |
+| `reload`, `debug`, `allowOverrides`, `language`, `audioPlayback`, `audioVoice` | none                                                            | launcher config instead                                |
+
+Still unknown for the **ESR plugin** specifically (the engine above is the Lua one, ESR's DLL is a reimplementation):
+whether it keeps the "all matching rules apply, in order" semantics; whether `{min}` works on `quality` and
+`baseTier`; whether JSON equivalents exist for `ilvl`, `index`, `itype`, `ethereal`, `identified`,
+`difficulty`, positive `area`, `between` and `NOT`; what `$` means in `replaceName` (not special in D2RLAN, so
+likely a converter artefact or an ESR addition); whether the leading `//` comments and unknown keys are tolerated;
+whether `sound` also accepts `sounds.txt` entries or TTS text.
 
 ## 4. Questions for the mod author (to send)
 
@@ -94,17 +147,20 @@ and whether `formatVersion` 1 is frozen.
 > I only have `sullys-qol.json` and the toml comment to go on. Could you share, or point me at, the plugin's filter
 > schema? Specifically:
 >
-> 1. The complete list of rule keys and value shapes (matchers and actions), beyond what Sully's filter uses.
-> 2. Rule order semantics: first match wins, last wins, or do all matching rules stack? Does a rule with matchers
->    but no action do anything?
-> 3. Do `{min}` / `{max}` objects work for every numeric matcher (`quality`, `baseTier`, `sockets`, others)?
-> 4. The placeholder list for names/messages (`{name}`, `{sockets}`, `{baseTier}`, `{stat:N}` seen) and what `$$`
->    means in `replaceName`.
-> 5. Can rules match by item type (`itemtypes.txt` code), unique/set id, ethereal, item level, or player class?
-> 6. `sound`: only files from `sounds/`, or also `sounds.txt` entries? Any size/format limits?
-> 7. Is the leading `//` comment block part of the format (JSONC), and will `formatVersion` 1 stay stable? Will
->    unknown keys be ignored or rejected?
-> 8. Is it okay to offer Sully's filter and the shipped mp3 files as templates inside the app, with credit?
+> I know the D2RLAN guide (locbones) and its `lootfilter.lua`, and I see your JSON is a conversion of it. Could you
+> confirm or correct these points for your plugin?
+>
+> 1. Does it keep D2RLAN's semantics: rules run in order, every matching rule applies, name edits accumulate,
+>    background/border last-wins, `hide` sticks, missing `location` = on ground only?
+> 2. Which JSON keys exist beyond Sully's file? In particular equivalents of `ilvl`, `index` (unique/set id),
+>    `itype`, `ethereal`, `identified`, `difficulty`, a positive `areas` list, `between` and `NOT`.
+> 3. Do `{min}` / `{max}` objects work on every numeric matcher (`quality`, `baseTier`, `sockets`, stats)?
+> 4. Placeholders: `{name}`, `{sockets}`, `{baseTier}`, `{stat:N}` are in Sully's file. Are `{code}`, `{ilvl}`,
+>    `{quality}`, `{ethereal}`, `{index}`, `{stat:N:param}` supported, and what does `$` mean in `replaceName`?
+> 5. `sound`: only files from `sounds/`, or also `sounds.txt` entries or TTS text?
+> 6. Are the leading `//` comment lines part of the format, are unknown keys ignored or rejected, and will
+>    `formatVersion` 1 stay stable?
+> 7. Is it okay to offer Sully's filter and the shipped mp3 files as templates inside the app, with credit?
 >    Happy to share the editor for testing before release.
 
 Where to ask: the ESR Discord (linked from easternsunresurrected.com) or a GitHub issue on
@@ -141,4 +197,7 @@ Where to ask: the ESR Discord (linked from easternsunresurrected.com) or a GitHu
 - ESR repo: `LootFilters/sullys-qol.json`, `d2rloader/config/celestialrayone.loot-filter.toml`, `patchnotes/3.2.09.md`,
   `d2rloader/metadata.json` (D2RLoader 1.3.1).
 - Fork: `../d2r-esr-runeword-browser-zh/src/features/loot-filter/` (parser, presets, preview, screen).
-- Web search for a D2RLoader filter spec found nothing relevant (only Median XL, PD2, PoD and native D2R filter pages).
+- D2RLAN guide https://locbones.github.io/D2RLAN-LootFilterGuide/ and engine
+  https://github.com/locbones/D2RLAN-Filters (`lootfilter.lua`, `lootfilter_template.lua`); Sully's original Lua filter
+  is not in that repo and not findable publicly.
+- Web searches for a D2RLoader filter spec found nothing relevant (only Median XL, PD2, PoD and native D2R filter pages).
