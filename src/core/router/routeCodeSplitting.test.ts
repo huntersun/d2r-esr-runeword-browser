@@ -10,6 +10,7 @@ const routeScreenImports = [
   '@/features/mythical-uniques',
   '@/features/ascendancies',
   '@/features/game-data',
+  '@/features/guide',
 ] as const;
 
 function readRouterSource(): string {

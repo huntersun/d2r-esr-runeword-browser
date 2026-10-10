@@ -56,6 +56,7 @@ The app uses a single HTM-based data system. All data is fetched from the ESR do
 | Feature | Route | Description |
 |---------|-------|-------------|
 | Runewords | `/` | ~386 runewords with filters for runes, sockets, item types, tier points, req level |
+| Guide | `/guide`, `/guide/:slug` | New-player guide: small linked notes on a journey spine, note search, freshness badges, data blocks generated from the game files; renders before the HTM data sync finishes ([GUIDE.md](./features/GUIDE.md), `src/features/guide/`) |
 | Gemwords | `/gemwords` | ~590 gem-based socket recipes with filters for gems, sockets, item types, req level |
 | Socketables | `/socketables` | ~177 socketable items across 5 categories |
 | Unique Items | `/uniques` | Unique weapons, armors, and other items with category filters |

@@ -7,6 +7,8 @@ Documentation for routing, layout, and navigation patterns.
 | Path | Screen | Description |
 |------|--------|-------------|
 | `/` | RunewordsScreen | Home page - browse and filter runewords |
+| `/guide` | GuideSpineScreen | New-player guide: "Start here" journey spine, note search, "I found something" row |
+| `/guide/:slug` | GuideNoteScreen | One guide note; unknown slug shows a "Note not found" block linking back to `/guide` |
 | `/gemwords` | GemwordsScreen | Gem-based socket recipes with filters |
 | `/socketables` | SocketablesScreen | All socketables with category filters & search |
 | `/uniques` | HtmUniqueItemsScreen | Unique items with category & coupon filters |
@@ -37,10 +39,18 @@ Documentation for routing, layout, and navigation patterns.
 └───────────────────────────────────────────────────────────────────────┘
 ```
 
+### Startup loading gate
+
+`AppLayout` shows a full-screen "Loading data..." spinner until the HTM data sync has initialized (and a full-screen
+error with "Try Again" when it failed). Guide routes (`/guide`, `/guide/*`) skip the spinner and render the normal
+shell (Header + Outlet + SettingsDrawer) right away, because the guide is a static JSON bundle (`public/guide/`) that
+needs no Dexie data; the sync keeps running in the background. The fatal-error screen still applies to every route.
+See [GUIDE.md](../features/GUIDE.md).
+
 ### Header Components
 
 - **Logo/Title**: "D2R ESR" or similar branding
-- **Navigation Links**: Runewords, Gemwords, Socketables, Uniques, Mythicals, Ascendancies, Game Data, Builds (only when Supabase is configured), plus external ESR Documentation / Changelog links; items that don't fit collapse into a "More" menu (priority-plus, see `Header.tsx`)
+- **Navigation Links**: Runewords, Guide, Gemwords, Socketables, Uniques, Mythicals, Ascendancies, Game Data, Builds (only when Supabase is configured), plus external ESR Documentation / Changelog links; items that don't fit collapse into a "More" menu (priority-plus, see `Header.tsx`)
 - **Settings Button**: Cog icon in top-right corner
 
 ### Sub-tab layouts

@@ -36,6 +36,7 @@ type NavEntry = InternalEntry | ExternalEntry;
 
 const INTERNAL_PAGES: readonly InternalEntry[] = [
   { key: 'runewords', kind: 'internal', to: '/', label: 'Runewords', end: true },
+  { key: 'guide', kind: 'internal', to: '/guide', label: 'Guide', end: false },
   { key: 'gemwords', kind: 'internal', to: '/gemwords', label: 'Gemwords', end: false },
   { key: 'socketables', kind: 'internal', to: '/socketables', label: 'Socketables', end: false },
   { key: 'uniques', kind: 'internal', to: '/uniques', label: 'Uniques', end: false },

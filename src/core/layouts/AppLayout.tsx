@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from '@/core/components/Header';
 import { SettingsDrawer } from '@/core/components/SettingsDrawer';
 import { Spinner } from '@/components/ui/spinner';
@@ -12,6 +12,11 @@ export function AppLayout() {
   const isInitialized = useSelector(selectIsInitialized);
   const error = useSelector(selectError);
   const isSupabaseEnabled = useSelector(selectAuthIsConfigured);
+  const { pathname } = useLocation();
+  // The guide is a static JSON bundle that needs none of the HTM/Dexie data, so its routes skip the
+  // "Loading data..." gate below (the sync keeps running in the background). Header and SettingsDrawer
+  // only read settings/auth state and Dexie metadata with fallbacks, so they render before the sync too.
+  const isGuidePath = pathname === '/guide' || pathname.startsWith('/guide/');
 
   // Fatal error state - error occurred and app is not initialized
   if (error && !isInitialized) {
@@ -34,7 +39,7 @@ export function AppLayout() {
   }
 
   // Loading state during startup
-  if (!isInitialized) {
+  if (!isInitialized && !isGuidePath) {
     return (
       <div className="min-h-svh flex flex-col items-center justify-center">
         <Spinner className="size-12 mb-4" />

@@ -15,6 +15,16 @@ const GemwordsScreen = lazy(async () => {
   return { default: module.GemwordsScreen };
 });
 
+const GuideSpineScreen = lazy(async () => {
+  const module = await import('@/features/guide');
+  return { default: module.GuideSpineScreen };
+});
+
+const GuideNoteScreen = lazy(async () => {
+  const module = await import('@/features/guide');
+  return { default: module.GuideNoteScreen };
+});
+
 const SocketablesScreen = lazy(async () => {
   const module = await import('@/features/socketables');
   return { default: module.SocketablesScreen };
@@ -108,6 +118,8 @@ export const router = createBrowserRouter(
       errorElement: <RouteErrorScreen />,
       children: [
         { index: true, element: routeElement(RunewordsScreen) },
+        { path: 'guide', element: routeElement(GuideSpineScreen) },
+        { path: 'guide/:slug', element: routeElement(GuideNoteScreen) },
         { path: 'gemwords', element: routeElement(GemwordsScreen) },
         { path: 'socketables', element: routeElement(SocketablesScreen) },
         { path: 'uniques', element: routeElement(HtmUniqueItemsScreen) },
