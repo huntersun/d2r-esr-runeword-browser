@@ -1,6 +1,7 @@
 # Feature research: new-player Guide
 
-Status: research + brainstorm, 2026-10-10. Decisions recorded in section 5.
+Status: implemented on `feat/wiki-or-guide` (phases 1–3, 2026-10-10). Decisions in section 5; the living spec is
+[docs/features/GUIDE.md](../docs/features/GUIDE.md). All notes ship as drafts until verified in-game with `guide:verify`.
 ESR at the time of research: 3.2.12 (committed game-data bundles: 3.2.10).
 
 ## 1. The question
