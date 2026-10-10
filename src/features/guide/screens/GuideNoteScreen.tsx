@@ -79,7 +79,7 @@ function Note({ guide, note, visited }: { readonly guide: LoadedGuide; readonly 
     // lg: body + a 22rem sticky local graph column; xl+: 2/3 + 1/3; below lg the graph is hidden (the chips carry the same edges).
     <div className="mx-auto max-w-2xl lg:grid lg:max-w-6xl lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       <article className={cn('min-w-0 space-y-6', note.next !== null && 'pb-28 sm:pb-0')}>
-        <header className="space-y-3">
+        <header>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm text-muted-foreground">
               <Link to="/guide" className="hover:text-foreground hover:underline">
@@ -92,17 +92,24 @@ function Note({ guide, note, visited }: { readonly guide: LoadedGuide; readonly 
             </nav>
             <FreshnessBadge verified={note.verified} current={manifest.esrVersion} reasons={note.staleReasons} />
           </div>
-          <h1 className="text-2xl font-bold">{note.title}</h1>
-          <p className={cn('text-base text-muted-foreground', GUIDE_PROSE_FONT)}>{note.summary}</p>
         </header>
 
-        {note.knowFirst.length > 0 && (
-          <Section title="Know first">
-            <Chips slugs={note.knowFirst} visited={visited} />
-          </Section>
-        )}
+        {/* Reading panel: the note itself on a card surface with softened body text (less glare than
+            near-white on the near-black page); navigation sections stay outside it. */}
+        <div className="space-y-6 rounded-lg border bg-card p-4 text-card-foreground sm:p-6">
+          <div className="space-y-3">
+            <h1 className="text-2xl font-bold">{note.title}</h1>
+            <p className={cn('text-base text-muted-foreground', GUIDE_PROSE_FONT)}>{note.summary}</p>
+          </div>
 
-        <GuideBody blocks={note.body} />
+          {note.knowFirst.length > 0 && (
+            <Section title="Know first">
+              <Chips slugs={note.knowFirst} visited={visited} />
+            </Section>
+          )}
+
+          <GuideBody blocks={note.body} />
+        </div>
 
         {appLinks.length > 0 && (
           <Section title="In the app">

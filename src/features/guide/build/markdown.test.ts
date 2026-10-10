@@ -162,6 +162,14 @@ describe('markdownToBlocks', () => {
   });
 });
 
+describe('tables', () => {
+  it('fails when the separator row has a different number of cells than the header', () => {
+    const md = '| A | B |\n| --- | --- | --- |\n| 1 | 2 |\n';
+    const result = markdownToBlocks(md, fixtureContext(), 'notes/test.md');
+    expect(result.errors.some((error) => error.includes('table did not parse'))).toBe(true);
+  });
+});
+
 describe('countWords', () => {
   it('counts body text but not data blocks or punctuation', () => {
     const { blocks } = convert(

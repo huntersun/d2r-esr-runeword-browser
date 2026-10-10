@@ -29,18 +29,18 @@ sources: [official-cube, official-docs, esru-wiki]
 
 ESR stacks many upgrades on one item. Some can be undone, some are random, and some lock the item for good, so the order matters.
 
-| Enhancement            | Removable?             | Random or fixed?                | How to undo                                                   |
-| ---------------------- | ---------------------- | ------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------- |
-| Socket contents        | Yes                    | Fixed                           | Key returns item and socketables                              |
-| Added sockets          | No                     | Fixed                           | Count cannot change                                           |
-| Forging                | Yes, except Wo Forging | Fixed                           | 3 Thawing Potions; Aura Stones are lost                       |
-| [[mercenaries-oskills  | Merc Only Conversion]] | Yes                             | Fixed                                                         | 3 Antidote Potions                                      |
-| [[weapon-mastery       | Weapon mastery]]       | Yes                             | Fixed                                                         | Class Dragon Stone form + 3 Thawing Potions; token lost |
-| D-stoning, gem melding | No                     | Fixed                           | Mapling only lowers the level penalty                         |
-| [[tinkering            | Tinkering]]            | No                              | Fixed                                                         | Limited by hidden tinkering points                      |
-| Corruption             | Status only            | Random; can brick               | Astrogha's Petrified Heart clears the status, keeps the bonus |
-| Anointment             | No                     | Random                          | None                                                          |
-| Legendary consumables  | No                     | Fixed, except Sanctify (random) | None; Branded items cannot be changed again                   |
+| Enhancement                                   | Removable?             | Random or fixed?                | How to undo                                                   |
+| --------------------------------------------- | ---------------------- | ------------------------------- | ------------------------------------------------------------- |
+| Socket contents                               | Yes                    | Fixed                           | Key returns item and socketables                              |
+| Added sockets                                 | No                     | Fixed                           | Count cannot change                                           |
+| Forging                                       | Yes, except Wo Forging | Fixed                           | 3 Thawing Potions; Aura Stones are lost                       |
+| [[mercenaries-oskills\|Merc Only Conversion]] | Yes                    | Fixed                           | 3 Antidote Potions                                            |
+| [[weapon-mastery\|Weapon mastery]]            | Yes                    | Fixed                           | Class Dragon Stone form + 3 Thawing Potions; token lost       |
+| D-stoning, gem melding                        | No                     | Fixed                           | Mapling only lowers the level penalty                         |
+| [[tinkering\|Tinkering]]                      | No                     | Fixed                           | Limited by hidden tinkering points                            |
+| Corruption                                    | Status only            | Random; can brick               | Astrogha's Petrified Heart clears the status, keeps the bonus |
+| Anointment                                    | No                     | Random                          | None                                                          |
+| Legendary consumables                         | No                     | Fixed, except Sanctify (random) | None; Branded items cannot be changed again                   |
 
 ### A sensible order
 

@@ -21,15 +21,26 @@ import { useHoverPopover } from './useHoverPopover';
 export const GUIDE_PROSE_FONT = 'font-sans [&_*:not(code):not(pre)]:font-sans';
 
 /**
+ * Inset surface for data blocks inside the note's reading panel (a `bg-card` panel): `bg-background/40` reads as a
+ * recessed box in both themes. INSET_COLOR is the same colour as one opaque value, for the table scroll hint below.
+ */
+const INSET = 'border bg-background/40';
+const INSET_COLOR = 'color-mix(in oklch, var(--background) 40%, var(--card))';
+
+/** Body text at ~90% of the card foreground (softer contrast for long reading); headings and bold stay at full strength. */
+const PROSE_TEXT = 'text-card-foreground/90';
+
+/**
  * CSS-only scroll hint for wide tables: shadows at the edges that can still scroll (the "local" cover gradients
  * scroll with the content and hide the "scroll" shadows once an edge is reached), so nothing shows without overflow.
+ * The cover colour matches the inset surface.
  */
 const SCROLL_HINT_STYLE: CSSProperties = {
   background: [
-    'linear-gradient(to right, var(--background) 30%, transparent) left center / 2.5rem 100% no-repeat local',
-    'linear-gradient(to left, var(--background) 30%, transparent) right center / 2.5rem 100% no-repeat local',
+    `linear-gradient(to right, ${INSET_COLOR} 30%, transparent) left center / 2.5rem 100% no-repeat local`,
+    `linear-gradient(to left, ${INSET_COLOR} 30%, transparent) right center / 2.5rem 100% no-repeat local`,
     'radial-gradient(farthest-side at 0 50%, color-mix(in oklch, var(--foreground) 22%, transparent), transparent) left center / 0.75rem 100% no-repeat scroll',
-    'radial-gradient(farthest-side at 100% 50%, color-mix(in oklch, var(--foreground) 22%, transparent), transparent) right center / 0.75rem 100% no-repeat scroll var(--background)',
+    `radial-gradient(farthest-side at 100% 50%, color-mix(in oklch, var(--foreground) 22%, transparent), transparent) right center / 0.75rem 100% no-repeat scroll ${INSET_COLOR}`,
   ].join(', '),
 };
 
@@ -37,9 +48,9 @@ const SCROLL_HINT_STYLE: CSSProperties = {
 const GuideItemCard = lazy(() => import('./GuideItemCard'));
 
 const LINK_CLASS = 'font-medium text-primary underline underline-offset-2 decoration-primary/40 hover:decoration-primary';
-const TABLE_WRAP = 'overflow-x-auto rounded-md border';
+const TABLE_WRAP = 'overflow-x-auto rounded-md border'; // surface comes from SCROLL_HINT_STYLE (the inset colour)
 const TH = 'px-3 py-2 text-left font-medium whitespace-nowrap text-muted-foreground';
-const TD = 'px-3 py-1.5 align-top';
+const TD = cn('px-3 py-1.5 align-top', PROSE_TEXT);
 
 function NoteLink({ slug, children }: { readonly slug: string; readonly children: GuideInline[] }) {
   const { bundle } = useLoadedGuide();
@@ -105,7 +116,7 @@ function Inline({ node }: { readonly node: GuideInline }) {
       return node.value;
     case 'strong':
       return (
-        <strong className="font-semibold">
+        <strong className="font-semibold text-card-foreground">
           <Inlines nodes={node.children} />
         </strong>
       );
@@ -152,13 +163,13 @@ function Caption({ children }: { readonly children: string }) {
 
 function SourceBlock({ item, labels }: { readonly item: string; readonly labels: Extract<DataBlock, { kind: 'source' }>['labels'] }) {
   return (
-    <section className="rounded-md border bg-card p-3" aria-label={`Where ${item} comes from`}>
+    <section className={cn('rounded-md p-3', INSET)} aria-label={`Where ${item} comes from`}>
       <p className="mb-2 text-sm font-semibold">
         Where it comes from: <span className="text-foreground">{item}</span>
       </p>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {sourceCells(labels).map((cell) => (
-          <div key={cell.key} className="rounded border bg-background/50 p-2">
+          <div key={cell.key} className="rounded border bg-card/70 p-2">
             <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{cell.title}</p>
             {cell.labels.length === 0 ? (
               <p className="mt-1 text-sm text-muted-foreground">—</p>
@@ -213,7 +224,7 @@ function DataBlockView({ block }: { readonly block: DataBlock }) {
       return (
         <figure>
           <Caption>{block.caption}</Caption>
-          <ul className="divide-y rounded-md border text-sm">
+          <ul className={cn('divide-y rounded-md text-sm', INSET)}>
             {block.items.map((item, i) => (
               <li key={i} className="flex flex-wrap items-baseline justify-between gap-x-3 px-3 py-1.5">
                 <span className="font-medium">{item.label}</span>
@@ -227,7 +238,7 @@ function DataBlockView({ block }: { readonly block: DataBlock }) {
       return (
         <figure>
           <Caption>{block.caption}</Caption>
-          <ul className="divide-y rounded-md border text-sm">
+          <ul className={cn('divide-y rounded-md text-sm', INSET)}>
             {block.rows.map((row, i) => (
               <li key={i} className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-x-2 px-3 py-2 break-words">
                 <ul className="space-y-0.5">
@@ -259,7 +270,7 @@ function DataBlockView({ block }: { readonly block: DataBlock }) {
       return <SourceBlock item={block.item} labels={block.labels} />;
     case 'glossary':
       return (
-        <dl className="divide-y rounded-md border text-sm">
+        <dl className={cn('divide-y rounded-md text-sm', INSET)}>
           {block.entries.map((entry) => (
             <div key={entry.term} id={`term-${entry.term.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} className="px-3 py-2">
               <dt className="font-semibold">
@@ -283,24 +294,24 @@ function Block({ block }: { readonly block: GuideBlock }) {
   switch (block.type) {
     case 'paragraph':
       return (
-        <p className="text-sm leading-relaxed">
+        <p className={cn('text-sm leading-relaxed', PROSE_TEXT)}>
           <Inlines nodes={block.children} />
         </p>
       );
     case 'heading':
       return block.depth === 3 ? (
-        <h3 className="pt-2 text-base font-semibold">
+        <h3 className="pt-2 text-base font-semibold text-card-foreground">
           <Inlines nodes={block.children} />
         </h3>
       ) : (
-        <h4 className="pt-1 text-sm font-semibold">
+        <h4 className="pt-1 text-sm font-semibold text-card-foreground">
           <Inlines nodes={block.children} />
         </h4>
       );
     case 'list': {
       const ListTag = block.ordered ? 'ol' : 'ul';
       return (
-        <ListTag className={cn('space-y-1 pl-5 text-sm leading-relaxed', block.ordered ? 'list-decimal' : 'list-disc')}>
+        <ListTag className={cn('space-y-1 pl-5 text-sm leading-relaxed', PROSE_TEXT, block.ordered ? 'list-decimal' : 'list-disc')}>
           {block.items.map((item, i) => (
             <li key={i} className="pl-1">
               <Blocks blocks={item} className="space-y-1" />
@@ -311,7 +322,7 @@ function Block({ block }: { readonly block: GuideBlock }) {
     }
     case 'blockquote':
       return (
-        <blockquote className="border-l-2 border-primary/50 pl-3 text-muted-foreground">
+        <blockquote className="border-l-2 border-primary/50 pl-3 text-card-foreground/80">
           <Blocks blocks={block.children} />
         </blockquote>
       );

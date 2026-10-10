@@ -76,6 +76,9 @@ function isComment(value: string): boolean {
   return HTML_COMMENT.test(value.trim());
 }
 
+/** A paragraph that still starts and ends with pipes is a GFM table whose separator row did not match its header. */
+const UNPARSED_TABLE = /^\s*\|.*\|\s*\|?\s*-{3,}/s;
+
 /** Text that still looks like a link after parsing means the markdown was malformed. */
 function checkLeftovers(value: string, node: Nodes, state: State): void {
   if (value.includes('[[')) {
@@ -87,6 +90,9 @@ function checkLeftovers(value: string, node: Nodes, state: State): void {
   }
   if (BROKEN_LINK.test(value)) {
     fail(state, node, `link not recognised in "${value.trim()}" (a target with spaces must be wrapped in <…> or use %20)`);
+  }
+  if (UNPARSED_TABLE.test(value)) {
+    fail(state, node, 'table did not parse (the header and the separator row must have the same number of cells)');
   }
 }
 

@@ -121,7 +121,7 @@ export default function GuideItemCard({ block }: { readonly block: CardBlock }) 
   }
 
   return (
-    <figure className="space-y-2 rounded-md border p-2" aria-label={block.name}>
+    <figure className="space-y-2 rounded-md border bg-background/40 p-2" aria-label={block.name}>
       <figcaption className="flex items-center justify-between gap-2 px-1 text-xs text-muted-foreground">
         <span className="flex min-w-0 items-center gap-1.5 font-semibold tracking-wide uppercase">
           <AppLinkIcon href={block.href} className="size-3.5 shrink-0" />
