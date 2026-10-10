@@ -1,7 +1,24 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
+
+/** Dev only: full page reload when `npm run guide:watch` rewrites public/guide/ (static files are not part of HMR). */
+function guideReload(): Plugin {
+  const guideDir = path.resolve(__dirname, './public/guide')
+  return {
+    name: 'guide-reload',
+    apply: 'serve',
+    configureServer(server) {
+      server.watcher.add(guideDir)
+      const reload = (file: string) => {
+        if (file.startsWith(guideDir)) server.ws.send({ type: 'full-reload' })
+      }
+      server.watcher.on('add', reload)
+      server.watcher.on('change', reload)
+    },
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -13,6 +30,7 @@ export default defineConfig(({ mode }) => ({
       },
     }),
     tailwindcss(),
+    guideReload(),
   ],
   resolve: {
     alias: {

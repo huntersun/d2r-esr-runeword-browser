@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * One-shot update after an ESR release: clone or pull the ESR repo, regenerate public/game-data/, refresh the HTM
- * test fixtures, run the game-data tests and the staleness check, then print a summary. Never commits.
+ * test fixtures, run the game-data tests and the staleness check, regenerate and check public/guide/, then print a
+ * summary. Never commits.
  *
  *   node scripts/update-game-data.ts [--esr <dir>] [--tag <tag>] [--no-fixtures]
  */
@@ -90,7 +91,23 @@ function main(): void {
     console.log('Skipped: generation failed.');
   }
 
-  const porcelain = execFileSync('git', ['status', '--porcelain', '--', 'public/game-data'], { cwd: REPO_ROOT, encoding: 'utf8' });
+  header('Guide');
+  if (!existsSync(join(REPO_ROOT, 'content', 'guide', 'spine.yml'))) {
+    console.log('Skipped: no content/guide/spine.yml.');
+    steps.push({ name: 'guide', ok: true, note: 'skipped, no content' });
+  } else if (generated) {
+    // The guide's data blocks (secret recipes, vendors, sources) come from the clone and the fresh game data.
+    const guide = run(process.execPath, ['scripts/generate-guide.ts', '--esr', esrDir]);
+    steps.push({ name: 'guide:generate', ok: guide });
+    steps.push({ name: 'guide:check', ok: guide && run(process.execPath, ['scripts/generate-guide.ts', '--check', '--esr', esrDir]) });
+  } else {
+    console.log('Skipped: generation failed.');
+  }
+
+  const porcelain = execFileSync('git', ['status', '--porcelain', '--', 'public/game-data', 'public/guide'], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+  });
   header('Summary');
   for (const line of formatSummary({ before, after, steps, changedFiles: parsePorcelain(porcelain) })) console.log(line);
 
@@ -101,7 +118,7 @@ function main(): void {
   }
   const version = after?.esrVersion ?? 'X.Y.Z';
   console.log(
-    `\nNext: review the diff, then commit:\n  git add public/game-data && git commit -m 'chore(game-data): update to ESR ${version}'`
+    `\nNext: review the diff, then commit:\n  git add public/game-data public/guide && git commit -m 'chore(game-data): update to ESR ${version}'`
   );
 }
 
