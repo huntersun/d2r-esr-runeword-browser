@@ -1,0 +1,29 @@
+steps:
+  - title: Before you leave town
+    summary: Open the Starter Pack, learn the traps that cost characters or items, and how respec and death work in ESR.
+    notes: [starter-pack, avoid-disasters, death-and-respec]
+  - title: 'Normal: what to pick up'
+    summary: Which of the many new drops to keep, how stockers store them, and how ESR's runes and runewords fit together.
+    notes: [loot-triage, stockers, rune-families, runewords-gemwords]
+  - title: 'Nightmare: first upgrades'
+    summary: Start using the cube for real; add sockets, forge your gear and grow your starting charm.
+    notes: [cube-basics, socketing, forging, noobs-charm]
+  - title: 'Hell: surviving it'
+    summary: Prepare for the jump into Hell and learn which upgrades are permanent before you spend rare materials.
+    notes: [hell-survival, enhancement-order, dragon-stones]
+  - title: After Hell Baal
+    summary: The endgame loop of special areas, ubers and Endgame Maps, plus corruptions, anointments and the boss charms.
+    notes: [endgame-roadmap, maps-keys-ascendancy, corruption-anointment, unique-charms]
+questions:
+  - label: I found an item I don't recognise
+    note: loot-triage
+  - label: I found an Ancient Coupon
+    note: coupons
+  - label: I found an Ancient Scroll
+    note: secret-recipes
+  - label: I found a unique charm
+    note: unique-charms
+  - label: How do I add or remove sockets?
+    note: socketing
+  - label: A cube recipe does nothing
+    note: cube-basics

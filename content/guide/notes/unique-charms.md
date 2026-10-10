@@ -1,0 +1,58 @@
+---
+title: Unique charms
+kind: note
+summary: Annihilus, the Hellfire Torch and other boss charms, how to upgrade them, and why spare unique charms become Maple Leaves.
+tags: [endgame, charms]
+aliases: [anni, annihilus, torch, hellfire torch, hourglass, unique charm, standard of heroes]
+knowFirst: [avoid-disasters]
+related: [noobs-charm, dstoning-and-mapling]
+mentions:
+  [
+    Annihilus,
+    Hellfire Torch,
+    Eternal Hourglass of the Timeless Sands,
+    Rathma's Eternal Skull,
+    Devil's Food,
+    Standard of Heroes,
+    Diablo's Demonic Horn,
+    Baal's Demonic Eye,
+    Mephisto's Demonic Brain,
+    Maple Leaf,
+    Key,
+  ]
+officialDocs:
+  - label: Cube Recipes – Uber and Endgame Map recipes
+    href: 'docs:Eastern Sun Resurrected Cube Recipes.html#uber'
+  - label: Anointments
+    href: docs:anointments.htm
+sources: [official-cube, official-docs, esr-txt, patchnotes, esru-wiki]
+---
+
+Unique charms only work from the charm inventory, and ESR limits how many count at once ([[avoid-disasters]]).
+
+### The boss charms
+
+**Annihilus** drops from Diablo Clone, who spawns when you sell Devil's Food to a vendor.
+
+::source[Annihilus]
+
+**Hellfire Torch** drops when all three Uber Tristram bosses die in the same game.
+
+::source[Hellfire Torch]
+
+The **Eternal Hourglass of the Timeless Sands** drops once you kill all the Eternal Ancients in their tier 5 Endgame Map; Rathma's Eternal Skull comes from Rathma's tier 5 map ([[endgame-roadmap]]).
+
+::source[Eternal Hourglass of the Timeless Sands]
+
+<!-- verify: directive arg uses the display string; the uniqueitems index is "Eternal Hourglass" -->
+
+### Making them stronger
+
+- A **Standard of Heroes**, dropped by the uber bosses, upgrades one unique charm once with a small bonus.
+- Diablo's Demonic Horn, Baal's Demonic Eye and Mephisto's Demonic Brain together anoint a unique charm once ([[corruption-anointment]]).
+- Most unique charms reroll with Perfect Gems; the cost depends on the charm's required level.
+- Skill and Stat :term[Forging] accept unique charms ([[forging]]).
+
+### Spare ones
+
+A spare unique charm, any Rejuvenation Potion and a Key make a :term[Maple Leaf], the fuel for Mapling and All Skill Forging ([[dstoning-and-mapling]]). Remove any Forging first. A Multi Stocker can do the same and keep the leaf as a point.

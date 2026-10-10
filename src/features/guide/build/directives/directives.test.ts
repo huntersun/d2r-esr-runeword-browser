@@ -26,7 +26,7 @@ describe('secret recipes', () => {
     expect([...recipes.keys()]).toEqual([1, 2]);
     expect(recipes.get(1)).toEqual({
       inputs: ['Crafted Ring', '2× Perfect Gem', 'Ancient Scroll 1'],
-      output: 'Ring (Unique) + Ancient Scroll 1 / Unique item of the same type + Ancient Scroll 1',
+      output: 'Ring (Unique) / Unique item of the same type',
       note: '#1: Unique Ring: Crafted Ring + P-Gem',
     });
     expect(recipes.get(2)?.output).toBe('An item of the same type (keeps its stats, 1 socket)');
@@ -36,7 +36,11 @@ describe('secret recipes', () => {
     const all = resolve('secret-recipes', null);
     expect('kind' in all && all.kind === 'recipes' && all.rows).toHaveLength(2);
     const one = resolve('secret-recipe', '2');
-    expect(one).toMatchObject({ kind: 'recipes', caption: 'Secret recipe 2', rows: [{ inputs: ['Magic Ring (no sockets)', 'Jewel'] }] });
+    expect(one).toMatchObject({
+      kind: 'recipes',
+      caption: 'Secret recipe 2 (the Ancient Scroll is returned)',
+      rows: [{ inputs: ['Magic Ring (no sockets)', 'Jewel'] }],
+    });
   });
 
   it('reports bad arguments, unknown numbers and a missing clone', () => {

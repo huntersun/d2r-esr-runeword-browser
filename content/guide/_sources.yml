@@ -1,0 +1,21 @@
+- id: esru-wiki
+  title: ESR Unofficial Wiki (community, CC BY-SA 3.0)
+  url: https://esru.fandom.com/wiki/Eastern_Sun_Resurrected_Unofficial_Wiki
+  license: CC BY-SA 3.0
+  note: Consulted for facts; all text rewritten. Predates ESR 3.2, so every fact was re-checked against the game files.
+- id: official-docs
+  title: Eastern Sun Resurrected official site (CelestialRayOne)
+  url: https://easternsunresurrected.com/
+  note: Feature pages (Endgame Maps, Corruptions, Anointments, Kill Ledger, Ascendancies, Vessel of Souls, Weapon Mastery, Maps).
+- id: official-cube
+  title: Eastern Sun Resurrected Cube Recipes (official)
+  url: https://easternsunresurrected.com/Eastern%20Sun%20Resurrected%20Cube%20Recipes.html
+  note: The canonical recipe reference; guide notes link to its sections.
+- id: esr-txt
+  title: ESR game files
+  url: https://github.com/CelestialRayOne/Eastern_Sun_Resurrected
+  note: Excel tables (cubemain, misc, gems, difficultylevels, uniqueitems), string tables and the launcher plugin configs.
+- id: patchnotes
+  title: ESR patch notes
+  url: https://github.com/CelestialRayOne/Eastern_Sun_Resurrected/tree/main/patchnotes
+  note: Release notes from 3.2.04 onwards.

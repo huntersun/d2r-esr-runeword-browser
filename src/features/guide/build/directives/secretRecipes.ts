@@ -17,6 +17,8 @@ function unique(values: readonly string[]): string[] {
   return [...new Set(values)];
 }
 
+const RETURNED = '(the Ancient Scroll is returned)';
+
 /** "a / b / c / … (7 variants)" */
 function options(values: readonly string[]): string {
   const distinct = unique(values);
@@ -44,7 +46,9 @@ export function collectSecretRecipes(esr: EsrGuideTables): Map<number, RecipeRow
       groups.set(number, group);
     }
     group.inputs.push(row.inputs.map((input) => formatInput(input, esr)));
-    group.outputs.push(row.outputs.map((output) => formatOutput(output, esr)).join(' + '));
+    // An output identical to an input (the Ancient Scroll) is returned unchanged; the caption says so instead.
+    const outputs = row.outputs.filter((output) => !row.inputs.includes(output.spec));
+    if (outputs.length > 0) group.outputs.push(outputs.map((output) => formatOutput(output, esr)).join(' + '));
     group.descriptions.push(match[2].trim());
   }
 
@@ -66,7 +70,7 @@ export const resolveSecretRecipes: DirectiveResolver = (arg, ctx) => {
   if ('error' in esr) return esr;
   const recipes = collectSecretRecipes(esr);
   if (recipes.size === 0) return { error: '::secret-recipes found no [SECRETnn] rows in cubemain.txt' };
-  return { kind: 'recipes', caption: 'Secret recipes', rows: [...recipes.values()] };
+  return { kind: 'recipes', caption: `Secret recipes ${RETURNED}`, rows: [...recipes.values()] };
 };
 
 export const resolveSecretRecipe: DirectiveResolver = (arg, ctx) => {
@@ -77,5 +81,5 @@ export const resolveSecretRecipe: DirectiveResolver = (arg, ctx) => {
   if ('error' in esr) return esr;
   const recipe = collectSecretRecipes(esr).get(number);
   if (recipe === undefined) return { error: `::secret-recipe[${arg}]: no [SECRET${arg.padStart(2, '0')}] rows in cubemain.txt` };
-  return { kind: 'recipes', caption: `Secret recipe ${String(number)}`, rows: [recipe] };
+  return { kind: 'recipes', caption: `Secret recipe ${String(number)} ${RETURNED}`, rows: [recipe] };
 };

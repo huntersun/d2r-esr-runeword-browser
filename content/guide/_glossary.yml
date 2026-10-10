@@ -1,0 +1,120 @@
+- term: Stocker
+  definition: A container item that destroys the materials you cube into it and stores them as points you can take out later.
+  note: stockers
+- term: Multi Stocker
+  definition: The general stocker for organs, Dragon Stones, Decipherers, coupons, Maple Leaves and more; also turns spare set and unique gear into Decipherer points.
+  note: stockers
+- term: Rerolling Orb
+  definition: A stocker for rings, amulets, jewels, charms and quivers that stores them as points by rarity and rerolls them into new ones.
+  note: stockers
+- term: Ancient Coupon
+  definition: A drop that names one vanilla (LoD) unique; matching coupons, alone or with Wild Cards, cube into that unique.
+  note: coupons
+- term: Wild Card
+  definition: A joker made from spare coupons that replaces the third matching coupon in unique recipes and appears in several gem recipes.
+  note: coupons
+- term: Coupon reroll
+  definition: Cubing several coupons of one tier with a Randomizing Stone to get a random coupon.
+  note: coupons
+- term: Ancient Scroll
+  definition: A numbered scroll (1 to 50) that unlocks the Secret Recipe with the same number; it is returned after each use.
+  note: secret-recipes
+- term: Ancient Decipherer
+  definition: A common material that identifies Ancient Scrolls and feeds many recipes; eight make a Dragon Stone.
+  note: secret-recipes
+- term: Secret Recipe
+  definition: One of the numbered cube recipes that only work with the matching identified Ancient Scroll in the cube.
+  note: secret-recipes
+- term: Dragon Stone
+  definition: The main crafting stone of ESR, used for D-stoning, class crafts, many Secret Recipes and Anvil Stones.
+  note: dragon-stones
+- term: Dragon Stone forms
+  definition: The shapes a Dragon Stone cycles through when cubed alone (Holy Symbol, Blackmoor, Forging Hammer, Crushed Gem, Spider's Silk, Tyranium Ore, Void Shard); each is a different ingredient.
+  note: dragon-stones
+- term: Anvil Stone
+  definition: A stronger crafting stone made from Dragon Stones and a Perfect Gem; the main cost of Skill and Stat Forging.
+  note: dragon-stones
+- term: Forging
+  definition: A cube recipe that adds one extra, removable bonus to an item; an item holds one Forging at a time.
+  note: forging
+- term: Thawing Potion
+  definition: A potion used, three at a time, to remove a Forging from an item; it also appears in key and charm recipes.
+  note: forging
+- term: D-stoning
+  definition: Cubing an item with a Dragon Stone form to add a small permanent stat at the cost of a higher level requirement.
+  note: dstoning-and-mapling
+- term: Gem melding
+  definition: Cubing an item with a Perfect Gem and Decipherers to add that gem's chipped bonus permanently, raising the level requirement.
+  note: dstoning-and-mapling
+- term: Maple Leaf
+  definition: A material made mainly from spare unique charms; spent on Mapling, All Skill Forging and several high-end recipes.
+  note: dstoning-and-mapling
+- term: Mapling
+  definition: Secret Recipe 50, which spends a Maple Leaf and a Sa Rune to lower an item's level requirement penalty so it can be D-stoned again.
+  note: dstoning-and-mapling
+- term: Tinkering
+  definition: Cubing gear with organs to add small permanent bonuses, limited by hidden tinkering points on each item.
+  note: enhancement-order
+- term: Corruption
+  definition: Cubing an item with a Worldstone Shard for a random strong bonus, with a chance to turn the item into a random rare.
+  note: corruption-anointment
+- term: Anointment
+  definition: A random bonus added with an Orb of Anointment (gear) or the three Demonic organs of the Prime Evils (unique charms); it cannot brick the item.
+  note: corruption-anointment
+- term: Sanctify
+  definition: Using Lucion's Relic of Sanctification on a jewel for a one-time bonus that cannot be undone.
+  note: enhancement-order
+- term: Branded
+  definition: A modifier added by Inarius' Everburning Halo; a Branded item can no longer be changed by any recipe.
+  note: enhancement-order
+- term: Blemished gem
+  definition: An ESR gem grade between Flawless and Perfect, used for rare rerolls, socketing exceptional items and Ascendancy Stones.
+  note: gems-crystals
+- term: Crystal
+  definition: One of twelve ESR socketable minerals (such as Frozen Soul or Pulsing Opal) in Chipped, Flawed and normal grades.
+  note: gems-crystals
+- term: Organ
+  definition: Monster parts (Hearts, Souls, Brains, Eyes, Scalps, Horns, Fangs, Jawbones, Spleens, Quills, Tails) used for tinkering, the Vessel of Souls and conversions.
+  note: loot-triage
+- term: ES rune
+  definition: ESR's own rune line, named after Japanese syllables from I up to Wo; used in ESR runewords, Rune Forging and many recipes.
+  note: rune-families
+- term: Decal
+  definition: A drop that, cubed with the ES rune of the same number, becomes the vanilla rune of that number.
+  note: rune-families
+- term: LoD rune
+  definition: A vanilla rune (El to Zod), built from a Decal and an ES rune; used in the reworked vanilla runewords.
+  note: rune-families
+- term: Null Rune
+  definition: A rune made from a Wo Rune and a Full Rejuvenation Potion; the base for every Kanji rune.
+  note: rune-families
+- term: Kanji rune
+  definition: One of ESR's top socketables (Moon, Fire, Water up to God), made from a Null Rune and crystals.
+  note: rune-families
+- term: Gemword
+  definition: A runeword-like recipe that uses gems instead of runes in a socketed white item.
+  note: runewords-gemwords
+- term: Socket Donut
+  definition: The cube ingredient that adds sockets to an item, together with gems whose grade matches the item tier.
+  note: socketing
+- term: Character Augmenter
+  definition: A unique large charm listed as part of the Starter Pack.
+  note: starter-pack
+- term: Noob's Odd Charm
+  definition: The one-socket charm from the Starter Pack; Secret Recipe 49 turns it into a Veteran's Odd Charm.
+  note: noobs-charm
+- term: Kill Ledger
+  definition: A book from the Starter Pack that counts kills and takes permanent bonuses at kill milestones and after endgame boss kills.
+  note: starter-pack
+- term: Terror zone
+  definition: An area currently terrorized, with stronger monsters; terrorized champions and uniques can drop Worldstone Shards, and level 96 ones can drop Endgame Maps.
+  note: endgame-roadmap
+- term: Endgame map
+  definition: A consumable item that, transmuted alone in Act 5 Hell, opens a high-level zone with a boss; maps come in five tiers.
+  note: maps-keys-ascendancy
+- term: Ascendancy
+  definition: A subclass specialisation granted by an Ascendancy Stone, upgraded through five tiers of challenges.
+  note: maps-keys-ascendancy
+- term: Vessel of Souls
+  definition: A mythical amulet that you feed organs in the cube to build up bonuses; it is not meant to be worn.
+  note: corruption-anointment

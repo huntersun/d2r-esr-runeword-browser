@@ -1,0 +1,40 @@
+---
+title: Cube basics
+kind: hub
+summary: How ESR uses the Horadric Cube, how to read the official recipe page, and the rules that make a recipe silently fail.
+tags: [crafting, basics]
+aliases: [cube, horadric cube, transmute, recipe does nothing, recipes]
+knowFirst: [loot-triage]
+related: [forging, socketing, secret-recipes, dragon-stones]
+mentions: [Horadric Cube, Key, Thawing Potion, Scroll of Identify, Antidote Potion]
+officialDocs:
+  - label: Cube Recipes
+    href: 'docs:Eastern Sun Resurrected Cube Recipes.html'
+sources: [official-cube, patchnotes, esr-txt]
+---
+
+In ESR almost every upgrade is a cube recipe. The official Cube Recipes page is the full reference: sections of short rules followed by Input → Output tables. It is not a tutorial, so here is how to read it.
+
+### Reading the page
+
+- "Any …" means any item of that kind. "Torso" is body armor, "Armor" is every kind of armor.
+- "ilvl = char level" and similar lines give the output's item level, which decides the affixes it can roll.
+- Underlined materials in an output are handed back to you. <!-- verify: meaning of underlined materials on the cube page -->
+- Keys, Scrolls of Identify, Antidote Potions and the like often act as switches that pick which variant of a recipe runs.
+
+### Why a recipe does nothing
+
+- **Forging:** most recipes that reroll the input ignore items with a Forging; remove it first ([[forging]]).
+- **Level limits:** D-stoning stops once the item's level requirement penalty is too high ([[dstoning-and-mapling]]).
+- **Order:** base-upgraded uniques and sets cannot be rerolled, and uniques lose added sockets when rerolled ([[enhancement-order]]).
+- **Branded** items cannot be changed by any recipe.
+- **Too much in the cube:** keep it under 100 items, or the game may crash ([[avoid-disasters]]).
+
+### Faster cubing
+
+- Since 3.2.11 the transmute hotkey (set it under Options > Controls) works with the cube closed, and holding it repeats.
+- Material tabs in the stash upgrade with Shift + click and downgrade with Alt + click, no cube needed.
+
+### Where to start
+
+Socketing ([[socketing]]), Forging ([[forging]]), Dragon Stones ([[dragon-stones]]) and the numbered [[secret-recipes]] cover most of what a new character uses.
