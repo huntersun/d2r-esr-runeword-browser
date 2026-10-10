@@ -34,10 +34,24 @@ NEXT ON YOUR PATH →  <next note>          (spine order; hidden when null)
 Sources: <sourceRefs titles>              (small, muted)
 ```
 
-Phone: single column; "Next on your path" becomes a sticky bottom bar. No graph in phase 1 (chips carry every edge).
+Phone: single column; "Next on your path" becomes a sticky bottom bar.
 
-Version badge states (`noteFreshness(verified, manifest.esrVersion)` in `engine/freshness.ts`):
-`draft` (verified is null) · `fresh` (equal or newer) · `outdated` (older patch, amber) · `old` (major.minor differs, amber, stronger wording).
+**Local graph** (`lg+` only; `components/LocalGraph.tsx`, layout in `engine/localGraph.ts`): on wide screens the note
+sits in a two-column grid (body 2/3, a sticky "Connections" column 1/3). `layoutLocalGraph(note, bundle, size)` places
+the note in the centre, `knowFirst` on the left arc, `related` then backlinks on the right arc and `next` at the
+bottom; each slug appears once (next > knowFirst > related > backlink), at most 8 neighbours (knowFirst, next, related,
+then backlinks). Inline SVG with rem labels (truncated to 18 chars, full title in `<title>`): know-first edges have an
+arrowhead, the next edge is dashed, the current note is filled with the primary colour, read notes are filled grey.
+Nodes are links (keyboard focusable, same hover/focus peek as note links). Below `lg` the graph is hidden; the chips and
+the next link carry every edge, so the graph is never the only way to reach a note.
+
+**Visited notes**: `useVisitedNotes()` keeps the slugs the viewer has opened in localStorage (`guide.visited`, string
+array, most recent last, capped at 200; pure helpers in `utils/visited.ts`). Opening a note marks it read; chips and
+spine cards show a ✓, graph nodes are filled. "Reset progress" at the bottom of `/guide` clears the list (after a
+confirm). Per browser only, never synced.
+
+Version badge states (`noteFreshness(verified, manifest.esrVersion, note.staleReasons)` in `engine/freshness.ts`):
+`draft` · `fresh` · `review` (amber, reasons in a popover) · `old` (amber); see [Staleness](#staleness).
 
 ## Content
 
@@ -82,8 +96,8 @@ Markdown (GFM tables and lists) with these additions. Anything else that is not 
 | Syntax                                                                              | Meaning                                                                                                                                                                                                                                         |
 | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `[[slug]]`, `[[slug\|label]]`                                                       | Link to another note. Validated; a missing slug fails the build.                                                                                                                                                                                |
-| `[label](rw:Enigma)`                                                                | App link to the runewords page filtered to that runeword. Validated against the game-data runewords bundle.                                                                                                                                     |
-| `[label](gw:Name)`, `(unique:Name)`, `(mythical:Name)`, `(socketable:Name)`         | App links to the gemwords / uniques / mythicals / socketables pages filtered by name (`?search="Name"`). Not validated.                                                                                                                         |
+| `[label](rw:Enigma)`                                                                | App link to the runewords page focused on that runeword (`/?name=Enigma`: exact name, all its variants). Validated against the runewords bundle.                                                                                                |
+| `[label](gw:Name)`, `(unique:Name)`, `(mythical:Name)`, `(socketable:Name)`         | App links to the gemwords / uniques / mythicals / socketables pages focused on that name (`?name=Name`). Not validated.                                                                                                                         |
 | `[label](base:crs)`, `(type:swor)`                                                  | App links to Game Data bases (by base code → `?search="<name>"`) / item types (`?type=code`). Validated against the bundles.                                                                                                                    |
 | `[label](bestbase:Enigma)`, `(affixes:base=7cr&ilvl=85)`, `(page:/game-data/bases)` | App links to Best Base, Affixes, or any raw app path.                                                                                                                                                                                           |
 | `[label](docs:gems.htm#anchor)`                                                     | Link to the official docs (`https://easternsunresurrected.com/<file>#<anchor>`). When the ESR clone is present the file and anchor are checked offline (warning when missing).                                                                  |
@@ -144,23 +158,26 @@ clone (`../Eastern_Sun_Resurrected`, same resolution as game-data) and `public/g
 kept when nothing changed). `--check` exits 1 when the committed files are stale; `--watch` regenerates on content
 changes (use next to `npm run dev`; a small Vite plugin reloads the page when `public/guide` changes).
 `npm run game-data:update` also regenerates and checks the guide. Flags: `--esr <dir>` (ESR clone), `--content <dir>`
-(default `content/guide`), `--sources <file>` (default `public/game-data/sources.json`); the last two let you try the
-pipeline on scratch content or a draft sources bundle.
+(default `content/guide`), `--sources <file>` (default `public/game-data/sources.json`), `--out <dir>` (default
+`public/guide`); the last three let you try the pipeline on scratch content, a draft sources bundle or a scratch output
+folder. Sub-commands `verify` and `report`: see [Staleness](#staleness).
 
 Build errors (exit 1): invalid frontmatter, unknown `[[slug]]`, `knowFirst`/`related`/`next`/`sources` ids, unknown
 `rw:`/`base:`/`type:` targets, unknown `:term`, unresolvable directive arguments, unsupported markdown nodes, a note
 that is neither on the spine nor linked from anywhere, a note whose `knowFirst`/`related`/`next` names itself, links
 left as text, `page:` targets that are not app routes, an ambiguous `::source` name. Warnings (manifest `warnings`): body above 400 words, `mentions`
-not found in game data, `docs:` file/anchor not found, ESR clone missing (directives cannot resolve → error).
+not found in game data, `docs:` file/anchor not found, ESR clone missing (directives cannot resolve → error), a
+verified note without a matching `.verify-lock.json` entry. An unreadable `.verify-lock.json` is an error.
 
 Code layout:
 
 ```
 src/features/guide/
   engine/schema.ts            bundle types (GUIDE_SCHEMA, GuideBundle, GuideNote, GuideBlock, DataBlock …)
-  engine/freshness.ts         noteFreshness()
+  engine/freshness.ts         noteFreshness(), compareVersions()
   engine/browser/loadGuide.ts browser loader (promise cache, schema check)
   build/                      generator-only code (excluded from the app tsconfig, included in tsconfig.scripts)
+  build/staleness.ts          block hashes, lock file, patch-note scan, staleReasons, verify edit, report
   hooks/useGuide.ts
   screens/, components/
   index.ts                    lazy-route exports
@@ -174,8 +191,51 @@ Shared (`engine/` + `build/`) code uses relative `.ts` imports, no `@/`, and no 
 
 See `src/features/guide/engine/schema.ts`. One file, `guide.json`: `{ notes, spine, glossary, sourceRefs }`. Each note
 carries its resolved body as a small typed tree (`GuideBlock[]`), its computed `backlinks`, `next`, `spineStep` and
-`words`. Links in the body are already resolved: `{ type: 'link', kind: 'note' | 'app' | 'external', href }` where
+`words`, and `staleReasons` (see Staleness). Links in the body are already resolved: `{ type: 'link', kind: 'note' | 'app' | 'external', href }` where
 `href` is a slug, an app path (without the base URL) or an absolute URL.
+
+## Staleness
+
+A patch should not flag every note, so a note that was verified on an older patch only turns amber when the build
+finds a concrete reason.
+
+| State    | When                                                             | Badge                                                          |
+| -------- | ---------------------------------------------------------------- | -------------------------------------------------------------- |
+| `draft`  | no `verified`                                                    | dashed, "Draft – not yet verified in-game"                     |
+| `old`    | `verified` major.minor differs from the current ESR version      | amber, "Written for ESR x; may be out of date for y"           |
+| `review` | `verified` is an older patch **and** `staleReasons` is non-empty | amber, "Checked on ESR x · needs review", reasons in a popover |
+| `fresh`  | otherwise (equal, newer, or an older patch with nothing flagged) | subtle, "Checked on ESR x"                                     |
+
+`staleReasons` (computed by the build, capped at 5 plus "… and N more", always empty for drafts):
+
+- **Changed data blocks.** `content/guide/.verify-lock.json` records, per slug, the version `guide:verify` stamped and
+  a sha256 of each resolved data block (`JSON.stringify` of the `DataBlock`), keyed by its directive source in note
+  order: `source:Worldstone Shard{item=misc}`, `vendor:Gheed`, `secret-recipes`, a repeated directive gets `#2`, `#3`.
+  A block whose hash differs, or that was added or removed, gives "Data in '<caption>' changed since <verified>".
+- **Not recorded.** A verified note with no lock entry, or one recorded for another version (someone edited
+  `verified:` by hand), gives "Not recorded by guide:verify" and a build warning.
+- **Patch notes.** Every `<esr>/patchnotes/<version>.md` newer than `verified` is searched case-insensitively,
+  whole-word (not glued to a letter or digit), for the note's title, aliases, `mentions` and the glossary terms it owns:
+  "Patch notes 3.2.11 mention 'Stocker'". No fuzzy matching; plurals do not match.
+
+Commands (`scripts/generate-guide.ts` sub-commands; `--esr`/`--content` apply):
+
+```bash
+npm run guide:verify -- forging stockers  # verified: '<game-data manifest esrVersion>' + lock entries; then guide:generate
+npm run guide:report                      # notes by state with reasons, volatility: high notes, drafts; writes nothing
+```
+
+`guide:verify` edits only the `verified:` line of the frontmatter (or adds it before the closing `---`); every other
+byte of the note stays as written. It refuses to run while the guide has build errors. `npm run game-data:update` prints
+the report after regenerating the guide.
+
+Maintainer checklist after `game-data:update`:
+
+1. Read the "Guide freshness" report it printed (or run `npm run guide:report`).
+2. For each **review** note: check the reasons in-game (and the note text), fix the text if needed, then
+   `npm run guide:verify -- <slug>`. Do the same for **old** notes after a major.minor update.
+3. Re-check the `volatility: high` notes even when nothing flagged them.
+4. `npm run guide:generate`, then commit `content/guide` and `public/guide` together.
 
 ## Where it comes from (`sources.json`)
 
@@ -189,7 +249,8 @@ consumes it through `::source[...]`; phase 2 adds a Source line to the item card
 ## Tests
 
 Logic only (no component tests): frontmatter validation, markdown → GuideBlock conversion, link resolution, backlinks
-and next computation, directive resolvers against a trimmed excel fixture, freshness states, bundle
+and next computation, directive resolvers against a trimmed excel fixture, freshness states, lock-file hashing and comparison,
+staleReasons generation, patch-note scan, the byte-preserving `verified:` edit, the report, bundle
 integrity (manifest schema and sha256 of the committed files always; regenerating from `content/` in memory and
 comparing is skipped when the ESR clone or sources.json is missing), source-label rules on the verified examples (Pelta Lunata, Krok's Basher, Mephisto's Will, Frostmourne,
 Annihilus, Hellfire Torch, Kill Ledger, Orb of Anointment, Forging Hammer).

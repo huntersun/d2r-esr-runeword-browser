@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * One-shot update after an ESR release: clone or pull the ESR repo, regenerate public/game-data/, refresh the HTM
- * test fixtures, run the game-data tests and the staleness check, regenerate and check public/guide/, then print a
- * summary. Never commits.
+ * test fixtures, run the game-data tests and the staleness check, regenerate and check public/guide/, print the guide
+ * freshness report (guide:report), then print a summary. Never commits.
  *
  *   node scripts/update-game-data.ts [--esr <dir>] [--tag <tag>] [--no-fixtures]
  */
@@ -100,6 +100,11 @@ function main(): void {
     const guide = run(process.execPath, ['scripts/generate-guide.ts', '--esr', esrDir]);
     steps.push({ name: 'guide:generate', ok: guide });
     steps.push({ name: 'guide:check', ok: guide && run(process.execPath, ['scripts/generate-guide.ts', '--check', '--esr', esrDir]) });
+    if (guide) {
+      // Which verified notes the new data or patch notes flagged for review (informational, never fails the update).
+      header('Guide freshness');
+      if (!run(process.execPath, ['scripts/generate-guide.ts', 'report', '--esr', esrDir])) console.warn('WARNING: guide:report failed.');
+    }
   } else {
     console.log('Skipped: generation failed.');
   }

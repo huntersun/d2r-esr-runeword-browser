@@ -9,7 +9,9 @@ import { AppLinkIcon } from '../components/AppLinkIcon';
 import { FreshnessBadge } from '../components/FreshnessBadge';
 import { GUIDE_PROSE_FONT, GuideBody } from '../components/GuideBody';
 import { GuideGate } from '../components/GuideGate';
+import { LocalGraph } from '../components/LocalGraph';
 import { NoteChip } from '../components/NoteChip';
+import { useVisitedNotes } from '../hooks/useVisitedNotes';
 import { collectAppLinks, findNote, noteTitle } from '../utils/guideUtils';
 
 function NoteNotFound({ slug }: { readonly slug: string }) {
@@ -35,11 +37,11 @@ function Section({ title, children }: { readonly title: string; readonly childre
   );
 }
 
-function Chips({ slugs }: { readonly slugs: readonly string[] }) {
+function Chips({ slugs, visited }: { readonly slugs: readonly string[]; readonly visited: ReadonlySet<string> }) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {slugs.map((slug) => (
-        <NoteChip key={slug} slug={slug} />
+        <NoteChip key={slug} slug={slug} visited={visited.has(slug)} />
       ))}
     </div>
   );
@@ -63,7 +65,7 @@ function NextOnPath({ guide, next }: { readonly guide: LoadedGuide; readonly nex
   );
 }
 
-function Note({ guide, note }: { readonly guide: LoadedGuide; readonly note: GuideNote }) {
+function Note({ guide, note, visited }: { readonly guide: LoadedGuide; readonly note: GuideNote; readonly visited: ReadonlySet<string> }) {
   const { bundle, manifest } = guide;
   const appLinks = collectAppLinks(note.body);
   const sources = note.sources.map((id) => bundle.sourceRefs.find((ref) => ref.id === id) ?? { id, title: id, url: null });
@@ -74,116 +76,130 @@ function Note({ guide, note }: { readonly guide: LoadedGuide; readonly note: Gui
   }, [note.slug]);
 
   return (
-    <article className={cn('mx-auto max-w-2xl space-y-6', note.next !== null && 'pb-28 sm:pb-0')}>
-      <header className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm text-muted-foreground">
-            <Link to="/guide" className="hover:text-foreground hover:underline">
-              Guide
-            </Link>
-            <ChevronRight className="size-3.5 shrink-0" aria-hidden />
-            <span className="truncate text-foreground" aria-current="page">
-              {note.title}
-            </span>
-          </nav>
-          <FreshnessBadge verified={note.verified} current={manifest.esrVersion} />
-        </div>
-        <h1 className="text-2xl font-bold">{note.title}</h1>
-        <p className={cn('text-base text-muted-foreground', GUIDE_PROSE_FONT)}>{note.summary}</p>
-      </header>
+    // lg+: body (2/3) + a sticky local graph (1/3); below lg the graph is hidden (the chips carry the same edges).
+    <div className="mx-auto max-w-2xl lg:grid lg:max-w-6xl lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-10">
+      <article className={cn('min-w-0 space-y-6', note.next !== null && 'pb-28 sm:pb-0')}>
+        <header className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm text-muted-foreground">
+              <Link to="/guide" className="hover:text-foreground hover:underline">
+                Guide
+              </Link>
+              <ChevronRight className="size-3.5 shrink-0" aria-hidden />
+              <span className="truncate text-foreground" aria-current="page">
+                {note.title}
+              </span>
+            </nav>
+            <FreshnessBadge verified={note.verified} current={manifest.esrVersion} reasons={note.staleReasons} />
+          </div>
+          <h1 className="text-2xl font-bold">{note.title}</h1>
+          <p className={cn('text-base text-muted-foreground', GUIDE_PROSE_FONT)}>{note.summary}</p>
+        </header>
 
-      {note.knowFirst.length > 0 && (
-        <Section title="Know first">
-          <Chips slugs={note.knowFirst} />
-        </Section>
-      )}
+        {note.knowFirst.length > 0 && (
+          <Section title="Know first">
+            <Chips slugs={note.knowFirst} visited={visited} />
+          </Section>
+        )}
 
-      <GuideBody blocks={note.body} />
+        <GuideBody blocks={note.body} />
 
-      {appLinks.length > 0 && (
-        <Section title="In the app">
-          <ul className="flex flex-wrap gap-2">
-            {appLinks.map((link) => (
-              <li key={link.href}>
-                <Link
-                  to={link.href}
-                  className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-                >
-                  <AppLinkIcon href={link.href} className="size-4 text-muted-foreground" />
-                  {link.label}
-                </Link>
-              </li>
+        {appLinks.length > 0 && (
+          <Section title="In the app">
+            <ul className="flex flex-wrap gap-2">
+              {appLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    to={link.href}
+                    className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <AppLinkIcon href={link.href} className="size-4 text-muted-foreground" />
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )}
+
+        {note.officialDocs.length > 0 && (
+          <Section title="Official docs">
+            <ul className="space-y-1">
+              {note.officialDocs.map((doc) => (
+                <li key={doc.href}>
+                  <a
+                    href={doc.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                  >
+                    {doc.label}
+                    <ArrowUpRight className="size-3.5" aria-hidden />
+                    <span className="sr-only"> (opens in a new tab)</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )}
+
+        {(note.related.length > 0 || note.backlinks.length > 0) && (
+          <Section title="Related">
+            {note.related.length > 0 && <Chips slugs={note.related} visited={visited} />}
+            {note.backlinks.length > 0 && (
+              <details className="group text-sm">
+                <summary className="flex cursor-pointer list-none items-center gap-1 text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">
+                  <ChevronRight className="size-3.5 transition-transform group-open:rotate-90" aria-hidden />
+                  Mentioned in ({note.backlinks.length})
+                </summary>
+                <div className="mt-2">
+                  <Chips slugs={note.backlinks} visited={visited} />
+                </div>
+              </details>
+            )}
+          </Section>
+        )}
+
+        {note.next !== null && <NextOnPath guide={guide} next={note.next} />}
+
+        {sources.length > 0 && (
+          <p className="text-xs text-muted-foreground">
+            Sources:{' '}
+            {sources.map((ref, i) => (
+              <span key={ref.id}>
+                {i > 0 && ' · '}
+                {ref.url !== null ? (
+                  <a href={ref.url} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-foreground">
+                    {ref.title}
+                  </a>
+                ) : (
+                  ref.title
+                )}
+              </span>
             ))}
-          </ul>
-        </Section>
-      )}
-
-      {note.officialDocs.length > 0 && (
-        <Section title="Official docs">
-          <ul className="space-y-1">
-            {note.officialDocs.map((doc) => (
-              <li key={doc.href}>
-                <a
-                  href={doc.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-                >
-                  {doc.label}
-                  <ArrowUpRight className="size-3.5" aria-hidden />
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </Section>
-      )}
-
-      {(note.related.length > 0 || note.backlinks.length > 0) && (
-        <Section title="Related">
-          {note.related.length > 0 && <Chips slugs={note.related} />}
-          {note.backlinks.length > 0 && (
-            <details className="group text-sm">
-              <summary className="flex cursor-pointer list-none items-center gap-1 text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">
-                <ChevronRight className="size-3.5 transition-transform group-open:rotate-90" aria-hidden />
-                Mentioned in ({note.backlinks.length})
-              </summary>
-              <div className="mt-2">
-                <Chips slugs={note.backlinks} />
-              </div>
-            </details>
-          )}
-        </Section>
-      )}
-
-      {note.next !== null && <NextOnPath guide={guide} next={note.next} />}
-
-      {sources.length > 0 && (
-        <p className="text-xs text-muted-foreground">
-          Sources:{' '}
-          {sources.map((ref, i) => (
-            <span key={ref.id}>
-              {i > 0 && ' · '}
-              {ref.url !== null ? (
-                <a href={ref.url} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-foreground">
-                  {ref.title}
-                </a>
-              ) : (
-                ref.title
-              )}
-            </span>
-          ))}
-        </p>
-      )}
-    </article>
+          </p>
+        )}
+      </article>
+      <aside className="hidden lg:sticky lg:top-4 lg:block lg:self-start">
+        <LocalGraph note={note} visited={visited} />
+      </aside>
+    </div>
   );
 }
 
 function NoteRoute({ guide, slug }: { readonly guide: LoadedGuide; readonly slug: string }) {
   const note = findNote(guide.bundle, slug);
+  const found = note !== undefined;
+  // Read once per screen (it stays mounted across note-to-note navigation) and passed down, so chips and graph agree.
+  const { visited, markVisited } = useVisitedNotes();
+
+  useEffect(() => {
+    if (found) markVisited(slug);
+  }, [found, slug, markVisited]);
+
   if (note === undefined) return <NoteNotFound slug={slug} />;
   // Keyed by slug so per-note UI state (open peeks, the expanded backlinks) resets on note-to-note navigation.
-  return <Note key={slug} guide={guide} note={note} />;
+  return <Note key={slug} guide={guide} note={note} visited={visited} />;
 }
 
 /** `/guide/:slug`: one note. */

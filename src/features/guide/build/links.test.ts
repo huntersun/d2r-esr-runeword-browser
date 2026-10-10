@@ -6,11 +6,13 @@ describe('resolveLink', () => {
   const ctx = fixtureContext();
 
   it.each([
-    ['rw:Enigma', 'app', '/?search=%22Enigma%22'],
-    ['gw:Some%20Gemword', 'app', '/gemwords?search=%22Some%20Gemword%22'],
-    ['unique:Annihilus', 'app', '/uniques?search=%22Annihilus%22'],
-    ['mythical:Frostmourne', 'app', '/mythicals?search=%22Frostmourne%22'],
-    ['socketable:El%20Rune', 'app', '/socketables?search=%22El%20Rune%22'],
+    ['rw:Enigma', 'app', '/?name=Enigma'],
+    ['gw:Some%20Gemword', 'app', '/gemwords?name=Some%20Gemword'],
+    ['unique:Annihilus', 'app', '/uniques?name=Annihilus'],
+    ["unique:Artemis'%20Wrath", 'app', "/uniques?name=Artemis'%20Wrath"],
+    ['mythical:Frostmourne', 'app', '/mythicals?name=Frostmourne'],
+    ['socketable:El%20Rune', 'app', '/socketables?name=El%20Rune'],
+    ['gw:A%26B', 'app', '/gemwords?name=A%26B'],
     ['base:crs', 'app', '/game-data/bases?search=%22Crystal%20Sword%22'],
     ['type:swor', 'app', '/game-data/types?type=swor'],
     ['bestbase:Enigma', 'app', '/game-data/best-base?rw=Enigma'],

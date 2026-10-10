@@ -26,6 +26,11 @@ function search(path: string, name: string): string {
   return `${path}?search=${encodeURIComponent(`"${name}"`)}`;
 }
 
+/** Exact-name focus of a list page: shows only the items named exactly `name` (case-insensitive), not affix matches. */
+function exactName(path: string, name: string): string {
+  return `${path}?name=${encodeURIComponent(name)}`;
+}
+
 /** App routes a `page:` link may point at (path only; a query string is allowed). */
 export const APP_PAGES: readonly string[] = [
   '/',
@@ -41,7 +46,7 @@ export const APP_PAGES: readonly string[] = [
   '/guide',
 ];
 
-const NAME_SEARCH_PAGES: Record<string, string> = {
+const NAME_FOCUS_PAGES: Record<string, string> = {
   gw: '/gemwords',
   unique: '/uniques',
   mythical: '/mythicals',
@@ -76,12 +81,12 @@ export function resolveLink(url: string, ctx: GuideContext): ResolvedLink | Buil
   switch (scheme) {
     case 'rw':
       if (!ctx.runewordNames.has(target)) return { error: `unknown runeword "${target}" (rw:)` };
-      return { kind: 'app', href: search('/', target) };
+      return { kind: 'app', href: exactName('/', target) };
     case 'gw':
     case 'unique':
     case 'mythical':
     case 'socketable':
-      return { kind: 'app', href: search(NAME_SEARCH_PAGES[scheme] ?? '/', target) };
+      return { kind: 'app', href: exactName(NAME_FOCUS_PAGES[scheme] ?? '/', target) };
     case 'base': {
       const name = ctx.baseNames.get(target);
       if (name === undefined) return { error: `unknown base code "${target}" (base:)` };

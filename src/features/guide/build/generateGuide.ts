@@ -10,6 +10,7 @@ import type { EsrGuideTables } from './esrGuideSources.ts';
 import { buildGraph } from './graph.ts';
 import { countWords } from './markdown.ts';
 import { parseNote, type ParsedNote } from './parseNote.ts';
+import { hashDataBlocks, LOCK_FILE, noteStaleReasons, parseVerifyLock, type BlockHashes, type PatchNote } from './staleness.ts';
 
 export const WORDS_WARN = 400;
 
@@ -20,6 +21,8 @@ export interface GuideContentFiles {
   /** null when the file does not exist (treated as empty) */
   glossary: string | null;
   sources: string | null;
+  /** `.verify-lock.json`; null or omitted when the file does not exist (every verified note is then unrecorded) */
+  verifyLock?: string | null;
 }
 
 export interface GenerateGuideInput {
@@ -28,10 +31,14 @@ export interface GenerateGuideInput {
   /** null when the ESR clone is missing */
   esr: EsrGuideTables | null;
   docs: DocsIndex | null;
+  /** `<esr>/patchnotes/*.md`; omitted (or empty) when the clone is missing */
+  patchNotes?: readonly PatchNote[];
 }
 
 export interface GeneratedGuide {
   bundle: GuideBundle;
+  /** Current data-block hashes per slug (what guide:verify records) */
+  blockHashes: ReadonlyMap<string, BlockHashes>;
   counts: Record<string, number>;
   errors: string[];
   warnings: string[];
@@ -104,6 +111,7 @@ export function generateGuide(input: GenerateGuideInput): GeneratedGuide {
   const spine = parseSpine(input.content.spine, 'spine.yml', errors);
   const glossary = parseGlossary(input.content.glossary ?? '', '_glossary.yml', errors);
   const sourceRefs = parseSourceRefs(input.content.sources ?? '', '_sources.yml', errors);
+  const lock = parseVerifyLock(input.content.verifyLock ?? null, LOCK_FILE, errors);
   const ctx = createGuideContext({ gameData: input.gameData, glossary, esr: input.esr, docs: input.docs });
 
   const parsed: (ParsedNote & { file: string })[] = [...input.content.notes]
@@ -141,10 +149,14 @@ export function generateGuide(input: GenerateGuideInput): GeneratedGuide {
   errors.push(...graph.errors);
 
   const titles = new Map(parsed.map(({ note }) => [note.slug, note.title]));
-  const notes: GuideNote[] = parsed.map(({ note }) => {
+  const notes: GuideNote[] = parsed.map(({ note, file, mentions, dataBlocks }) => {
     const body = labelBlocks(note.body, titles);
+    const stale = noteStaleReasons({ note, mentions, dataBlocks, glossary, lock, patchNotes: input.patchNotes ?? [] });
+    if (stale.unrecorded)
+      warnings.push(`${file}: verified ${note.verified ?? ''} is not recorded in ${LOCK_FILE} (run npm run guide:verify -- ${note.slug})`);
     return {
       ...note,
+      staleReasons: stale.reasons,
       backlinks: graph.backlinks.get(note.slug) ?? [],
       next: graph.next.get(note.slug) ?? null,
       spineStep: graph.spineStep.get(note.slug) ?? null,
@@ -170,5 +182,6 @@ export function generateGuide(input: GenerateGuideInput): GeneratedGuide {
     glossary: glossary.length,
     sourceRefs: sourceRefs.length,
   };
-  return { bundle: { notes, spine, glossary, sourceRefs }, counts, errors, warnings };
+  const blockHashes = new Map(parsed.map(({ note, dataBlocks }) => [note.slug, hashDataBlocks(dataBlocks)]));
+  return { bundle: { notes, spine, glossary, sourceRefs }, blockHashes, counts, errors, warnings };
 }

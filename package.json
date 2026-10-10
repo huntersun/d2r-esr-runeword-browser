@@ -30,7 +30,9 @@
     "game-data:update": "node scripts/update-game-data.ts",
     "guide:generate": "node scripts/generate-guide.ts",
     "guide:check": "node scripts/generate-guide.ts --check",
-    "guide:watch": "node scripts/generate-guide.ts --watch"
+    "guide:watch": "node scripts/generate-guide.ts --watch",
+    "guide:verify": "node scripts/generate-guide.ts verify",
+    "guide:report": "node scripts/generate-guide.ts report"
   },
   "commit-and-tag-version": {
     "scripts": {

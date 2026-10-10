@@ -2,7 +2,7 @@
  * One `notes/<slug>.md` file → a GuideNote (graph fields still empty: backlinks, next, spineStep are computed by
  * graph.ts once every note is parsed) plus what the generator validates across notes.
  */
-import type { GuideNote, NoteKind, OfficialDocLink, Volatility } from '../engine/schema.ts';
+import type { DataBlock, GuideNote, NoteKind, OfficialDocLink, Volatility } from '../engine/schema.ts';
 import type { GuideContext } from './context.ts';
 import { FieldReader, isObject, parseYaml } from './fields.ts';
 import { resolveDocsLink } from './links.ts';
@@ -37,6 +37,8 @@ export interface ParsedNote {
   /** frontmatter `next` override, or null */
   nextOverride: string | null;
   mentions: string[];
+  /** Resolved data blocks keyed by directive source, in order (staleness hashes) */
+  dataBlocks: { key: string; block: DataBlock }[];
   errors: string[];
   warnings: string[];
 }
@@ -131,6 +133,7 @@ export function parseNote(file: string, text: string, ctx: GuideContext): Parsed
     tags: fields.strings('tags'),
     aliases: fields.strings('aliases'),
     verified: readVerified(fields, isObject(data) ? data.verified : undefined, parts?.yaml ?? ''),
+    staleReasons: [],
     volatility,
     knowFirst: readSlugs(fields, 'knowFirst', KNOW_FIRST_MAX),
     related: readSlugs(fields, 'related', RELATED_MAX),
@@ -142,5 +145,13 @@ export function parseNote(file: string, text: string, ctx: GuideContext): Parsed
     words: countWords(markdown.blocks),
     body: markdown.blocks,
   };
-  return { note, noteLinks: markdown.noteLinks, nextOverride, mentions: fields.strings('mentions'), errors, warnings };
+  return {
+    note,
+    noteLinks: markdown.noteLinks,
+    nextOverride,
+    mentions: fields.strings('mentions'),
+    dataBlocks: markdown.dataBlocks,
+    errors,
+    warnings,
+  };
 }

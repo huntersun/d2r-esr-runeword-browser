@@ -12,8 +12,9 @@ import { fromMarkdown } from 'mdast-util-from-markdown';
 import { gfmFromMarkdown } from 'mdast-util-gfm';
 import { directive } from 'micromark-extension-directive';
 import { gfm } from 'micromark-extension-gfm';
-import type { GuideBlock, GuideInline } from '../engine/schema.ts';
+import type { DataBlock, GuideBlock, GuideInline } from '../engine/schema.ts';
 import type { GuideContext } from './context.ts';
+import { compareCodeUnits } from './compare.ts';
 import { LEAF_DIRECTIVES, resolveTerm } from './directives/index.ts';
 import { resolveLink } from './links.ts';
 import { splitWikilinks } from './wikilinks.ts';
@@ -22,6 +23,8 @@ export interface MarkdownResult {
   blocks: GuideBlock[];
   /** Slugs of `[[slug]]` links, in order of appearance (with duplicates) */
   noteLinks: string[];
+  /** Resolved data blocks in order of appearance, keyed by their directive source (see directiveKey) */
+  dataBlocks: { key: string; block: DataBlock }[];
   errors: string[];
   warnings: string[];
 }
@@ -167,6 +170,14 @@ function convertInlines(nodes: readonly PhrasingContent[], state: State): GuideI
   return inlines;
 }
 
+/** `::source[Worldstone Shard]{item=misc}` → `source:Worldstone Shard{item=misc}`; `::secret-recipes` → `secret-recipes`. */
+export function directiveKey(name: string, arg: string | null, attributes: Readonly<Record<string, string>>): string {
+  const attrs = Object.entries(attributes)
+    .sort(([a], [b]) => compareCodeUnits(a, b))
+    .map(([key, value]) => `${key}=${value}`);
+  return `${name}${arg === null ? '' : `:${arg}`}${attrs.length === 0 ? '' : `{${attrs.join(' ')}}`}`;
+}
+
 function convertLeafDirective(node: LeafDirective, state: State): GuideBlock[] {
   const resolver = LEAF_DIRECTIVES[node.name];
   if (resolver === undefined) {
@@ -181,6 +192,7 @@ function convertLeafDirective(node: LeafDirective, state: State): GuideBlock[] {
     fail(state, node, block.error);
     return [];
   }
+  state.result.dataBlocks.push({ key: directiveKey(node.name, arg, attributes), block });
   return [{ type: 'data', block }];
 }
 
@@ -228,7 +240,7 @@ export function markdownToBlocks(markdown: string, ctx: GuideContext, file: stri
     extensions: [gfm(), directive()],
     mdastExtensions: [gfmFromMarkdown(), directiveFromMarkdown()],
   });
-  const state: State = { ctx, file, lineOffset, result: { blocks: [], noteLinks: [], errors: [], warnings: [] } };
+  const state: State = { ctx, file, lineOffset, result: { blocks: [], noteLinks: [], dataBlocks: [], errors: [], warnings: [] } };
   state.result.blocks = convertBlocks(tree.children, state);
   return state.result;
 }

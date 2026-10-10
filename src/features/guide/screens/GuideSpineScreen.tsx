@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { LoadedGuide } from '../engine/browser/loadGuide';
 import type { GuideSpineStep } from '../engine/schema';
@@ -8,6 +8,7 @@ import { FreshnessMarker } from '../components/FreshnessBadge';
 import { GuideGate } from '../components/GuideGate';
 import { GuideSearch } from '../components/GuideSearch';
 import { GUIDE_PROSE_FONT } from '../components/GuideBody';
+import { useVisitedNotes } from '../hooks/useVisitedNotes';
 import { findNote } from '../utils/guideUtils';
 
 function SpineStep({
@@ -16,12 +17,14 @@ function SpineStep({
   guide,
   expanded,
   onToggle,
+  visited,
 }: {
   readonly step: GuideSpineStep;
   readonly index: number;
   readonly guide: LoadedGuide;
   readonly expanded: boolean;
   readonly onToggle: () => void;
+  readonly visited: ReadonlySet<string>;
 }) {
   const panelId = `guide-step-${String(index)}`;
   const Chevron = expanded ? ChevronDown : ChevronRight;
@@ -61,8 +64,16 @@ function SpineStep({
                   className="block rounded-md border bg-background/60 px-3 py-2 transition-colors hover:border-primary/50 hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
                 >
                   <span className="flex items-center justify-between gap-2">
-                    <span className="font-medium">{note?.title ?? slug}</span>
-                    {note && <FreshnessMarker verified={note.verified} current={guide.manifest.esrVersion} />}
+                    <span className="flex min-w-0 items-center gap-1.5 font-medium">
+                      {note?.title ?? slug}
+                      {visited.has(slug) && (
+                        <>
+                          <Check className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
+                          <span className="sr-only"> (read)</span>
+                        </>
+                      )}
+                    </span>
+                    {note && <FreshnessMarker verified={note.verified} current={guide.manifest.esrVersion} reasons={note.staleReasons} />}
                   </span>
                   {note && <span className={cn('mt-0.5 block text-sm text-muted-foreground', GUIDE_PROSE_FONT)}>{note.summary}</span>}
                 </Link>
@@ -79,6 +90,7 @@ function Spine({ guide }: { readonly guide: LoadedGuide }) {
   const { spine, notes } = guide.bundle;
   // Indices of the expanded steps; the first step starts open.
   const [expanded, setExpanded] = useState<ReadonlySet<number>>(() => new Set([0]));
+  const { visited, count: visitedCount, reset: resetVisited } = useVisitedNotes();
 
   const toggle = (index: number) => {
     setExpanded((current) => {
@@ -110,6 +122,7 @@ function Spine({ guide }: { readonly guide: LoadedGuide }) {
               index={index}
               guide={guide}
               expanded={expanded.has(index)}
+              visited={visited}
               onToggle={() => {
                 toggle(index);
               }}
@@ -136,6 +149,21 @@ function Spine({ guide }: { readonly guide: LoadedGuide }) {
             ))}
           </div>
         </section>
+      )}
+
+      {visitedCount > 0 && (
+        <p className="text-right text-xs text-muted-foreground">
+          {visitedCount} {visitedCount === 1 ? 'note' : 'notes'} read ·{' '}
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm('Forget which guide notes you have read?')) resetVisited();
+            }}
+            className="underline underline-offset-2 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+          >
+            Reset progress
+          </button>
+        </p>
       )}
     </div>
   );

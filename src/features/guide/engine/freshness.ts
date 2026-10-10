@@ -2,11 +2,12 @@
  * How current a note's text is, compared with the ESR version the generated blocks were resolved against.
  *
  * - draft: never verified in-game
- * - fresh: verified against the current version or a newer one
- * - outdated: verified against an older patch of the same major.minor
  * - old: verified against a different major.minor
+ * - review: verified against an older patch AND the build flagged something (staleReasons: changed data blocks, patch
+ *   notes that mention the note)
+ * - fresh: verified against the current or a newer version, or an older patch with nothing flagged
  */
-export type NoteFreshness = 'draft' | 'fresh' | 'outdated' | 'old';
+export type NoteFreshness = 'draft' | 'fresh' | 'review' | 'old';
 
 function parseVersion(version: string): number[] {
   return version
@@ -28,10 +29,10 @@ export function compareVersions(a: string, b: string): number {
   return 0;
 }
 
-export function noteFreshness(verified: string | null, current: string): NoteFreshness {
+export function noteFreshness(verified: string | null, current: string, staleReasons: readonly string[] = []): NoteFreshness {
   if (verified === null || verified.trim() === '') return 'draft';
-  if (compareVersions(verified, current) >= 0) return 'fresh';
   const [vMajor = 0, vMinor = 0] = parseVersion(verified);
   const [cMajor = 0, cMinor = 0] = parseVersion(current);
-  return vMajor === cMajor && vMinor === cMinor ? 'outdated' : 'old';
+  if (vMajor !== cMajor || vMinor !== cMinor) return 'old';
+  return compareVersions(verified, current) < 0 && staleReasons.length > 0 ? 'review' : 'fresh';
 }

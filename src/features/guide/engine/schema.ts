@@ -1,6 +1,7 @@
 /**
  * Shape of the static guide bundle under `public/guide/`.
- * Bump GUIDE_SCHEMA whenever the bundle shape changes incompatibly.
+ * Bump GUIDE_SCHEMA whenever the bundle shape changes incompatibly. Adding a field is compatible (the 1 → 1 change that
+ * added GuideNote.staleReasons kept the schema at 1: an older page simply ignores the field).
  *
  * Shared by the generator (Node) and the browser: relative `.ts` imports only, no DOM.
  */
@@ -40,6 +41,11 @@ export interface GuideNote {
   aliases: string[];
   /** ESR version the text was verified against in-game; null = draft */
   verified: string | null;
+  /**
+   * Why a verified note may need another look (computed at build: data blocks that changed since guide:verify,
+   * newer patch notes that mention the note). Empty when nothing changed; always empty for drafts.
+   */
+  staleReasons: string[];
   volatility: Volatility;
   /** Slugs the reader should know first (≤3) */
   knowFirst: string[];

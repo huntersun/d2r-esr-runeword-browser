@@ -5,6 +5,7 @@ import type { BasesBundle, GameDataManifest, SourcesBundle, TxtRunewordsBundle, 
 import type { DocsIndex, GameDataInputs } from './context.ts';
 import { buildEsrGuideTables, readDocsIndex, readEsrGuideSources, type EsrGuideTables } from './esrGuideSources.ts';
 import type { GuideContentFiles } from './generateGuide.ts';
+import { LOCK_FILE, versionFromPatchNoteFile, type PatchNote } from './staleness.ts';
 
 function readOptional(path: string): string | null {
   return existsSync(path) ? readFileSync(path, 'utf8') : null;
@@ -32,6 +33,7 @@ export function readGuideContent(contentDir: string): GuideContentFiles {
     spine,
     glossary: readOptional(join(contentDir, '_glossary.yml')),
     sources: readOptional(join(contentDir, '_sources.yml')),
+    verifyLock: readOptional(join(contentDir, LOCK_FILE)),
   };
 }
 
@@ -58,11 +60,29 @@ export interface EsrForGuide {
   esrVersion: string;
   tables: EsrGuideTables;
   docs: DocsIndex | null;
+  patchNotes: PatchNote[];
 }
 
-/** Parsed ESR tables and docs anchors, or null when the clone is missing. */
+/** `<esr>/patchnotes/<version>.md` files (others are ignored); empty when the folder is missing. */
+export function readPatchNotes(esrDir: string): PatchNote[] {
+  const dir = join(esrDir, 'patchnotes');
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .sort()
+    .flatMap((name) => {
+      const version = versionFromPatchNoteFile(name);
+      return version === null ? [] : [{ version, text: readFileSync(join(dir, name), 'utf8') }];
+    });
+}
+
+/** Parsed ESR tables, docs anchors and patch notes, or null when the clone is missing. */
 export function readEsrForGuide(esrDir: string): EsrForGuide | null {
   if (!existsSync(esrDir)) return null;
   const sources = readEsrGuideSources(esrDir);
-  return { esrVersion: sources.esrVersion, tables: buildEsrGuideTables(sources), docs: readDocsIndex(esrDir) };
+  return {
+    esrVersion: sources.esrVersion,
+    tables: buildEsrGuideTables(sources),
+    docs: readDocsIndex(esrDir),
+    patchNotes: readPatchNotes(esrDir),
+  };
 }

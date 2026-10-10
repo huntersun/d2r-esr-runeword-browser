@@ -58,6 +58,7 @@ describe.skipIf(reason !== null)('guide bundle generated from content/guide', ()
       gameData: readGameDataInputs(GAME_DATA_DIR, SOURCES_FILE),
       esr: esr?.tables ?? null,
       docs: esr?.docs ?? null,
+      patchNotes: esr?.patchNotes ?? [],
     });
     expect(generated.errors).toEqual([]);
     expect(serializeBundle(generated.bundle)).toBe(guideText);

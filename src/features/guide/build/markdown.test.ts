@@ -90,7 +90,7 @@ describe('markdownToBlocks', () => {
     );
     const links = blocks[0]?.type === 'paragraph' ? blocks[0].children.filter((inline) => inline.type === 'link') : [];
     expect(links.map((link) => [link.kind, link.href])).toEqual([
-      ['app', '/?search=%22Enigma%22'],
+      ['app', '/?name=Enigma'],
       ['app', '/game-data/bases?search=%22Crystal%20Sword%22'],
       ['app', '/game-data/types?type=swor'],
       ['external', 'https://easternsunresurrected.com/Eastern%20Sun%20Resurrected%20Cube%20Recipes.html#nope'],
