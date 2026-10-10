@@ -26,6 +26,21 @@ function search(path: string, name: string): string {
   return `${path}?search=${encodeURIComponent(`"${name}"`)}`;
 }
 
+/** App routes a `page:` link may point at (path only; a query string is allowed). */
+export const APP_PAGES: readonly string[] = [
+  '/',
+  '/gemwords',
+  '/socketables',
+  '/uniques',
+  '/mythicals',
+  '/ascendancies',
+  '/game-data/bases',
+  '/game-data/best-base',
+  '/game-data/affixes',
+  '/game-data/types',
+  '/guide',
+];
+
 const NAME_SEARCH_PAGES: Record<string, string> = {
   gw: '/gemwords',
   unique: '/uniques',
@@ -80,7 +95,9 @@ export function resolveLink(url: string, ctx: GuideContext): ResolvedLink | Buil
     case 'affixes':
       return { kind: 'app', href: `/game-data/affixes?${target}` };
     case 'page':
-      if (!target.startsWith('/')) return { error: `page: link "${target}" must start with "/"` };
+      if (!APP_PAGES.includes(target.split(/[?#]/)[0] ?? '')) {
+        return { error: `page: link "${target}" is not an app page (known: ${APP_PAGES.join(', ')})` };
+      }
       return { kind: 'app', href: target };
     case 'docs':
       return resolveDocsLink(target, ctx);

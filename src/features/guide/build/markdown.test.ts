@@ -116,6 +116,30 @@ describe('markdownToBlocks', () => {
     expect(convert(':term[Nope]').errors).toEqual(['notes/test.md:1: unknown glossary term "Nope" (:term; add it to _glossary.yml)']);
   });
 
+  it('passes directive attributes to the resolver', () => {
+    const { blocks, errors } = convert('::source[Worldstone Shard]{item=misc}');
+    expect(errors).toEqual([]);
+    expect(blocks[0]).toMatchObject({ type: 'data', block: { kind: 'source', labels: [{ text: 'Drops from Baal' }] } });
+  });
+
+  it('accepts an unescaped [[slug|label]] in a table cell', () => {
+    const { blocks, errors, noteLinks } = convert('| a | b |\n|---|---|\n| [[forging|the forge]] | [[x\\|y]] |');
+    expect(errors).toEqual([]);
+    expect(noteLinks).toEqual(['forging', 'x']);
+    expect(blocks[0]).toMatchObject({ rows: [[[{ type: 'link', href: 'forging' }], [{ type: 'link', href: 'x' }]]] });
+  });
+
+  it('reports links the parser left as text', () => {
+    const { errors } = convert(
+      '[a](rw:Breath of the Dying)\n\n[b](docs:Eastern Sun Resurrected Cube Recipes.html#sec)\n\n[[forging|**the** forge]]'
+    );
+    expect(errors).toEqual([
+      'notes/test.md:1: link not recognised in "[a](rw:Breath of the Dying)" (a target with spaces must be wrapped in <…> or use %20)',
+      'notes/test.md:3: link not recognised in "[b](docs:Eastern Sun Resurrected Cube Recipes.html#sec)" (a target with spaces must be wrapped in <…> or use %20)',
+      'notes/test.md:5: unresolved "[[" in "[[forging|" (note links are [[slug]] or [[slug|plain label]]; labels cannot contain formatting)',
+    ]);
+  });
+
   it('resolves leaf directives into data blocks and rejects unknown or inline ones', () => {
     const { blocks, errors } = convert('::source[Annihilus]\n\n::nope\n\nText ::source[Annihilus] inline');
     expect(blocks[0]).toEqual({

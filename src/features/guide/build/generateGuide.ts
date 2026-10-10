@@ -3,6 +3,7 @@
  * Pure: the fs reads live in readGuideInputs.ts so tests can run this on fixtures.
  */
 import type { GuideBlock, GuideBundle, GuideInline, GuideNote } from '../engine/schema.ts';
+import { compareCodeUnits } from './compare.ts';
 import { parseGlossary, parseSourceRefs, parseSpine } from './content.ts';
 import { createGuideContext, type DocsIndex, type GameDataInputs } from './context.ts';
 import type { EsrGuideTables } from './esrGuideSources.ts';
@@ -106,7 +107,7 @@ export function generateGuide(input: GenerateGuideInput): GeneratedGuide {
   const ctx = createGuideContext({ gameData: input.gameData, glossary, esr: input.esr, docs: input.docs });
 
   const parsed: (ParsedNote & { file: string })[] = [...input.content.notes]
-    .sort((a, b) => a.file.localeCompare(b.file))
+    .sort((a, b) => compareCodeUnits(a.file, b.file))
     .map(({ file, text }) => ({ ...parseNote(file, text, ctx), file }));
 
   const sourceIds = new Set(sourceRefs.map((ref) => ref.id));

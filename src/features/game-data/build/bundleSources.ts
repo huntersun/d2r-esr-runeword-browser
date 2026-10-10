@@ -71,7 +71,7 @@ export function buildSourcesBundle(
   tables: SourceTables,
   strings: ReadonlyMap<string, string>,
   pluginToml: string | null
-): { bundle: SourcesBundle; warnings: string[] } {
+): { bundle: SourcesBundle; warnings: string[]; merged: number } {
   const warnings: string[] = [];
   const nameOf = (key: string, fallback: string) => {
     const text = displayName(strings.get(key) ?? '');
@@ -162,11 +162,26 @@ export function buildSourcesBundle(
   };
 
   const items: ItemSource[] = [];
+  // One entry per (item kind, name): rows sharing both (ES + Ancient Coupon LoD versions of a unique, 47 "Rune Stocker"
+  // misc variants, …) merge into the first one's code with the union of their labels
+  const byName = new Map<string, ItemSource>();
+  let merged = 0;
   const add = (name: string, code: string, item: ItemSource['item'], found: SourceLabel[]) => {
+    const existing = byName.get(`${item}:${name}`);
     const labels: SourceLabel[] = [];
-    for (const entry of found) if (!labels.some((known) => known.text === entry.text)) labels.push(entry);
+    for (const entry of [...(existing?.labels ?? []), ...found]) {
+      if (entry.kind !== 'unknown' && !labels.some((known) => known.kind === entry.kind && known.text === entry.text)) labels.push(entry);
+    }
     labels.sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind));
-    items.push({ name, code, item, labels: labels.length > 0 ? labels : [label('unknown', 'Unknown')] });
+    const finalLabels = labels.length > 0 ? labels : [label('unknown', 'Unknown')];
+    if (existing !== undefined) {
+      existing.labels = finalLabels;
+      merged++;
+      return;
+    }
+    const source: ItemSource = { name, code, item, labels: finalLabels };
+    byName.set(`${item}:${name}`, source);
+    items.push(source);
   };
 
   for (const row of tables.uniqueitems.rows) {
@@ -205,15 +220,5 @@ export function buildSourcesBundle(
     add(nameOf(row.str('namestr'), row.str('name')), code, 'misc', [...cubeLabels(code), ...namedDropLabels(monsters), ...vendors]);
   }
 
-  // Misc variants sharing a name and labels (47 "Rune Stocker" rows, …) add nothing for a lookup by name: keep the first
-  const seenMisc = new Set<string>();
-  const deduped = items.filter((source) => {
-    if (source.item !== 'misc') return true;
-    const key = JSON.stringify([source.name, source.labels]);
-    if (seenMisc.has(key)) return false;
-    seenMisc.add(key);
-    return true;
-  });
-
-  return { bundle: { items: deduped }, warnings };
+  return { bundle: { items }, warnings, merged };
 }

@@ -27,6 +27,10 @@ export interface MarkdownResult {
 }
 
 const HTML_COMMENT = /^<!--[\s\S]*-->$/;
+/** A `[label](scheme:…)` the parser did not turn into a link (usually a space in the target) */
+const BROKEN_LINK = /\]\((?:rw|gw|unique|mythical|socketable|base|type|bestbase|affixes|page|docs):/;
+/** `[[slug|label]]` inside a GFM table row: the pipe would split the cell */
+const TABLE_WIKILINK_PIPE = /(\[\[[^[\]|]+)(?<!\\)\|(?=[^[\]]*\]\])/g;
 
 interface State {
   ctx: GuideContext;
@@ -55,6 +59,28 @@ function plainText(node: Nodes): string {
 
 function isComment(value: string): boolean {
   return HTML_COMMENT.test(value.trim());
+}
+
+/** Text that still looks like a link after parsing means the markdown was malformed. */
+function checkLeftovers(value: string, node: Nodes, state: State): void {
+  if (value.includes('[[')) {
+    fail(
+      state,
+      node,
+      `unresolved "[[" in "${value.trim()}" (note links are [[slug]] or [[slug|plain label]]; labels cannot contain formatting)`
+    );
+  }
+  if (BROKEN_LINK.test(value)) {
+    fail(state, node, `link not recognised in "${value.trim()}" (a target with spaces must be wrapped in <…> or use %20)`);
+  }
+}
+
+/** Escapes the pipe of `[[slug|label]]` in table rows so GFM keeps the cell together. */
+export function escapeTableWikilinks(markdown: string): string {
+  return markdown
+    .split('\n')
+    .map((line) => (/^\s*\|/.test(line) ? line.replace(TABLE_WIKILINK_PIPE, '$1\\|') : line))
+    .join('\n');
 }
 
 function mergeText(inlines: GuideInline[]): GuideInline[] {
@@ -134,7 +160,11 @@ function convertInline(node: PhrasingContent, state: State): GuideInline[] {
 }
 
 function convertInlines(nodes: readonly PhrasingContent[], state: State): GuideInline[] {
-  return mergeText(nodes.flatMap((node) => convertInline(node, state)));
+  const inlines = mergeText(nodes.flatMap((node) => convertInline(node, state)));
+  // Checked on the merged text: a broken `[x](rw:A B)` is split into text + a ":A" text directive by the parser.
+  const first = nodes.at(0);
+  if (first !== undefined) for (const inline of inlines) if (inline.type === 'text') checkLeftovers(inline.value, first, state);
+  return inlines;
 }
 
 function convertLeafDirective(node: LeafDirective, state: State): GuideBlock[] {
@@ -144,7 +174,9 @@ function convertLeafDirective(node: LeafDirective, state: State): GuideBlock[] {
     return [];
   }
   const arg = node.children.length === 0 ? null : plainText(node).trim();
-  const block = resolver(arg, state.ctx);
+  const attributes: Record<string, string> = {};
+  for (const [key, value] of Object.entries(node.attributes ?? {})) attributes[key] = value ?? '';
+  const block = resolver(arg, state.ctx, attributes);
   if ('error' in block) {
     fail(state, node, block.error);
     return [];
@@ -192,7 +224,7 @@ function convertBlocks(nodes: readonly (RootContent | BlockContent | DefinitionC
 }
 
 export function markdownToBlocks(markdown: string, ctx: GuideContext, file: string, lineOffset = 0): MarkdownResult {
-  const tree = fromMarkdown(markdown, {
+  const tree = fromMarkdown(escapeTableWikilinks(markdown), {
     extensions: [gfm(), directive()],
     mdastExtensions: [gfmFromMarkdown(), directiveFromMarkdown()],
   });

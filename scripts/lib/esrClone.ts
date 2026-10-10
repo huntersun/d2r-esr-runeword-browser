@@ -10,16 +10,17 @@ export const ESR_REPO_URL = 'https://github.com/CelestialRayOne/Eastern_Sun_Resu
 export const DEFAULT_ESR_DIR = '../Eastern_Sun_Resurrected';
 
 /**
- * Paths the generator and the tests read (non-cone sparse-checkout patterns). docs/weapons.htm and docs/armors.htm
- * are the base-name oracle of bundleIntegrity.test.ts.
+ * Paths the generators and the tests read (non-cone sparse-checkout patterns). docs/ is the official site: weapons.htm
+ * and armors.htm are the base-name oracle of bundleIntegrity.test.ts, and the guide checks its docs: links against it.
+ * patchnotes/ is reference material for the guide authors.
  */
 export const ESR_SPARSE_PATHS = [
   '/Eastern_Sun_Resurrected.mpq/data/global/excel/',
   '/Eastern_Sun_Resurrected.mpq/data/local/lng/strings/',
   '/d2rloader/metadata.json',
   '/d2rloader/config/celestialrayone.boss-set-unique-drop.toml',
-  '/docs/weapons.htm',
-  '/docs/armors.htm',
+  '/docs/',
+  '/patchnotes/',
 ];
 
 /** --esr <dir> | ESR_SOURCE_DIR | ../Eastern_Sun_Resurrected, relative to the repo root. */
@@ -67,6 +68,10 @@ export function updateEsr(esrDir: string, tag: string | undefined): void {
   const dirty = git(esrDir, ['status', '--porcelain']);
   if (dirty === null) throw new Error(`Not a git checkout: ${esrDir}`);
   if (dirty !== '') throw new Error(`The ESR clone has uncommitted changes; clean it first (git -C ${esrDir} status).`);
+  // Sparse clones made before ESR_SPARSE_PATHS grew pick up the new paths here.
+  if (git(esrDir, ['config', '--get', 'core.sparseCheckout']) === 'true') {
+    gitLoud(['-C', esrDir, 'sparse-checkout', 'set', '--no-cone', ...ESR_SPARSE_PATHS]);
+  }
 
   if (tag !== undefined) {
     gitLoud(['-C', esrDir, 'fetch', '--depth', '1', '--no-tags', 'origin', 'tag', tag]);

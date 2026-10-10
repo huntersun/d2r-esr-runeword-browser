@@ -22,7 +22,7 @@ Header: `Guide` is the second entry in `INTERNAL_PAGES` (after Runewords) so it 
 ## Note anatomy (GuideNoteScreen)
 
 ```
-Guide › <title>                                             [Checked on ESR 3.2.12] | [Draft, not verified in-game]
+Guide › <title>                                             [Checked on ESR 3.2.12] | [Draft – not yet verified in-game]
 <title>
 <summary>
 KNOW FIRST  [chip] [chip]                 (knowFirst, ≤3)
@@ -66,32 +66,42 @@ volatility: high # low | high (high = mechanics numbers or route advice); defaul
 mentions: [Thawing Potion, Forging Hammer] # optional; item names the prose relies on, checked against game data (warning only)
 officialDocs: # optional
   - label: Cube Recipes – Forging
-    href: docs:Eastern Sun Resurrected Cube Recipes.html#forging
+    href: docs:Eastern Sun Resurrected Cube Recipes.html#for
 sources: [official-cube, esru-wiki] # ids from _sources.yml, validated
 ---
 ```
+
+The anchors of the official cube page are short: `special`, `uber`, `legendary`, `mis`, `gem`, `rel`, `mat`, `for`,
+`dst`, `tin`, `soc`, `sec`. In frontmatter (`officialDocs`) a `docs:` href may contain spaces.
 
 ### Body syntax
 
 Markdown (GFM tables and lists) with these additions. Anything else that is not plain markdown (raw HTML, images,
 `#`/`##` headings) is a build error.
 
-| Syntax                                                                              | Meaning                                                                                                                                                                        |
-| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `[[slug]]`, `[[slug\|label]]`                                                       | Link to another note. Validated; a missing slug fails the build.                                                                                                               |
-| `[label](rw:Enigma)`                                                                | App link to the runewords page filtered to that runeword. Validated against the game-data runewords bundle.                                                                    |
-| `[label](gw:Name)`, `(unique:Name)`, `(mythical:Name)`, `(socketable:Name)`         | App links to the gemwords / uniques / mythicals / socketables pages filtered by name (`?search="Name"`). Not validated.                                                        |
-| `[label](base:crs)`, `(type:swor)`                                                  | App links to Game Data bases (by base code → `?search="<name>"`) / item types (`?type=code`). Validated against the bundles.                                                   |
-| `[label](bestbase:Enigma)`, `(affixes:base=7cr&ilvl=85)`, `(page:/game-data/bases)` | App links to Best Base, Affixes, or any raw app path.                                                                                                                          |
-| `[label](docs:gems.htm#anchor)`                                                     | Link to the official docs (`https://easternsunresurrected.com/<file>#<anchor>`). When the ESR clone is present the file and anchor are checked offline (warning when missing). |
-| `[label](https://…)`                                                                | External link.                                                                                                                                                                 |
-| `:term[Stocker]`, `:term[Stocker]{label=stockers}`                                  | Glossary hover; the term must exist in `_glossary.yml`. Renders the label (default: the term).                                                                                 |
-| `::source[Annihilus]`                                                               | **Where it comes from** block for an item (unique, set or misc name) from `public/game-data/sources.json`. Unknown name fails the build.                                       |
-| `::secret-recipes`, `::secret-recipe[50]`                                           | Secret recipe rows (`[SECRETnn]` rows of cubemain.txt), all or one.                                                                                                            |
-| `::recipe-output[Adventurer's Pack]`                                                | The outputs of the cubemain rows whose description equals the argument (used for the Starter's Pack contents).                                                                 |
-| `::vendor[Gheed]`                                                                   | Items that NPC sells (vendor columns of misc/armor/weapons).                                                                                                                   |
-| `::difficulty-penalties`                                                            | Resistance and other penalties per difficulty (difficultylevels.txt).                                                                                                          |
-| `::glossary`                                                                        | All glossary entries.                                                                                                                                                          |
+| Syntax                                                                              | Meaning                                                                                                                                                                                                                                         |
+| ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `[[slug]]`, `[[slug\|label]]`                                                       | Link to another note. Validated; a missing slug fails the build.                                                                                                                                                                                |
+| `[label](rw:Enigma)`                                                                | App link to the runewords page filtered to that runeword. Validated against the game-data runewords bundle.                                                                                                                                     |
+| `[label](gw:Name)`, `(unique:Name)`, `(mythical:Name)`, `(socketable:Name)`         | App links to the gemwords / uniques / mythicals / socketables pages filtered by name (`?search="Name"`). Not validated.                                                                                                                         |
+| `[label](base:crs)`, `(type:swor)`                                                  | App links to Game Data bases (by base code → `?search="<name>"`) / item types (`?type=code`). Validated against the bundles.                                                                                                                    |
+| `[label](bestbase:Enigma)`, `(affixes:base=7cr&ilvl=85)`, `(page:/game-data/bases)` | App links to Best Base, Affixes, or any raw app path.                                                                                                                                                                                           |
+| `[label](docs:gems.htm#anchor)`                                                     | Link to the official docs (`https://easternsunresurrected.com/<file>#<anchor>`). When the ESR clone is present the file and anchor are checked offline (warning when missing).                                                                  |
+| `[label](https://…)`                                                                | External link.                                                                                                                                                                                                                                  |
+| `:term[Stocker]`, `:term[Stocker]{label=stockers}`                                  | Glossary hover; the term must exist in `_glossary.yml`. Renders the label (default: the term).                                                                                                                                                  |
+| `::source[Annihilus]`, `::source[Worldstone Shard]{item=misc}`                      | **Where it comes from** block for an item (unique, set or misc name) from `public/game-data/sources.json`. Unknown name fails the build; a name shared by several item kinds fails with "ambiguous" until `{item=unique\|set\|misc}` picks one. |
+| `::secret-recipes`, `::secret-recipe[50]`                                           | Secret recipe rows (`[SECRETnn]` rows of cubemain.txt), all or one.                                                                                                                                                                             |
+| `::recipe-output[Adventurer's Pack]`                                                | The outputs of the cubemain rows whose description equals the argument (used for the Starter's Pack contents).                                                                                                                                  |
+| `::vendor[Gheed]`                                                                   | Items that NPC sells (vendor columns of misc/armor/weapons).                                                                                                                                                                                    |
+| `::difficulty-penalties`                                                            | Resistance and other penalties per difficulty (difficultylevels.txt).                                                                                                                                                                           |
+| `::glossary`                                                                        | All glossary entries.                                                                                                                                                                                                                           |
+
+Link targets with spaces must be wrapped in angle brackets or use `%20`: `[x](<rw:Breath of the Dying>)`,
+`[x](<docs:Eastern Sun Resurrected Cube Recipes.html#sec>)`. A link the parser leaves as text (`](rw:…` or `[[`
+remaining in the output) is a build error, as is formatting inside a `[[slug|label]]` label. In table cells
+`[[slug|label]]` works as is (the generator escapes the pipe). `page:` only accepts the app's routes (`/`,
+`/gemwords`, `/socketables`, `/uniques`, `/mythicals`, `/ascendancies`, `/game-data/{bases,best-base,affixes,types}`,
+`/guide`; a query string is allowed).
 
 Leaf directives (`::name[arg]`) must stand alone on a line. Directive arguments are resolved at build time against the
 ESR clone and the committed game-data bundles; the browser only renders the resulting data block.
@@ -133,11 +143,14 @@ clone (`../Eastern_Sun_Resurrected`, same resolution as game-data) and `public/g
 `public/guide/manifest.json` + `public/guide/guide.json` (sha256 in the manifest, `?v=<hash>` URLs, `generatedAt`
 kept when nothing changed). `--check` exits 1 when the committed files are stale; `--watch` regenerates on content
 changes (use next to `npm run dev`; a small Vite plugin reloads the page when `public/guide` changes).
-`npm run game-data:update` also regenerates and checks the guide.
+`npm run game-data:update` also regenerates and checks the guide. Flags: `--esr <dir>` (ESR clone), `--content <dir>`
+(default `content/guide`), `--sources <file>` (default `public/game-data/sources.json`); the last two let you try the
+pipeline on scratch content or a draft sources bundle.
 
 Build errors (exit 1): invalid frontmatter, unknown `[[slug]]`, `knowFirst`/`related`/`next`/`sources` ids, unknown
 `rw:`/`base:`/`type:` targets, unknown `:term`, unresolvable directive arguments, unsupported markdown nodes, a note
-that is neither on the spine nor linked from anywhere. Warnings (manifest `warnings`): body above 400 words, `mentions`
+that is neither on the spine nor linked from anywhere, a note whose `knowFirst`/`related`/`next` names itself, links
+left as text, `page:` targets that are not app routes, an ambiguous `::source` name. Warnings (manifest `warnings`): body above 400 words, `mentions`
 not found in game data, `docs:` file/anchor not found, ESR clone missing (directives cannot resolve → error).
 
 Code layout:
@@ -176,9 +189,9 @@ consumes it through `::source[...]`; phase 2 adds a Source line to the item card
 ## Tests
 
 Logic only (no component tests): frontmatter validation, markdown → GuideBlock conversion, link resolution, backlinks
-and next computation, directive resolvers against a trimmed excel fixture, freshness states, loader cache, bundle
-integrity (regenerate from `content/` in memory and compare with the committed JSON; skipped when the ESR clone is
-missing), source-label rules on the verified examples (Pelta Lunata, Krok's Basher, Mephisto's Will, Frostmourne,
+and next computation, directive resolvers against a trimmed excel fixture, freshness states, bundle
+integrity (manifest schema and sha256 of the committed files always; regenerating from `content/` in memory and
+comparing is skipped when the ESR clone or sources.json is missing), source-label rules on the verified examples (Pelta Lunata, Krok's Basher, Mephisto's Will, Frostmourne,
 Annihilus, Hellfire Torch, Kill Ledger, Orb of Anointment, Forging Hammer).
 
 ## Attribution

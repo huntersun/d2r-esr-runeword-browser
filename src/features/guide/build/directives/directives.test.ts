@@ -4,10 +4,10 @@ import { formatInput } from './cubeText.ts';
 import { LEAF_DIRECTIVES, resolveTerm } from './index.ts';
 import { collectSecretRecipes } from './secretRecipes.ts';
 
-function resolve(name: string, arg: string | null, ctx = fixtureContext()) {
+function resolve(name: string, arg: string | null, ctx = fixtureContext(), attributes: Record<string, string> = {}) {
   const resolver = LEAF_DIRECTIVES[name];
   if (resolver === undefined) throw new Error(`no resolver ${name}`);
-  return resolver(arg, ctx);
+  return resolver(arg, ctx, attributes);
 }
 
 describe('cube text', () => {
@@ -110,6 +110,22 @@ describe('source', () => {
       labels: [{ kind: 'boss', text: 'Drops from Diablo Clone' }],
     });
     expect(resolve('source', 'Nope')).toEqual({ error: '::source[Nope]: no item with that name in sources.json' });
+  });
+
+  it('requires {item=…} when a name exists for several item kinds', () => {
+    expect(resolve('source', 'Worldstone Shard')).toEqual({
+      error: '::source[Worldstone Shard]: ambiguous (2 items: set, misc); add {item=…}, e.g. ::source[Worldstone Shard]{item=set}',
+    });
+    expect(resolve('source', 'Worldstone Shard', fixtureContext(), { item: 'misc' })).toEqual({
+      kind: 'source',
+      item: 'Worldstone Shard',
+      labels: [{ kind: 'boss', text: 'Drops from Baal' }],
+    });
+    expect(resolve('source', 'Annihilus', fixtureContext(), { item: 'set' })).toEqual({
+      error: '::source[Annihilus]: no item with that name and item=set in sources.json',
+    });
+    expect(resolve('source', 'Annihilus', fixtureContext(), { item: 'rune' })).toHaveProperty('error');
+    expect(resolve('source', 'Annihilus', fixtureContext(), { kind: 'unique' })).toHaveProperty('error');
   });
 
   it('works without the ESR clone', () => {

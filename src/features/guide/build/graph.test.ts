@@ -65,6 +65,18 @@ describe('buildGraph', () => {
     ]);
   });
 
+  it('rejects a note that references itself', () => {
+    const graph = buildGraph(
+      [graphNote('a', { knowFirst: ['a'], related: ['a'], nextOverride: 'a' }), graphNote('b'), graphNote('c'), graphNote('q')],
+      spine
+    );
+    expect(graph.errors).toEqual([
+      'notes/a.md: knowFirst: a note cannot reference itself',
+      'notes/a.md: related: a note cannot reference itself',
+      'notes/a.md: next: a note cannot reference itself',
+    ]);
+  });
+
   it('does not count a question, glossary owner or next override as an orphan', () => {
     const graph = buildGraph(
       [graphNote('a', { nextOverride: 'n' }), graphNote('b'), graphNote('c'), graphNote('q'), graphNote('n'), graphNote('g')],

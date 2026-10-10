@@ -42,7 +42,7 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 | `bases.json`     | 292 KB / 26 KB               |
 | `runewords.json` | 197 KB / 28 KB               |
 | `affixes.json`   | 795 KB / 61 KB               |
-| `sources.json`   | 330 KB / 30 KB               |
+| `sources.json`   | 298 KB / 29 KB               |
 
 ### Bases and types
 
@@ -105,10 +105,13 @@ one or more `labels` (`{ kind, text }`), always in this order:
 Items covered: every `uniqueitems.txt` row with an `index` and `disabled != 1` (the `*Skip Generation` comment column
 is ignored: it is set on 96 playable rows such as Mephisto's Will), every `setitems.txt` row, and every `misc.txt` row
 that is a cube input or output, sold by a vendor, or named in a monster-reachable TC, except potions, scrolls, tomes,
-keys, gold and ammo (`NOISE_TYPES`). Misc rows with the same name and labels (47 "Rune Stocker" variants, …) keep only
-the first. Names come from the string tables; multi-line names are read bottom-up ("Ancient Coupon (Buckler, Pelta
+keys, gold and ammo (`NOISE_TYPES`). Rows with the same `item` kind and display name (the ES and Ancient Coupon LoD versions of a
+unique such as Eaglehorn, 47 "Rune Stocker" misc variants, …) merge into one entry: the first row's `code`, the union of
+all labels (deduped by kind + text, in the order above; `Unknown` only when nothing else applies). The same name across
+kinds stays separate (Worldstone Shard set item vs material; the guide disambiguates with `{item=…}`). Names come from the string tables; multi-line names are read bottom-up ("Ancient Coupon (Buckler, Pelta
 Lunata)"). `diabloclone` is shown as "Diablo Clone" (its name string is plain "Diablo"). Counts: `counts.sourcesUnique`,
-`sourcesSet`, `sourcesMisc`, `sourcesUnknown` (ESR 3.2.12: 1383 / 270 / 808 / 29).
+`sourcesSet`, `sourcesMisc`, `sourcesMerged` (rows folded into an earlier entry), `sourcesUnknown` (ESR 3.2.12:
+1107 / 270 / 795 / 516 / 13).
 
 Limitations (the UI says "Derived from the game files; may be incomplete"):
 

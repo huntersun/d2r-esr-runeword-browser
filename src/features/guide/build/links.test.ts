@@ -33,6 +33,8 @@ describe('resolveLink', () => {
     expect(resolveLink('ftp:x', ctx)).toHaveProperty('error');
     expect(resolveLink('relative/path', ctx)).toHaveProperty('error');
     expect(resolveLink('page:game-data', ctx)).toHaveProperty('error');
+    expect(resolveLink('page:/builds', ctx)).toHaveProperty('error');
+    expect(resolveLink('page:/game-data/bases?search=x', ctx)).toEqual({ kind: 'app', href: '/game-data/bases?search=x' });
   });
 
   it('warns about docs files or anchors missing from the clone, and skips the check without one', () => {

@@ -58,6 +58,13 @@ export function buildGraph(notes: readonly GraphNote[], spine: GuideSpine, gloss
     for (const slug of note.knowFirst) check(`${note.file}: knowFirst`, slug);
     for (const slug of note.related) check(`${note.file}: related`, slug);
     if (note.nextOverride !== null) check(`${note.file}: next`, note.nextOverride);
+    for (const [field, slugs] of [
+      ['knowFirst', note.knowFirst],
+      ['related', note.related],
+      ['next', note.nextOverride === null ? [] : [note.nextOverride]],
+    ] as const) {
+      if (slugs.includes(note.slug)) errors.push(`${note.file}: ${field}: a note cannot reference itself`);
+    }
     for (const slug of [...note.noteLinks, ...note.knowFirst, ...note.related]) link(note.slug, slug);
   }
 

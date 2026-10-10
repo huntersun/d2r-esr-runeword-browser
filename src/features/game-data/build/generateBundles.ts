@@ -93,6 +93,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       sourcesUnique: countSources('unique'),
       sourcesSet: countSources('set'),
       sourcesMisc: countSources('misc'),
+      sourcesMerged: sourceItems.merged,
       sourcesUnknown: sourceItems.bundle.items.filter((source) => source.labels.some((entry) => entry.kind === 'unknown')).length,
     },
     warnings: [...types.warnings, ...bases.warnings, ...runewords.warnings, ...affixes.warnings, ...sourceItems.warnings],

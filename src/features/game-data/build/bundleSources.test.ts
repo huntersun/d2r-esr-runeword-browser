@@ -46,6 +46,9 @@ const tables: SourceTables = {
     ['Torch', '', '', '1', '75', 'cm1'],
     ['Lost', '', '', '0', '1', 'cm1'],
     ['Gone', '1', '1', '1', '1', 'hax'],
+    // Same display names as Pelta / Basher: merged into the first entry
+    ['Pelta LoD', '', '1', '1', '10', '9ha'],
+    ['Basher Old', '', '', '0', '1', 'hax'],
     ['', '', '1', '1', '1', 'hax'],
   ]),
   setitems: table([
@@ -92,6 +95,9 @@ const strings = new Map([
   ['TheLichKing', 'The Lich King'],
   ['Diablo', 'Diablo'],
   ['Pelta', 'Pelta Lunata'],
+  ['Pelta LoD', 'Pelta Lunata'],
+  ['Basher Old', 'Basher'],
+  ['Set Axe', 'Basher'],
   ['01c', '(Buckler, Pelta Lunata)\nAncient Coupon'],
   ['Bloodwitch the Wild', 'Bloodwitch the Wild'],
 ]);
@@ -107,8 +113,18 @@ const { bundle } = buildSourcesBundle(tables, strings, PLUGIN);
 const texts = (name: string) => bundle.items.find((item: ItemSource) => item.name === name)?.labels.map((label) => label.text);
 
 describe('buildSourcesBundle', () => {
-  it('labels coupon uniques cube-only, by display name', () => {
-    expect(texts('Pelta Lunata')).toEqual(['Cube: Ancient Coupon']);
+  it('merges entries sharing kind and name: first code, label union in precedence order, Unknown dropped', () => {
+    const pelta = bundle.items.filter((item) => item.name === 'Pelta Lunata');
+    expect(pelta).toHaveLength(1);
+    expect(pelta[0]?.code).toBe('hax');
+    expect(pelta[0]?.labels.map((entry) => entry.text)).toEqual(['Cube: Ancient Coupon', 'Drops (random)', 'Gamble']);
+    // "Basher Old" alone would be Unknown
+    expect(bundle.items.filter((item) => item.name === 'Basher' && item.item === 'unique')).toHaveLength(1);
+    expect(texts('Basher')).toEqual(['Drops (random)', 'Gamble']);
+  });
+
+  it('keeps entries sharing a name across kinds separate', () => {
+    expect(bundle.items.filter((item) => item.name === 'Basher').map((item) => item.item)).toEqual(['unique', 'set']);
   });
 
   it('labels random uniques drop + gamble (base family in gamble.txt) and ignores cube rerolls', () => {
@@ -135,8 +151,8 @@ describe('buildSourcesBundle', () => {
   });
 
   it('labels set items as random drops plus their named treasure classes', () => {
-    expect(bundle.items.find((item) => item.name === 'Set Axe')).toEqual({
-      name: 'Set Axe',
+    expect(bundle.items.find((item) => item.item === 'set')).toEqual({
+      name: 'Basher',
       code: 'hax',
       item: 'set',
       labels: [

@@ -60,10 +60,12 @@ function readSlugs(fields: FieldReader, field: string, max?: number): string[] {
   return slugs;
 }
 
-function readVerified(fields: FieldReader, raw: unknown): string | null {
+/** `yaml` is the raw frontmatter: YAML turns an unquoted 3.10 into the number 3.1, so the hint quotes the source text. */
+function readVerified(fields: FieldReader, raw: unknown, yaml: string): string | null {
   if (raw === undefined || raw === null) return null;
   if (typeof raw === 'number') {
-    fields.error('verified', `quote the version so YAML keeps it as text: verified: '${String(raw)}'`);
+    const written = /^verified:[ \t]*([^\s#]+)/m.exec(yaml)?.[1] ?? String(raw);
+    fields.error('verified', `quote the version: verified: '${written}'`);
     return null;
   }
   if (typeof raw !== 'string' || !VERSION.test(raw.trim())) {
@@ -128,7 +130,7 @@ export function parseNote(file: string, text: string, ctx: GuideContext): Parsed
     summary: fields.string('summary', { required: true, max: SUMMARY_MAX }),
     tags: fields.strings('tags'),
     aliases: fields.strings('aliases'),
-    verified: readVerified(fields, isObject(data) ? data.verified : undefined),
+    verified: readVerified(fields, isObject(data) ? data.verified : undefined, parts?.yaml ?? ''),
     volatility,
     knowFirst: readSlugs(fields, 'knowFirst', KNOW_FIRST_MAX),
     related: readSlugs(fields, 'related', RELATED_MAX),

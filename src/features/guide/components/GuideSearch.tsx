@@ -48,7 +48,7 @@ export function GuideSearch({ notes }: { readonly notes: readonly GuideNote[] })
                     handleOpenChange(false);
                     void navigate(`/guide/${note.slug}`);
                   }}
-                  className="flex-col items-start gap-0.5"
+                  className="flex-col items-start gap-0.5 data-[selected=true]:bg-accent data-[selected=true]:ring-1 data-[selected=true]:ring-primary/50 data-[selected=true]:ring-inset"
                 >
                   <span className="font-medium">{note.title}</span>
                   <span className="line-clamp-2 text-xs text-muted-foreground">{note.summary}</span>

@@ -126,7 +126,13 @@ export function fixtureGameData(): GameDataInputs {
     runewords: { runewords: [{ key: 'Runeword1', name: 'Enigma', rows: [] }] },
     bases: { bases: [{ code: 'crs', name: 'Crystal Sword' }] },
     types: { types: [{ code: 'swor', name: 'Sword' }], classes: [] },
-    sources: { items: [{ name: 'Annihilus', code: 'cm1', item: 'unique', labels: [{ kind: 'boss', text: 'Drops from Diablo Clone' }] }] },
+    sources: {
+      items: [
+        { name: 'Annihilus', code: 'cm1', item: 'unique', labels: [{ kind: 'boss', text: 'Drops from Diablo Clone' }] },
+        { name: 'Worldstone Shard', code: 'amu', item: 'set', labels: [{ kind: 'drop', text: 'Drops (random)' }] },
+        { name: 'Worldstone Shard', code: 'xa1', item: 'misc', labels: [{ kind: 'boss', text: 'Drops from Baal' }] },
+      ],
+    },
   } as unknown as GameDataInputs;
 }
 

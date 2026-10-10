@@ -29,4 +29,4 @@ sources: [official-docs, official-cube]
 
 :term[Corruption] cubes an item with a Worldstone Shard, then cubes it again, for a random strong bonus; it can also turn the item into a random rare, so corrupt only what you can lose, and Astrogha's Petrified Heart clears the status (not the bonus) so you can try again. :term[Anointment] cubes non-runeword gear with an Orb of Anointment, or a unique charm with the three Demonic organs, then cubes it again, for a random bonus that cannot brick the item. Both come after Forging and D-stoning in [[enhancement-order]] and matter once you farm terror zones and Endgame Maps ([[maps-keys-ascendancy]]). The :term[Vessel of Souls], a mythical amulet you feed organs, is the only equippable unique that can be anointed.
 
-::source[Worldstone Shard]
+::source[Worldstone Shard]{item=misc}

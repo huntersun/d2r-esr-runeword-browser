@@ -1,4 +1,5 @@
 /* eslint-disable react-x/no-array-index-key -- the body is a static generated tree that never reorders, so positional keys are stable */
+import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
@@ -12,9 +13,23 @@ import { useHoverPopover } from './useHoverPopover';
 /**
  * Long-form guide text always uses the default sans font: the optional Diablo font (`.diablo-font *` on html) is a
  * decorative display face that is tiring to read in paragraphs. Tailwind utilities sit in a later cascade layer than
- * the base-layer `.diablo-font *` rule, so these win without !important.
+ * the base-layer `.diablo-font *` rule, so these win without !important. Code elements are excluded so their
+ * `font-mono` still applies.
  */
-export const GUIDE_PROSE_FONT = 'font-sans [&_*]:font-sans';
+export const GUIDE_PROSE_FONT = 'font-sans [&_*:not(code):not(pre)]:font-sans';
+
+/**
+ * CSS-only scroll hint for wide tables: shadows at the edges that can still scroll (the "local" cover gradients
+ * scroll with the content and hide the "scroll" shadows once an edge is reached), so nothing shows without overflow.
+ */
+const SCROLL_HINT_STYLE: CSSProperties = {
+  background: [
+    'linear-gradient(to right, var(--background) 30%, transparent) left center / 2.5rem 100% no-repeat local',
+    'linear-gradient(to left, var(--background) 30%, transparent) right center / 2.5rem 100% no-repeat local',
+    'radial-gradient(farthest-side at 0 50%, color-mix(in oklch, var(--foreground) 22%, transparent), transparent) left center / 0.75rem 100% no-repeat scroll',
+    'radial-gradient(farthest-side at 100% 50%, color-mix(in oklch, var(--foreground) 22%, transparent), transparent) right center / 0.75rem 100% no-repeat scroll var(--background)',
+  ].join(', '),
+};
 
 const LINK_CLASS = 'font-medium text-primary underline underline-offset-2 decoration-primary/40 hover:decoration-primary';
 const TABLE_WRAP = 'overflow-x-auto rounded-md border';
@@ -163,7 +178,7 @@ function DataBlockView({ block }: { readonly block: DataBlock }) {
       return (
         <figure>
           <Caption>{block.caption}</Caption>
-          <div className={TABLE_WRAP}>
+          <div className={TABLE_WRAP} style={SCROLL_HINT_STYLE}>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/40">
@@ -209,7 +224,7 @@ function DataBlockView({ block }: { readonly block: DataBlock }) {
           <Caption>{block.caption}</Caption>
           <ul className="divide-y rounded-md border text-sm">
             {block.rows.map((row, i) => (
-              <li key={i} className="grid grid-cols-[1fr_auto_1fr] items-start gap-x-2 px-3 py-2">
+              <li key={i} className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-x-2 px-3 py-2 break-words">
                 <ul className="space-y-0.5">
                   {row.inputs.map((input, j) => (
                     <li key={j}>{input}</li>
@@ -289,7 +304,7 @@ function Block({ block }: { readonly block: GuideBlock }) {
       );
     case 'table':
       return (
-        <div className={TABLE_WRAP}>
+        <div className={TABLE_WRAP} style={SCROLL_HINT_STYLE}>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">

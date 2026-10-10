@@ -74,7 +74,7 @@ function Note({ guide, note }: { readonly guide: LoadedGuide; readonly note: Gui
   }, [note.slug]);
 
   return (
-    <article className={cn('mx-auto max-w-2xl space-y-6', note.next !== null && 'pb-20 sm:pb-0')}>
+    <article className={cn('mx-auto max-w-2xl space-y-6', note.next !== null && 'pb-28 sm:pb-0')}>
       <header className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm text-muted-foreground">
@@ -182,7 +182,8 @@ function Note({ guide, note }: { readonly guide: LoadedGuide; readonly note: Gui
 function NoteRoute({ guide, slug }: { readonly guide: LoadedGuide; readonly slug: string }) {
   const note = findNote(guide.bundle, slug);
   if (note === undefined) return <NoteNotFound slug={slug} />;
-  return <Note guide={guide} note={note} />;
+  // Keyed by slug so per-note UI state (open peeks, the expanded backlinks) resets on note-to-note navigation.
+  return <Note key={slug} guide={guide} note={note} />;
 }
 
 /** `/guide/:slug`: one note. */

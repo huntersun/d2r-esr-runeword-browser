@@ -130,7 +130,8 @@ describe('committed game-data bundles', () => {
     expect(manifest.counts.sourcesUnique).toBe(sourceItems.filter((item) => item.item === 'unique').length);
     expect(manifest.counts.sourcesSet).toBe(sourceItems.filter((item) => item.item === 'set').length);
     expect(manifest.counts.sourcesMisc).toBe(sourceItems.filter((item) => item.item === 'misc').length);
-    expect(sourceItems.filter((item) => item.item === 'unique').length).toBeGreaterThan(1300);
+    expect(sourceItems.filter((item) => item.item === 'unique').length).toBeGreaterThan(1000);
+    expect(new Set(sourceItems.map((item) => `${item.item}:${item.name}`)).size).toBe(sourceItems.length);
     expect(sourceItems.every((item) => item.labels.length > 0 && item.name !== '')).toBe(true);
     // "Unknown" stays rare (Voidforge, a few internal ore/charm rows, …)
     expect(manifest.counts.sourcesUnknown).toBeLessThan(50);
