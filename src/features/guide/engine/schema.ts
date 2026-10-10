@@ -136,4 +136,6 @@ export type DataBlock =
   | { kind: 'items'; caption: string; items: { label: string; detail: string | null }[] }
   | { kind: 'recipes'; caption: string; rows: { inputs: string[]; output: string; note: string | null }[] }
   | { kind: 'source'; item: string; labels: SourceLabel[] }
-  | { kind: 'glossary'; entries: GlossaryEntry[] };
+  | { kind: 'glossary'; entries: GlossaryEntry[] }
+  /** An embedded item card (resolved from the HTM data in the browser); `href` is the app-link fallback (`?name=`) */
+  | { kind: 'card'; item: 'runeword' | 'gemword' | 'unique' | 'mythical' | 'socketable'; name: string; href: string };

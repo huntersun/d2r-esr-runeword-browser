@@ -67,6 +67,8 @@ export function blockCaption(block: DataBlock): string {
       return `Where it comes from: ${block.item}`;
     case 'glossary':
       return 'Glossary';
+    case 'card':
+      return `Card: ${block.name}`;
     default:
       return block.caption;
   }
