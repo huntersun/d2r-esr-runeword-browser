@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { GuideBlock, GuideBundle, GuideInline, GuideNote } from '../engine/schema';
-import { collectAppLinks, inlineText, noteTitle, searchNotes, sourceCells, truncateLabel } from './guideUtils';
+import { collectAppLinks, inlineText, noteTitle, searchNotes, sourceCells } from './guideUtils';
 
 const text = (value: string): GuideInline => ({ type: 'text', value });
 const appLink = (href: string, label: string): GuideInline => ({ type: 'link', kind: 'app', href, children: [text(label)] });
@@ -143,14 +143,5 @@ describe('noteTitle', () => {
   it('returns the title of a known note and the slug for an unknown one', () => {
     expect(noteTitle(bundle, 'forging')).toBe('Forging');
     expect(noteTitle(bundle, 'missing-note')).toBe('missing-note');
-  });
-});
-
-describe('truncateLabel', () => {
-  it('keeps short labels and cuts long ones with an ellipsis', () => {
-    expect(truncateLabel('Forging')).toBe('Forging');
-    expect(truncateLabel('Exactly eighteen c')).toBe('Exactly eighteen c');
-    expect(truncateLabel('Enhancement order and more')).toBe('Enhancement order…');
-    expect(truncateLabel('Cube basics and stuff', 12)).toBe('Cube basics…');
   });
 });

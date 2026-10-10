@@ -1,16 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { matchesExactName, normalizeItemName, parseExactNameParam } from './exactName';
-
-describe('normalizeItemName', () => {
-  it('lowercases, trims and collapses whitespace', () => {
-    expect(normalizeItemName('  Breath  of the   Dying ')).toBe('breath of the dying');
-  });
-
-  it('straightens typographic apostrophes and quotes', () => {
-    expect(normalizeItemName('Artemis’ Wrath')).toBe("artemis' wrath");
-    expect(normalizeItemName('“Quoted”')).toBe('"quoted"');
-  });
-});
+import { applyExactNameFocus, matchesExactName, parseExactNameParam } from './exactName';
 
 describe('parseExactNameParam', () => {
   it('returns null when the param is absent or blank', () => {
@@ -43,5 +32,18 @@ describe('matchesExactName', () => {
   it('treats curly and straight apostrophes alike', () => {
     expect(matchesExactName('Artemis’ Wrath', "Artemis' Wrath")).toBe(true);
     expect(matchesExactName("Artemis' Wrath", 'artemis’ wrath')).toBe(true);
+  });
+});
+
+describe('applyExactNameFocus', () => {
+  const items = [{ name: 'Strength' }, { name: 'Steel' }, { name: 'strength' }];
+  const onlySteel = (list: readonly { name: string }[]) => list.filter((item) => item.name === 'Steel');
+
+  it('applies the other filters when no name is set', () => {
+    expect(applyExactNameFocus(items, null, onlySteel)).toEqual([{ name: 'Steel' }]);
+  });
+
+  it('returns every item with the name and ignores the other filters', () => {
+    expect(applyExactNameFocus(items, 'STRENGTH', onlySteel)).toEqual([{ name: 'Strength' }, { name: 'strength' }]);
   });
 });

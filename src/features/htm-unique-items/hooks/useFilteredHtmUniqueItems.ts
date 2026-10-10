@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { db } from '@/core/db';
 import type { HtmUniqueItem } from '@/core/db';
 import { selectSearchText, selectExactName, selectMaxReqLevel, selectSelectedCategories, selectIncludeCouponItems } from '../store';
-import { matchesExactName } from '@/core/utils/exactName';
+import { applyExactNameFocus } from '@/core/utils/exactName';
 import { parseSearchTerms } from '@/core/utils/searchTerms';
 import { matchesCategory } from '@/core/store/categorySelection';
 
@@ -26,12 +26,14 @@ export function useFilteredHtmUniqueItems(): readonly HtmUniqueItem[] | undefine
 
   const searchTerms = parseSearchTerms(searchText);
 
-  const filtered = allItems
-    .filter((item) => matchesExactName(item.name, exactName))
-    .filter((item) => includeCouponItems || !item.isAncientCoupon)
-    .filter((item) => maxReqLevel === null || item.reqLevel <= maxReqLevel)
-    .filter((item) => matchesCategory(item.category, selectedCategories))
-    .filter((item) => matchesSearch(item, searchTerms));
+  // A name focus overrides every other filter
+  const filtered = applyExactNameFocus(allItems, exactName, (list) =>
+    list
+      .filter((item) => includeCouponItems || !item.isAncientCoupon)
+      .filter((item) => maxReqLevel === null || item.reqLevel <= maxReqLevel)
+      .filter((item) => matchesCategory(item.category, selectedCategories))
+      .filter((item) => matchesSearch(item, searchTerms))
+  );
 
   // Sort by reqLevel ascending, then by name alphabetically
   filtered.sort((a, b) => {

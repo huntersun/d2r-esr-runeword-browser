@@ -5,7 +5,7 @@
 import type { GuideBlock, GuideBundle, GuideInline, GuideNote } from '../engine/schema.ts';
 import { compareCodeUnits } from './compare.ts';
 import { parseGlossary, parseSourceRefs, parseSpine } from './content.ts';
-import { createGuideContext, type DocsIndex, type GameDataInputs } from './context.ts';
+import { createGuideContext, type DocsIndex, type GameDataInputs, type GuideContext } from './context.ts';
 import type { EsrGuideTables } from './esrGuideSources.ts';
 import { buildGraph } from './graph.ts';
 import { countWords } from './markdown.ts';
@@ -94,13 +94,16 @@ function countDataBlocks(blocks: readonly GuideBlock[]): number {
   }, 0);
 }
 
-function knownItemNames(input: GenerateGuideInput): Set<string> {
-  const names = [
-    ...input.gameData.runewords.runewords.map((runeword) => runeword.name),
-    ...input.gameData.bases.bases.map((base) => base.name),
-    ...input.gameData.sources.items.map((item) => item.name),
-  ];
-  return new Set([...names.map((name) => name.toLowerCase()), ...(input.esr?.names ?? [])]);
+/** Lower-cased names `mentions` may use; the sources.json part is the same set unique:/mythical:/socketable: links use. */
+function knownItemNames(input: GenerateGuideInput, ctx: GuideContext): Set<string> {
+  const names = [...input.gameData.runewords.runewords.map((runeword) => runeword.name), ...ctx.baseNames.values()];
+  return new Set([
+    ...names.map((name) => name.toLowerCase()),
+    ...ctx.sourceNames.unique,
+    ...ctx.sourceNames.set,
+    ...ctx.sourceNames.misc,
+    ...(input.esr?.names ?? []),
+  ]);
 }
 
 export function generateGuide(input: GenerateGuideInput): GeneratedGuide {
@@ -119,7 +122,7 @@ export function generateGuide(input: GenerateGuideInput): GeneratedGuide {
     .map(({ file, text }) => ({ ...parseNote(file, text, ctx), file }));
 
   const sourceIds = new Set(sourceRefs.map((ref) => ref.id));
-  const itemNames = knownItemNames(input);
+  const itemNames = knownItemNames(input, ctx);
   const seen = new Map<string, string>();
   for (const { note, file, errors: noteErrors, warnings: noteWarnings, mentions } of parsed) {
     errors.push(...noteErrors);
@@ -149,9 +152,9 @@ export function generateGuide(input: GenerateGuideInput): GeneratedGuide {
   errors.push(...graph.errors);
 
   const titles = new Map(parsed.map(({ note }) => [note.slug, note.title]));
-  const notes: GuideNote[] = parsed.map(({ note, file, mentions, dataBlocks }) => {
+  const notes: GuideNote[] = parsed.map(({ note, file, dataBlocks }) => {
     const body = labelBlocks(note.body, titles);
-    const stale = noteStaleReasons({ note, mentions, dataBlocks, glossary, lock, patchNotes: input.patchNotes ?? [] });
+    const stale = noteStaleReasons({ note, dataBlocks, glossary, lock, patchNotes: input.patchNotes ?? [] });
     if (stale.unrecorded)
       warnings.push(`${file}: verified ${note.verified ?? ''} is not recorded in ${LOCK_FILE} (run npm run guide:verify -- ${note.slug})`);
     return {

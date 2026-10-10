@@ -22,6 +22,8 @@ export interface GuideContext {
   baseNames: ReadonlyMap<string, string>;
   typeCodes: ReadonlySet<string>;
   sources: SourcesBundle;
+  /** Lower-cased names of sources.json items by kind (unique:/mythical:/socketable: link targets, mentions) */
+  sourceNames: Readonly<Record<'unique' | 'set' | 'misc', ReadonlySet<string>>>;
   glossary: readonly GlossaryEntry[];
   /** null when the ESR clone is missing (ESR-backed directives then fail) */
   esr: EsrGuideTables | null;
@@ -36,12 +38,21 @@ export interface ContextInput {
   docs: DocsIndex | null;
 }
 
+function sourceNames(sources: SourcesBundle, kind: 'unique' | 'set' | 'misc'): Set<string> {
+  return new Set(sources.items.filter((item) => item.item === kind).map((item) => item.name.toLowerCase()));
+}
+
 export function createGuideContext(input: ContextInput): GuideContext {
   return {
     runewordNames: new Set(input.gameData.runewords.runewords.map((runeword) => runeword.name)),
     baseNames: new Map(input.gameData.bases.bases.map((base) => [base.code, base.name])),
     typeCodes: new Set(input.gameData.types.types.map((type) => type.code)),
     sources: input.gameData.sources,
+    sourceNames: {
+      unique: sourceNames(input.gameData.sources, 'unique'),
+      set: sourceNames(input.gameData.sources, 'set'),
+      misc: sourceNames(input.gameData.sources, 'misc'),
+    },
     glossary: input.glossary,
     esr: input.esr,
     docs: input.docs,

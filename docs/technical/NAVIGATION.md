@@ -27,11 +27,13 @@ Documentation for routing, layout, and navigation patterns.
 | `*` | NotFoundScreen | Catch-all for unknown URLs, with a link back home |
 
 **`?name=<Name>` focus** (runewords, gemwords, socketables, uniques, mythicals): shows only the items whose name equals `<Name>`
-(case-insensitive, curly/straight apostrophes alike; all variants of a runeword), unlike `?search=`, which also matches affix text.
-It is read once on mount like the other filter params (the URL is then cleaned), resets the screen's other filters to their
-defaults (params given alongside still apply; socketables also show all qualities), is not changed by the search box, and is
-shown as a dismissible "Showing: <Name> ×" chip that scrolls into view. Copy Link keeps it. Guide `rw:`/`gw:`/`unique:`/
-`mythical:`/`socketable:` links use it.
+(`normaliseItemName` in `src/core/utils/itemName.ts`: case, whitespace, quotes/apostrophes and dashes unified; all variants of a
+runeword), unlike `?search=`, which also matches affix text. While it is set, every other filter of the screen (search, sockets,
+level, types, runes/gems, categories, coupon, highest quality) is ignored but kept, so the item is always visible and clearing
+the focus brings the previous filters back; the favourites-only toggle still applies. It is read on mount like the other params
+(the URL is then cleaned) and cleared by any visit whose URL has no `name`, so it never outlives the deep link. The search box
+does not change it. A dismissible "Showing: <Name> ×" chip shows it and scrolls into view only right after the deep link.
+Copy Link keeps it. Guide `rw:`/`gw:`/`unique:`/`mythical:`/`socketable:` links use it.
 
 ## App Shell Layout
 

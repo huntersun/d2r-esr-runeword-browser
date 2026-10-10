@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useSelector } from 'react-redux';
 import { db } from '@/core/db';
 import { selectEnabledCategories, selectSearchText, selectOnlyHighestQuality, selectExactName } from '../store/socketablesSlice';
-import { matchesExactName } from '@/core/utils/exactName';
+import { applyExactNameFocus } from '@/core/utils/exactName';
 import type { UnifiedSocketable, SocketableCategory } from '../types';
 import { parseSearchTerms } from '@/core/utils/searchTerms';
 import { matchesSearch } from '../utils/filteringHelpers';
@@ -139,19 +139,20 @@ export function useFilteredSocketables(): readonly UnifiedSocketable[] | undefin
 
   const searchTerms = parseSearchTerms(searchText);
 
-  return allSocketables.filter((item) => {
-    if (!matchesExactName(item.name, exactName)) return false;
+  // A name focus overrides every other filter
+  return applyExactNameFocus(allSocketables, exactName, (list) =>
+    list.filter((item) => {
+      // Check category filter
+      if (!enabledCategories[item.category]) return false;
 
-    // Check category filter
-    if (!enabledCategories[item.category]) return false;
+      // Check highest quality filter (gems: Perfect only, crystals: Standard only)
+      if (onlyHighestQuality && item.quality !== undefined) {
+        if (item.category === 'gems' && item.quality !== 'Perfect') return false;
+        if (item.category === 'crystals' && item.quality !== 'Standard') return false;
+      }
 
-    // Check highest quality filter (gems: Perfect only, crystals: Standard only)
-    if (onlyHighestQuality && item.quality !== undefined) {
-      if (item.category === 'gems' && item.quality !== 'Perfect') return false;
-      if (item.category === 'crystals' && item.quality !== 'Standard') return false;
-    }
-
-    // Check search filter
-    return matchesSearch(item, searchTerms);
-  });
+      // Check search filter
+      return matchesSearch(item, searchTerms);
+    })
+  );
 }

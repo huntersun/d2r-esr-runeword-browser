@@ -11,7 +11,6 @@ export function useVisitedNotes() {
   const [list, setList] = usePersistentState<readonly string[]>(VISITED_STORAGE_KEY, EMPTY, isVisitedList);
   return {
     visited: new Set(list),
-    count: list.length,
     markVisited: (slug: string) => {
       setList((current) => addVisited(current, slug));
     },

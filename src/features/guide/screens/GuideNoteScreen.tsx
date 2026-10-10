@@ -76,8 +76,8 @@ function Note({ guide, note, visited }: { readonly guide: LoadedGuide; readonly 
   }, [note.slug]);
 
   return (
-    // lg+: body (2/3) + a sticky local graph (1/3); below lg the graph is hidden (the chips carry the same edges).
-    <div className="mx-auto max-w-2xl lg:grid lg:max-w-6xl lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-10">
+    // lg: body + a 22rem sticky local graph column; xl+: 2/3 + 1/3; below lg the graph is hidden (the chips carry the same edges).
+    <div className="mx-auto max-w-2xl lg:grid lg:max-w-6xl lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       <article className={cn('min-w-0 space-y-6', note.next !== null && 'pb-28 sm:pb-0')}>
         <header className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">

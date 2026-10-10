@@ -10,7 +10,7 @@ import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 import { useItemSources } from '@/features/game-data/hooks/useItemSources';
 
 export function SocketablesScreen() {
-  useUrlInitialize();
+  const nameFromUrl = useUrlInitialize();
   const socketables = useFilteredSocketables();
   const { index: sourceIndex } = useItemSources();
   const enabledCategories = useSelector(selectEnabledCategories);
@@ -34,7 +34,7 @@ export function SocketablesScreen() {
 
       {exactName !== null && (
         <div className="mb-4">
-          <ExactNameChip name={exactName} onClear={() => dispatch(setExactName(null))} />
+          <ExactNameChip name={exactName} onClear={() => dispatch(setExactName(null))} scrollIntoView={nameFromUrl} />
         </div>
       )}
 

@@ -11,7 +11,7 @@ import {
   selectSelectedGems,
   selectExactName,
 } from '../store/gemwordsSlice';
-import { matchesExactName } from '@/core/utils/exactName';
+import { applyExactNameFocus } from '@/core/utils/exactName';
 import {
   matchesGemSelection,
   matchesGemwordItemTypes,
@@ -34,13 +34,15 @@ export function useFilteredGemwords(): readonly Gemword[] | undefined {
 
   const searchTerms = parseSearchTerms(searchText);
 
-  return gemwords.filter((gemword) => {
-    if (!matchesExactName(gemword.name, exactName)) return false;
-    if (!matchesGemwordSearch(gemword, searchTerms)) return false;
-    if (!matchesGemwordSockets(gemword, socketCount)) return false;
-    if (!matchesGemwordMaxReqLevel(gemword, maxReqLevel)) return false;
-    if (!matchesGemwordItemTypes(gemword, selectedItemTypes)) return false;
-    if (!matchesGemSelection(gemword, selectedGems)) return false;
-    return true;
-  });
+  // A name focus overrides every other filter
+  return applyExactNameFocus(gemwords, exactName, (list) =>
+    list.filter((gemword) => {
+      if (!matchesGemwordSearch(gemword, searchTerms)) return false;
+      if (!matchesGemwordSockets(gemword, socketCount)) return false;
+      if (!matchesGemwordMaxReqLevel(gemword, maxReqLevel)) return false;
+      if (!matchesGemwordItemTypes(gemword, selectedItemTypes)) return false;
+      if (!matchesGemSelection(gemword, selectedGems)) return false;
+      return true;
+    })
+  );
 }

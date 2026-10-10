@@ -1,26 +1,38 @@
-import { useId } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { layoutLocalGraph, type LocalGraphEdge, type LocalGraphNode } from '../engine/localGraph';
+import {
+  layoutLocalGraph,
+  LOCAL_GRAPH_CURRENT_RADIUS as CURRENT_RADIUS,
+  LOCAL_GRAPH_LABEL_GAP as LABEL_GAP,
+  LOCAL_GRAPH_NODE_RADIUS as NODE_RADIUS,
+  type LocalGraphEdge,
+  type LocalGraphNode,
+} from '../engine/localGraph';
 import type { GuideNote } from '../engine/schema';
-import { findNote, truncateLabel } from '../utils/guideUtils';
+import { findNote } from '../utils/guideUtils';
 import { GUIDE_PROSE_FONT } from './GuideBody';
 import { useLoadedGuide } from './guideContext';
 import { useHoverPopover } from './useHoverPopover';
 
-/** viewBox size; the SVG scales to the column width. Labels use rem sizes, so they follow the text-size setting. */
-const SIZE = { width: 400, height: 360 } as const;
-const CURRENT_RADIUS = 9;
-const NODE_RADIUS = 6;
-const LABEL_GAP = 5;
+/**
+ * The SVG is drawn 1:1 in CSS pixels: its viewBox width is the measured column width, so the rem-sized labels render at
+ * their real size (text-size setting included) and the layout can keep them inside the box.
+ */
+const HEIGHT = 360;
+const FALLBACK = { width: 352, fontSize: 12 } as const;
+/** Label size in rem (matches LABEL_CLASS) */
+const LABEL_REM = 0.75;
+/** viewBox units kept above the top node and below the bottom node's hanging label */
+const CROP_PAD = { top: 16, bottom: 24 } as const;
 // paint-order: a background-coloured halo keeps labels legible where they cross an edge.
 const LABEL_CLASS = 'fill-foreground stroke-background text-[0.75rem] [paint-order:stroke] [stroke-linejoin:round] [stroke-width:3px]';
 
 const radiusOf = (node: LocalGraphNode) => (node.kind === 'current' ? CURRENT_RADIUS : NODE_RADIUS);
 
 function NodeLabel({ node }: { readonly node: LocalGraphNode }) {
-  const label = truncateLabel(node.title);
+  const label = node.label;
   const r = radiusOf(node);
   if (node.kind === 'knowFirst' || node.kind === 'related' || node.kind === 'backlink') {
     const left = node.kind === 'knowFirst';
@@ -138,17 +150,43 @@ function Edge({
 export function LocalGraph({ note, visited }: { readonly note: GuideNote; readonly visited: ReadonlySet<string> }) {
   const { bundle } = useLoadedGuide();
   const arrowId = `guide-graph-arrow-${useId().replace(/:/g, '')}`;
-  const graph = layoutLocalGraph(note, bundle, SIZE);
+  const sectionRef = useRef<HTMLElement>(null);
+  const [box, setBox] = useState<{ width: number; fontSize: number }>(FALLBACK);
+
+  // Track the column width and the label size in px. The legend below the SVG is rem-sized, so a text-size change
+  // resizes the section and re-reads the root font size too.
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (section === null) return;
+    const measure = () => {
+      const rootPx = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      const width = Math.round(section.clientWidth);
+      const fontSize = rootPx * LABEL_REM;
+      if (width > 0) setBox((current) => (current.width === width && current.fontSize === fontSize ? current : { width, fontSize }));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(section);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const graph = layoutLocalGraph(note, bundle, { width: box.width, height: HEIGHT, fontSize: box.fontSize });
   if (graph.edges.length === 0) return null;
   const bySlug = new Map(graph.nodes.map((node) => [node.slug, node]));
+  // Crop the viewBox to the used rows, so a graph without top or bottom neighbours leaves no empty band.
+  const ys = graph.nodes.map((node) => node.y);
+  const top = Math.max(0, Math.min(...ys) - CURRENT_RADIUS - CROP_PAD.top);
+  const bottom = Math.min(HEIGHT, Math.max(...ys) + CURRENT_RADIUS + LABEL_GAP + CROP_PAD.bottom);
 
   return (
-    <section aria-labelledby={`${arrowId}-heading`} className="space-y-2">
+    <section ref={sectionRef} aria-labelledby={`${arrowId}-heading`} className="space-y-2">
       <h2 id={`${arrowId}-heading`} className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
         Connections
       </h2>
       <svg
-        viewBox={`0 0 ${String(SIZE.width)} ${String(SIZE.height)}`}
+        viewBox={`0 ${String(top)} ${String(box.width)} ${String(bottom - top)}`}
         className={cn('h-auto w-full overflow-visible text-foreground', GUIDE_PROSE_FONT)}
       >
         <defs>

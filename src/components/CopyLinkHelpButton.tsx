@@ -31,6 +31,7 @@ export function CopyLinkHelpButton() {
               <li>Selected item types</li>
               <li>Selected runes</li>
               <li>Tier point limits</li>
+              <li>Exact item name (from guide links)</li>
             </ul>
           </div>
         </div>

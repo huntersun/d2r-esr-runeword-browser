@@ -14,7 +14,7 @@ import { selectExactName, setExactName } from '../store';
 import { useItemSources } from '@/features/game-data/hooks/useItemSources';
 
 export function HtmUniqueItemsScreen() {
-  useUrlInitialize();
+  const nameFromUrl = useUrlInitialize();
   const items = useFilteredHtmUniqueItems();
   const dispatch = useDispatch();
   const exactName = useSelector(selectExactName);
@@ -44,7 +44,9 @@ export function HtmUniqueItemsScreen() {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <p className="text-sm text-muted-foreground">Showing {filteredItems.length} unique items</p>
-          {exactName !== null && <ExactNameChip name={exactName} onClear={() => dispatch(setExactName(null))} />}
+          {exactName !== null && (
+            <ExactNameChip name={exactName} onClear={() => dispatch(setExactName(null))} scrollIntoView={nameFromUrl} />
+          )}
         </div>
         {favorites.isAuthenticated && (
           <FavoritesToggleButton

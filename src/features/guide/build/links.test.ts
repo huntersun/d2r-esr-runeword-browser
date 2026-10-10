@@ -28,6 +28,17 @@ describe('resolveLink', () => {
     expect(resolveLink(url, ctx)).toEqual({ kind, href });
   });
 
+  it('rejects unique, mythical and socketable names missing from sources.json, case-insensitively', () => {
+    expect(resolveLink('unique:annihilus', ctx)).toEqual({ kind: 'app', href: '/uniques?name=annihilus' });
+    expect(resolveLink('unique:Nope', ctx)).toEqual({ error: 'unknown unique item "Nope" (unique:, checked against sources.json)' });
+    expect(resolveLink('mythical:Nope', ctx)).toHaveProperty('error');
+    expect(resolveLink('socketable:Annihilus', ctx)).toEqual({
+      error: 'unknown socketable "Annihilus" (socketable:, checked against sources.json)',
+    });
+    expect(resolveLink('unique:El%20Rune', ctx)).toHaveProperty('error');
+    expect(resolveLink('gw:Anything', ctx)).toEqual({ kind: 'app', href: '/gemwords?name=Anything' });
+  });
+
   it('rejects unknown runewords, bases, types and schemes', () => {
     expect(resolveLink('rw:Enigmaa', ctx)).toEqual({ error: 'unknown runeword "Enigmaa" (rw:)' });
     expect(resolveLink('base:zzz', ctx)).toHaveProperty('error');

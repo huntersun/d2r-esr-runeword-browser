@@ -148,14 +148,3 @@ export function findNote(bundle: GuideBundle, slug: string): GuideNote | undefin
 export function noteTitle(bundle: GuideBundle, slug: string): string {
   return findNote(bundle, slug)?.title ?? slug;
 }
-
-/** `text` cut to at most `max` characters, ending in an ellipsis when cut (graph labels). */
-export function truncateLabel(text: string, max = 18): string {
-  const chars = Array.from(text);
-  return chars.length <= max
-    ? text
-    : `${chars
-        .slice(0, max - 1)
-        .join('')
-        .trimEnd()}…`;
-}

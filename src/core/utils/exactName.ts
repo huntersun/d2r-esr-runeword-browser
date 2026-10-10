@@ -1,18 +1,10 @@
 /**
  * Exact-name focus (`?name=<Name>` on the list screens): shows only the items whose name equals the
- * given one, case-insensitively and with typographic apostrophes/quotes treated as straight ones.
- * Unlike the free-text search it never matches affix or property text.
+ * given one (see normaliseItemName: case, whitespace, quotes/apostrophes and dashes are unified).
+ * Unlike the free-text search it never matches affix or property text, and while it is set the
+ * screen's other filters are ignored so the named item is always visible.
  */
-
-/** Lowercases, trims, collapses whitespace and straightens ‘ ’ ‛ ′ ` and “ ” ″ so names compare reliably. */
-export function normalizeItemName(name: string): string {
-  return name
-    .replace(/[‘’‛′`]/g, "'")
-    .replace(/[“”″]/g, '"')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .toLowerCase();
-}
+import { normaliseItemName } from './itemName';
 
 /** Parses the `name` URL param: null when absent or blank, otherwise the trimmed name. */
 export function parseExactNameParam(value: string | null): string | null {
@@ -21,8 +13,21 @@ export function parseExactNameParam(value: string | null): string | null {
   return trimmed === '' ? null : trimmed;
 }
 
-/** True when no exact name is set, or `name` equals it (see normalizeItemName). */
+/** True when no exact name is set, or `name` equals it after normalisation. */
 export function matchesExactName(name: string, exactName: string | null): boolean {
   if (exactName === null) return true;
-  return normalizeItemName(name) === normalizeItemName(exactName);
+  return normaliseItemName(name) === normaliseItemName(exactName);
+}
+
+/**
+ * Applies the exact-name focus to an item list: with a name set, returns only the items with that
+ * name and skips `applyOtherFilters` entirely; otherwise returns `applyOtherFilters(items)`.
+ */
+export function applyExactNameFocus<T extends { readonly name: string }>(
+  items: readonly T[],
+  exactName: string | null,
+  applyOtherFilters: (items: readonly T[]) => T[]
+): T[] {
+  if (exactName === null) return applyOtherFilters(items);
+  return items.filter((item) => matchesExactName(item.name, exactName));
 }

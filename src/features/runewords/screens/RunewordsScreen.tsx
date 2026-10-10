@@ -16,7 +16,7 @@ import { selectExactName, setExactName } from '../store/runewordsSlice';
 const getRunewordFavoriteId = (runeword: Runeword) => buildRecipeFavoriteId('runeword', runeword);
 
 export function RunewordsScreen() {
-  useUrlInitialize();
+  const nameFromUrl = useUrlInitialize();
   // Loaded once for the whole screen: search filtering, badges, tooltips and bonuses
   const socketableLookup = useSocketableLookupQuery();
   const runewords = useFilteredRunewords(socketableLookup);
@@ -47,7 +47,9 @@ export function RunewordsScreen() {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <p className="text-sm text-muted-foreground">Showing {filteredRunewords.length} runewords</p>
-          {exactName !== null && <ExactNameChip name={exactName} onClear={() => dispatch(setExactName(null))} />}
+          {exactName !== null && (
+            <ExactNameChip name={exactName} onClear={() => dispatch(setExactName(null))} scrollIntoView={nameFromUrl} />
+          )}
         </div>
         {favorites.isAuthenticated && (
           <FavoritesToggleButton

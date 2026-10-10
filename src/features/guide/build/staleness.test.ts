@@ -60,7 +60,7 @@ describe('block keys and hashes', () => {
     ]);
     expect(keyed.map(({ key, caption }) => [key, caption])).toEqual([
       ['vendor:Gheed', 'Gheed sells'],
-      ['vendor:Gheed#2', 'Gheed sells'],
+      ['vendor:Gheed#2', 'Gheed sells #2'],
       ['source:Worldstone Shard{item=misc}', 'Where it comes from: Worldstone Shard'],
     ]);
     expect(keyed[0]?.hash).toMatch(/^[0-9a-f]{64}$/);
@@ -126,6 +126,9 @@ describe('patch notes', () => {
     expect(mentionsTerm('Stockers reworked', 'Stocker')).toBe(false);
     expect(mentionsTerm("Starter's Pack (new)", "starter's pack")).toBe(true);
     expect(mentionsTerm('anything', ' ')).toBe(false);
+    expect(mentionsTerm('Fixed Ore-shards dropping', 'Ore')).toBe(false);
+    expect(mentionsTerm('Fixed pre-Stocker items', 'Stocker')).toBe(false);
+    expect(mentionsTerm('Stocker: fixed', 'Stocker')).toBe(true);
   });
 
   it('only scans patches newer than verified, oldest first', () => {
@@ -140,19 +143,16 @@ describe('patch notes', () => {
     ]);
   });
 
-  it('searches title, aliases, mentions and owned glossary terms once each', () => {
+  it('searches only the title and the glossary terms the note owns, once each, ignoring short terms', () => {
     const glossary = [
       { term: 'Stocker', definition: '', note: 'stockers' },
+      { term: 'stockers', definition: '', note: 'stockers' },
       { term: 'Can opener', definition: '', note: 'stockers' },
+      { term: 'Key', definition: '', note: 'stockers' },
       { term: 'Rune', definition: '', note: 'runes' },
     ];
-    expect(noteSearchTerms(note({ aliases: ['stockers', 'gem can'] }), ['Gem Can', 'Kill Ledger'], glossary)).toEqual([
-      'Stockers',
-      'gem can',
-      'Kill Ledger',
-      'Stocker',
-      'Can opener',
-    ]);
+    expect(noteSearchTerms(note({ aliases: ['gem can'] }), glossary)).toEqual(['Stockers', 'Stocker', 'Can opener']);
+    expect(noteSearchTerms(note({ title: 'Ore' }), [])).toEqual([]);
   });
 
   it('caps the reasons', () => {
@@ -162,7 +162,7 @@ describe('patch notes', () => {
 });
 
 describe('noteStaleReasons', () => {
-  const input = { mentions: [], dataBlocks: [{ key: 'vendor:Gheed', block: gheed }], glossary: [], patchNotes: [] };
+  const input = { dataBlocks: [{ key: 'vendor:Gheed', block: gheed }], glossary: [], patchNotes: [] };
   const lock = { stockers: { verified: '3.2.10', blocks: hashDataBlocks(input.dataBlocks) } };
 
   it('gives drafts no reasons', () => {
@@ -174,7 +174,7 @@ describe('noteStaleReasons', () => {
   });
 
   it('flags a missing lock entry, or one recorded for another version', () => {
-    const expected = { reasons: ['Not recorded by guide:verify'], unrecorded: true };
+    const expected = { reasons: ['Verified, but the data behind this note was not recorded; it may have changed'], unrecorded: true };
     expect(noteStaleReasons({ ...input, note: note({}), lock: {} })).toEqual(expected);
     expect(noteStaleReasons({ ...input, note: note({ verified: '3.2.11' }), lock })).toEqual(expected);
   });
@@ -197,8 +197,18 @@ describe('setVerifiedInFrontmatter', () => {
   it('replaces the verified line and keeps every other byte', () => {
     const text = '---\ntitle: Forging # the title\nverified: 3.2.10 # old\nvolatility: high\n---\nBody\n\n---\nverified: body\n';
     expect(setVerifiedInFrontmatter(text, '3.2.12')).toBe(
-      "---\ntitle: Forging # the title\nverified: '3.2.12'\nvolatility: high\n---\nBody\n\n---\nverified: body\n"
+      "---\ntitle: Forging # the title\nverified: '3.2.12' # old\nvolatility: high\n---\nBody\n\n---\nverified: body\n"
     );
+  });
+
+  it('keeps a trailing comment and accepts a space before the colon', () => {
+    expect(setVerifiedInFrontmatter("---\nverified: '3.2.10' # checked on a sorc\ntitle: A\n---\n", '3.2.12')).toBe(
+      "---\nverified: '3.2.12' # checked on a sorc\ntitle: A\n---\n"
+    );
+    expect(setVerifiedInFrontmatter('---\nverified : 3.2.10\r\ntitle: A\n---\n', '3.2.12')).toBe(
+      "---\nverified: '3.2.12'\r\ntitle: A\n---\n"
+    );
+    expect(setVerifiedInFrontmatter('---\nverified :\n---\n', '3.2.12')).toBe("---\nverified: '3.2.12'\n---\n");
   });
 
   it('adds the field before the closing fence when missing', () => {
@@ -225,7 +235,11 @@ describe('formatGuideReport', () => {
       [
         note({ slug: 'a', staleReasons: ["Data in 'X' changed since 3.2.10"], volatility: 'high' }),
         note({ slug: 'b', verified: '3.1.0' }),
-        note({ slug: 'c', verified: '3.2.12', staleReasons: ['Not recorded by guide:verify'] }),
+        note({
+          slug: 'c',
+          verified: '3.2.12',
+          staleReasons: ['Verified, but the data behind this note was not recorded; it may have changed'],
+        }),
         note({ slug: 'd', verified: null, volatility: 'high' }),
       ],
       '3.2.12'
@@ -243,7 +257,7 @@ describe('formatGuideReport', () => {
       '',
       'Fresh (1):',
       '  c (verified 3.2.12)',
-      '    - Not recorded by guide:verify',
+      '    - Verified, but the data behind this note was not recorded; it may have changed',
       '',
       'Volatility high (2): re-check these after every patch',
       '  a [review], d [draft]',

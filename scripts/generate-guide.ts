@@ -9,7 +9,8 @@
  * --check regenerates in memory and exits 1 when the committed files are stale.
  * --watch regenerates whenever content/guide changes (run next to `npm run dev`; the page reloads on its own).
  * --out writes (or checks) somewhere other than public/guide (scratch runs).
- * verify sets `verified:` in each note's frontmatter to the game-data manifest's esrVersion and records the note's
+ * verify sets `verified:` in each note's frontmatter to the ESR version the guide build uses (the clone's; the game-data
+ * manifest's without a clone; a warning when they differ) and records the note's
  * data-block hashes in content/guide/.verify-lock.json. It does not regenerate public/guide (run guide:generate).
  * report prints notes by freshness state with their staleReasons, volatility: high notes and drafts; writes nothing.
  * All build errors are printed at once, then the script exits 1 (in --watch mode it keeps watching).
@@ -182,8 +183,16 @@ function verify(options: Options, slugs: readonly string[]): boolean {
     console.error('Usage: npm run guide:verify -- <slug> [<slug>…]');
     return false;
   }
-  const version = readGameDataManifest(GAME_DATA_DIR).esrVersion;
-  const { generated } = generate(options);
+  // Stamp the version the guide build compares against (the clone's), not the game-data manifest's.
+  const { generated, revision } = generate(options);
+  const version = revision.esrVersion;
+  const gameDataVersion = readGameDataManifest(GAME_DATA_DIR).esrVersion;
+  if (gameDataVersion !== version) {
+    console.warn(
+      `WARNING: the ESR clone is ${version} but public/game-data is ${gameDataVersion}; run npm run game-data:generate first, ` +
+        'or the recorded block hashes describe stale data.'
+    );
+  }
   if (generated.errors.length > 0) {
     printErrors(generated.errors);
     console.error('\nNothing verified: fix the build errors first.');

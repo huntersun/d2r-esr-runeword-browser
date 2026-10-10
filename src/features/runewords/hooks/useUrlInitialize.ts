@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import {
@@ -19,7 +19,6 @@ import {
   setAllRunes,
   setAllItemTypes,
   setMaxTierPoints,
-  clearAllTierPoints,
 } from '../store/runewordsSlice';
 
 /**
@@ -27,13 +26,25 @@ import {
  * After initialization, cleans the URL to keep it tidy while browsing.
  * Use useShareUrl() to generate shareable URLs with current filter state.
  */
-export function useUrlInitialize(): void {
+export function useUrlInitialize(): boolean {
   const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
+  // Whether this visit came with a `name` param (the URL is cleaned after init, so capture it once)
+  const [nameFromUrl] = useState(() => parseExactNameParam(searchParams.get(FILTER_URL_PARAM_KEYS.NAME)) !== null);
 
   // Available options from DB
   const runeGroups = useRuneGroups();
   const itemTypes = useAvailableItemTypes();
+
+  // The name focus is independent of the other filters (it overrides them while set, see applyExactNameFocus):
+  // set from the URL, and cleared by any visit whose URL has no `name`, so it never outlives the deep link.
+  // Applied on mount, without waiting for the filter data, so a stale focus never shows.
+  const nameAppliedRef = useRef(false);
+  useEffect(() => {
+    if (nameAppliedRef.current) return;
+    nameAppliedRef.current = true;
+    dispatch(setExactName(parseExactNameParam(searchParams.get(FILTER_URL_PARAM_KEYS.NAME))));
+  }, [searchParams, dispatch]);
 
   // Track initialization state
   const initializedRef = useRef(false);
@@ -66,24 +77,14 @@ export function useUrlInitialize(): void {
     const exactName = parseExactNameParam(searchParams.get(FILTER_URL_PARAM_KEYS.NAME));
 
     const hasUrlParams =
-      urlSearch !== null ||
-      urlSockets !== null ||
-      urlMaxLvl !== null ||
-      urlItems !== null ||
-      urlRunes !== null ||
-      urlTierPts !== null ||
-      exactName !== null;
+      urlSearch !== null || urlSockets !== null || urlMaxLvl !== null || urlItems !== null || urlRunes !== null || urlTierPts !== null;
+
+    // `name` is applied by the effect below; only the URL cleaning happens here (it needs the other params first)
+    if (exactName !== null && !hasUrlParams) {
+      setSearchParams({}, { replace: true });
+    }
 
     if (hasUrlParams) {
-      dispatch(setExactName(exactName));
-      if (exactName !== null) {
-        // A name focus starts from default filters (URL params below still apply) so leftover state can't hide the item
-        dispatch(setSearchText(''));
-        dispatch(setSocketCount(null));
-        dispatch(setMaxReqLevel(null));
-        dispatch(clearAllTierPoints());
-      }
-
       // Initialize from URL params
       if (urlSearch !== null) {
         dispatch(setSearchText(urlSearch));
@@ -124,4 +125,6 @@ export function useUrlInitialize(): void {
       dispatch(setAllRunes(decodeSelectionParam(allRuneKeys, null)));
     }
   }, [runeGroups, itemTypes, searchParams, setSearchParams, dispatch]);
+
+  return nameFromUrl;
 }

@@ -3,23 +3,14 @@
  * HTM names and string-table names differ in casing, apostrophes and whitespace; both sides go through
  * `normaliseItemName` before matching.
  */
+import { normaliseItemName } from '../../../core/utils/itemName.ts';
 import type { ItemSource, SourcesBundle } from './schema';
+
+export { normaliseItemName };
 
 export type ItemSourceKind = ItemSource['item'];
 
 export type SourceIndex = ReadonlyMap<string, readonly ItemSource[]>;
-
-/** Trim, collapse whitespace, unify quotes/apostrophes and dashes, case-fold. */
-export function normaliseItemName(name: string): string {
-  return name
-    .normalize('NFKC')
-    .replace(/[‘’‚‛′´`]/g, "'")
-    .replace(/[“”„‟″]/g, '"')
-    .replace(/[‐-―−]/g, '-')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .toLowerCase();
-}
 
 /** Groups the bundle entries by normalised name (several entries when the same name exists as unique/set/misc). */
 export function buildSourceIndex(bundle: SourcesBundle): SourceIndex {

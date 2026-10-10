@@ -170,7 +170,9 @@ describe('generateGuide staleness', () => {
 
   it('flags a missing lock entry with a reason and a build warning', () => {
     const result = generate(verified, fixtureEsr(), { verifyLock: lockFor(['starter-pack']) });
-    expect(reasons(result).get('secret-recipes')).toEqual(['Not recorded by guide:verify']);
+    expect(reasons(result).get('secret-recipes')).toEqual([
+      'Verified, but the data behind this note was not recorded; it may have changed',
+    ]);
     expect(result.warnings).toContain(
       'notes/secret-recipes.md: verified 3.2.10 is not recorded in .verify-lock.json (run npm run guide:verify -- secret-recipes)'
     );

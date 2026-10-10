@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { LOCAL_GRAPH_MAX_NEIGHBOURS, layoutLocalGraph } from './localGraph';
+import {
+  LABEL_MAX_CHARS,
+  LOCAL_GRAPH_LABEL_GAP,
+  LOCAL_GRAPH_MAX_NEIGHBOURS,
+  LOCAL_GRAPH_NODE_RADIUS,
+  labelWidth,
+  layoutLocalGraph,
+  sideLabelFit,
+  truncateLabel,
+} from './localGraph';
 import type { GuideBundle, GuideNote } from './schema';
 
 function note(slug: string, edges: Partial<Pick<GuideNote, 'knowFirst' | 'related' | 'backlinks' | 'next'>> = {}): GuideNote {
@@ -37,7 +46,7 @@ describe('layoutLocalGraph', () => {
   it('returns only the current node, centred, when there are no neighbours', () => {
     const current = note('alone');
     const graph = layoutLocalGraph(current, bundle([current]), SIZE);
-    expect(graph.nodes).toEqual([{ slug: 'alone', title: 'Title alone', kind: 'current', x: 200, y: 180 }]);
+    expect(graph.nodes).toEqual([{ slug: 'alone', title: 'Title alone', label: 'Title alone', kind: 'current', x: 200, y: 180 }]);
     expect(graph.edges).toEqual([]);
   });
 
@@ -120,6 +129,59 @@ describe('layoutLocalGraph', () => {
       expect(n.x).toBeLessThanOrEqual(SIZE.width);
       expect(n.y).toBeGreaterThanOrEqual(0);
       expect(n.y).toBeLessThanOrEqual(SIZE.height);
+    }
+  });
+});
+
+describe('truncateLabel', () => {
+  it('keeps short labels and cuts long ones with an ellipsis', () => {
+    expect(truncateLabel('Forging')).toBe('Forging');
+    expect(truncateLabel('Exactly eighteen c')).toBe('Exactly eighteen c');
+    expect(truncateLabel('Enhancement order and more')).toBe('Enhancement order…');
+    expect(truncateLabel('Cube basics and stuff', 12)).toBe('Cube basics…');
+  });
+});
+
+describe('side label fit', () => {
+  const LONG = 'Adding and removing sockets';
+  const offset = LOCAL_GRAPH_NODE_RADIUS + LOCAL_GRAPH_LABEL_GAP;
+
+  /** Every side label's estimated extent stays inside [0, width]. */
+  function expectLabelsInside(width: number, fontSize: number, titles: string[]) {
+    const current = note('c', { knowFirst: titles.slice(0, 2), related: titles.slice(2) });
+    const graph = layoutLocalGraph(current, bundle([current], titles), { width, height: 360, fontSize });
+    for (const node of graph.nodes) {
+      const w = labelWidth(node.label, fontSize);
+      if (node.kind === 'knowFirst') expect(node.x - offset - w).toBeGreaterThanOrEqual(0);
+      else if (node.kind === 'related' || node.kind === 'backlink') expect(node.x + offset + w).toBeLessThanOrEqual(width);
+      else expect(w).toBeLessThanOrEqual(width);
+    }
+    return graph;
+  }
+
+  it('keeps full 18-char labels inside a wide box and spreads the arcs wider for short titles', () => {
+    expect(sideLabelFit([LONG], 420, 12).maxChars).toBe(LABEL_MAX_CHARS);
+    expect(sideLabelFit(['Ab'], 420, 12).rx).toBeGreaterThan(sideLabelFit([LONG], 420, 12).rx);
+    expect(sideLabelFit([], 420, 12).rx).toBe(420 / 2 - offset - 4);
+  });
+
+  it('truncates harder instead of squeezing the arcs in a narrow box or with a large font', () => {
+    const narrow = sideLabelFit([LONG], 300, 12);
+    expect(narrow.maxChars).toBeLessThan(LABEL_MAX_CHARS);
+    expect(narrow.rx).toBeGreaterThanOrEqual(300 * 0.14);
+    expect(sideLabelFit([LONG], 400, 16).maxChars).toBeLessThan(sideLabelFit([LONG], 400, 12).maxChars);
+  });
+
+  it('places every label inside the box', () => {
+    const titles = ['Adding and removing sockets', 'The Starter Pack', 'Runewords and gemwords', 'Unique charms', 'Wide WWWWWW title'];
+    for (const [width, fontSize] of [
+      [300, 12],
+      [352, 12],
+      [400, 12],
+      [400, 16],
+      [260, 18],
+    ] as const) {
+      expectLabelsInside(width, fontSize, titles);
     }
   });
 });

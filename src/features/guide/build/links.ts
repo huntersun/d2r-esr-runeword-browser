@@ -82,11 +82,22 @@ export function resolveLink(url: string, ctx: GuideContext): ResolvedLink | Buil
     case 'rw':
       if (!ctx.runewordNames.has(target)) return { error: `unknown runeword "${target}" (rw:)` };
       return { kind: 'app', href: exactName('/', target) };
+    // Not validated: no game-data bundle carries gemword names.
     case 'gw':
+      return { kind: 'app', href: exactName(NAME_FOCUS_PAGES.gw, target) };
+    // Validated against sources.json like ::source (exact name, case-insensitive): uniques and mythicals are unique
+    // items there, socketables (runes, gems, jewels …) are misc items.
     case 'unique':
     case 'mythical':
-    case 'socketable':
+    case 'socketable': {
+      const kind = scheme === 'socketable' ? 'misc' : 'unique';
+      if (!ctx.sourceNames[kind].has(target.toLowerCase())) {
+        return {
+          error: `unknown ${scheme === 'socketable' ? 'socketable' : 'unique item'} "${target}" (${scheme}:, checked against sources.json)`,
+        };
+      }
       return { kind: 'app', href: exactName(NAME_FOCUS_PAGES[scheme] ?? '/', target) };
+    }
     case 'base': {
       const name = ctx.baseNames.get(target);
       if (name === undefined) return { error: `unknown base code "${target}" (base:)` };

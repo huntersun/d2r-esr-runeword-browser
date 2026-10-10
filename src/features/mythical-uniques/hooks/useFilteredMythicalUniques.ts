@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { db } from '@/core/db';
 import type { MythicalUnique } from '@/core/db';
 import { selectSearchText, selectExactName, selectSelectedCategories } from '../store';
-import { matchesExactName } from '@/core/utils/exactName';
+import { applyExactNameFocus } from '@/core/utils/exactName';
 import { parseSearchTerms } from '@/core/utils/searchTerms';
 import { matchesCategory } from '@/core/store/categorySelection';
 
@@ -24,10 +24,10 @@ export function useFilteredMythicalUniques(): readonly MythicalUnique[] | undefi
 
   const searchTerms = parseSearchTerms(searchText);
 
-  const filtered = allItems
-    .filter((item) => matchesExactName(item.name, exactName))
-    .filter((item) => matchesCategory(item.category, selectedCategories))
-    .filter((item) => matchesSearch(item, searchTerms));
+  // A name focus overrides every other filter
+  const filtered = applyExactNameFocus(allItems, exactName, (list) =>
+    list.filter((item) => matchesCategory(item.category, selectedCategories)).filter((item) => matchesSearch(item, searchTerms))
+  );
 
   // Sort by name alphabetically
   filtered.sort((a, b) => a.name.localeCompare(b.name));

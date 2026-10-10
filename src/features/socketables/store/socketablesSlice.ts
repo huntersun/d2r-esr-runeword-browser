@@ -66,11 +66,9 @@ const socketablesSlice = createSlice({
         searchText?: string;
         enabledCategories?: EnabledCategories;
         onlyHighestQuality?: boolean;
-        exactName?: string | null;
       }>
     ) {
-      const { searchText, enabledCategories, onlyHighestQuality, exactName } = action.payload;
-      if (exactName !== undefined) state.exactName = exactName;
+      const { searchText, enabledCategories, onlyHighestQuality } = action.payload;
       if (searchText !== undefined) state.searchText = searchText;
       if (enabledCategories !== undefined) state.enabledCategories = enabledCategories;
       if (onlyHighestQuality !== undefined) state.onlyHighestQuality = onlyHighestQuality;

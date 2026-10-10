@@ -90,7 +90,9 @@ function Spine({ guide }: { readonly guide: LoadedGuide }) {
   const { spine, notes } = guide.bundle;
   // Indices of the expanded steps; the first step starts open.
   const [expanded, setExpanded] = useState<ReadonlySet<number>>(() => new Set([0]));
-  const { visited, count: visitedCount, reset: resetVisited } = useVisitedNotes();
+  const { visited, reset: resetVisited } = useVisitedNotes();
+  // Only notes that still exist (stored slugs of deleted or renamed notes are ignored).
+  const visitedCount = notes.filter((note) => visited.has(note.slug)).length;
 
   const toggle = (index: number) => {
     setExpanded((current) => {

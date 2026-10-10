@@ -12,7 +12,7 @@ import {
   selectMaxTierPoints,
   selectExactName,
 } from '../store/runewordsSlice';
-import { matchesExactName } from '@/core/utils/exactName';
+import { applyExactNameFocus } from '@/core/utils/exactName';
 import { parseSearchTerms } from '@/core/utils/searchTerms';
 import {
   matchesSearch,
@@ -51,15 +51,16 @@ export function useFilteredRunewords(lookup: SocketableLookup | undefined): read
 
   const searchTerms = parseSearchTerms(searchText);
 
-  // Filter preserves the pre-sorted order from IndexedDB
-  return expandedRunewords.filter((runeword) => {
-    if (!matchesExactName(runeword.name, exactName)) return false;
-    if (!matchesSearch(runeword, searchTerms, runeBonusMap, gemBonusMap)) return false;
-    if (!matchesSockets(runeword, socketCount)) return false;
-    if (!matchesMaxReqLevel(runeword, maxReqLevel)) return false;
-    if (!matchesItemTypes(runeword, selectedItemTypes)) return false;
-    if (!matchesRunes(runeword, selectedRunes, runeCategoryMap)) return false;
-    if (!matchesTierPoints(runeword, maxTierPoints)) return false;
-    return true;
-  });
+  // Filter preserves the pre-sorted order from IndexedDB; a name focus overrides every other filter
+  return applyExactNameFocus(expandedRunewords, exactName, (list) =>
+    list.filter((runeword) => {
+      if (!matchesSearch(runeword, searchTerms, runeBonusMap, gemBonusMap)) return false;
+      if (!matchesSockets(runeword, socketCount)) return false;
+      if (!matchesMaxReqLevel(runeword, maxReqLevel)) return false;
+      if (!matchesItemTypes(runeword, selectedItemTypes)) return false;
+      if (!matchesRunes(runeword, selectedRunes, runeCategoryMap)) return false;
+      if (!matchesTierPoints(runeword, maxTierPoints)) return false;
+      return true;
+    })
+  );
 }

@@ -11,7 +11,7 @@ import type { BuildError } from './context.ts';
 
 export const LOCK_FILE = '.verify-lock.json';
 export const MAX_STALE_REASONS = 5;
-export const NOT_RECORDED = 'Not recorded by guide:verify';
+export const NOT_RECORDED = 'Verified, but the data behind this note was not recorded; it may have changed';
 
 /** Block key → sha256 of the resolved DataBlock JSON */
 export type BlockHashes = Record<string, string>;
@@ -36,14 +36,24 @@ export interface KeyedBlock {
   caption: string;
 }
 
-/** Keys of repeated directives get a `#2`, `#3` … suffix so every block of a note has its own key. */
+function suffixed(text: string, seen: Map<string, number>, separator: string): string {
+  const count = (seen.get(text) ?? 0) + 1;
+  seen.set(text, count);
+  return count === 1 ? text : `${text}${separator}#${String(count)}`;
+}
+
+/**
+ * Keys of repeated directives get a `#2`, `#3` … suffix so every block of a note has its own key; repeated captions get
+ * a ` #2` suffix too, so every reason (and the badge's list key) is unique.
+ */
 export function keyDataBlocks(blocks: readonly { key: string; block: DataBlock }[]): KeyedBlock[] {
-  const seen = new Map<string, number>();
-  return blocks.map(({ key, block }) => {
-    const count = (seen.get(key) ?? 0) + 1;
-    seen.set(key, count);
-    return { key: count === 1 ? key : `${key}#${String(count)}`, hash: sha256(JSON.stringify(block)), caption: blockCaption(block) };
-  });
+  const keys = new Map<string, number>();
+  const captions = new Map<string, number>();
+  return blocks.map(({ key, block }) => ({
+    key: suffixed(key, keys, ''),
+    hash: sha256(JSON.stringify(block)),
+    caption: suffixed(blockCaption(block), captions, ' '),
+  }));
 }
 
 export function hashDataBlocks(blocks: readonly { key: string; block: DataBlock }[]): BlockHashes {
@@ -131,25 +141,29 @@ function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-/** Case-insensitive, whole-word-ish: the term may not be glued to a letter or digit on either side. */
+/** Shorter terms ("Key", "Ore") match too many generic patch-note lines. */
+export const MIN_TERM_LENGTH = 4;
+
+/**
+ * Case-insensitive whole word: the term may not be glued to a letter, digit or hyphen on either side
+ * ("Ore" does not match "Ore-shards" or "Core").
+ */
 export function mentionsTerm(text: string, term: string): boolean {
   const trimmed = term.trim();
   if (trimmed === '') return false;
-  return new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegExp(trimmed)}(?![\\p{L}\\p{N}])`, 'iu').test(text);
+  return new RegExp(`(?<![\\p{L}\\p{N}-])${escapeRegExp(trimmed)}(?![\\p{L}\\p{N}-])`, 'iu').test(text);
 }
 
-/** Title, aliases, mentions and the glossary terms the note owns (deduplicated case-insensitively, in that order). */
-export function noteSearchTerms(note: GuideNote, mentions: readonly string[], glossary: readonly GlossaryEntry[]): string[] {
-  const terms = [
-    note.title,
-    ...note.aliases,
-    ...mentions,
-    ...glossary.filter((entry) => entry.note === note.slug).map((entry) => entry.term),
-  ];
+/**
+ * The note's title and the glossary terms it owns (deduplicated case-insensitively), minus terms shorter than
+ * MIN_TERM_LENGTH. Aliases and mentions are deliberately left out: they are broad search words and flagged most notes.
+ */
+export function noteSearchTerms(note: GuideNote, glossary: readonly GlossaryEntry[]): string[] {
+  const terms = [note.title, ...glossary.filter((entry) => entry.note === note.slug).map((entry) => entry.term)];
   const seen = new Set<string>();
   return terms.filter((term) => {
     const key = term.trim().toLowerCase();
-    if (key === '' || seen.has(key)) return false;
+    if (key.length < MIN_TERM_LENGTH || seen.has(key)) return false;
     seen.add(key);
     return true;
   });
@@ -172,7 +186,6 @@ export function capReasons(reasons: readonly string[], max = MAX_STALE_REASONS):
 
 export interface StalenessInput {
   note: GuideNote;
-  mentions: readonly string[];
   dataBlocks: readonly { key: string; block: DataBlock }[];
   glossary: readonly GlossaryEntry[];
   lock: VerifyLock;
@@ -192,8 +205,8 @@ export function noteStaleReasons(input: StalenessInput): { reasons: string[]; un
   } else {
     reasons.push(...compareBlockHashes(keyDataBlocks(input.dataBlocks), entry.blocks, verified));
   }
-  reasons.push(...scanPatchNotes(input.patchNotes, verified, noteSearchTerms(note, input.mentions, input.glossary)));
-  return { reasons: capReasons(reasons), unrecorded };
+  reasons.push(...scanPatchNotes(input.patchNotes, verified, noteSearchTerms(note, input.glossary)));
+  return { reasons: capReasons([...new Set(reasons)]), unrecorded };
 }
 
 // ---------------------------------------------------------------------------
@@ -201,8 +214,9 @@ export function noteStaleReasons(input: StalenessInput): { reasons: string[]; un
 // ---------------------------------------------------------------------------
 
 /**
- * Sets `verified: '<version>'` in the note's frontmatter: replaces the existing `verified:` line, or adds one before
- * the closing `---`. Every other byte (BOM, line endings, comments, the body) is kept.
+ * Sets `verified: '<version>'` in the note's frontmatter: replaces the existing `verified:` (or `verified :`) value,
+ * keeping a trailing `# comment`, or adds the line before the closing `---`. Every other byte (BOM, line endings,
+ * comments, the body) is kept.
  */
 export function setVerifiedInFrontmatter(text: string, version: string): string | BuildError {
   const open = /^(\uFEFF?)---[ \t]*(\r?\n)/.exec(text);
@@ -214,8 +228,11 @@ export function setVerifiedInFrontmatter(text: string, version: string): string 
   const yamlEnd = start + close.index;
   const yaml = text.slice(start, yamlEnd);
   const line = `verified: '${version}'`;
-  const existing = /^verified:[^\r\n]*/m;
-  const updated = existing.test(yaml) ? yaml.replace(existing, line) : `${yaml}${line}${eol}`;
+  const existing = /^verified[ \t]*:[^\r\n]*/m;
+  const updated = existing.test(yaml)
+    ? // keep a trailing `# comment` (a # after whitespace; versions never contain one)
+      yaml.replace(existing, (old) => `${line}${/[ \t]+#.*$/.exec(old)?.[0] ?? ''}`)
+    : `${yaml}${line}${eol}`;
   return text.slice(0, start) + updated + text.slice(yamlEnd);
 }
 

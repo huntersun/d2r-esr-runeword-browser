@@ -129,6 +129,9 @@ export function fixtureGameData(): GameDataInputs {
     sources: {
       items: [
         { name: 'Annihilus', code: 'cm1', item: 'unique', labels: [{ kind: 'boss', text: 'Drops from Diablo Clone' }] },
+        { name: "Artemis' Wrath", code: 'amc', item: 'unique', labels: [] },
+        { name: 'Frostmourne', code: 'dd1', item: 'unique', labels: [] },
+        { name: 'El Rune', code: 'r51', item: 'misc', labels: [] },
         { name: 'Worldstone Shard', code: 'amu', item: 'set', labels: [{ kind: 'drop', text: 'Drops (random)' }] },
         { name: 'Worldstone Shard', code: 'xa1', item: 'misc', labels: [{ kind: 'boss', text: 'Drops from Baal' }] },
       ],

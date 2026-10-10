@@ -10,7 +10,7 @@ import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 import { useItemSources } from '@/features/game-data/hooks/useItemSources';
 
 export function MythicalUniquesScreen() {
-  useUrlInitialize();
+  const nameFromUrl = useUrlInitialize();
   const items = useFilteredMythicalUniques();
   const dispatch = useDispatch();
   const exactName = useSelector(selectExactName);
@@ -32,7 +32,7 @@ export function MythicalUniquesScreen() {
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <p className="text-sm text-muted-foreground">Showing {items.length} mythical uniques</p>
-        {exactName !== null && <ExactNameChip name={exactName} onClear={() => dispatch(setExactName(null))} />}
+        {exactName !== null && <ExactNameChip name={exactName} onClear={() => dispatch(setExactName(null))} scrollIntoView={nameFromUrl} />}
       </div>
 
       {items.length === 0 ? (

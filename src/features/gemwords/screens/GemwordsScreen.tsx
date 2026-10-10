@@ -17,7 +17,7 @@ import { selectExactName, setExactName } from '../store/gemwordsSlice';
 const getGemwordFavoriteId = (gemword: Gemword) => buildRecipeFavoriteId('gemword', gemword);
 
 export function GemwordsScreen() {
-  useUrlInitialize();
+  const nameFromUrl = useUrlInitialize();
   const gemwords = useFilteredGemwords();
   const dispatch = useDispatch();
   const exactName = useSelector(selectExactName);
@@ -49,7 +49,9 @@ export function GemwordsScreen() {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <p className="text-sm text-muted-foreground">Showing {filteredGemwords.length} gemwords</p>
-          {exactName !== null && <ExactNameChip name={exactName} onClear={() => dispatch(setExactName(null))} />}
+          {exactName !== null && (
+            <ExactNameChip name={exactName} onClear={() => dispatch(setExactName(null))} scrollIntoView={nameFromUrl} />
+          )}
         </div>
         {favorites.isAuthenticated && (
           <FavoritesToggleButton
