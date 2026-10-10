@@ -5,7 +5,7 @@
 export const GAME_DATA_SCHEMA = 1;
 
 export type ClassCode = 'ama' | 'sor' | 'nec' | 'pal' | 'bar' | 'dru' | 'ass' | 'war';
-export type GameDataFile = 'types' | 'bases' | 'runewords' | 'affixes';
+export type GameDataFile = 'types' | 'bases' | 'runewords' | 'affixes' | 'sources';
 
 export interface GameDataManifest {
   schema: number;
@@ -147,4 +147,30 @@ export const CLASS_CODES: readonly ClassCode[] = ['ama', 'sor', 'nec', 'pal', 'b
 
 export function isClassCode(value: string): value is ClassCode {
   return (CLASS_CODES as readonly string[]).includes(value);
+}
+
+// ---------------------------------------------------------------------------
+// sources.json: where an item comes from (qualitative labels derived from the game files)
+// ---------------------------------------------------------------------------
+
+/** Order of precedence when several labels apply: cube, boss, maps, drop, buy, gamble, plugin, unknown */
+export type SourceKind = 'cube' | 'boss' | 'maps' | 'drop' | 'buy' | 'gamble' | 'plugin' | 'unknown';
+
+export interface SourceLabel {
+  kind: SourceKind;
+  /** Player-facing text, e.g. "Cube: Ancient Coupon", "Drops from Diablo Clone", "Buy: Gheed" */
+  text: string;
+}
+
+export interface ItemSource {
+  /** Display name (unique/set item name, or the misc item's string name) */
+  name: string;
+  /** Base code (uniques/sets) or item code (misc) */
+  code: string;
+  item: 'unique' | 'set' | 'misc';
+  labels: SourceLabel[];
+}
+
+export interface SourcesBundle {
+  items: ItemSource[];
 }

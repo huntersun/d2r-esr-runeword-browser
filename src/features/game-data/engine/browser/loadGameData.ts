@@ -11,6 +11,7 @@ import {
   type BasesBundle,
   type GameDataFile,
   type GameDataManifest,
+  type SourcesBundle,
   type TxtRunewordsBundle,
   type TypesBundle,
 } from '../schema.ts';
@@ -20,6 +21,7 @@ export interface GameDataBundles {
   bases: BasesBundle;
   runewords: TxtRunewordsBundle;
   affixes: AffixesBundle;
+  sources: SourcesBundle;
 }
 
 export class GameDataSchemaError extends Error {
