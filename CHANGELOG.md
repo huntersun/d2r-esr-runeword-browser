@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.16.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.15.0...v1.16.0) (2026-10-10)
+
+
+### Features
+
+* **game-data:** add sources bundle (where an item comes from) and regenerate for ESR 3.2.12 ([a113af5](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/a113af51bd86ba4ade7bf712865813b99cbb1d9b))
+* **guide:** add the embedded card block type to the bundle schema ([4311899](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/43118991244933ee2d9e7a6d6a967e642c3cccfa))
+* **guide:** add the first 24 guide notes and the generated bundle ([0d13d3d](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/0d13d3de8a27fe6dbbd47f856468978c807784fc))
+* **guide:** add the guide content pipeline (markdown notes to public/guide JSON) ([3a5c3b8](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/3a5c3b89e757fceb6aad9acfe7a35ffc1bb34265))
+* **guide:** add the guide contract, bundle schema, loader and freshness helper ([7554b17](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/7554b175c3e23d20e1f0caa50268e1818a8af85f))
+* **guide:** add the Guide screens, routes and header entry ([9d48501](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/9d4850166dd2a8450d00631fd2eaf69bfc9273ca))
+* **guide:** local graph, visited notes and staleness tracking ([7bcb926](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/7bcb926c091fcf8464a5cddb61a419312eac632f))
+* **guide:** reading panel with softer text on note pages ([b0bac6d](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/b0bac6df5e9df71e54da894efe10c5d3dc6d165c))
+* **guide:** recipe families, embedded item cards and seven more notes ([7ebf80e](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/7ebf80edf30d307ed886dd24ce283edfda4bbe35))
+* **guide:** show an "Experimental" notice on every guide page ([0aca673](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/0aca673ce748535a3a5e5e22d22dc3b82631a530))
+* **items:** exact-name deep links and source lines on item cards ([b84e82d](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/b84e82d3d7de53843521859c964a330c467098de))
+* **tooling:** add the /esr-update skill and an ESR release-diff script ([c76c969](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/c76c969e5bc42a29d0913adf75ed84c3ec1c0535))
+
+
+### Bug Fixes
+
+* **guide:** address phase 2 review and QA findings ([210ea8e](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/210ea8e1420e8e283a1a07b7f3065dc179057d83))
+* **guide:** address phase 3 review and QA findings ([b44d271](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/b44d271bc859bb84d295aa84f38605b893301795))
+* **guide:** address review and QA findings ([079ff29](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/079ff29cd4c58383c909c8a950390a6dcc0e8876))
+
+
+### Documentation
+
+* **guide:** add research and brainstorm synthesis for a new-player guide ([624ed0e](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/624ed0e1f623333e7d4895b621e1767cdceda678))
+* **guide:** link the guide spec from the docs index and mark the research as implemented ([833b3aa](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/833b3aa697ecc7d68fa52001004608354f641902))
+* **guide:** note the escaped pipe for wikilinks inside table cells ([0742db8](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/0742db8970517d7c3223759aa6ad033cab810309))
+* **guide:** record owner decisions on the guide feature ([5939e11](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/5939e112570329997ae722d7a64f7bcfec66db5b))
+
+
+### Refactoring
+
+* **guide:** apply code-quality review findings ([0c04329](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/0c0432951d30c6feedd5fa83bf1b66f4408f1921))
+
 ## [1.15.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.14.0...v1.15.0) (2026-10-09)
 
 
