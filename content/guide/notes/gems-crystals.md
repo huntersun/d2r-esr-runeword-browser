@@ -17,7 +17,11 @@ sources: [official-cube, esr-txt, patchnotes, esru-wiki]
 
 ### Gems
 
-ESR has seven gem colours: the vanilla six plus Obsidian, which the Warlock's class recipes use. The grades run Chipped, Flawed, normal, Flawless, :term[Blemished gem]{label=Blemished}, Perfect. Three gems of one colour and grade make one of the next grade; Wild Cards offer shortcuts into Blemished and Perfect. Since 3.2.04 a gem also downgrades into three of the grade below, and in the stash's material tabs Shift + click and Alt + click do both without the cube.
+ESR has seven gem colours: the vanilla six plus Obsidian, which the Warlock's class recipes use. The grades run Chipped, Flawed, normal, Flawless, :term[Blemished gem]{label=Blemished}, Perfect. Gems of one colour cube into the next grade, and Wild Cards offer shortcuts into Blemished and Perfect:
+
+::recipes[gem-upgrade]
+
+Since 3.2.04 a gem also downgrades into three of the grade below, and in the stash's material tabs Shift + click and Alt + click do both without the cube.
 
 Why you want them:
 
@@ -27,8 +31,12 @@ Why you want them:
 
 ### Crystals and ores
 
-A :term[Crystal] is an ESR socketable mineral, such as Frozen Soul or Pulsing Opal, in Chipped, Flawed and normal grades. Five of one type and grade cube into the next grade. Crystals are used in sockets, to make Kanji runes from a Null Rune ([[rune-families]]), and in Kill Ledger boss bonuses.
+A :term[Crystal] is an ESR socketable mineral, such as Frozen Soul or Pulsing Opal, in Chipped, Flawed and normal grades. Chipped and Flawed crystals drop on their own; the normal grade comes from the cube:
 
-Ores drop from many bosses. Sell an Ore for gold, or smash it with Secret Recipe 25 for a chance at a crystal ([[secret-recipes]]); a failed smash leaves Ore Shards, which also sell. <!-- verify: whether crystals also drop directly -->
+::recipes[crystal-upgrade]
 
-Store both in a Gem Can and a Crystal Can, one per colour or type ([[stockers]]). Browse their bonuses on the [Socketables](page:/socketables) page.
+Crystals are used in sockets, to make Kanji runes from a Null Rune ([[rune-families]]), and in Kill Ledger boss bonuses ([[kill-ledger]]).
+
+Ores drop from many bosses. Sell an Ore for gold, or smash it with Secret Recipe 25 for a chance at a crystal ([[secret-recipes]]); a failed smash leaves Ore Shards, which also sell.
+
+The stash's material tabs hold both; older characters may also have Gem Cans and Crystal Cans ([[stockers]]). Browse their bonuses on the [Socketables](page:/socketables) page.

@@ -54,7 +54,7 @@
   note: dstoning-and-mapling
 - term: Tinkering
   definition: Cubing gear with organs to add small permanent bonuses, limited by hidden tinkering points on each item.
-  note: enhancement-order
+  note: tinkering
 - term: Corruption
   definition: Cubing an item with a Worldstone Shard for a random strong bonus, with a chance to turn the item into a random rare.
   note: corruption-anointment
@@ -98,14 +98,14 @@
   definition: The cube ingredient that adds sockets to an item, together with gems whose grade matches the item tier.
   note: socketing
 - term: Character Augmenter
-  definition: A unique large charm listed as part of the Starter Pack.
+  definition: A unique large charm that the official cube page lists in the Starter Pack; the 3.2.12 game files give no way to get one.
   note: starter-pack
 - term: Noob's Odd Charm
   definition: The one-socket charm from the Starter Pack; Secret Recipe 49 turns it into a Veteran's Odd Charm.
   note: noobs-charm
 - term: Kill Ledger
   definition: A book from the Starter Pack that counts kills and takes permanent bonuses at kill milestones and after endgame boss kills.
-  note: starter-pack
+  note: kill-ledger
 - term: Terror zone
   definition: An area currently terrorized, with stronger monsters; terrorized champions and uniques can drop Worldstone Shards, and level 96 ones can drop Endgame Maps.
   note: endgame-roadmap
@@ -114,7 +114,25 @@
   note: maps-keys-ascendancy
 - term: Ascendancy
   definition: A subclass specialisation granted by an Ascendancy Stone, upgraded through five tiers of challenges.
-  note: maps-keys-ascendancy
+  note: ascendancies
 - term: Vessel of Souls
-  definition: A mythical amulet that you feed organs in the cube to build up bonuses; it is not meant to be worn.
-  note: corruption-anointment
+  definition: A mythical amulet that you feed organs in the cube to build up bonuses, then turn into a mythical weapon; it is not meant to be worn.
+  note: vessel-of-souls
+- term: Token of Absolution
+  definition: A consumable made from Dragon Stones; right-click it to add one respec to the character's respec counter.
+  note: death-and-respec
+- term: Mythical unique
+  definition: A top-tier unique that only drops in Endgame Maps, some of them from one specific boss.
+  note: maps-keys-ascendancy
+- term: Weapon mastery
+  definition: A removable specialisation applied to a class weapon with an awakened Weapon Mastery Token; it changes how skills work with that weapon.
+  note: weapon-mastery
+- term: Merc Only Conversion
+  definition: A cube recipe that gives a weapon or armor a bonus package only a mercenary can use; three Antidote Potions undo it.
+  note: mercenaries-oskills
+- term: Oskill
+  definition: A skill granted by an item that any class can use, such as the elemental Surges and Brands.
+  note: mercenaries-oskills
+- term: Class craft
+  definition: A cube recipe that turns a magic item, a class's Dragon Stone form, a Perfect Gem and a jewel into crafted gear with that class's skills.
+  note: class-crafting

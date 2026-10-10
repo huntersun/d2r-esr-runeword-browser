@@ -149,3 +149,40 @@ describe('glossary and term', () => {
     expect(resolveTerm('Nope', null, ctx)).toHaveProperty('error');
   });
 });
+
+describe('card', () => {
+  it('embeds a card with the name as written and the app link of the same scheme', () => {
+    expect(resolve('card', 'rw:Enigma')).toEqual({ kind: 'card', item: 'runeword', name: 'Enigma', href: '/?name=Enigma' });
+    expect(resolve('card', "unique:Artemis' Wrath")).toEqual({
+      kind: 'card',
+      item: 'unique',
+      name: "Artemis' Wrath",
+      href: "/uniques?name=Artemis'%20Wrath",
+    });
+    expect(resolve('card', 'mythical:frostmourne')).toEqual({
+      kind: 'card',
+      item: 'mythical',
+      name: 'frostmourne',
+      href: '/mythicals?name=frostmourne',
+    });
+    expect(resolve('card', 'socketable:El Rune')).toMatchObject({ item: 'socketable', href: '/socketables?name=El%20Rune' });
+    // Gemwords are not validated (no bundle has their names)
+    expect(resolve('card', 'gw: Any Gemword ')).toEqual({
+      kind: 'card',
+      item: 'gemword',
+      name: 'Any Gemword',
+      href: '/gemwords?name=Any%20Gemword',
+    });
+    expect(resolve('card', 'rw:100%')).toHaveProperty('error', '::card[rw:100%]: unknown runeword "100%" (rw:)');
+  });
+
+  it('rejects unknown names, schemes, a missing name and attributes', () => {
+    expect(resolve('card', 'rw:Nope')).toEqual({ error: '::card[rw:Nope]: unknown runeword "Nope" (rw:)' });
+    expect(resolve('card', 'unique:El Rune')).toHaveProperty('error');
+    expect(resolve('card', 'base:crs')).toHaveProperty('error');
+    expect(resolve('card', 'Enigma')).toHaveProperty('error');
+    expect(resolve('card', 'rw:')).toHaveProperty('error');
+    expect(resolve('card', null)).toHaveProperty('error');
+    expect(resolve('card', 'rw:Enigma', fixtureContext(), { size: 'big' })).toHaveProperty('error');
+  });
+});

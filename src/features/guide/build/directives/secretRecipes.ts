@@ -4,34 +4,13 @@
  */
 import type { DataBlock } from '../../engine/schema.ts';
 import type { EsrGuideTables } from '../esrGuideSources.ts';
-import { formatInput, formatOutput } from './cubeText.ts';
+import { formatInput, formatOutput, mergeInputs, options, unique, visibleOutputs } from './cubeText.ts';
 import { requireEsr, type DirectiveResolver } from './types.ts';
 
 type RecipeRow = Extract<DataBlock, { kind: 'recipes' }>['rows'][number];
 
 const SECRET = /^\[SECRET(\d+)\]\s*(.*)$/;
-/** Variants shown per input position / for the output before "…" */
-const MAX_OPTIONS = 3;
-
-function unique(values: readonly string[]): string[] {
-  return [...new Set(values)];
-}
-
 const RETURNED = '(the Ancient Scroll is returned)';
-
-/** "a / b / c / … (7 variants)" */
-function options(values: readonly string[]): string {
-  const distinct = unique(values);
-  if (distinct.length <= MAX_OPTIONS) return distinct.join(' / ');
-  return `${distinct.slice(0, MAX_OPTIONS).join(' / ')} / … (${String(distinct.length)} variants)`;
-}
-
-/** Position-wise " / " join when every variant has the same number of inputs; otherwise the first variant. */
-function mergeInputs(variants: readonly string[][]): string[] {
-  const first = variants[0] ?? [];
-  if (variants.some((inputs) => inputs.length !== first.length)) return first;
-  return first.map((_, i) => options(variants.map((inputs) => inputs[i] ?? '')));
-}
 
 /** Secret recipes keyed by number, in file order. */
 export function collectSecretRecipes(esr: EsrGuideTables): Map<number, RecipeRow> {
@@ -47,7 +26,7 @@ export function collectSecretRecipes(esr: EsrGuideTables): Map<number, RecipeRow
     }
     group.inputs.push(row.inputs.map((input) => formatInput(input, esr)));
     // An output identical to an input (the Ancient Scroll) is returned unchanged; the caption says so instead.
-    const outputs = row.outputs.filter((output) => !row.inputs.includes(output.spec));
+    const outputs = visibleOutputs(row.outputs).filter((output) => !row.inputs.includes(output.spec));
     if (outputs.length > 0) group.outputs.push(outputs.map((output) => formatOutput(output, esr)).join(' + '));
     group.descriptions.push(match[2].trim());
   }

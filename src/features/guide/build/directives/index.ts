@@ -1,6 +1,8 @@
+import { resolveCard } from './card.ts';
 import { resolveDifficultyPenalties } from './difficultyPenalties.ts';
 import { resolveGlossary } from './glossary.ts';
 import { resolveRecipeOutput } from './recipeOutput.ts';
+import { resolveRecipes } from './recipes.ts';
 import { resolveSecretRecipe, resolveSecretRecipes } from './secretRecipes.ts';
 import { resolveSource } from './source.ts';
 import type { DirectiveResolver } from './types.ts';
@@ -15,7 +17,9 @@ export const LEAF_DIRECTIVES: Readonly<Partial<Record<string, DirectiveResolver>
   'secret-recipes': resolveSecretRecipes,
   'secret-recipe': resolveSecretRecipe,
   'recipe-output': resolveRecipeOutput,
+  recipes: resolveRecipes,
   vendor: resolveVendor,
   'difficulty-penalties': resolveDifficultyPenalties,
   glossary: resolveGlossary,
+  card: resolveCard,
 };

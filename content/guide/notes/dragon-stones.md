@@ -19,7 +19,7 @@ aliases:
     void shard,
   ]
 knowFirst: [cube-basics]
-related: [forging, dstoning-and-mapling]
+related: [forging, dstoning-and-mapling, class-crafting, weapon-mastery]
 mentions:
   [
     Dragon Stone,
@@ -47,13 +47,21 @@ The :term[Dragon Stone] is ESR's workhorse material. It drops, and eight Ancient
 
 ### The forms
 
-Cube Dragon Stones on their own and they turn into the next of their :term[Dragon Stone forms]: Dragon Stone → Holy Symbol → Blackmoor → Forging Hammer → Crushed Gem → Spider's Silk → Tyranium Ore → Void Shard → Dragon Stone. Each form is a different ingredient. In [[dstoning-and-mapling]] the form decides which stat is added; class crafts, Secret Recipes and weapon mastery each ask for specific forms. Older guides list seven forms; the Void Shard joined later.
+Cube Dragon Stones on their own and they turn into the next of their :term[Dragon Stone forms], round and round:
+
+::recipes[dstone-cycle]
+
+Each form is a different ingredient. In [[dstoning-and-mapling]] the form decides which stat is added; class crafts ([[class-crafting]]), Secret Recipes and [[weapon-mastery]] each ask for specific forms. Older guides list seven forms; the Void Shard joined later.
 
 ::source[Dragon Stone]
 
 ### Anvil Stones
 
-An :term[Anvil Stone] costs four Dragon Stones and a Perfect Gem. A Multi Stocker can also make one from 32 Decipherer points with a Key and a Perfect Gem. Anvil Stones pay for Skill and Stat Forging ([[forging]]), Merc Only Conversion and weapon mastery.
+An :term[Anvil Stone] is the costlier stone, made from Dragon Stones (or Multi Stocker points) and a Perfect Gem:
+
+::recipes[anvil-stone]
+
+Anvil Stones pay for Skill and Stat Forging ([[forging]]) and Merc Only Conversion ([[mercenaries-oskills]]). Removing either gives the Anvil Stones back.
 
 ::source[Anvil Stone]
 

@@ -19,7 +19,9 @@ Cube any socketed item with a Key: you get the item back with empty sockets plus
 
 ### Adding sockets
 
-The ingredients are a :term[Socket Donut] plus gems whose grade rises with the item's tier (normal, exceptional, elite) and its rarity; the cube page lists the grade for each case.
+The ingredients are a :term[Socket Donut] plus gems whose grade rises with the item's tier (normal, exceptional, elite) and its rarity:
+
+::recipes[socket]
 
 - **White or superior items:** one to six gems give that many sockets, but the item is recreated, so ethereal, superior and staff bonuses are lost. Secret Recipe 16 (weapons) and 17 (armor) add sockets and keep them ([[secret-recipes]]).
 - **Magic, rare, crafted, set and unique items:** the recipe adds a fixed number of sockets that depends on the rarity and slot; the rarer the item, the fewer.

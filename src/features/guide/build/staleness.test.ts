@@ -67,6 +67,17 @@ describe('block keys and hashes', () => {
     expect(keyed[0]?.hash).toBe(keyed[1]?.hash);
   });
 
+  it('keys and captions recipe family and card blocks', () => {
+    const keyed = keyDataBlocks([
+      { key: 'recipes:dstone-cycle', block: { kind: 'recipes', caption: 'Dragon Stone cycle', rows: [] } },
+      { key: 'card:rw:Enigma', block: { kind: 'card', item: 'runeword', name: 'Enigma', href: '/?name=Enigma' } },
+    ]);
+    expect(keyed.map(({ key, caption }) => [key, caption])).toEqual([
+      ['recipes:dstone-cycle', 'Dragon Stone cycle'],
+      ['card:rw:Enigma', 'Card: Enigma'],
+    ]);
+  });
+
   it('reports changed, added and removed blocks', () => {
     const recorded = hashDataBlocks([
       { key: 'vendor:Gheed', block: gheed },

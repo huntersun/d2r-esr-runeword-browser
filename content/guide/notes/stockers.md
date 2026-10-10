@@ -27,8 +27,7 @@ A :term[Stocker] destroys whatever you cube into it and records it as points. Wh
 
 - :term[Multi Stocker]: organs, Dragon Stones, Decipherers, coupons, Maple Leaves and more. It also turns spare set and unique gear into Decipherer points, upgrades coupon points and makes Anvil Stones.
 - :term[Rerolling Orb]: rings, amulets, jewels, charms and quivers as points per rarity, and rerolls them into fresh items.
-- **Gem Can** and **Crystal Can**: one per colour or crystal type ([[gems-crystals]]).
-- **Rune Stocker** and **Decal Stocker**: runes and Decals ([[rune-families]]). Cubing one with a Scroll of Identify turns 2 points of the selected rune into 1 of the next grade.
+- **Gem Can**, **Crystal Can**, **Rune Stocker** and **Decal Stocker**: one per gem colour, crystal type, rune or Decal ([[gems-crystals]], [[rune-families]]). A Rune Stocker cubed with a Scroll of Identify turns 2 points of the selected rune into 1 of the next grade. The 3.2.12 game files have no vendor or recipe that makes a new one, so a new character keeps these materials in the stash's material tabs instead.
 
 The stash's material tabs help as well: Shift + click upgrades a stack in place, Alt + click downgrades it.
 
@@ -37,5 +36,3 @@ Decipherer points pay for many recipes, including identifying scrolls for [[secr
 ### What Gheed sells
 
 ::vendor[Gheed]
-
-<!-- verify: the Gheed vendor columns list only the Key, Rerolling Orb and Multi Stocker; check where the Gem Can, Crystal Can, Can Opener and Rune/Decal Stockers come from (the cube page says "You can buy Stockers at Gheed") -->

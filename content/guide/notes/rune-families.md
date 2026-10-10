@@ -6,8 +6,7 @@ tags: [loot, socketables, runes]
 aliases: [runes, es runes, lod runes, decals, kanji, null rune, japanese runes]
 knowFirst: [loot-triage]
 related: [runewords-gemwords]
-mentions:
-  [I Rune, Wo Rune, El Rune, Zod Rune, Null Rune, Moon Rune, God Rune, Sa Rune, Full Rejuv Potion, Rune Stocker, Decal Stocker]
+mentions: [I Rune, Wo Rune, El Rune, Zod Rune, Null Rune, Moon Rune, God Rune, Sa Rune, Full Rejuv Potion, Rune Stocker, Decal Stocker]
 officialDocs:
   - label: Cube Recipes – Gems, Crystals and Runes
     href: 'docs:Eastern Sun Resurrected Cube Recipes.html#gem'

@@ -50,6 +50,8 @@ export interface EsrItem {
   name: string;
   /** `name` column; ESR shortens some display names (Thawing Potion → "*Thaw") */
   internalName: string;
+  /** `type` column (item type code) */
+  type: string;
   vendors: VendorOffer[];
 }
 
@@ -184,7 +186,14 @@ function readItems(table: TsvTable, kind: EsrItem['kind'], npcs: readonly string
       if (max > 0 || magicMax > 0) vendors.push({ npc, magicOnly: max <= 0 });
     }
     const internalName = row.str('name');
-    return { kind, code: row.str('code'), name: string === undefined ? internalName : displayString(string), internalName, vendors };
+    return {
+      kind,
+      code: row.str('code'),
+      name: string === undefined ? internalName : displayString(string),
+      internalName,
+      type: row.has('type') ? row.str('type') : '',
+      vendors,
+    };
   });
 }
 
@@ -198,11 +207,25 @@ export function buildEsrGuideTables(sources: Pick<EsrGuideSources, 'tables' | 's
     ...readItems(parseTsv(sources.tables.weapons, 'weapons.txt'), 'weapon', npcs, strings),
   ];
   const itemNames = new Map<string, string>();
-  for (const item of items) if (!itemNames.has(item.code)) itemNames.set(item.code, item.name);
+  // ESR abbreviates potion and scroll display names for the belt ("*Thaw", "+TP"); recipes read better with the full name.
+  for (const item of items)
+    if (!itemNames.has(item.code)) itemNames.set(item.code, /^[*+]/.test(item.name) ? item.internalName : item.name);
+  // An item type whose items all share one display name reads as that name: itemtypes.txt calls the Multi Stocker's
+  // type "Gem Can 8". Otherwise the itemtypes.txt name ("Perfect Gem", "Any Armor").
+  const typeItemNames = new Map<string, Set<string>>();
+  for (const item of items) {
+    if (item.type === '') continue;
+    const names = typeItemNames.get(item.type) ?? new Set<string>();
+    names.add(itemNames.get(item.code) ?? item.name);
+    typeItemNames.set(item.type, names);
+  }
   const typeNames = new Map<string, string>();
   for (const row of parseTsv(sources.tables.itemtypes, 'itemtypes.txt').rows) {
     const code = row.str('Code');
-    if (code !== '' && !typeNames.has(code)) typeNames.set(code, row.str('ItemType'));
+    if (code === '' || typeNames.has(code)) continue;
+    const names = [...(typeItemNames.get(code) ?? [])];
+    const only = names.length === 1 ? names.at(0) : undefined;
+    typeNames.set(code, only ?? row.str('ItemType'));
   }
   const difficulties = parseTsv(sources.tables.difficultylevels, 'difficultylevels.txt').rows.map((row) => ({
     name: row.str('Name'),

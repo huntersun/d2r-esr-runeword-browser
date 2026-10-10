@@ -29,6 +29,11 @@ You need Ancient Scroll 49 (it comes back after the recipe), seven rare charms, 
 
 - A Socket Donut plus a Perfect Gem adds one socket, up to three. Socketables in it give their helm bonus.
 - Runewords must be removed before adding a socket.
-- A Thawing Potion resets the socket count and skill bonus and appears to return the Perfect Gems; empty the sockets first. <!-- verify: Perfect Gems are refunded on reset -->
+- A Thawing Potion resets the charm to one socket and returns one Perfect Gem per added socket; empty the sockets first.
+- Forging recipes do not work on it.
+
+The reset is listed with the other charm recipes, which also reroll the magic and rare charms you find:
+
+::recipes[charm-reroll]
 
 With three sockets the charm can carry a runeword that allows charms as its base; the [Runewords](page:/) page shows which ones ([[runewords-gemwords]]). See [[socketing]] for sockets on other items.

@@ -34,17 +34,15 @@ Unique charms only work from the charm inventory, and ESR limits how many count 
 
 **Annihilus** drops from Diablo Clone, who spawns when you sell Devil's Food to a vendor.
 
-::source[Annihilus]
+::card[unique:Annihilus]
 
-**Hellfire Torch** drops when all three Uber Tristram bosses die in the same game.
+**Hellfire Torch** drops when all three Uber Tristram bosses die in the same game ([[maps-keys-ascendancy]] covers the keys).
 
 ::source[Hellfire Torch]
 
 The **Eternal Hourglass of the Timeless Sands** drops once you kill all the Eternal Ancients in their tier 5 Endgame Map; Rathma's Eternal Skull comes from Rathma's tier 5 map ([[endgame-roadmap]]).
 
 ::source[Eternal Hourglass of the Timeless Sands]
-
-<!-- verify: directive arg uses the display string; the uniqueitems index is "Eternal Hourglass" -->
 
 ### Making them stronger
 

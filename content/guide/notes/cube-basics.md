@@ -19,7 +19,7 @@ In ESR almost every upgrade is a cube recipe. The official Cube Recipes page is 
 
 - "Any …" means any item of that kind. "Torso" is body armor, "Armor" is every kind of armor.
 - "ilvl = char level" and similar lines give the output's item level, which decides the affixes it can roll.
-- Underlined materials in an output are handed back to you. <!-- verify: meaning of underlined materials on the cube page -->
+- Underlined materials in an output are handed back to you; removing a Forging, for example, returns its Anvil Stones.
 - Keys, Scrolls of Identify, Antidote Potions and the like often act as switches that pick which variant of a recipe runs.
 
 ### Why a recipe does nothing
@@ -28,7 +28,7 @@ In ESR almost every upgrade is a cube recipe. The official Cube Recipes page is 
 - **Level limits:** D-stoning stops once the item's level requirement penalty is too high ([[dstoning-and-mapling]]).
 - **Order:** base-upgraded uniques and sets cannot be rerolled, and uniques lose added sockets when rerolled ([[enhancement-order]]).
 - **Branded** items cannot be changed by any recipe.
-- **Too much in the cube:** keep it under 100 items, or the game may crash ([[avoid-disasters]]).
+- **Too much in the cube:** older guides warn that more than 100 items can crash the game ([[avoid-disasters]]).
 
 ### Faster cubing
 

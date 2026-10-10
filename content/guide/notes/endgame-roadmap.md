@@ -5,7 +5,7 @@ summary: A rough order for the ESR endgame, from special areas and Nihlathak to 
 tags: [progression, endgame]
 aliases: [endgame, roadmap, after baal, what now, terror zones, nihlathak, diablo clone, uber tristram]
 knowFirst: [hell-survival]
-related: [maps-keys-ascendancy, corruption-anointment]
+related: [maps-keys-ascendancy, ascendancies, corruption-anointment, weapon-mastery, kill-ledger]
 volatility: high
 mentions: [Devil's Food, Annihilus, Hellfire Torch, Worldstone Shard, Orb of Anointment, Weapon Mastery Token, Kill Ledger]
 officialDocs:
@@ -20,15 +20,16 @@ There is no fixed order after Hell Baal. A path many players follow:
 
 1. **Hell special areas** such as the Secret Cow Level and Harpie's Nest, for experience and materials. Raise the players setting as you get stronger.
 2. **Naraku and Nihlathak's Domain**, below Act 5's Ancients' Way. The official Maps page calls these the hardest special areas. Their superuniques can drop tier 1 Endgame Maps, and killing Nihlathak on Hell is an Ascendancy challenge.
-3. **The first Ascendancy:** five special superuniques on Hell drop the pieces of your Ascendancy Stone ([[maps-keys-ascendancy]]).
-4. **Diablo Clone and Uber Tristram** for Annihilus and the Hellfire Torch ([[unique-charms]]).
-5. **:term[Endgame map]s:** five tiers of boss zones, the main loop of the endgame and the only source of mythical uniques. The official page recommends roughly 5k life, maximum resistances and some physical resistance before you start.
+3. **The first Ascendancy:** five special superuniques on Hell drop the pieces of your Ascendancy Stone ([[ascendancies]]).
+4. **Diablo Clone and Uber Tristram** for Annihilus and the Hellfire Torch ([[unique-charms]]); the Pandemonium keys lead there ([[maps-keys-ascendancy]]).
+5. **:term[Endgame map]s:** five tiers of boss zones, the main loop of the endgame and the only source of mythical uniques ([[maps-keys-ascendancy]]). The official page recommends roughly 5k life, maximum resistances and some physical resistance before you start.
 
 Along the way:
 
 - A :term[Terror zone] raises its monsters' level. Terrorized champions and uniques drop Worldstone Shards for [[corruption-anointment]], and level 96 terror zones also drop maps.
-- **Corrupted Zakarum** appear at random in Nightmare and Hell and can drop Weapon Mastery Tokens.
-- After an endgame boss kill you have 60 seconds to cube your Kill Ledger with the listed materials for a permanent bonus.
+- **Corrupted Zakarum** appear at random in Nightmare and Hell and can drop Weapon Mastery Tokens ([[weapon-mastery]]).
+- After an endgame boss kill you have 60 seconds to cube your Kill Ledger with the listed materials for a permanent bonus ([[kill-ledger]]).
+- The Vessel of Souls, a map drop, turns organs into bonuses and later a mythical weapon ([[vessel-of-souls]]).
 - Dying inside a map boss area costs no experience ([[death-and-respec]]).
 
 Browse what the maps can drop on the [Mythicals](page:/mythicals) page, and keep improving your gear with [[enhancement-order]].

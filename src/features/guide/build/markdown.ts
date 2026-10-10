@@ -60,6 +60,18 @@ function plainText(node: Nodes): string {
   return '';
 }
 
+/**
+ * The source text of a directive argument: the parser reads `rw:Enigma` in `::card[rw:Enigma]` as "rw" plus a text
+ * directive `:Enigma`, which is put back together here.
+ */
+function argumentText(node: Nodes): string {
+  if (node.type === 'textDirective')
+    return `:${node.name}${node.children.length === 0 ? '' : `[${node.children.map(argumentText).join('')}]`}`;
+  if ('value' in node) return node.value;
+  if ('children' in node) return (node.children as Nodes[]).map(argumentText).join('');
+  return '';
+}
+
 function isComment(value: string): boolean {
   return HTML_COMMENT.test(value.trim());
 }
@@ -184,7 +196,7 @@ function convertLeafDirective(node: LeafDirective, state: State): GuideBlock[] {
     fail(state, node, `unknown directive "::${node.name}" (known: ${Object.keys(LEAF_DIRECTIVES).join(', ')})`);
     return [];
   }
-  const arg = node.children.length === 0 ? null : plainText(node).trim();
+  const arg = node.children.length === 0 ? null : argumentText(node).trim();
   const attributes: Record<string, string> = {};
   for (const [key, value] of Object.entries(node.attributes ?? {})) attributes[key] = value ?? '';
   const block = resolver(arg, state.ctx, attributes);

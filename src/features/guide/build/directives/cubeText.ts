@@ -46,7 +46,8 @@ function parseSpec(spec: string): ParsedSpec {
   for (const qualifier of qualifiers) {
     const [key = '', value = ''] = qualifier.split('=');
     if (key === 'qty') parsed.qty = Number(value) || 1;
-    else if (key === 'sock') parsed.notes.push(value === '1' ? '1 socket' : `${value} sockets`);
+    // A bare `sock` means "has sockets"; `sock=N` an exact count.
+    else if (key === 'sock') parsed.notes.push(value === '' ? 'socketed' : value === '1' ? '1 socket' : `${value} sockets`);
     else if (key in ADJECTIVES) parsed.adjectives.push(ADJECTIVES[key] ?? key);
     else if (key in NOTES) parsed.notes.push(NOTES[key] ?? key);
   }
@@ -74,6 +75,11 @@ export function describeOutput(output: CubeOutput, esr: Pick<EsrGuideTables, 'na
   const parsed = parseSpec(output.spec);
   const notes = [...parsed.notes, ...modNotes(output.mods)];
   if (parsed.token === 'useitem') return { name: 'The same item', details: [...parsed.adjectives, ...notes] };
+  // The input item itself with the row's mods added (e.g. Inarius' Halo: "branded"); see visibleOutputs.
+  if (parsed.token === 'cloneitem') {
+    const mods = output.mods.filter((mod) => mod.mod !== 'sock').map((mod) => mod.mod.charAt(0).toUpperCase() + mod.mod.slice(1));
+    return { name: 'The same item', details: [...parsed.adjectives, ...notes, ...mods] };
+  }
   if (parsed.token === 'usetype') {
     const quality = parsed.adjectives.length === 0 ? 'An item' : `${parsed.adjectives.join(' ')} item`;
     return { name: `${quality} of the same type`, details: notes };
@@ -82,7 +88,42 @@ export function describeOutput(output: CubeOutput, esr: Pick<EsrGuideTables, 'na
   return { name: parsed.qty > 1 ? `${String(parsed.qty)}× ${name}` : name, details: [...parsed.adjectives, ...notes] };
 }
 
+function outputToken(output: CubeOutput): string {
+  return output.spec.split(',')[0]?.trim() ?? '';
+}
+
+/** A `cloneitem` output is the input item with the row's mods, so a `useitem` next to it is not a second item. */
+export function visibleOutputs(outputs: readonly CubeOutput[]): CubeOutput[] {
+  if (!outputs.some((output) => outputToken(output) === 'cloneitem')) return [...outputs];
+  return outputs.filter((output) => outputToken(output) !== 'useitem');
+}
+
 export function formatOutput(output: CubeOutput, esr: Pick<EsrGuideTables, 'nameOf'>): string {
   const { name, details } = describeOutput(output, esr);
   return details.length === 0 ? name : `${name} (${details.join(', ')})`;
+}
+
+// ---------------------------------------------------------------------------
+// Collapsing the mechanical variants of a recipe (one row per base type, quality, class or socket count) into one row.
+// ---------------------------------------------------------------------------
+
+/** Variants shown per input position / for the output before "…" */
+const MAX_OPTIONS = 3;
+
+export function unique(values: readonly string[]): string[] {
+  return [...new Set(values)];
+}
+
+/** "a / b / c / … (7 variants)" */
+export function options(values: readonly string[]): string {
+  const distinct = unique(values);
+  if (distinct.length <= MAX_OPTIONS) return distinct.join(' / ');
+  return `${distinct.slice(0, MAX_OPTIONS).join(' / ')} / … (${String(distinct.length)} variants)`;
+}
+
+/** Position-wise " / " join when every variant has the same number of inputs; otherwise the first variant. */
+export function mergeInputs(variants: readonly string[][]): string[] {
+  const first = variants[0] ?? [];
+  if (variants.some((inputs) => inputs.length !== first.length)) return first;
+  return first.map((_, i) => options(variants.map((inputs) => inputs[i] ?? '')));
 }

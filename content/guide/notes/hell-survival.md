@@ -5,7 +5,7 @@ summary: Hell brings heavy resistance and leech penalties and tougher monsters. 
 tags: [progression, hell]
 aliases: [hell, nightmare, resist penalty, difficulty penalties, immunities]
 knowFirst: [enhancement-order]
-related: [endgame-roadmap]
+related: [endgame-roadmap, mercenaries-oskills]
 volatility: high
 mentions: [Anvil Stone, White Aura Stone, Kill Ledger]
 officialDocs:
@@ -23,8 +23,8 @@ In short: your resistances drop sharply, life and mana leech become much weaker,
 ### Before you enter Hell
 
 - **Resistances:** get fire, cold, lightning and poison back to the cap after the penalty, and add some physical and magic resistance if you can.
-- **Life:** Stat Forging with a chipped Topaz adds % maximum life ([[forging]]); the first Kill Ledger milestones add resistances and more ([[starter-pack]]).
-- **Damage:** Skill Forging (+1 to your class skills) on every slot is the standard early boost for skill-based builds. Plan a way past immunities, such as Lower Resist charges or a Conviction aura (a White Aura Stone forged onto an amulet). <!-- verify: forged aura amulet works when worn by the mercenary -->
+- **Life:** Stat Forging with a chipped Topaz adds % maximum life ([[forging]]); the first Kill Ledger milestones add resistances and more ([[kill-ledger]]).
+- **Damage:** Skill Forging (+1 to your class skills) on every slot is the standard early boost for skill-based builds. Plan a way past immunities, such as Lower Resist charges, a Conviction aura forged onto your amulet with a White Aura Stone, or a Hell Combat Desert Mercenary, whose skills include Conviction ([[mercenaries-oskills]]).
 - **Materials:** farm Nightmare's special areas first. The official Maps page lists them (the Secret Cow Level, Blood Raven's Workshop, Lost Farm and others) and recommends them once you have beaten that difficulty.
 - **Players setting:** raise it for more experience and drops when you are comfortable, and lower it when you are not.
 

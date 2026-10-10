@@ -170,3 +170,15 @@ describe('countWords', () => {
     expect(countWords(blocks)).toBe(10);
   });
 });
+
+describe('::card in a note', () => {
+  it('parses the scheme:name argument and keys the block by it', () => {
+    const result = markdownToBlocks("::card[rw:Enigma]\n\n::card[unique:Artemis' Wrath]", fixtureContext(), 'notes/test.md');
+    expect(result.errors).toEqual([]);
+    expect(result.dataBlocks.map((block) => block.key)).toEqual(['card:rw:Enigma', "card:unique:Artemis' Wrath"]);
+    expect(result.blocks[1]).toEqual({
+      type: 'data',
+      block: { kind: 'card', item: 'unique', name: "Artemis' Wrath", href: "/uniques?name=Artemis'%20Wrath" },
+    });
+  });
+});

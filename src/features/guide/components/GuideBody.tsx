@@ -1,5 +1,5 @@
 /* eslint-disable react-x/no-array-index-key -- the body is a static generated tree that never reorders, so positional keys are stable */
-import type { CSSProperties } from 'react';
+import { lazy, Suspense, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import type { DataBlock, GuideBlock, GuideInline } from '../engine/schema';
 import { findNote, sourceCells } from '../utils/guideUtils';
 import { AppLinkIcon } from './AppLinkIcon';
+import { GuideCardLoading } from './GuideCardPlaceholder';
 import { useLoadedGuide } from './guideContext';
 import { useHoverPopover } from './useHoverPopover';
 
@@ -30,6 +31,9 @@ const SCROLL_HINT_STYLE: CSSProperties = {
     'radial-gradient(farthest-side at 100% 50%, color-mix(in oklch, var(--foreground) 22%, transparent), transparent) right center / 0.75rem 100% no-repeat scroll var(--background)',
   ].join(', '),
 };
+
+/** Lazy: the item cards (and the Dexie/game-data hooks behind them) are only fetched by notes that embed a card. */
+const GuideItemCard = lazy(() => import('./GuideItemCard'));
 
 const LINK_CLASS = 'font-medium text-primary underline underline-offset-2 decoration-primary/40 hover:decoration-primary';
 const TABLE_WRAP = 'overflow-x-auto rounded-md border';
@@ -241,6 +245,12 @@ function DataBlockView({ block }: { readonly block: DataBlock }) {
             ))}
           </ul>
         </figure>
+      );
+    case 'card':
+      return (
+        <Suspense fallback={<GuideCardLoading name={block.name} />}>
+          <GuideItemCard block={block} />
+        </Suspense>
       );
     case 'source':
       return <SourceBlock item={block.item} labels={block.labels} />;

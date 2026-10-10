@@ -1,0 +1,24 @@
+---
+title: Weapon Mastery
+kind: link
+summary: A token that changes how one class weapon works with your skills. It drops from Corrupted Zakarum and map bosses and can be removed.
+tags: [endgame, enhancement]
+aliases: [weapon mastery, weapon mastery token, awakened token, corrupted zakarum, mastery]
+knowFirst: [dragon-stones]
+related: [enhancement-order, endgame-roadmap, maps-keys-ascendancy]
+volatility: high
+mentions: [Weapon Mastery Token, Awakened Weapon Mastery Token, Thawing Potion]
+officialDocs:
+  - label: Weapon Mastery
+    href: docs:weapon_mastery.html
+sources: [official-docs]
+---
+
+:term[Weapon mastery] changes how a class weapon interacts with your skills; the official page says it adds new mechanics rather than raw power. Weapon Mastery Tokens drop from **Corrupted Zakarum**, deadly uniques that appear at random in Nightmare and Hell, and from Endgame Map bosses ([[endgame-roadmap]]).
+
+1. Cube the token with any class weapon to awaken it; the weapon itself is not changed.
+2. Cube the awakened token with the weapon and the listed ingredients, often a Dragon Stone form ([[dragon-stones]]), to apply that weapon's specialisation.
+
+A weapon holds one mastery, on any tier, mythical bases included. A class Dragon Stone form and three Thawing Potions remove it, but the token is lost ([[enhancement-order]]).
+
+::source[Weapon Mastery Token]
