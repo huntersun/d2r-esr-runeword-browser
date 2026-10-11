@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.19.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.18.0...v1.19.0) (2026-10-11)
+
+
+### Features
+
+* **guide:** add the /guide/map page with a full graph and a grouped list ([39ebe6d](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/39ebe6db2cbdab7dd0b04304e0a0c016603eca20))
+* **guide:** link items to the official Drop Finder ([6c9f5d4](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/6c9f5d41ac1049be3b9760916cfe7b6ffaeb96f7))
+
+
+### Bug Fixes
+
+* **guide:** correct the notes against the 3.2.12 game files ([98a0078](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/98a0078bc700d26e3e6913cf0008954f8a4f32c5))
+
+
+### Documentation
+
+* **guide:** describe the map page, Drop Finder links and new recipe families ([9c5366f](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/9c5366fa1c39bfa58d8441c9f1afa73c068cceaa))
+
 ## [1.18.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.17.0...v1.18.0) (2026-10-11)
 
 
