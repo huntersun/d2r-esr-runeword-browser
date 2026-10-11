@@ -86,28 +86,102 @@ Header row: back link, the filter name (pencil to rename inline), a problems chi
 the JSON tab and scrolls to the problems list) and **Download** (the serialized model). When the stored text is not
 valid JSON, every tab but JSON shows a "cannot be read" card; Apply in the JSON tab recovers the filter.
 
-| Tab      | Status      | What it does                                                                                                                                                                                                                                                       |
-| -------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Rules    | placeholder | `RulesTab`: rule count, hiding rules, the selected rule. The rule builder replaces it.                                                                                                                                                                             |
-| Styles   | placeholder | `StylesTab`: style names and how many rules use a style. The style editor replaces it.                                                                                                                                                                             |
-| Settings | done        | Title, author, version, description, update URL, hide unmatched items, sound volume; filter levels (id + name, add/remove, default level, "used by N rules", ids rules use that are missing); drop line and level change line; one colour-code select per quality. |
-| JSON     | done        | The serialized file in a textarea: Apply (parse; a syntax error shows line/column and selects the spot), Revert, Copy. Below it every problem with severity, path and message; a rule problem links to its rule (selects it, opens Rules).                         |
-| Test     | placeholder | `TestTab`: rule and level counts. The test-item tab (engine `evaluate.ts`) replaces it.                                                                                                                                                                            |
+| Tab      | Status      | What it does                                                                                                                                                                                                                                                                                   |
+| -------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rules    | done        | Rule list (summary, badges, problem dot, move up/down, duplicate, delete) with search and Add rule, next to the selected rule's editor: comment, the rule's problems, every condition with game-data pickers, then the actions editor. See below.                                              |
+| Styles   | done        | Style list (name, action count, "used by N rules"), Add style, rename (rules' `useStyle` follow), duplicate ("Name (copy)"), delete (warns how many rules use it); the selected style opens the actions editor. Conditions found in a style are listed read-only ("styles hold actions only"). |
+| Settings | done        | Title, author, version, description, update URL, hide unmatched items, sound volume; filter levels (id + name, add/remove, default level, "used by N rules", ids rules use that are missing); drop line and level change line; one colour-code select per quality.                             |
+| JSON     | done        | The serialized file in a textarea: Apply (parse; a syntax error shows line/column and selects the spot), Revert, Copy. Below it every problem with severity, path and message; a rule problem links to its rule (selects it, opens Rules).                                                     |
+| Test     | placeholder | `TestTab`: rule and level counts. The test-item tab (engine `evaluate.ts`) replaces it.                                                                                                                                                                                                        |
 
 Settings changes dispatch the slice reducers directly; the only local state is what a half-typed number needs
 (`NumberInput`). A per-language text (`{ "enUS": …, "deDE": … }`) is shown read-only with "multi-language text, edit in
 the JSON tab". Unknown keys appear in the problems list as warnings: they travel through unchanged, but only the JSON tab
 can edit them.
 
+## Rules tab (`components/RulesTab.tsx`, `components/rules/`, `components/pickers/`)
+
+Two panes from `lg` up (list left, sticky; editor right), stacked below (list capped at 45vh, then the editor; picking a
+rule scrolls the editor into view).
+
+- **Toolbar**: search box (every term must appear in `ruleSearchText`: summary, codes and their names, types, unique/set
+  and area names, stat names, comment, style, name changes and chat lines), **Add rule** (an empty rule after the
+  selected one, else at the end; clears the search and selects it), and "N rules (M hidden by search)".
+- **Rows** (`RuleRow`): 1-based number, `ruleSummary` (e.g. `Zod Rune, Cham Rune +2 · unique · ≥3 sockets · → style
+Mythical`: items/types/uniques by name when the bundles are in, codes otherwise, then quality, tier, flags, item level,
+  sockets, stats, difficulty, areas, and the main action: `hide`, `→ style X`, the stripped replaceName/prefix/suffix or
+  chat line), badges for `hide`, `useStyle`, `activeInLevels` (`L1,3`) and a non-default `location`, the comment, and a
+  red/amber dot for the rule's worst diagnostic. Move up, move down, duplicate and delete (asks first) are icon buttons
+  that float over the row on hover/focus with a mouse and are always shown on touch and on the selected row. The
+  selected row is scrolled into view when the selection changes elsewhere (the JSON tab's "Rule N" link).
+- **Editor** (`RuleEditor`, remounted per rule): "Rule N", the `comment` field, the rule's diagnostics (paths relative to
+  the rule), then the conditions in sections (Which items, Item properties, Stats, Where and when) and an Actions card
+  with `ActionsEditor owner="rule"`. Every change dispatches `patchRule`; an emptied list removes its key. A condition
+  whose file value had the wrong shape (kept in `passthrough`) gets a note; every passthrough key is listed read-only in
+  a collapsed "Advanced / passthrough" block.
+- **Controls**: item, type, unique/set and area pickers (chips with name + code/id; more than 12 chips collapse behind
+  "+N more"); named matches (`quality`, `baseTier`, `difficulty`): any / one / several / range, picks stored as names,
+  file numbers kept until that part changes (`utils/matchValues.ts`); number matches (`itemLevel`, `sockets`,
+  `maxSockets`): any / exactly / list (`1, 2, 3`) / range (min only or max only allowed); flags any / yes / no; stat
+  check rows: stat picker, optional param, op (`>=` for new rows), value, two values for `between`
+  (`utils/statChecks.ts`); `location` checkboxes (none = on the ground); `activeInLevels`: "Every level" or a tick per
+  filter level, unknown ids listed with a remove button.
+- **Pickers** (`components/pickers/index.ts`): `MultiPicker` / `SinglePicker` (Popover + cmdk with our own filter,
+  `utils/pickerSearch.ts`: every term in name or code/id, exact and prefix matches first, at most 200 shown with "type
+  to narrow"; Enter picks the highlighted option; the "Add code …" entry for typed values comes last) and the wrappers
+  `ItemPicker`, `SingleItemPicker`, `ItemTypePicker`, `StatPicker`, `AreaPicker`, `UniqueOrSetPicker`. Non-spawnable
+  items are greyed with "shadow base". Uniques and sets share the id space (a unique and a set item can have the same
+  row), so a chip names both. Without the bundles the pickers still take typed codes and ids.
+- **Data**: `useLootFilterData()` → `{ status, data, types, lookup, options }`; `lookup` (`utils/lookup.ts`) has `item`,
+  `itemName`, `itemType`, `typeName`, `statName`, `statId`, `areaName`, `uniqueOrSetName` (all `undefined` for unknown
+  keys or missing data); the lookup and option lists are built once per loaded bundle pair (module cache).
+
+## Actions editor (`components/actions/`)
+
+`ActionsEditor` (`actions`, `onChange(patch)`, `filter`, `owner: 'rule' | 'style'`, `styleName?`) is the form for every
+action key; the rule editor and the Styles tab both render it. Every control sends a shallow patch (`{ key: undefined }`
+removes the key); `passthrough` is never patched. Sections:
+
+- **Label preview** (top): `LabelPreview` of prefix + (`replaceName` or `{name}`) + suffix in enUS, with `{name}` shown
+  as "Item Name" and other placeholders as written; background and border from the effective actions. For a rule with
+  `useStyle`, the style's actions are underneath and the rule's own win, per key (`utils/effectiveActions.ts`).
+- **Style** (rules only): `useStyle` select (None, every style, a missing name kept as "(missing)"); a collapsed read-only
+  list of the style's actions. A rule's `comment` belongs to the rule editor; a style's comment is edited here.
+- **Visibility**: `hide`, `hideIfOtherConditionsFail` (checkboxes; unchecked removes the key), `chatMessageWhenHidden`.
+- **Name**: `replaceName`, `namePrefix`, `nameSuffix`. **Chat**: `chatMessage`, `notify` (the hint shows the filter's
+  effective drop line).
+- **Label**: `labelBackground` (colour + alpha, default alpha 242), `labelBorder` (colour + alpha, width; "Add border" /
+  remove).
+- **Sound**: combobox over the 9 bundled files and the sounds.txt names (digits typed free become a row number), play
+  button for bundled files (an `Audio` at `soundVolume ?? filter.soundVolume ?? 100`), "preview a local file" input
+  (object URL, revoked on change/unmount), `soundVolume` (blank = filter default).
+- **Minimap icon**: on/off, `iconName` (suggests `goldstar`), `iconSize` (4–256, blank = file size), tint (alpha
+  optional), sprite preview.
+- **Droplight**: on/off (`{}`), tint or "the effect's own colours".
+
+Text fields (`ColorTextField`) take raw `ÿc` codes and have two insert menus: colour codes (swatch grid of `COLOR_CODES`)
+and the placeholders of the field's context (`names` for names, `chat` for chat lines); the token goes in at the caret
+(`utils/insertAtCaret.ts`). Below the field a small preview; a `{...}` token the guide does not know, or one that does
+not work in that context, gets a hint. Per-language texts are read-only ("multi-language text, edit in the JSON tab").
+`ColorControl` is a native colour input + optional alpha slider + `[r, g, b(, a)]` readout + clear
+(`utils/colorValues.ts`).
+
+Previews: bundled assets are listed in `utils/bundledAssets.ts` (`public/loot-filters/sounds/*.mp3`,
+`public/loot-filters/icons/goldstar.sprite`). `useSoundPreview` plays one `Audio` at a time across the page and stops on
+unmount. `useBundledSprite` fetches and decodes a bundled sprite once per name; any other icon name offers a local
+`.sprite` picker. The canvas draws the first frame at `iconSize` (longer side) with the tint applied
+(`utils/tintSprite.ts`: RGB × colour/255, alpha × colour[3]/255); a decode error shows the decoder's message. A sounds.txt
+sound has no preview (it plays from the game files).
+
 ## Phase status
 
-| Phase | Content                                                                                       | Status  |
-| ----- | --------------------------------------------------------------------------------------------- | ------- |
-| 1     | Engine: model, JSONC parse with passthrough, serializer, validator, evaluator, sprite decoder | done    |
-| 2     | `lootfilter.json` reference bundle (items, stats, areas, sounds, uniques, sets)               | done    |
-| 3     | Library, routes, editor shell and state, Settings tab, JSON tab                               | done    |
-| 4     | Rule builder with pickers, style editor, label preview                                        | planned |
-| 5     | Test-item tab with a rule trace                                                               | planned |
+| Phase | Content                                                                                       | Status                                                    |
+| ----- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| 1     | Engine: model, JSONC parse with passthrough, serializer, validator, evaluator, sprite decoder | done                                                      |
+| 2     | `lootfilter.json` reference bundle (items, stats, areas, sounds, uniques, sets)               | done                                                      |
+| 3     | Library, routes, editor shell and state, Settings tab, JSON tab                               | done                                                      |
+| 4     | Rule builder with pickers, style editor, label preview                                        | done (rule builder, actions editor, Styles tab, previews) |
+| 5     | Test-item tab with a rule trace                                                               | planned                                                   |
 
 ## Verify in game
 

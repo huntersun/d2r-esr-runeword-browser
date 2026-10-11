@@ -5,10 +5,14 @@ interface ConfirmDeleteDialogProps {
   readonly name: string | null;
   readonly onCancel: () => void;
   readonly onConfirm: () => void;
+  /** Default "Delete filter?". */
+  readonly title?: string;
+  /** Default: the library entry text ("removed from this browser…"). */
+  readonly description?: React.ReactNode;
 }
 
-/** Asks before deleting a library entry; open while `name` is set. */
-export function ConfirmDeleteDialog({ name, onCancel, onConfirm }: ConfirmDeleteDialogProps) {
+/** Asks before deleting something (a library entry by default); open while `name` is set. */
+export function ConfirmDeleteDialog({ name, onCancel, onConfirm, title = 'Delete filter?', description }: ConfirmDeleteDialogProps) {
   return (
     <Dialog
       open={name !== null}
@@ -18,9 +22,10 @@ export function ConfirmDeleteDialog({ name, onCancel, onConfirm }: ConfirmDelete
     >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Delete filter?</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            “{name}” is removed from this browser. Download it first if you want to keep a copy; this cannot be undone.
+            {description ??
+              `“${name ?? ''}” is removed from this browser. Download it first if you want to keep a copy; this cannot be undone.`}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

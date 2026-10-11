@@ -1,0 +1,130 @@
+/** Name lookups and picker options built from the `lootfilter` and `types` game-data bundles. */
+import type { ItemTypeInfo, LootFilterDataBundle, LootFilterItem, TypesBundle } from '@/features/game-data/engine/schema';
+import { searchText, type PickerOption } from './pickerSearch';
+
+/** Game-data names for codes and ids; every lookup returns `undefined` when the data is missing or the key unknown. */
+export interface LootFilterLookup {
+  readonly item: (code: string) => LootFilterItem | undefined;
+  readonly itemName: (code: string) => string | undefined;
+  readonly itemType: (code: string) => ItemTypeInfo | undefined;
+  readonly typeName: (code: string) => string | undefined;
+  /** The stat's itemstatcost name for an id, or the name itself when it is a known stat name. */
+  readonly statName: (stat: string | number) => string | undefined;
+  /** The stat's id for a name, or the id itself when it is a known id. */
+  readonly statId: (stat: string | number) => number | undefined;
+  readonly areaName: (id: number) => string | undefined;
+  /** The unique's and/or the set item's name for the row id ("Unique / Set" when both tables have that row). */
+  readonly uniqueOrSetName: (id: number) => string | undefined;
+}
+
+const none = (): undefined => undefined;
+
+export const EMPTY_LOOKUP: LootFilterLookup = {
+  item: none,
+  itemName: none,
+  itemType: none,
+  typeName: none,
+  statName: none,
+  statId: none,
+  areaName: none,
+  uniqueOrSetName: none,
+};
+
+export function buildLookup(data: LootFilterDataBundle, types: TypesBundle): LootFilterLookup {
+  const items = new Map(data.items.map((item) => [item.code, item]));
+  const itemTypes = new Map(types.types.map((type) => [type.code, type]));
+  const statById = new Map(data.stats.map((stat) => [stat.id, stat.name]));
+  const statByName = new Map(data.stats.filter((stat) => stat.name !== '').map((stat) => [stat.name, stat.id]));
+  const areas = new Map(data.areas.map((area) => [area.id, area.name]));
+  const uniques = new Map(data.uniques.map((entry) => [entry.id, entry.name]));
+  const sets = new Map(data.sets.map((entry) => [entry.id, entry.name]));
+  return {
+    item: (code) => items.get(code),
+    itemName: (code) => items.get(code)?.name,
+    itemType: (code) => itemTypes.get(code),
+    typeName: (code) => itemTypes.get(code)?.name,
+    statName: (stat) => {
+      if (typeof stat === 'number') return statById.get(stat) || undefined;
+      return statByName.has(stat) ? stat : undefined;
+    },
+    statId: (stat) => {
+      if (typeof stat === 'number') return statById.has(stat) ? stat : undefined;
+      return statByName.get(stat);
+    },
+    areaName: (id) => areas.get(id),
+    uniqueOrSetName: (id) => {
+      const names = [uniques.get(id), sets.get(id)].filter((name) => name !== undefined && name !== '');
+      return names.length === 0 ? undefined : names.join(' / ');
+    },
+  };
+}
+
+/** Picker options for every list the rule editor offers. */
+export interface LootFilterPickerOptions {
+  readonly items: readonly PickerOption[];
+  readonly types: readonly PickerOption[];
+  readonly stats: readonly PickerOption[];
+  readonly areas: readonly PickerOption[];
+  readonly uniquesAndSets: readonly PickerOption[];
+}
+
+export const EMPTY_PICKER_OPTIONS: LootFilterPickerOptions = { items: [], types: [], stats: [], areas: [], uniquesAndSets: [] };
+
+const SHADOW_BASE_HINT = 'shadow base';
+
+export function buildPickerOptions(data: LootFilterDataBundle, types: TypesBundle): LootFilterPickerOptions {
+  const itemName = new Map(data.items.map((item) => [item.code, item.name]));
+  const typeName = new Map(types.types.map((type) => [type.code, type.name]));
+  const uniqueOrSet = (kind: 'Unique' | 'Set', entry: LootFilterDataBundle['uniques'][number]): PickerOption => {
+    const base = itemName.get(entry.code) ?? entry.code;
+    return {
+      key: `${kind}:${String(entry.id)}`,
+      value: String(entry.id),
+      label: entry.name === '' ? `${kind} row ${String(entry.id)}` : entry.name,
+      detail: `${base} · ${String(entry.id)}`,
+      group: kind === 'Unique' ? 'Uniques' : 'Sets',
+      search: searchText(entry.name, entry.id, base, entry.code),
+    };
+  };
+  return {
+    items: data.items.map((item) => ({
+      key: item.code,
+      value: item.code,
+      label: item.name === '' ? item.code : item.name,
+      detail: item.code,
+      muted: !item.spawnable,
+      hint: item.spawnable ? undefined : SHADOW_BASE_HINT,
+      search: searchText(item.name, item.code),
+    })),
+    types: types.types.map((type) => ({
+      key: type.code,
+      value: type.code,
+      label: type.name === '' ? type.code : type.name,
+      detail:
+        type.parents.length === 0
+          ? type.code
+          : `${type.code} · in ${type.parents.map((parent) => typeName.get(parent) ?? parent).join(', ')}`,
+      search: searchText(type.name, type.code),
+    })),
+    stats: data.stats
+      .filter((stat) => stat.name !== '')
+      .map((stat) => ({
+        key: stat.name,
+        value: stat.name,
+        label: stat.name,
+        detail: String(stat.id),
+        search: searchText(stat.name, stat.id),
+      })),
+    areas: [...data.areas]
+      .sort((a, b) => a.act - b.act || a.id - b.id)
+      .map((area) => ({
+        key: String(area.id),
+        value: String(area.id),
+        label: area.name === '' ? `Area ${String(area.id)}` : area.name,
+        detail: String(area.id),
+        group: `Act ${String(area.act + 1)}`,
+        search: searchText(area.name, area.id),
+      })),
+    uniquesAndSets: [...data.uniques.map((entry) => uniqueOrSet('Unique', entry)), ...data.sets.map((entry) => uniqueOrSet('Set', entry))],
+  };
+}
