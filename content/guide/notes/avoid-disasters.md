@@ -20,7 +20,7 @@ ESR adds a separate charm inventory, opened from a button on the inventory panel
 
 ### Items that are not for you
 
-- Gear changed by **Merc Only Conversion** shows "(merc only)" and carries a huge hidden Vitality penalty, so wearing it yourself leaves you with almost no life. Give it to your mercenary ([[mercenaries-oskills]]). Three Antidote Potions in the cube remove the conversion and return the Anvil Stone and gem.
+- Gear changed by **Merc Only Conversion** shows "(merc only)" and carries a huge hidden life drain (a -900 life regeneration stat; the original Eastern Sun used a Vitality penalty instead), so wearing it yourself empties your life to 1. Give it to your mercenary ([[mercenaries-oskills]]). Three Antidote Potions in the cube remove the conversion and return the Anvil Stone and gem.
 - The :term[Vessel of Souls] is a mythical amulet you feed organs in the cube. It is not meant to be worn; the official page warns that wearing it sets your life to 1 ([[vessel-of-souls]]).
 
 ### Cube and save safety
