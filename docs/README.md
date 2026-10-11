@@ -23,7 +23,7 @@ Architecture decisions, coding guidelines, tech stack documentation, and impleme
 - [Socketables](./features/SOCKETABLES.md) - Unified view of all socketables (gems, runes, crystals) with filters
 - [Unique Items](./features/UNIQUE-ITEMS.md) - Browse and filter unique items parsed from HTM pages
 - [Game Data](./features/GAME-DATA.md) - Static bundles built from the ESR txt game files (Bases, Item Types, Best Base and Affixes pages)
-- [Loot Filter](./features/LOOT-FILTER.md) - Loot filter editor for ESR's loot filter plugin: browser library, settings and JSON editing, download for the launcher
+- [Loot Filter](./features/LOOT-FILTER.md) - Loot filter editor for ESR's loot filter plugin: browser library, rule builder with game-data pickers, styles, label/sound/icon previews, JSON tab, test-item tab, download for the launcher
 - [Guide](./features/GUIDE.md) - New-player guide: markdown notes compiled into a static bundle, journey spine, data directives, staleness tracking
 
 ### Technical Documentation
