@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.17.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.16.0...v1.17.0) (2026-10-11)
+
+
+### Features
+
+* **runewords:** accept a socket range in the sockets filter ([3d1612a](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/3d1612a6bbde7b2e763141a5a5e447a65d020654))
+
+
+### Bug Fixes
+
+* **guide:** describe Merc Only Conversion as a life drain, not a Vitality penalty ([7a908b6](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/7a908b68fc588a26bd7062a8c6a2e2913b25e8c8))
+
 ## [1.16.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.15.0...v1.16.0) (2026-10-10)
 
 
