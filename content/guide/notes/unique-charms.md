@@ -51,6 +51,8 @@ The Eternal Ancients in their tier 5 Endgame Map drop the pieces of the **Eterna
 - Most unique charms reroll with Perfect Gems; the cost depends on the charm's required level.
 - Skill and Stat :term[Forging] accept unique charms ([[forging]]).
 
+::recipes[unique-charm-upgrades]
+
 ### Spare ones
 
 A spare unique charm, any Rejuvenation Potion and a Key make a :term[Maple Leaf], the fuel for Mapling and All Skill Forging ([[dstoning-and-mapling]]). Remove any Forging first. A Multi Stocker can do the same and keep the leaf as a point.

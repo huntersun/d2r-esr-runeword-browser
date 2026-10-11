@@ -16,6 +16,8 @@ sources: [official-docs]
 
 An :term[Ascendancy] is a subclass granted by an Ascendancy Stone, a charm with its own skills and bonuses. To get one, kill the five special superuniques on Hell (Acts 1 to 3 have one each, Act 5 has two), cube their [elemental orbs](<dropfinder:Orb of Fire>) into an Orb of Creation, then cube the orb with Blemished gems; the colours pick the ascendancy ([[gems-crystals]]).
 
-Each later tier is a challenge finished in the cube: Nihlathak on Hell, all three Uber Tristram bosses within a minute, [Primordial Soulstones](<dropfinder:Primordial Soulstone>) from map bosses, and a tier 5 map boss ([[maps-keys-ascendancy]]). Tiers 3 to 5 also cost Maple Leaves. Tiers can be done in any order.
+Each later tier is a challenge finished in the cube: Nihlathak on Hell, all three Uber Tristram bosses within a minute, [Primordial Soulstones](<dropfinder:Primordial Soulstone>) from map bosses, and a tier 5 map boss ([[maps-keys-ascendancy]]). Tiers can be done in any order.
+
+::recipes[ascendancy]
 
 You can wear one stone at a time. It cannot be moved to another character, corrupted or anointed, and after a death you must re-equip it ([[death-and-respec]]). Compare them on the app's [Ascendancies](page:/ascendancies) page.

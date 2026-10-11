@@ -21,8 +21,8 @@ Each :term[Secret Recipe] has a number, and it only works with the identified :t
 ### Getting the scroll you need
 
 - Scrolls drop unidentified. Cube one with an :term[Ancient Decipherer] to reveal its number.
-- Two scrolls of the same number make the next number; one scroll steps down a number.
-- Two scrolls and a Randomizing Stone give a random scroll from a low or a high range.
+
+::recipes[ancient-scrolls]
 
 Scrolls live in the stash's currency tab, and since 3.2.11 their description shows there.
 

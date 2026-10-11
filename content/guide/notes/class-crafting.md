@@ -15,6 +15,8 @@ sources: [official-cube]
 
 A :term[Class craft] turns a magic helm, armor, weapon or other piece into a crafted item. Cube it with the Dragon Stone form and Perfect Gem of a class (Spider's Silk and a Perfect Emerald for the Amazon, a Void Shard and a Perfect Obsidian for the Warlock) and any jewel ([[dragon-stones]]). The result has skill levels for that class, fixed bonuses for the slot and a few random affixes. Anyone can wear it unless the base is class-only, so a Necromancer craft can suit a Barbarian.
 
+::recipes[class-craft]
+
 The vanilla crafts (Hit Power, Blood, Caster, Safety) return as stronger, costlier **Legacy crafts** that take a rune instead of a Dragon Stone form and accept any base of the slot.
 
 Crafted items accept every kind of Forging ([[forging]]); spare jewels and Perfect Gems feed these recipes ([[gems-crystals]]).

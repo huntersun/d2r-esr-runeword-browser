@@ -21,4 +21,6 @@ sources: [official-docs]
 
 A weapon holds one mastery, on any tier, mythical bases included. A class Dragon Stone form and three Thawing Potions remove it, but the token is lost ([[enhancement-order]]).
 
+::recipes[weapon-mastery]
+
 ::source[Weapon Mastery Token]

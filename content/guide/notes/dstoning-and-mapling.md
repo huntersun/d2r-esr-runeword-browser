@@ -29,6 +29,8 @@ D-stoning cannot be removed. It works on runewords too: done to the white base b
 
 :term[Gem melding] uses a Perfect Gem and Ancient Decipherers to add that colour's chipped-gem bonus for the item's slot. It also raises the level requirement and has a per-item limit, higher for weapons.
 
+::recipes[gem-meld]
+
 ### Mapling
 
 :term[Mapling] is Secret Recipe 50: the item, a :term[Maple Leaf] and a Sa Rune lower the level requirement penalty a little, so the fail-safe opens again and you can D-stone more. The loop D-stone → Maple → D-stone is one of the strongest upgrades in ESR, and the most expensive.
@@ -36,5 +38,7 @@ D-stoning cannot be removed. It works on runewords too: done to the white base b
 ::secret-recipe[50]
 
 Maple Leaves come mainly from spare unique charms ([[unique-charms]]), spare Orbs of Anointment and Secret Recipes 26 and 40 ([[secret-recipes]]).
+
+::recipes[maple-leaf]
 
 If you D-stoned a white base before making a runeword, remove the runes before Mapling, or the materials are wasted.

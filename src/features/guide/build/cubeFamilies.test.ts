@@ -25,6 +25,12 @@ const HEADER = [
   'b mod 1',
   'input 4',
   'input 5',
+  'mod 1',
+  'mod 1 min',
+  'mod 1 max',
+  'op',
+  'param',
+  'value',
 ];
 
 /** A cubemain row with up to five inputs and three outputs, in the HEADER column order */
@@ -32,6 +38,19 @@ function cube(description: string, inputs: string[], outputs: string[]): string[
   const [first = '', second = '', third = '', fourth = '', fifth = ''] = inputs;
   const [output = '', b = '', c = ''] = outputs;
   return [description, '1', '', String(inputs.length), first, second, third, output, b, c, '0', '', fourth, fifth];
+}
+
+/** A cube row with a mod on its first output and/or an `op` condition (`[op, param, value]`) */
+function cubeWith(
+  description: string,
+  inputs: string[],
+  outputs: string[],
+  { mod, condition }: { mod?: [string, number]; condition?: [number, number, number] }
+): string[] {
+  const [name = '', value = 0] = mod ?? [];
+  const [op = 0, param = 0, threshold = 0] = condition ?? [];
+  const extra = [name, String(value), String(value), condition === undefined ? '' : String(op), String(param), String(threshold)];
+  return [...cube(description, inputs, outputs), ...extra];
 }
 
 const ITEMTYPES = tsv([
@@ -43,6 +62,13 @@ const ITEMTYPES = tsv([
   ['Blemished Gem', 'gem4'],
   ['Gem Can 8', 'can8'],
   ['Coupon norm', 'cpn1'],
+  ['Flawless Gem', 'gem3'],
+  ['Perfect Gem', 'gem5'],
+  ['Ancient Scroll Low', 'asc1'],
+  ['Helm', 'helm'],
+  ['Boots', 'boot'],
+  ['Wand', 'wand'],
+  ['Charm', 'char'],
 ]);
 
 /** Filler rows for the row cap test (matched by no curated family) */
@@ -126,6 +152,89 @@ const CUBEMAIN = tsv([
   cube('Pandemonium Key Set Unwrap', ['u10'], ['pk1', 'pk2', 'pk3']),
   cube('Pandemonium Key Set Wrap', ['pk1', 'pk2', 'pk3', 'key'], ['u10', 'key']),
   cube("1 Diablo's Horn + 1 Baal's Eye + 1 Mephisto's Brain -> Portal to Tristram", ['dhn', 'bey', 'mbr'], ['Pandemonium Finale Portal']),
+  // Merc Only Conversion: weapon/armor and gem colours merged, the removal gives the gem back
+  cubeWith('Merc Only Conversion', ['"weap,nru"', 'qqq', 'gbk'], ['useitem'], { mod: ['mercflag', 1] }),
+  cubeWith('Merc Only Conversion', ['"armo,nru"', 'qqq', 'grb'], ['useitem'], { mod: ['mercflag', 2] }),
+  cube('Merc Only Conversion Trap', ['weap', 'qqq', 'gem5'], ['void']),
+  cubeWith('Remove Merc Only Conversion', ['"weap,nru"', '"yps,qty=3"'], ['useitem', 'qqq', 'gbk'], { mod: ['mercflag', -1] }),
+  cubeWith('Remove Merc Only Conversion', ['"armo,nru"', '"yps,qty=3"'], ['useitem', 'qqq', 'grb'], { mod: ['mercflag', -2] }),
+  // Weapon mastery: one row per step, the bases merged
+  cube('Awaken Weapon Mastery Token - Stag Bow', ['am1', 'u23'], ['useitem', 'u24']),
+  cube('Awaken Weapon Mastery Token - Wand', ['wnd', 'u23'], ['useitem', 'u25']),
+  cube('Unawaken Weapon Mastery Token', ['u24'], ['u23']),
+  cubeWith('Apply Awaken Weapon Mastery Token - Stag Bow', ['"am1,nru"', 'u24', 'sss', 'qqq'], ['useitem'], { mod: ['weapon-mastery', 1] }),
+  cubeWith('Apply Awaken Weapon Mastery Token - Wand', ['"wnd,nru"', 'u25', 'eee', 'qqq'], ['useitem'], { mod: ['weapon-mastery', 2] }),
+  cubeWith('Remove Awaken Weapon Mastery Token - Stag Bow', ['"am1,nru"', 'sss', '"wms,qty=3"'], ['useitem'], {
+    mod: ['weapon-mastery', -1],
+  }),
+  // Removing socketables with a Key
+  cube('Unsocketable Trap', ['any', 'key'], ['void']),
+  cube('Unsocket Weap', ['weap', 'key'], ['"useitem,rem"', 'key']),
+  cube('Unsocket Charm', ['char', 'key'], ['"useitem,rem"', 'key']),
+  // Lucion's Essence: the tiers and slots of a quality merged, socketed and unsocketed items one row
+  cubeWith("Adds Socket(4): Mag bas Weapon + Lucion's Essence Remove", ['"weap,bas,mag"', 'u17'], ['"useitem,rem"'], { mod: ['sock', 4] }),
+  cubeWith("Adds Socket(4): Mag exc Armor + Lucion's Essence", ['"armo,exc,mag,nos"', 'u17'], ['useitem'], { mod: ['sock', 4] }),
+  cubeWith("Adds Socket(2): Rar bas Boots + Lucion's Essence", ['"boot,bas,rar,nos"', 'u17'], ['useitem'], { mod: ['sock', 2] }),
+  cubeWith("Adds Socket(2): Uni eli Weapon + Lucion's Essence", ['"weap,eli,uni,nos"', 'u17'], ['useitem'], { mod: ['sock', 2] }),
+  // Kill Ledger: the kill count from the row's condition; boss rows grouped by ingredient shape, traps left out
+  cube('Kill Ledger Tier 1 Trap', ['Kill Ledger', 'gem3'], ['void']),
+  cubeWith('Kill Ledger Tier 1', ['Kill Ledger', 'gem3'], ['useitem'], { mod: ['kill-ledger-tier-1', 1], condition: [3, 163, 500] }),
+  cubeWith('Kill Ledger Tier 2', ['Kill Ledger', '"gem5,qty=2"'], ['useitem'], {
+    mod: ['kill-ledger-tier-2', 1],
+    condition: [3, 163, 5000],
+  }),
+  cube('Kill Ledger Lucion Whisper Trap', ['Kill Ledger', '"xl7,qty=2"'], ['void']),
+  cubeWith('Kill Ledger Lucion Whisper', ['Kill Ledger', '"xl7,qty=2"'], ['useitem'], { condition: [6, 508, 50] }),
+  cubeWith('Kill Ledger Diablo Hellhound', ['Kill Ledger', '"xly,qty=2"'], ['useitem'], { condition: [6, 508, 51] }),
+  cubeWith('Kill Ledger Lucion', ['Kill Ledger', 'map', 'xly'], ['useitem'], { condition: [6, 508, 61] }),
+  cube('Kill Ledger Trap All Recipes', ['Kill Ledger', 'any'], ['void']),
+  // Ancient Scrolls: one generic row per recipe
+  cube('Identify Scroll 1', ['01b', 'ddd'], ['01a']),
+  cube('Identify Scroll 2', ['02b', 'ddd'], ['02a']),
+  cube('Scroll Upgrade 1', ['"01a,qty=2"'], ['02a']),
+  cube('Scroll Downgrade 2', ['02a'], ['01a']),
+  cube('Scroll Reroll Low', ['rnd', '"asc1,qty=2"'], ['01a']),
+  cube('Scroll Reroll Low', ['rnd', '"asc1,qty=2"'], ['02a']),
+  // Unique charms and Maple Leaves
+  cubeWith('Standard of Heroes Hellfire Torch', ['Hellfire Torch', 'std'], ['useitem'], { mod: ['item-upgraded', 1] }),
+  cubeWith('Standard of Heroes Annihilus', ['Annihilus', 'std'], ['useitem'], { mod: ['item-upgraded', 1] }),
+  cube('Unique Reroll ES Charm Exc', ['Yello Jello', '"gem5,qty=2"'], ['Yello Jello']),
+  cube('Unique Reroll ES Charm Exc', ['Deviant Cell', '"gem5,qty=2"'], ['Deviant Cell']),
+  cube('Maple Leaf: Unique Charm + Key + any rejuv pot', ['"char,uni"', 'key', 'rpot'], ['map', 'key']),
+  cube('Orb of Anointment Recycle to Maple Leaf', ['um7', 'gem5'], ['map']),
+  cube('Orb of Anointment Recycle to Maple Leaf x2', ['"um7,qty=2"', '"gem5,qty=2"'], ['map', 'map']),
+  cube("[SECRET40] 10 Devil's Foods -> Maple Leaf", ['"dfc,qty=5"', '40a'], ['map', '40a']),
+  // Class crafts (one row per class) and a Legacy craft, which is left out
+  cube("magic helm + jewel + spider's silk + perfect emerald -> amazon helm", ['"helm,mag"', 'jewl', 'sss', 'ggb'], ['"usetype,crf"']),
+  cube("magic boots + jewel + spider's silk + perfect emerald -> amazon boots", ['"boot,mag"', 'jewl', 'sss', 'ggb'], ['"usetype,crf"']),
+  cube('magic helm + jewel + blackmoor + perfect obsidian -> warlock helm', ['"helm,mag"', 'jewl', 'eee', 'gbk'], ['"usetype,crf"']),
+  cube('magic full helm + jewel + rune 06 + perfect amethyst -> hitpower helm', ['"helm,mag"', 'jewl', 'r03', 'gbk'], ['"usetype,crf"']),
+  // Gem melding: the colours merged, one row per level requirement
+  cubeWith('P-Eme + Any Wand + 3 ddd', ['wand', 'ggb', '"ddd,qty=3"'], ['useitem'], { mod: ['levelreq', 2] }),
+  cubeWith('P-Obs + Any Wand + 3 ddd', ['wand', 'gbk', '"ddd,qty=3"'], ['useitem'], { mod: ['levelreq', 2] }),
+  cubeWith('P-Eme + Any Weapon + 3 ddd', ['weap', 'ggb', '"ddd,qty=3"'], ['useitem'], { mod: ['levelreq', 2] }),
+  cubeWith('P-Eme + Any Helm + 3 ddd', ['helm', 'ggb', '"ddd,qty=3"'], ['useitem'], { mod: ['levelreq', 3] }),
+  // Ascendancies: the stones of one gem pattern pooled with their colours, the class rows merged, the tiers generic
+  cube('Orb of Creation: 5 Orb of Elements', ['u11', 'u12'], ['u16']),
+  cube(
+    'Battlemage Ascendancy: Orb of Creation + 2 Blemished Sapphire + 2 Blemished Obsidian',
+    ['u16', '"gpk,qty=2"', '"gpb,qty=2"'],
+    ['Battlemage Ascendancy Stone']
+  ),
+  cube(
+    'Nomad Ascendancy: Orb of Creation + 2 Blemished Obsidian + 2 Blemished Sapphire',
+    ['u16', '"gpb,qty=2"', '"gpk,qty=2"'],
+    ['Nomad Ascendancy Stone']
+  ),
+  cube('Berserker Ascendancy: Orb of Creation + 4 Blemished Obsidian', ['u16', '"gpk,qty=4"'], ['Berserker Ascendancy Stone']),
+  cube('Battlemage Ascend to Tier 2 Trap', ['Battlemage Ascendancy Stone'], ['void']),
+  cubeWith('Battlemage Ascend to Tier 2', ['Battlemage Ascendancy Stone'], ['useitem'], { mod: ['ascendancy-tier-2', 1] }),
+  cubeWith('Nomad Ascend to Tier 2', ['Nomad Ascendancy Stone'], ['useitem'], { mod: ['ascendancy-tier-2', 1] }),
+  cubeWith('Nomad Ascend to Tier 3', ['Nomad Ascendancy Stone', 'map'], ['useitem'], { mod: ['ascendancy-tier-3', 1] }),
+  // Vessel of Souls: every weapon one row; the trap rows are left out
+  cube('Vessel of Souls Transform to Mythical Razor Axe Anoint Trap', ['Vessel of Souls', 'gpk', 'gpb', 'gpw'], ['void']),
+  cube('Vessel of Souls Transform to Mythical Razor Axe', ['Vessel of Souls', 'gpk', 'gpb', 'gpw'], ['"m21,mod"']),
+  cube('Vessel of Souls Transform to Mythical Shade Bow', ['Vessel of Souls', 'gpk', 'gpb', 'gpv'], ['"m24,mod"']),
   ...FILLER,
 ]);
 
@@ -174,6 +283,38 @@ const MISC = tsv([
   ["Mephisto's Brain", 'mbr', 'mbr'],
   ['Heart', 'hrt', 'hrt'],
   ['Fang', 'fng', 'fng'],
+  ['Perfect Obsidian', 'gbk', 'gbk'],
+  ['Perfect Ruby', 'grb', 'grb'],
+  ['Perfect Emerald', 'ggb', 'ggb'],
+  ['Antidote Potion', 'yps', 'yps'],
+  ['Weapon Mastery Token', 'u23', 'u23'],
+  ['Weapon Mastery Token Stag Bow', 'u24', 'u24'],
+  ['Weapon Mastery Token Wand', 'u25', 'u25'],
+  ['Stag Bow', 'am1', 'am1'],
+  ['Wand', 'wnd', 'wnd'],
+  ["Spider'sSilk", 'sss', 'sss'],
+  ['Blackmoor', 'eee', 'eee'],
+  ["Lucion's Essence", 'u17', 'u17'],
+  ['Flawed Enigmatic Cinnabar', 'xl7', 'xl7'],
+  ['Flawed Tainted Tourmaline', 'xly', 'xly'],
+  ['UnID Scroll 1', '01b', '01b'],
+  ['UnID Scroll 2', '02b', '02b'],
+  ['Scroll 1', '01a', '01a', 'asc1'],
+  ['Scroll 2', '02a', '02a', 'asc1'],
+  ['Scroll 40', '40a', '40a'],
+  ['Decipherer', 'ddd', 'ddd'],
+  ['Standard of Heroes', 'std', 'std'],
+  ['Orb of Anointment', 'um7', 'um7'],
+  ["Devil's Food", 'dfc', 'dfc'],
+  ['Orb of Storms', 'u11', 'u11'],
+  ['Orb of Earth', 'u12', 'u12'],
+  ['Orb of Creation', 'u16', 'u16'],
+  ['Blemished Obsidian', 'gpk', 'gpk'],
+  ['Blemished Sapphire', 'gpb', 'gpb'],
+  ['Blemished Diamond', 'gpw', 'gpw'],
+  ['Blemished Amethyst', 'gpv', 'gpv'],
+  ['Mythical Razor Axe', 'm21', 'm21'],
+  ['Mythical Shade Bow', 'm24', 'm24'],
 ]);
 
 const FAMILY_STRINGS = JSON.stringify([
@@ -185,6 +326,16 @@ const FAMILY_STRINGS = JSON.stringify([
   { Key: '01c', enUS: '(Buckler, Pelta Lunata)\nAncient Coupon' },
   { Key: '02c', enUS: "(Cap, Biggin's Bonnet)\nAncient Coupon" },
   { Key: 'u40', enUS: "Inarius' Everburning Halo" },
+  { Key: 'u24', enUS: 'Awakened Weapon Mastery Token' },
+  { Key: 'u25', enUS: 'Awakened Weapon Mastery Token' },
+  { Key: 'sss', enUS: "Spider's Silk" },
+  { Key: '01b', enUS: 'Ancient Scroll' },
+  { Key: '02b', enUS: 'Ancient Scroll' },
+  { Key: '01a', enUS: 'Ancient Scroll 1' },
+  { Key: '02a', enUS: 'Ancient Scroll 2' },
+  { Key: '40a', enUS: 'Ancient Scroll 40' },
+  { Key: 'ddd', enUS: 'Ancient Decipherer' },
+  { Key: 'rpot', enUS: 'Rejuv Potion' },
 ]);
 
 function esr(): EsrGuideTables {
@@ -323,6 +474,154 @@ describe('cube families', () => {
       { inputs: ['Pandemonium Key Set'], output: 'Key of Terror + Key of Hate + Key of Destruction', note: null },
       { inputs: ['Key of Terror', 'Key of Hate', 'Key of Destruction', 'Skeleton Key'], output: 'Pandemonium Key Set', note: null },
       { inputs: ["Diablo's Horn", "Baal's Eye", "Mephisto's Brain"], output: 'Pandemonium Finale Portal', note: null },
+    ]);
+  });
+
+  it('shows Merc Only Conversion as one row to apply and one to remove, the slots and gem colours merged', () => {
+    expect(collectFamily(family('merc-only'), esr())).toEqual([
+      {
+        inputs: ['Weapon or armor (no runeword)', 'Anvil Stone', 'Perfect Gem (the colour picks the bonus)'],
+        output: 'The same item (mercenary only)',
+        note: null,
+      },
+      {
+        inputs: ['Weapon or armor (no runeword)', '3× Antidote Potion'],
+        output: 'The same item (no longer mercenary only) + Anvil Stone + the Perfect Gem',
+        note: null,
+      },
+    ]);
+  });
+
+  it('shows each weapon mastery step once, the bases merged, and what removing it loses', () => {
+    expect(collectFamily(family('weapon-mastery'), esr())).toEqual([
+      {
+        inputs: ['A class weapon (any of 2 bases)', 'Weapon Mastery Token'],
+        output: 'The same weapon + Awakened Weapon Mastery Token (for that weapon type)',
+        note: null,
+      },
+      { inputs: ['Awakened Weapon Mastery Token'], output: 'Weapon Mastery Token', note: null },
+      {
+        inputs: ['The class weapon (no runeword)', 'Awakened Weapon Mastery Token', "Its class's Dragon Stone form", 'Anvil Stone'],
+        output: 'The same weapon with its mastery',
+        note: null,
+      },
+      {
+        inputs: ['The class weapon (no runeword)', "Its class's Dragon Stone form", '3× Thawing Potion'],
+        output: 'The same weapon without the mastery (the token is not returned)',
+        note: null,
+      },
+    ]);
+  });
+
+  it('lists the Key unsocketing as one row and leaves the trap out', () => {
+    expect(collectFamily(family('unsocket'), esr())).toEqual([
+      {
+        inputs: ['Any socketed weapon or charm', 'Skeleton Key'],
+        output: 'The same item with empty sockets + everything that was socketed in it',
+        note: null,
+      },
+    ]);
+  });
+
+  it("merges Lucion's Essence rows per quality and socket count, socketed and unsocketed items alike", () => {
+    expect(collectFamily(family('lucion-essence'), esr())).toEqual([
+      {
+        inputs: ['Magic weapon or armor', "Lucion's Essence"],
+        output: 'The same item with 4 sockets (anything socketed in it comes out)',
+        note: null,
+      },
+      { inputs: ['Rare boots / Unique weapon', "Lucion's Essence"], output: 'The same item with 2 sockets', note: null },
+    ]);
+  });
+
+  it('shows the Kill Ledger kill counts from the row conditions and groups the boss rows, without traps', () => {
+    expect(collectFamily(family('kill-ledger-tiers'), esr())).toEqual([
+      { inputs: ['Kill Ledger (at least 500 kills)', 'Flawless Gem'], output: 'The Kill Ledger with kill bonus 1', note: null },
+      { inputs: ['Kill Ledger (at least 5,000 kills)', '2× Perfect Gem'], output: 'The Kill Ledger with kill bonus 2', note: null },
+    ]);
+    expect(collectFamily(family('kill-ledger-bosses'), esr())).toEqual([
+      {
+        inputs: ['Kill Ledger', '2× Flawed Enigmatic Cinnabar / 2× Flawed Tainted Tourmaline'],
+        output: "The Kill Ledger with that boss's bonus",
+        note: null,
+      },
+      { inputs: ['Kill Ledger', 'Maple Leaf', 'Flawed Tainted Tourmaline'], output: "The Kill Ledger with that boss's bonus", note: null },
+    ]);
+  });
+
+  it('shows one generic row per Ancient Scroll recipe with the scroll numbers read from the rows', () => {
+    expect(collectFamily(family('ancient-scrolls'), esr())).toEqual([
+      { inputs: ['Ancient Scroll (unidentified)', 'Ancient Decipherer'], output: 'Ancient Scroll N (its number, 1 to 2)', note: null },
+      { inputs: ['2× Ancient Scroll N (N = 1)'], output: 'Ancient Scroll N+1', note: null },
+      { inputs: ['Ancient Scroll N (N = 2)'], output: 'Ancient Scroll N-1', note: null },
+      { inputs: ['Randomizing Stone', '2× Ancient Scroll (any of 1 to 2)'], output: 'A random Ancient Scroll 1 to 2', note: null },
+    ]);
+  });
+
+  it('merges the unique charm upgrades and rerolls and the Orb of Anointment batches', () => {
+    expect(collectFamily(family('unique-charm-upgrades'), esr())).toEqual([
+      { inputs: ['Hellfire Torch / Annihilus', 'Standard of Heroes'], output: 'The same charm (upgraded)', note: null },
+      { inputs: ['Yello Jello / Deviant Cell', '2× Perfect Gem'], output: 'The same charm, rerolled', note: null },
+      { inputs: ['Unique Charm', 'Skeleton Key', 'Rejuv Potion'], output: 'Maple Leaf', note: null },
+    ]);
+    expect(collectFamily(family('maple-leaf'), esr())).toEqual([
+      { inputs: ['Unique Charm', 'Skeleton Key', 'Rejuv Potion'], output: 'Maple Leaf', note: null },
+      { inputs: ['N× Orb of Anointment (N = 1 to 2)', 'N× Perfect Gem'], output: 'N× Maple Leaf', note: null },
+      { inputs: ["5× Devil's Food", 'Ancient Scroll 40'], output: 'Maple Leaf', note: null },
+    ]);
+  });
+
+  it('shows one class craft row per class and leaves the Legacy crafts out', () => {
+    expect(collectFamily(family('class-craft'), esr())).toEqual([
+      {
+        inputs: ['Magic item (any slot)', 'Jewel', "Spider's Silk", 'Perfect Emerald'],
+        output: 'Crafted item of the same type (Amazon craft)',
+        note: null,
+      },
+      {
+        inputs: ['Magic item (any slot)', 'Jewel', 'Blackmoor', 'Perfect Obsidian'],
+        output: 'Crafted item of the same type (Warlock craft)',
+        note: null,
+      },
+    ]);
+  });
+
+  it('merges gem melding per level requirement, the gem colours merged', () => {
+    expect(collectFamily(family('gem-meld'), esr())).toEqual([
+      {
+        inputs: ['Wand, Staff or Orb / Weapon', 'Perfect Gem (the colour picks the bonus)', '3× Ancient Decipherer'],
+        output: 'The same item (+2 level requirement)',
+        note: null,
+      },
+      {
+        inputs: ['Helm', 'Perfect Gem (the colour picks the bonus)', '3× Ancient Decipherer'],
+        output: 'The same item (+3 level requirement)',
+        note: null,
+      },
+    ]);
+  });
+
+  it('pools the Ascendancy Stones of one gem pattern with their colours and shows the tiers for any stone', () => {
+    expect(collectFamily(family('ascendancy'), esr())).toEqual([
+      { inputs: ['Orb of Storms', 'Orb of Earth'], output: 'Orb of Creation', note: null },
+      {
+        inputs: ['Orb of Creation', '2× Blemished gems + 2× Blemished gems of another colour'],
+        output: 'Ascendancy Stone: Battlemage (Obsidian, Sapphire) / Nomad (Sapphire, Obsidian)',
+        note: null,
+      },
+      { inputs: ['Orb of Creation', '4× Blemished gems of one colour'], output: 'Ascendancy Stone: Berserker (Obsidian)', note: null },
+      { inputs: ['Your Ascendancy Stone'], output: 'The stone at tier 2', note: null },
+      { inputs: ['Your Ascendancy Stone', 'Maple Leaf'], output: 'The stone at tier 3', note: null },
+    ]);
+  });
+
+  it('shows every Vessel of Souls transformation as one row and leaves the traps out', () => {
+    expect(collectFamily(family('vessel-transform'), esr())).toEqual([
+      {
+        inputs: ['Vessel of Souls', '3 Blemished gems of different colours (they pick the weapon)'],
+        output: 'Mythical Razor Axe / Mythical Shade Bow, each keeps its stats',
+        note: null,
+      },
     ]);
   });
 

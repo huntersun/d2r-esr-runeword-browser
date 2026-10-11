@@ -20,4 +20,6 @@ Instead you cube it with five :term[Organ]s at a time (some recipes take a Flag 
 
 Once the souls are spent, cube it with three Blemished gems to turn it into one of several mythical weapons. It keeps every bonus and gets extra tinkering points ([[tinkering]]). It is the only unique an Orb of Anointment works on, and it cannot be corrupted while souls remain ([[corruption-anointment]]).
 
+::recipes[vessel-transform]
+
 ::source[Vessel of Souls]

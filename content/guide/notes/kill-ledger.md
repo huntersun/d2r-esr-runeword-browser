@@ -17,6 +17,11 @@ sources: [official-docs]
 The :term[Kill Ledger] comes out of the Starter Pack ([[starter-pack]]). Keep it in your inventory at all times: the official page says skills' random effects need it. It cannot be moved to another character, and each bonus can be taken only once.
 
 - **Kill bonuses:** at each kill milestone, cube the ledger with gems (a Maple Leaf for the last one) for a permanent bonus such as resistances or all speeds. Take them in order; out of order the recipe does nothing.
+
+::recipes[kill-ledger-tiers]
+
 - **Boss bonuses:** within 60 seconds of killing an endgame boss, cube the ledger with the Flawed crystals that boss asks for (the hardest bosses also want a Perfect Gem or a Maple Leaf) ([[gems-crystals]]). These come in any order ([[maps-keys-ascendancy]]).
+
+::recipes[kill-ledger-bosses]
 
 ::source[Kill Ledger]

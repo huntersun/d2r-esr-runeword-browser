@@ -383,6 +383,398 @@ function skillForgingClass(recipe: RecipeVariant, row: CubeRow): RecipeVariant {
   return name === undefined ? recipe : { ...recipe, output: `${recipe.output} (+${name} skills)` };
 }
 
+// --- shared helpers for the generic rewrites below ----------------------------------------------------------------
+
+const valuesCache = new WeakMap<FamilyTables, Map<string, string[]>>();
+
+/**
+ * The distinct values `pick` returns over the cube rows `accept` takes, in file order, cached per table set and
+ * `key` (a rewrite sees one row at a time, but its generic text often names what all rows of the recipe accept).
+ */
+function valuesOver(
+  esr: FamilyTables,
+  key: string,
+  accept: (row: CubeRow) => boolean,
+  pick: (row: CubeRow) => readonly (string | null)[]
+): string[] {
+  let cache = valuesCache.get(esr);
+  if (cache === undefined) {
+    cache = new Map();
+    valuesCache.set(esr, cache);
+  }
+  const cached = cache.get(key);
+  if (cached !== undefined) return cached;
+  const values = new Set<string>();
+  for (const row of esr.cube) {
+    if (!accept(row)) continue;
+    for (const value of pick(row)) if (value !== null) values.add(value);
+  }
+  const list = [...values];
+  cache.set(key, list);
+  return list;
+}
+
+/** "a", "a or b", "a, b or c" */
+function orList(values: readonly string[]): string {
+  return values.length <= 1 ? values.join('') : `${values.slice(0, -1).join(', ')} or ${values.at(-1) ?? ''}`;
+}
+
+/** "1 to 25" for a run of numbers, otherwise the numbers listed */
+function numberRange(numbers: readonly number[]): string {
+  const sorted = [...numbers].sort((a, b) => a - b);
+  const [first, last] = [sorted.at(0), sorted.at(-1)];
+  if (first === undefined || last === undefined) return '';
+  if (first === last) return String(first);
+  return last - first + 1 === sorted.length ? `${String(first)} to ${String(last)}` : sorted.join(', ');
+}
+
+/** The max of the first output mod with this name, null when the row has none */
+function outputMod(row: CubeRow, name: string | RegExp): number | null {
+  for (const output of row.outputs) {
+    const mod = output.mods.find((candidate) => (typeof name === 'string' ? candidate.mod === name : name.test(candidate.mod)));
+    if (mod !== undefined) return mod.max;
+  }
+  return null;
+}
+
+/** Every option of a random pool, unshortened ("a / b / c / d") */
+function allOptions(ranked: string[]): string {
+  return ranked.join(' / ');
+}
+
+// --- mercenaries -------------------------------------------------------------------------------------------------
+
+const PERFECT_GEM = /^Perfect (?:Amethyst|Topaz|Sapphire|Emerald|Ruby|Diamond|Skull|Obsidian)$/;
+
+/** One row for applying (any slot, any gem colour) and one for removing Merc Only Conversion */
+function genericMercOnly(recipe: RecipeVariant, row: CubeRow): RecipeVariant {
+  const flag = outputMod(row, 'mercflag');
+  const inputs = recipe.inputs.map((input, i) =>
+    i === 0 ? 'Weapon or armor (no runeword)' : PERFECT_GEM.test(input) ? 'Perfect Gem (the colour picks the bonus)' : input
+  );
+  if (flag === null) return { inputs, output: recipe.output };
+  const output = recipe.output
+    .split(' + ')
+    .map((part) => (part === 'The same item' ? `The same item (${flag > 0 ? 'mercenary only' : 'no longer mercenary only'})` : part))
+    .map((part) => (PERFECT_GEM.test(part) ? 'the Perfect Gem' : part))
+    .join(' + ');
+  return { inputs, output };
+}
+
+// --- weapon mastery ----------------------------------------------------------------------------------------------
+
+const MASTERY_VERB = /^(Awaken|Apply Awaken|Remove Awaken|Unawaken) Weapon Mastery Token/;
+
+function masteryVerb(row: CubeRow): string {
+  return MASTERY_VERB.exec(row.description)?.[1] ?? row.description;
+}
+
+/**
+ * The per-base rows of a weapon mastery recipe as one: any class weapon with a mastery, its class's Dragon Stone
+ * form; awakening shows that the token becomes one for that weapon type.
+ */
+function genericMastery(recipe: RecipeVariant, row: CubeRow, esr: FamilyTables): RecipeVariant {
+  const verb = masteryVerb(row);
+  if (verb === 'Unawaken') return recipe;
+  const bases = valuesOver(
+    esr,
+    'mastery bases',
+    (candidate) => masteryVerb(candidate) === 'Awaken',
+    (candidate) => [parseCubeCell(candidate.inputs[0] ?? '').token]
+  );
+  const inputs = recipe.inputs.map((text, i) => {
+    if (i === 0) return verb === 'Awaken' ? `A class weapon (any of ${String(bases.length)} bases)` : 'The class weapon (no runeword)';
+    if (verb !== 'Awaken' && i === (verb === 'Apply Awaken' ? 2 : 1)) return "Its class's Dragon Stone form";
+    return text;
+  });
+  if (verb === 'Awaken')
+    return { inputs, output: recipe.output.replace(/^The same item \+ (.+)$/, 'The same weapon + $1 (for that weapon type)') };
+  if (verb === 'Apply Awaken') return { inputs, output: 'The same weapon with its mastery' };
+  return { inputs, output: 'The same weapon without the mastery (the token is not returned)' };
+}
+
+// --- sockets: Key and Lucion's Essence ----------------------------------------------------------------------------
+
+const SLOT_WORDS: Readonly<Partial<Record<string, string>>> = {
+  weap: 'weapon',
+  armo: 'armor',
+  tors: 'body armor',
+  helm: 'helm',
+  shld: 'shield',
+  glov: 'gloves',
+  belt: 'belt',
+  boot: 'boots',
+  ring: 'ring',
+  amul: 'amulet',
+  char: 'charm',
+  misl: 'quiver',
+  aq2: 'quiver',
+  cq2: 'quiver',
+};
+
+function slotWord(token: string, esr: FamilyTables): string {
+  return SLOT_WORDS[token] ?? esr.nameOf(token).toLowerCase();
+}
+
+/** "Any socketed weapon, armor, ring, amulet, charm or quiver" + Key → the item emptied and its socketables */
+function genericUnsocket(recipe: RecipeVariant, row: CubeRow, esr: FamilyTables): RecipeVariant {
+  const slots = valuesOver(
+    esr,
+    'unsocket slots',
+    (candidate) => /^Unsocket /.test(candidate.description) && candidate.outputs.some((output) => /,rem\b/.test(output.spec)),
+    (candidate) => [slotWord(parseCubeCell(candidate.inputs[0] ?? '').token, esr)]
+  );
+  if (!row.outputs.some((output) => /^useitem,rem\b/.test(output.spec))) return recipe;
+  const inputs = recipe.inputs.map((input, i) => (i === 0 ? `Any socketed ${orList(slots)}` : input));
+  return { inputs, output: 'The same item with empty sockets + everything that was socketed in it' };
+}
+
+const LUCION_ROW = /^Adds Socket\(\d\): .* \+ Lucion's Essence(?: Remove)?$/;
+
+const LUCION_QUALITY: Readonly<Partial<Record<string, string>>> = {
+  mag: 'Magic',
+  rar: 'Rare',
+  crf: 'Crafted',
+  set: 'Set',
+  uni: 'Unique',
+};
+
+/** Quality and socket count: the slots sharing them are one row */
+function lucionKey(row: CubeRow): string {
+  const { qualifiers } = parseCubeCell(row.inputs[0] ?? '');
+  const quality = qualifiers.map((part) => LUCION_QUALITY[part]).find((found) => found !== undefined) ?? '';
+  return `${quality}|${String(outputMod(row, 'sock') ?? 0)}`;
+}
+
+/**
+ * "Rare weapon, body armor, helm or shield" + Lucion's Essence → "The same item with 3 sockets": the rows for items
+ * without sockets and for socketed ones (whose socketables come out) are one row.
+ */
+function genericLucion(recipe: RecipeVariant, row: CubeRow, esr: FamilyTables): RecipeVariant {
+  const key = lucionKey(row);
+  const quality = key.split('|')[0] ?? '';
+  const slots = valuesOver(
+    esr,
+    `lucion ${key}`,
+    (candidate) => LUCION_ROW.test(candidate.description) && lucionKey(candidate) === key,
+    (candidate) => [slotWord(parseCubeCell(candidate.inputs[0] ?? '').token, esr)]
+  );
+  const sockets = plural(outputMod(row, 'sock') ?? 0, 'socket');
+  // Socketed items of this quality and count are emptied by a sibling row: the row is for either kind of item
+  const emptied = valuesOver(
+    esr,
+    `lucion emptied ${key}`,
+    (candidate) => LUCION_ROW.test(candidate.description) && lucionKey(candidate) === key,
+    (candidate) => (candidate.outputs.some((output) => /^useitem,rem\b/.test(output.spec)) ? ['rem'] : [])
+  );
+  const inputs = recipe.inputs.map((input, i) => (i === 0 ? `${quality} ${orList(slots)}` : input));
+  return { inputs, output: `The same item with ${sockets}${emptied.length > 0 ? ' (anything socketed in it comes out)' : ''}` };
+}
+
+// --- Kill Ledger -------------------------------------------------------------------------------------------------
+
+/** "Kill Ledger (at least 500 kills)" from the row's kill count condition; the bonus number from its mod */
+function genericKillTier(recipe: RecipeVariant, row: CubeRow): RecipeVariant {
+  const kills = row.condition !== null && row.condition.value > 0 ? row.condition.value : null;
+  const tier = row.outputs.flatMap((output) => output.mods).find((mod) => /^kill-ledger-tier-\d+$/.test(mod.mod));
+  const inputs = recipe.inputs.map((input, i) =>
+    i === 0 && kills !== null ? `${input} (at least ${kills.toLocaleString('en-US')} kills)` : input
+  );
+  const output = tier === undefined ? recipe.output : `The Kill Ledger with kill bonus ${tier.mod.replace(/^kill-ledger-tier-/, '')}`;
+  return { inputs, output };
+}
+
+function genericKillBoss(recipe: RecipeVariant): RecipeVariant {
+  return { inputs: recipe.inputs, output: recipe.output === 'The same item' ? "The Kill Ledger with that boss's bonus" : recipe.output };
+}
+
+/** The boss rows by ingredient shape: two crystals; two crystals and a Perfect Gem; a Maple Leaf and a crystal */
+function killBossShape(row: CubeRow): string {
+  return row.inputs.map((spec) => (parseCubeCell(spec).token === 'map' ? 'map' : String(parseCubeCell(spec).qty))).join(',');
+}
+
+// --- Ancient Scrolls ---------------------------------------------------------------------------------------------
+
+/** Number of an identified Ancient Scroll ("Scroll 12"), null for anything else */
+function scrollNumber(token: string, esr: FamilyTables): number | null {
+  const match = /^Scroll (\d+)$/.exec(internalName(esr, token) ?? '');
+  return match === null ? null : Number(match[1]);
+}
+
+function scrollVerb(row: CubeRow): string {
+  return row.description.replace(/ \d+$/, '');
+}
+
+/** The scroll numbers over the inputs (or outputs) of every row of this recipe */
+function scrollNumbers(esr: FamilyTables, row: CubeRow, side: 'inputs' | 'outputs'): string {
+  const verb = scrollVerb(row);
+  const numbers = valuesOver(
+    esr,
+    `scrolls ${verb} ${side}`,
+    (candidate) => scrollVerb(candidate) === verb,
+    (candidate) =>
+      (side === 'inputs' ? candidate.inputs : candidate.outputs.map((output) => output.spec)).map((spec) => {
+        const n = scrollNumber(parseCubeCell(spec).token, esr);
+        return n === null ? null : String(n);
+      })
+  );
+  return numberRange(numbers.map(Number));
+}
+
+/** The scroll numbers of an item type (Ancient Scroll Low / High) */
+function scrollTypeRange(type: string, esr: FamilyTables): string | null {
+  const numbers = esr.items
+    .filter((item) => item.type === type)
+    .map((item) => scrollNumber(item.code, esr))
+    .filter((n): n is number => n !== null);
+  return numbers.length === 0 ? null : numberRange(numbers);
+}
+
+/** One generic row per scroll recipe: identify, upgrade, downgrade, the two rerolls */
+function genericScrolls(recipe: RecipeVariant, row: CubeRow, esr: FamilyTables): RecipeVariant {
+  const verb = scrollVerb(row);
+  const cells = row.inputs.map(parseCubeCell);
+  if (verb === 'Identify Scroll') {
+    return {
+      inputs: ['Ancient Scroll (unidentified)', ...recipe.inputs.slice(1)],
+      output: `Ancient Scroll N (its number, ${scrollNumbers(esr, row, 'outputs')})`,
+    };
+  }
+  if (verb === 'Scroll Upgrade') {
+    return { inputs: [`2× Ancient Scroll N (N = ${scrollNumbers(esr, row, 'inputs')})`], output: 'Ancient Scroll N+1' };
+  }
+  if (verb === 'Scroll Downgrade') {
+    return { inputs: [`Ancient Scroll N (N = ${scrollNumbers(esr, row, 'inputs')})`], output: 'Ancient Scroll N-1' };
+  }
+  if (/^Scroll Reroll /.test(verb)) {
+    const inputs = cells.map((cell, i) => {
+      const range = scrollTypeRange(cell.token, esr);
+      return range === null ? (recipe.inputs[i] ?? '') : `${String(cell.qty)}× Ancient Scroll (any of ${range})`;
+    });
+    return { inputs, output: `A random Ancient Scroll ${scrollNumbers(esr, row, 'outputs')}` };
+  }
+  return recipe;
+}
+
+// --- unique charms and Maple Leaves ------------------------------------------------------------------------------
+
+/** Rerolls hand the charm back as itself: "The same charm, rerolled"; Standard of Heroes marks it upgraded */
+function genericCharmUpgrade(recipe: RecipeVariant, row: CubeRow): RecipeVariant {
+  const first = parseCubeCell(row.inputs[0] ?? '').token;
+  if (row.outputs.length === 1 && row.outputs[0]?.spec === first) return { inputs: recipe.inputs, output: 'The same charm, rerolled' };
+  if (outputMod(row, 'item-upgraded') !== null) return { inputs: recipe.inputs, output: 'The same charm (upgraded)' };
+  return recipe;
+}
+
+/** The Orb of Anointment batches (1 to 3 at a time) as one row */
+function genericMapleLeaf(recipe: RecipeVariant, row: CubeRow, esr: FamilyTables): RecipeVariant {
+  if (!/^Orb of Anointment Recycle/.test(row.description)) return recipe;
+  const counts = valuesOver(
+    esr,
+    'anointment recycle',
+    (candidate) => /^Orb of Anointment Recycle/.test(candidate.description),
+    (candidate) => [String(parseCubeCell(candidate.inputs[0] ?? '').qty)]
+  );
+  const strip = (text: string) => text.replace(/^\d+× /, '');
+  return {
+    inputs: recipe.inputs.map((input, i) =>
+      i === 0 ? `N× ${strip(input)} (N = ${numberRange(counts.map(Number))})` : `N× ${strip(input)}`
+    ),
+    output: `N× ${strip(recipe.output.split(' + ')[0] ?? recipe.output)}`,
+  };
+}
+
+// --- class crafts, gem melding -----------------------------------------------------------------------------------
+
+const CRAFT_CLASSES: Readonly<Partial<Record<string, string>>> = {
+  amazon: 'Amazon',
+  assassin: 'Assassin',
+  barb: 'Barbarian',
+  druid: 'Druid',
+  necro: 'Necromancer',
+  paladin: 'Paladin',
+  sorceress: 'Sorceress',
+  warlock: 'Warlock',
+};
+
+function craftClass(row: CubeRow): string {
+  const tag = /-> (\w+) \w+$/.exec(row.description)?.[1] ?? '';
+  return CRAFT_CLASSES[tag] ?? tag;
+}
+
+/** One row per class: the magic base of any slot, the class's Dragon Stone form and Perfect Gem */
+function genericClassCraft(recipe: RecipeVariant, row: CubeRow): RecipeVariant {
+  return {
+    inputs: recipe.inputs.map((input, i) => (i === 0 ? 'Magic item (any slot)' : input)),
+    output: `${recipe.output} (${craftClass(row)} craft)`,
+  };
+}
+
+/** Gem melding per slot group: the gem colour picks the bonus, the slot sets the level requirement added */
+function genericGemMeld(recipe: RecipeVariant, row: CubeRow): RecipeVariant {
+  const base = parseCubeCell(row.inputs[0] ?? '').token;
+  const levelreq = outputMod(row, 'levelreq');
+  const inputs = recipe.inputs.map((input, i) => {
+    if (i === 0 && /^(?:wand|staf|orb)$/.test(base)) return 'Wand, Staff or Orb';
+    return PERFECT_GEM.test(input) ? 'Perfect Gem (the colour picks the bonus)' : input;
+  });
+  return { inputs, output: levelreq === null ? recipe.output : `The same item (+${String(levelreq)} level requirement)` };
+}
+
+// --- ascendancies, Vessel of Souls -------------------------------------------------------------------------------
+
+const BLEMISHED = /^(?:(\d+)× )?Blemished (\w+)$/;
+/** A stone with its gem colours, as genericAscendancy writes it: "Battlemage (Obsidian, Sapphire)" */
+const STONE_COLOURS = /^[\w ]+ \(\w+(?:, \w+)*\)$/;
+
+/**
+ * Ascendancy Stones by gem pattern (the class only changes the stone's mods), each pool listing the stones with
+ * their colours; the tier upgrades for any stone.
+ */
+function genericAscendancy(recipe: RecipeVariant, row: CubeRow): RecipeVariant {
+  const tier = row.outputs.flatMap((output) => output.mods).find((mod) => /^ascendancy-tier-\d$/.test(mod.mod));
+  if (tier !== undefined) {
+    return {
+      inputs: recipe.inputs.map((input, i) => (i === 0 ? 'Your Ascendancy Stone' : input)),
+      output: `The stone at tier ${tier.mod.replace(/^ascendancy-tier-/, '')}`,
+    };
+  }
+  const gems = recipe.inputs.map((input) => BLEMISHED.exec(input)).filter((match) => match !== null);
+  if (gems.length === 0) return recipe;
+  const colours = gems.map((match) => match[2]);
+  // No count prefix: one gem (Number(undefined) is NaN)
+  const counts = gems.map((match) => Number(match[1]) || 1);
+  const pattern =
+    gems.length === 1
+      ? `${String(counts[0])}× Blemished gems of one colour`
+      : counts.every((count) => count === 1)
+        ? `${String(gems.length)} Blemished gems of different colours`
+        : counts.map((count, i) => `${String(count)}× Blemished gems${i > 0 ? ' of another colour' : ''}`).join(' + ');
+  const stone = recipe.output.replace(/ Ascendancy Stone$/, '');
+  return { inputs: [recipe.inputs[0] ?? '', pattern], output: `${stone} (${colours.join(', ')})` };
+}
+
+/** "Ascendancy Stone: Berserker (Obsidian) / Starborn (Sapphire) / …" (every stone, not shortened) */
+function ascendancyPool(ranked: string[]): string {
+  return ranked.every((option) => STONE_COLOURS.test(option)) ? `Ascendancy Stone: ${allOptions(ranked)}` : allOptions(ranked);
+}
+
+/** Every transformation as one row: the three gems pick the weapon */
+function genericVessel(recipe: RecipeVariant): RecipeVariant {
+  const gems = recipe.inputs.filter((input) => BLEMISHED.test(input)).length;
+  return {
+    inputs: [recipe.inputs[0] ?? '', `${String(gems)} Blemished gems of different colours (they pick the weapon)`],
+    output: recipe.output,
+  };
+}
+
+/** "Mythical Razor Axe / … (29 variants), each keeps its stats": details every option shares are written once */
+function sharedSuffixPool(ranked: string[]): string {
+  const match = / \(([^()]+)\)$/.exec(ranked[0] ?? '');
+  if (match === null || ranked.length < 2 || !ranked.every((option) => option.endsWith(match[0]))) return joinOptions(ranked);
+  return `${joinOptions(ranked.map((option) => option.slice(0, -match[0].length)))}, each ${match[1]}`;
+}
+
 export const CUBE_FAMILIES: readonly CubeFamily[] = [
   { id: 'dstone-cycle', label: 'Dragon Stone cycle (one material into the next)', match: /^Dstone Transformation$/ },
   { id: 'anvil-stone', label: 'Making Anvil Stones', match: /^"?(?:Anvil Stone|Multi Stocker .*\+1 Anvil Stone)"?$/ },
@@ -503,6 +895,95 @@ export const CUBE_FAMILIES: readonly CubeFamily[] = [
     id: 'uber-keys',
     label: 'Pandemonium keys and portals',
     match: /^(?:Key of \w+ \+ Blemished Gem \+ .+ Conversion|Pandemonium Key Set (?:Wrap|Unwrap)|1 Key of Terror \+ |1 Diablo's Horn \+ )/,
+  },
+  {
+    id: 'merc-only',
+    label: 'Merc Only Conversion',
+    match: /^(?:Remove )?Merc Only Conversion$/,
+    rewrite: genericMercOnly,
+  },
+  {
+    id: 'weapon-mastery',
+    label: 'Weapon mastery',
+    match: /^(?:(?:Apply |Remove )?Awaken Weapon Mastery Token - .+|Unawaken Weapon Mastery Token)$/,
+    rewrite: genericMastery,
+    // One row per step (the bases merged); applying with a chipped gem (orbs, Voidblades) is its own row.
+    collapse: masteryVerb,
+  },
+  {
+    id: 'unsocket',
+    label: 'Removing socketables with a Key',
+    match: /^Unsocket (?:Weap|Armo|Ring|Amulet|Charm|Quiver)$/,
+    rewrite: genericUnsocket,
+  },
+  {
+    id: 'lucion-essence',
+    label: "Adding sockets with Lucion's Essence",
+    match: LUCION_ROW,
+    rewrite: genericLucion,
+    // The tiers and slots of one quality and socket count merged; qualities with the same count share a row.
+  },
+  {
+    id: 'kill-ledger-tiers',
+    label: 'Kill Ledger kill bonuses',
+    match: /^Kill Ledger Tier \d+$/,
+    rewrite: genericKillTier,
+  },
+  {
+    id: 'kill-ledger-bosses',
+    label: 'Kill Ledger boss bonuses',
+    match: /^Kill Ledger (?!Tier )(?!.*Trap).+$/,
+    rewrite: genericKillBoss,
+    collapse: killBossShape,
+  },
+  {
+    id: 'ancient-scrolls',
+    label: 'Ancient Scrolls',
+    match: /^(?:Identify Scroll \d+|Scroll Upgrade \d+|Scroll Downgrade \d+|Scroll Reroll (?:Low|High))$/,
+    rewrite: genericScrolls,
+    collapse: scrollVerb,
+  },
+  {
+    id: 'unique-charm-upgrades',
+    label: 'Upgrading, rerolling and recycling unique charms',
+    match:
+      /^(?:Standard of Heroes .+|Unique Reroll ES Charm (?:Exc|Eli)|Maple Leaf: Unique Charm \+ Key \+ any rejuv pot|2 Broken Hourglass Shards \+ .+)$/,
+    rewrite: genericCharmUpgrade,
+  },
+  {
+    id: 'maple-leaf',
+    label: 'Making Maple Leaves',
+    match:
+      /^(?:Maple Leaf: Unique Charm \+ Key \+ any rejuv pot|Orb of Anointment Recycle to Maple Leaf(?: x\d)?|\[SECRET(?:26|40)\] .*Maple Leaf.*)$/,
+    rewrite: genericMapleLeaf,
+  },
+  {
+    id: 'class-craft',
+    label: 'Class crafts',
+    // Not the Legacy crafts, which take a rune instead of a Dragon Stone form
+    match: /^magic [\w' ]+ \+ jewel \+ (?!rune )[\w' ]+ \+ [\w' ]+ -> \w+ \w+$/,
+    rewrite: genericClassCraft,
+    collapse: craftClass,
+  },
+  {
+    id: 'gem-meld',
+    label: 'Gem melding',
+    match: /^P-(?:Ame|Top|Sap|Eme|Rub|Dia|Sku|Obs) \+ Any \w+ \+ 3 ddd$/,
+    rewrite: genericGemMeld,
+  },
+  {
+    id: 'ascendancy',
+    label: 'Ascendancy Stones and tiers',
+    match: /^(?!.*Trap)(?:Orb of Creation: 5 Orb of Elements|[\w ]+ Ascendancy: Orb of Creation \+ .+|[\w ]+ Ascend to Tier \d.*)$/,
+    rewrite: genericAscendancy,
+    pool: ascendancyPool,
+  },
+  {
+    id: 'vessel-transform',
+    label: 'Turning the Vessel of Souls into a mythical weapon',
+    match: /^Vessel of Souls Transform to Mythical (?!.*Trap)/,
+    rewrite: genericVessel,
+    pool: sharedSuffixPool,
   },
 ];
 

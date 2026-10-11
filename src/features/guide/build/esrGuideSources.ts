@@ -29,12 +29,22 @@ export interface CubeOutput {
   mods: CubeMod[];
 }
 
+/** The row's `op` / `param` / `value` condition, e.g. the Kill Ledger's kill count (stat 163 at least 500) */
+export interface CubeCondition {
+  op: number;
+  /** Stat id */
+  param: number;
+  value: number;
+}
+
 export interface CubeRow {
   description: string;
   cls: string;
   /** Raw input cells without quotes, e.g. `gem5,qty=2` */
   inputs: string[];
   outputs: CubeOutput[];
+  /** Null when the row has no `op` */
+  condition: CubeCondition | null;
 }
 
 export interface VendorOffer {
@@ -133,6 +143,12 @@ function readMods(row: TsvRow, prefix: string): CubeMod[] {
   return mods;
 }
 
+function readCondition(row: TsvRow): CubeCondition | null {
+  const op = numberOf(row, 'op');
+  if (op === 0) return null;
+  return { op, param: numberOf(row, 'param'), value: numberOf(row, 'value') };
+}
+
 function readCube(table: TsvTable): CubeRow[] {
   const rows: CubeRow[] = [];
   for (const row of table.rows) {
@@ -153,6 +169,7 @@ function readCube(table: TsvTable): CubeRow[] {
         .map((i) => (row.has(`input ${String(i)}`) ? unquote(row.str(`input ${String(i)}`)) : ''))
         .filter((cell) => cell !== ''),
       outputs,
+      condition: readCondition(row),
     });
   }
   return rows;
