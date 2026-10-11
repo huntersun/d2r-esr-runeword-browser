@@ -50,6 +50,11 @@ and docs are the secondary source that confirms or adds detail. Write a plain-la
 
 If a patch note is ambiguous or contradicts the tables, say so; do not resolve it by guessing.
 
+The launcher section matters to the guide too: notes cite the launcher plugins and memory patches as a source
+(`esr-loader` in `_sources.yml`; e.g. `d2rloader/patches/auto-collect-corpse.json` is why death leaves no corpse, and
+`d2rloader/config/celestialrayone.cube-cloneitem.toml` defines the `cloneitem` cube output). A changed, disabled or
+removed patch/config changes a guide fact: `grep -ln esr-loader content/guide/notes/*.md` lists the notes to re-read.
+
 ## 3. Review the regenerated data
 
 1. `git diff --stat public/game-data public/guide`.
@@ -63,6 +68,19 @@ If a patch note is ambiguous or contradicts the tables, say so; do not resolve i
 4. Explain every count change with the release diff (e.g. "+2 runewords: patch note adds X and Y", "+14 affixes:
    magicsuffix.txt rows added"). Anything you cannot explain → investigate (table diff, generator warnings) before
    moving on, and report it.
+5. Check the generated recipe blocks that rewrite rows generically; they fall back to raw rows instead of failing
+   when the cubemain shape changes. List every `::recipes` block with its row count:
+   `node -e "const g=require('./public/guide/guide.json');const w=b=>Array.isArray(b)?b.flatMap(w):b&&typeof b==='object'?[b,...Object.values(b).flatMap(w)]:[];for(const n of g.notes)for(const b of w(n.body))if(b.kind==='recipes')console.log(n.slug,'|',b.caption,'|',b.rows.length)"`
+   and compare with `git show HEAD:public/guide/guide.json` through the same command. Expected shapes: `rune-conversion`
+   (rune-families) has one "Ancient Decal (X -> Y) + X Rune → Y Rune" row and one "An LoD rune … → The ES rune and the
+   Ancient Decal" row; per-Decal rows instead mean a Decal name no longer matches its row. `rune-forging` (forging)
+   has 3 rows whose rune ranges are read from the rows. `legendary-consumables` (enhancement-order) shows the Halo as
+   "The same item + A copy of the item (Branded)". A block that grew to the 12-row cap or lost its generic rows is a
+   finding to report, not to hide.
+6. The Drop Finder (`https://easternsunresurrected.com/drop-finder.html`, linked under every `::source` block and by
+   `dropfinder:` links) is not in the clone, so the diff cannot see it move:
+   `curl -sS -o /dev/null -w '%{http_code}\n' https://easternsunresurrected.com/drop-finder.html` must print 200
+   (warning only when offline).
 
 ## 4. Guide
 
@@ -73,6 +91,10 @@ If a patch note is ambiguous or contradicts the tables, say so; do not resolve i
 4. Draft concrete edits (do not apply yet unless they fix a build error): text changes, new or changed glossary terms
    in `_glossary.yml`, a new `kind: link` stub when a new system appeared (draft: no `verified:`). Rules:
    - keep a note body ≤ ~250 words (the build warns above 400);
+   - a new stub's slug must not be a reserved route slug (`RESERVED_SLUGS` in `src/features/guide/build/parseNote.ts`:
+     `map`); the build rejects it;
+   - prose that tells the player to farm or find an item may carry one `[label](<dropfinder:Item Name>)` link per
+     paragraph (the name is validated against `sources.json`, the link always opens the plain Drop Finder page);
    - never type a number a directive can provide (`::recipes`, `::source`, `::vendor`, `::secret-recipes`,
      `::difficulty-penalties`, `::card`, …); link to the data instead;
    - leave `verified:` and `content/guide/.verify-lock.json` untouched — only the owner verifies in-game;
@@ -126,10 +148,11 @@ commit attribution rules; pre-commit hooks run Prettier/ESLint. Never push.
   docs vs the tables is a data mismatch to report, not to hide.
 - **`game-data --check` / `guide:check` fails**: output is non-deterministic or stale; re-run the generator once and
   report if it persists.
-- **Guide build errors**: unknown `rw:`/`unique:`/`socketable:`/`base:` target or `::source` name → use the new name
-  from the strings diff (add `{item=…}` when it became ambiguous); unknown `::recipes` family → the cubemain
-  `description` changed, report it (the family list lives in code); dead `docs:` anchor → find the new anchor in the
-  changed docs page; unknown `:term` → add the term to `_glossary.yml` or fix the spelling.
+- **Guide build errors**: unknown `rw:`/`unique:`/`socketable:`/`base:`/`dropfinder:` target or `::source` name → use
+  the new name from the strings diff (add `{item=…}` when it became ambiguous); unknown `::recipes` family or a family
+  that matches no row → the cubemain `description` changed, report it (the family list and its regexes live in
+  `src/features/guide/build/cubeFamilies.ts`); dead `docs:` anchor → find the new anchor in the changed docs page;
+  unknown `:term` → add the term to `_glossary.yml` or fix the spelling; reserved slug → rename the new note.
 
 ## Do not
 
