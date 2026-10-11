@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, MapIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { LoadedGuide } from '../engine/browser/loadGuide';
 import { findNote, noteTitle } from '../engine/notes';
@@ -104,9 +104,18 @@ function Spine({ guide }: SpineProps) {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold">Guide</h1>
-        <p className="text-sm text-muted-foreground">Your path through Eastern Sun Resurrected</p>
+      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold">Guide</h1>
+          <p className="text-sm text-muted-foreground">Your path through Eastern Sun Resurrected</p>
+        </div>
+        <Link
+          to="/guide/map"
+          className={cn('inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-primary hover:underline', FOCUS_RING)}
+        >
+          <MapIcon className="size-4 shrink-0" aria-hidden />
+          See every note on one map
+        </Link>
       </div>
 
       <GuideSearch notes={notes} />

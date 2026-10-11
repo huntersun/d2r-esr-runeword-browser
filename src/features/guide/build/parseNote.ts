@@ -13,6 +13,8 @@ const KNOW_FIRST_MAX = 3;
 const RELATED_MAX = 5;
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+/** Slugs a note cannot use, with the app route that would shadow `/guide/<slug>`. */
+export const RESERVED_SLUGS: Readonly<Record<string, string>> = { map: '/guide/map' };
 const VERSION = /^\d+\.\d+(?:\.\d+)*$/;
 const FIELDS = [
   'title',
@@ -108,6 +110,8 @@ export function parseNote(file: string, text: string, ctx: GuideContext): Parsed
   const warnings: string[] = [];
   const slug = (file.split('/').pop() ?? file).replace(/\.md$/, '');
   if (!isSlug(slug)) errors.push(`${file}: file name "${slug}" is not a valid slug (kebab-case a-z, 0-9)`);
+  const reservedBy = Object.hasOwn(RESERVED_SLUGS, slug) ? RESERVED_SLUGS[slug] : undefined;
+  if (reservedBy !== undefined) errors.push(`${file}: slug '${slug}' is reserved by the ${reservedBy} route`);
 
   const parts = splitFrontmatter(text);
   if (parts === null) errors.push(`${file}: missing frontmatter (the file must start with a --- block)`);

@@ -30,6 +30,11 @@ const GuideNoteScreen = lazy(async () => {
   return { default: module.GuideNoteScreen };
 });
 
+const GuideMapScreen = lazy(async () => {
+  const module = await import('@/features/guide');
+  return { default: module.GuideMapScreen };
+});
+
 const SocketablesScreen = lazy(async () => {
   const module = await import('@/features/socketables');
   return { default: module.SocketablesScreen };
@@ -143,6 +148,8 @@ export const router = createBrowserRouter(
           element: routeElement(GuideLayout),
           children: [
             { index: true, element: routeElement(GuideSpineScreen) },
+            // Static segment: the router ranks it above ':slug' (a note with the slug 'map' would be shadowed).
+            { path: 'map', element: routeElement(GuideMapScreen) },
             { path: ':slug', element: routeElement(GuideNoteScreen) },
           ],
         },

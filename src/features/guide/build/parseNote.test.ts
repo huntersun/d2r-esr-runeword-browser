@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseNote, splitFrontmatter } from './parseNote.ts';
+import { parseNote, RESERVED_SLUGS, splitFrontmatter } from './parseNote.ts';
 import { fixtureContext } from './testContext.mock.ts';
 
 function note(frontmatter: string, body = 'Body text.') {
@@ -100,6 +100,14 @@ describe('parseNote', () => {
       'notes/x.md: missing frontmatter (the file must start with a --- block)'
     );
     expect(note('title: [unclosed').errors[0]).toMatch(/^notes\/forging.md: invalid YAML/);
+  });
+
+  it('rejects slugs reserved by guide routes', () => {
+    expect(RESERVED_SLUGS).toHaveProperty('map');
+    expect(parseNote('notes/map.md', '---\ntitle: A\nsummary: B\n---\n', fixtureContext()).errors).toEqual([
+      "notes/map.md: slug 'map' is reserved by the /guide/map route",
+    ]);
+    expect(parseNote('notes/maps.md', '---\ntitle: A\nsummary: B\n---\n', fixtureContext()).errors).toEqual([]);
   });
 
   it('reports body errors with the line number in the file', () => {
