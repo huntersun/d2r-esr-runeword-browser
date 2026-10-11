@@ -2,11 +2,22 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { CUBE_FAMILIES, collectFamily, familyBlock, familyRows, findCubeFamily, MAX_FAMILY_ROWS, type CubeFamily } from './cubeFamilies.ts';
-import { capGroup, clusterVariants, MAX_GROUP_ROWS } from './cubeText.ts';
-import { buildEsrGuideTables, readEsrGuideSources, type EsrGuideTables } from './esrGuideSources.ts';
+import { createStatRenderer, readStatTables } from '../../game-data/build/stats/statRenderer.ts';
+import { buildStringTable } from '../../game-data/build/strings.ts';
+import {
+  capGroup,
+  clusterVariants,
+  clusterWithBonus,
+  formatOutput,
+  isHiddenMod,
+  MAX_GROUP_ROWS,
+  MAX_POOL_OPTIONS,
+  randomPool,
+} from './cubeText.ts';
+import { buildEsrGuideTables, readEsrGuideSources, type CubeOutput, type EsrGuideTables } from './esrGuideSources.ts';
 import { LEAF_DIRECTIVES } from './directives/index.ts';
 import { markdownToBlocks } from './markdown.ts';
-import { ARMOR, DIFFICULTYLEVELS, fixtureContext, STRINGS, tsv, WEAPONS } from './testContext.mock.ts';
+import { ARMOR, DIFFICULTYLEVELS, fixtureContext, STRINGS, stubRenderMods, tsv, WEAPONS } from './testContext.mock.ts';
 
 const ESR_DIR = resolve(__dirname, '../../../..', process.env.ESR_SOURCE_DIR ?? '../Eastern_Sun_Resurrected');
 
@@ -31,6 +42,10 @@ const HEADER = [
   'op',
   'param',
   'value',
+  'mod 1 param',
+  'mod 2',
+  'mod 2 min',
+  'mod 2 max',
 ];
 
 /** A cubemain row with up to five inputs and three outputs, in the HEADER column order */
@@ -40,16 +55,34 @@ function cube(description: string, inputs: string[], outputs: string[]): string[
   return [description, '1', '', String(inputs.length), first, second, third, output, b, c, '0', '', fourth, fifth];
 }
 
-/** A cube row with a mod on its first output and/or an `op` condition (`[op, param, value]`) */
+/** A mod: code, min, max (default min) and param */
+type FixtureMod = [string, number, number?, string?];
+
+/**
+ * A cube row with up to two mods on its first output (`mod`, then `bonus`) and/or an `op` condition
+ * (`[op, param, value]`)
+ */
 function cubeWith(
   description: string,
   inputs: string[],
   outputs: string[],
-  { mod, condition }: { mod?: [string, number]; condition?: [number, number, number] }
+  { mod, bonus, condition }: { mod?: FixtureMod; bonus?: FixtureMod; condition?: [number, number, number] }
 ): string[] {
-  const [name = '', value = 0] = mod ?? [];
+  const [name = '', min = 0, max = min, modParam = ''] = mod ?? [];
+  const [bonusName = '', bonusMin = 0, bonusMax = bonusMin] = bonus ?? [];
   const [op = 0, param = 0, threshold = 0] = condition ?? [];
-  const extra = [name, String(value), String(value), condition === undefined ? '' : String(op), String(param), String(threshold)];
+  const extra = [
+    name,
+    String(min),
+    String(max),
+    condition === undefined ? '' : String(op),
+    String(param),
+    String(threshold),
+    modParam,
+    bonusName,
+    String(bonusMin),
+    String(bonusMax),
+  ];
   return [...cube(description, inputs, outputs), ...extra];
 }
 
@@ -92,10 +125,15 @@ const CUBEMAIN = tsv([
   ['Dstone Transformation', '1', '', '1', 'hly', '', '', 'ppp', '', '', '0'],
   ['Dstone Transformation x2', '1', '', '1', '"ppp,qty=2"', '', '', 'hly', 'hly', '', '0'],
   ['Dstone Transformation', '0', '', '1', 'zzz', '', '', 'ppp', '', '', '0'],
-  ['Weapon Skill Forging Ama', '1', '', '3', '"weap,nru"', '"qqq,qty=2"', 'gcg', 'useitem', '', '', '0'],
-  ['Ring Skill Forging Ama', '1', '', '3', 'ring', '"qqq,qty=2"', 'gcg', 'useitem', '', '', '0'],
-  ['Weapon Skill Forging Sor', '1', '', '3', '"weap,nru"', '"qqq,qty=2"', 'gcb', 'useitem', '', '', '0'],
-  ['Remove Weapon Skill Forging Ama', '1', '', '2', '"weap,nru"', '"wms,qty=3"', '', 'useitem', 'qqq', 'qqq', '0'],
+  cubeWith('Weapon Skill Forging Ama', ['"weap,nru"', '"qqq,qty=2"', 'gcg'], ['useitem'], { mod: ['craftflag', 1], bonus: ['ama', 1] }),
+  cubeWith('Ring Skill Forging Ama', ['ring', '"qqq,qty=2"', 'gcg'], ['useitem'], { mod: ['craftflag', 1], bonus: ['ama', 1] }),
+  cubeWith('Weapon Skill Forging Sor', ['"weap,nru"', '"qqq,qty=2"', 'gcb'], ['useitem'], { mod: ['craftflag', 2], bonus: ['sor', 1] }),
+  cubeWith('Skill Forging Unique Jewel', ['"jewl,uni"', '"qqq,qty=2"', 'gcg'], ['useitem'], { mod: ['craftflag2', 1], bonus: ['ama', 1] }),
+  // Removing takes the bonus off again (not shown)
+  cubeWith('Remove Weapon Skill Forging Ama', ['"weap,nru"', '"wms,qty=3"'], ['useitem', 'qqq', 'qqq'], {
+    mod: ['craftflag', -1],
+    bonus: ['ama', -1],
+  }),
   ["Adventurer's Pack", '1', 'ama', '1', 'ag8', '', '', 'qqq', '', '', '0'],
   ["Adventurer's Pack", '1', 'sor', '1', 'ag8', '', '', 'qqq', '', '', '0'],
   ['Anvil Stone', '1', '', '1', '"ppp,qty=4"', '', '', 'qqq', '', '', '0'],
@@ -108,18 +146,28 @@ const CUBEMAIN = tsv([
   ['Coupon Reroll', '1', '', '2', 'rnd', '"cpn1,qty=3"', '', '02c', '', '', '0'],
   ["Inarius' Everburning Halo Ring", '1', '', '2', 'ring', 'u40', '', 'useitem', 'cloneitem', '', '0', 'branded'],
   ["Inarius' Everburning Halo Amulet", '1', '', '2', 'can8', 'u40', '', 'useitem', 'cloneitem', '', '0', 'branded'],
-  // Stat and all skills forging: equipment of any quality is one row, jewels keep their own
-  cube('Set Stat Forging Dru_else', ['"any,set"', 'qqq', 'gcg'], ['useitem']),
-  cube('Stat Forging Mag/Rar Jewel', ['jewl', 'qqq', 'gcg'], ['useitem']),
-  cube('Uni Stat Forging Sor_weap', ['"weap,uni"', 'qqq', 'gcb'], ['useitem']),
-  cube('All Skill Forging Set', ['"any,set"', 'map', 'qqq', 'gem0'], ['useitem']),
-  cube('All Skill Forging Normal', ['"weap,nor,nru"', 'map', 'qqq', 'gem0'], ['useitem']),
+  // Lucion's Relic: a hidden roll, then one of many sanctifications (counted, not listed)
+  cubeWith('Add Sanctification Dummy Stat - Jewel', ['jewl', 'u18'], ['useitem'], { mod: ['sanctified-dummy', 1, 7] }),
+  ...[1, 2, 3, 4, 5, 6, 7].map((n) =>
+    cubeWith(`Jewel Sanctification ${String(n)}`, ['jewl'], ['useitem'], { mod: ['sanctified-dummy', -n], bonus: ['str', n] })
+  ),
+  // Stat forging: one row per gem, the slots with another bonus named; all skills forging on any equipment is one row
+  cubeWith('Set Stat Forging Ama_else', ['"any,set"', 'qqq', 'gcg'], ['useitem'], { mod: ['craftflag', 9], bonus: ['mag%', 40] }),
+  cubeWith('Uni Stat Forging Ama_weap', ['"weap,uni"', 'qqq', 'gcg'], ['useitem'], { mod: ['craftflag', 8], bonus: ['att%', 48] }),
+  cubeWith('Stat Forging Unique Jewel', ['"jewl,uni"', 'qqq', 'gcg'], ['useitem'], { mod: ['craftflag2', 9], bonus: ['mag%', 40] }),
+  cubeWith('Stat Forging Mag/Rar Jewel', ['jewl', 'qqq', 'gcg'], ['useitem'], { mod: ['craftflag2', 59], bonus: ['mag%', 30] }),
+  cubeWith('Set Stat Forging Sor_else', ['"any,set"', 'qqq', 'gcb'], ['useitem'], { mod: ['craftflag', 10], bonus: ['mana%', 16] }),
+  cubeWith('All Skill Forging Set', ['"any,set"', 'map', 'qqq', 'gem0'], ['useitem'], { mod: ['craftflag', 128], bonus: ['allskills', 1] }),
+  cubeWith('All Skill Forging Normal', ['"weap,nor,nru"', 'map', 'qqq', 'gem0'], ['useitem'], {
+    mod: ['craftflag', 128],
+    bonus: ['allskills', 1],
+  }),
   // Rune forging: one row per rune and slot; the wand rows only override bonuses and are left out
   cube('Rune Forging Jewel W', ['jewl', '"r01,qty=2"', 'gem0', 'tsc'], ['useitem', 'tsc']),
   cube('Rune Forging Jewel H', ['jewl', '"r01,qty=2"', 'gem0', 'isc'], ['useitem', 'isc']),
   cube('Rune Forging wand', ['"wand,nru"', '"r02,qty=2"', 'gem0'], ['useitem']),
-  cube('Rune Forging weap', ['"weap,nru"', '"r01,qty=2"', 'gem0'], ['useitem']),
-  cube('Rune Forging weap', ['"weap,nru"', '"r02,qty=2"', 'gem0'], ['useitem']),
+  cubeWith('Rune Forging weap', ['"weap,nru"', '"r01,qty=2"', 'gem0'], ['useitem'], { mod: ['dmg%', 15] }),
+  cubeWith('Rune Forging weap', ['"weap,nru"', '"r02,qty=2"', 'gem0'], ['useitem'], { mod: ['hp', 10] }),
   cube('Rune Forging weap', ['"weap,nru"', '"r03,qty=2"', 'gem0'], ['useitem']),
   cube('Rune Forging weap', ['"weap,nru"', '"r84,qty=2"', 'gem0'], ['useitem']),
   cube('Rune Forging armo', ['"armo,nru"', '"r01,qty=2"', 'gem0'], ['useitem']),
@@ -143,21 +191,34 @@ const CUBEMAIN = tsv([
   cube('Moon Rune', ['r50', '"xt0,qty=1"'], ['r84']),
   cube('Moon Rune', ['can9', 'r84'], ['useitem']),
   // Tinkering: one row per organ, weapon and armor merged
-  cube('Tinkering Adds Life +1: Equipment + 3 Hearts', ['"weap,nru"', '"hrt,qty=3"'], ['useitem']),
-  cube('Tinkering Adds Fdam 1-3: Equipment + Fang', ['"weap,nru"', 'fng'], ['useitem']),
-  cube('Tinkering Adds Life +1: Equipment + 3 Hearts', ['"armo,nru"', '"hrt,qty=3"'], ['useitem']),
-  cube('Tinkering Adds Fdam 1-3: Equipment + Fang', ['"armo,nru"', 'fng'], ['useitem']),
+  cubeWith('Tinkering Adds Life +1: Equipment + 3 Hearts', ['"weap,nru"', '"hrt,qty=3"'], ['useitem'], {
+    mod: ['tinkerflag2', -10],
+    bonus: ['hp', 5],
+  }),
+  cubeWith('Tinkering Adds Fdam 1-3: Equipment + Fang', ['"weap,nru"', 'fng'], ['useitem'], { mod: ['dmg-fire', 5, 10] }),
+  cubeWith('Tinkering Adds Life +1: Equipment + 3 Hearts', ['"armo,nru"', '"hrt,qty=3"'], ['useitem'], {
+    mod: ['tinkerflag2', -10],
+    bonus: ['hp', 5],
+  }),
+  cubeWith('Tinkering Adds Fdam 1-3: Equipment + Fang', ['"armo,nru"', 'fng'], ['useitem'], { mod: ['dmg-fire', 5, 10] }),
   // Pandemonium keys
   cube('Key of Terror + Blemished Gem + Thawing Potion -> Key of Destruction Conversion', ['pk1', 'gem4', 'wms'], ['pk3', 'wms']),
   cube('Pandemonium Key Set Unwrap', ['u10'], ['pk1', 'pk2', 'pk3']),
   cube('Pandemonium Key Set Wrap', ['pk1', 'pk2', 'pk3', 'key'], ['u10', 'key']),
   cube("1 Diablo's Horn + 1 Baal's Eye + 1 Mephisto's Brain -> Portal to Tristram", ['dhn', 'bey', 'mbr'], ['Pandemonium Finale Portal']),
-  // Merc Only Conversion: weapon/armor and gem colours merged, the removal gives the gem back
-  cubeWith('Merc Only Conversion', ['"weap,nru"', 'qqq', 'gbk'], ['useitem'], { mod: ['mercflag', 1] }),
-  cubeWith('Merc Only Conversion', ['"armo,nru"', 'qqq', 'grb'], ['useitem'], { mod: ['mercflag', 2] }),
+  // Merc Only Conversion: one row per gem colour (weapon and armor merged), the removal gives the gem back
+  cubeWith('Merc Only Conversion', ['"weap,nru"', 'qqq', 'gbk'], ['useitem'], { mod: ['mercflag', 1], bonus: ['allskills', 1] }),
+  cubeWith('Merc Only Conversion', ['"armo,nru"', 'qqq', 'gbk'], ['useitem'], { mod: ['mercflag', 1], bonus: ['allskills', 1] }),
+  cubeWith('Merc Only Conversion', ['"armo,nru"', 'qqq', 'grb'], ['useitem'], { mod: ['mercflag', 2], bonus: ['res-all', 50] }),
   cube('Merc Only Conversion Trap', ['weap', 'qqq', 'gem5'], ['void']),
-  cubeWith('Remove Merc Only Conversion', ['"weap,nru"', '"yps,qty=3"'], ['useitem', 'qqq', 'gbk'], { mod: ['mercflag', -1] }),
-  cubeWith('Remove Merc Only Conversion', ['"armo,nru"', '"yps,qty=3"'], ['useitem', 'qqq', 'grb'], { mod: ['mercflag', -2] }),
+  cubeWith('Remove Merc Only Conversion', ['"weap,nru"', '"yps,qty=3"'], ['useitem', 'qqq', 'gbk'], {
+    mod: ['mercflag', -1],
+    bonus: ['allskills', -1],
+  }),
+  cubeWith('Remove Merc Only Conversion', ['"armo,nru"', '"yps,qty=3"'], ['useitem', 'qqq', 'grb'], {
+    mod: ['mercflag', -2],
+    bonus: ['res-all', -50],
+  }),
   // Weapon mastery: one row per step, the bases merged
   cube('Awaken Weapon Mastery Token - Stag Bow', ['am1', 'u23'], ['useitem', 'u24']),
   cube('Awaken Weapon Mastery Token - Wand', ['wnd', 'u23'], ['useitem', 'u25']),
@@ -178,13 +239,22 @@ const CUBEMAIN = tsv([
   cubeWith("Adds Socket(2): Uni eli Weapon + Lucion's Essence", ['"weap,eli,uni,nos"', 'u17'], ['useitem'], { mod: ['sock', 2] }),
   // Kill Ledger: the kill count from the row's condition; boss rows grouped by ingredient shape, traps left out
   cube('Kill Ledger Tier 1 Trap', ['Kill Ledger', 'gem3'], ['void']),
-  cubeWith('Kill Ledger Tier 1', ['Kill Ledger', 'gem3'], ['useitem'], { mod: ['kill-ledger-tier-1', 1], condition: [3, 163, 500] }),
+  cubeWith('Kill Ledger Tier 1', ['Kill Ledger', 'gem3'], ['useitem'], {
+    mod: ['kill-ledger-tier-1', 1],
+    bonus: ['res-all', 10],
+    condition: [3, 163, 500],
+  }),
   cubeWith('Kill Ledger Tier 2', ['Kill Ledger', '"gem5,qty=2"'], ['useitem'], {
-    mod: ['kill-ledger-tier-2', 1],
+    mod: ['mythicaldesc', -1, -1, '1040'],
+    bonus: ['kill-ledger-tier-2', 1],
     condition: [3, 163, 5000],
   }),
   cube('Kill Ledger Lucion Whisper Trap', ['Kill Ledger', '"xl7,qty=2"'], ['void']),
-  cubeWith('Kill Ledger Lucion Whisper', ['Kill Ledger', '"xl7,qty=2"'], ['useitem'], { condition: [6, 508, 50] }),
+  cubeWith('Kill Ledger Lucion Whisper', ['Kill Ledger', '"xl7,qty=2"'], ['useitem'], {
+    mod: ['regen', 500],
+    bonus: ['kill-ledger-lucion-whisper', 1],
+    condition: [6, 508, 50],
+  }),
   cubeWith('Kill Ledger Diablo Hellhound', ['Kill Ledger', '"xly,qty=2"'], ['useitem'], { condition: [6, 508, 51] }),
   cubeWith('Kill Ledger Lucion', ['Kill Ledger', 'map', 'xly'], ['useitem'], { condition: [6, 508, 61] }),
   cube('Kill Ledger Trap All Recipes', ['Kill Ledger', 'any'], ['void']),
@@ -205,7 +275,10 @@ const CUBEMAIN = tsv([
   cube('Orb of Anointment Recycle to Maple Leaf x2', ['"um7,qty=2"', '"gem5,qty=2"'], ['map', 'map']),
   cube("[SECRET40] 10 Devil's Foods -> Maple Leaf", ['"dfc,qty=5"', '40a'], ['map', '40a']),
   // Class crafts (one row per class) and a Legacy craft, which is left out
-  cube("magic helm + jewel + spider's silk + perfect emerald -> amazon helm", ['"helm,mag"', 'jewl', 'sss', 'ggb'], ['"usetype,crf"']),
+  cubeWith("magic helm + jewel + spider's silk + perfect emerald -> amazon helm", ['"helm,mag"', 'jewl', 'sss', 'ggb'], ['"usetype,crf"'], {
+    mod: ['ama', 1, 2],
+    bonus: ['ac%', 80, 100],
+  }),
   cube("magic boots + jewel + spider's silk + perfect emerald -> amazon boots", ['"boot,mag"', 'jewl', 'sss', 'ggb'], ['"usetype,crf"']),
   cube('magic helm + jewel + blackmoor + perfect obsidian -> warlock helm', ['"helm,mag"', 'jewl', 'eee', 'gbk'], ['"usetype,crf"']),
   cube('magic full helm + jewel + rune 06 + perfect amethyst -> hitpower helm', ['"helm,mag"', 'jewl', 'r03', 'gbk'], ['"usetype,crf"']),
@@ -315,6 +388,7 @@ const MISC = tsv([
   ['Blemished Amethyst', 'gpv', 'gpv'],
   ['Mythical Razor Axe', 'm21', 'm21'],
   ['Mythical Shade Bow', 'm24', 'm24'],
+  ["Lucion's Relic of Sanctification", 'u18', 'u18'],
 ]);
 
 const FAMILY_STRINGS = JSON.stringify([
@@ -339,10 +413,13 @@ const FAMILY_STRINGS = JSON.stringify([
 ]);
 
 function esr(): EsrGuideTables {
-  return buildEsrGuideTables({
-    tables: { cubemain: CUBEMAIN, misc: MISC, armor: ARMOR, weapons: WEAPONS, itemtypes: ITEMTYPES, difficultylevels: DIFFICULTYLEVELS },
-    strings: [{ name: 'item-names.json', text: FAMILY_STRINGS }],
-  });
+  return buildEsrGuideTables(
+    {
+      tables: { cubemain: CUBEMAIN, misc: MISC, armor: ARMOR, weapons: WEAPONS, itemtypes: ITEMTYPES, difficultylevels: DIFFICULTYLEVELS },
+      strings: [{ name: 'item-names.json', text: FAMILY_STRINGS }],
+    },
+    stubRenderMods
+  );
 }
 
 function family(id: string): CubeFamily {
@@ -366,15 +443,21 @@ describe('cube families', () => {
     expect(collectFamily(family('starter-pack'), esr())).toEqual([{ inputs: ['Starter Pack'], output: 'Anvil Stone', note: null }]);
   });
 
-  it('collapses by the family key and names abbreviated potions by their full name', () => {
+  it('collapses by the family key, shows the bonus without the forging marker and names abbreviated potions in full', () => {
+    // One row per chipped gem (class), the unique jewel merged with the equipment slots
     expect(collectFamily(family('skill-forging'), esr())).toEqual([
       {
-        inputs: ['Weapon (no runeword) / Ring', '2× Anvil Stone', 'Chipped Emerald'],
-        output: 'The same item (+Amazon skills)',
+        inputs: ['Weapon (no runeword) / Ring / Unique Jewel', '2× Anvil Stone', 'Chipped Emerald'],
+        output: 'The same item (+1 to Amazon Skill Levels)',
         note: null,
       },
-      { inputs: ['Weapon (no runeword)', '2× Anvil Stone', 'Chipped Sapphire'], output: 'The same item (+Sorceress skills)', note: null },
+      {
+        inputs: ['Weapon (no runeword)', '2× Anvil Stone', 'Chipped Sapphire'],
+        output: 'The same item (+1 to Sorceress Skill Levels)',
+        note: null,
+      },
     ]);
+    // The bonus a removal takes off is not shown
     expect(collectFamily(family('remove-forging'), esr())).toEqual([
       {
         inputs: ['Weapon (no runeword)', '3× Thawing Potion'],
@@ -407,37 +490,51 @@ describe('cube families', () => {
         output: 'The same item + A copy of the item (Branded)',
         note: null,
       },
+      // The Relic's hidden roll is a marker; the sanctifications it leads to are counted (more than MAX_POOL_OPTIONS)
+      {
+        inputs: ['Jewel', "Lucion's Relic of Sanctification"],
+        output: 'The same jewel, ready to sanctify (transmute it again on its own)',
+        note: null,
+      },
+      { inputs: ['That jewel, on its own'], output: 'The same item (one random bonus, 7 possible)', note: null },
     ]);
   });
 
-  it('shows stat and all skills forging on equipment of any quality as one row, jewels apart', () => {
+  it('shows stat forging per gem with the slots that get another bonus, and all skills forging as one row', () => {
     expect(collectFamily(family('stat-forging'), esr())).toEqual([
       {
-        inputs: ['Equipment of any quality (no runeword)', 'Anvil Stone', 'Chipped Emerald / Chipped Sapphire'],
-        output: 'The same item',
+        inputs: ['Equipment of any quality or a jewel (no runeword)', 'Anvil Stone', 'Chipped Emerald'],
+        // The unique jewel has the general bonus and is not repeated
+        output:
+          'The same item (+40% Better Chance of Getting Magic Items; on weapons +48% Bonus to Attack Rating; on magic or rare jewels +30% Better Chance of Getting Magic Items)',
         note: null,
       },
-      { inputs: ['Jewel', 'Anvil Stone', 'Chipped Emerald'], output: 'The same item', note: null },
+      {
+        inputs: ['Equipment of any quality or a jewel (no runeword)', 'Anvil Stone', 'Chipped Sapphire'],
+        output: 'The same item (Increase Maximum Mana +16%)',
+        note: null,
+      },
     ]);
     expect(collectFamily(family('all-skill-forging'), esr())).toEqual([
       {
         inputs: ['Equipment of any quality (no runeword)', 'Maple Leaf', 'Anvil Stone', 'Chipped Gem'],
-        output: 'The same item',
+        output: 'The same item (+1 to All Skills)',
         note: null,
       },
     ]);
   });
 
-  it('merges the per-rune forging rows per slot, naming the runes as ranges, and leaves out the bonus overrides', () => {
+  it('merges the per-rune forging rows per slot, naming the runes as ranges and the bonus generically', () => {
+    // Each rune's own bonus (hp, dmg% …) is hidden (outputBonus: 'hide'), so the rows still merge
     expect(collectFamily(family('rune-forging'), esr())).toEqual([
       {
         inputs: ['Jewel', '2× the same rune (I Rune)', 'Chipped Gem', 'Scroll of Town Portal / Scroll of Identify'],
-        output: 'The same item',
+        output: "The same item (that rune's bonus)",
         note: null,
       },
       {
         inputs: ['Weapon (no runeword) / Any Armor (no runeword)', '2× the same rune (I Rune to Shi Rune, Moon Rune)', 'Chipped Gem'],
-        output: 'The same item',
+        output: "The same item (that rune's bonus)",
         note: null,
       },
     ]);
@@ -461,10 +558,10 @@ describe('cube families', () => {
     ]);
   });
 
-  it('lists tinkering once per organ', () => {
+  it('lists tinkering once per organ with its bonus, the tinkering marker hidden', () => {
     expect(collectFamily(family('tinkering'), esr())).toEqual([
-      { inputs: ['Weapon (no runeword) / Any Armor (no runeword)', '3× Heart'], output: 'The same item', note: null },
-      { inputs: ['Weapon (no runeword) / Any Armor (no runeword)', 'Fang'], output: 'The same item', note: null },
+      { inputs: ['Weapon (no runeword) / Any Armor (no runeword)', '3× Heart'], output: 'The same item (+5 to Life)', note: null },
+      { inputs: ['Weapon (no runeword) / Any Armor (no runeword)', 'Fang'], output: 'The same item (dmg-fire 5 to 10)', note: null },
     ]);
   });
 
@@ -477,11 +574,16 @@ describe('cube families', () => {
     ]);
   });
 
-  it('shows Merc Only Conversion as one row to apply and one to remove, the slots and gem colours merged', () => {
+  it('shows Merc Only Conversion as one row per gem colour with its bonus and one to remove it, the slots merged', () => {
     expect(collectFamily(family('merc-only'), esr())).toEqual([
       {
-        inputs: ['Weapon or armor (no runeword)', 'Anvil Stone', 'Perfect Gem (the colour picks the bonus)'],
-        output: 'The same item (mercenary only)',
+        inputs: ['Weapon or armor (no runeword)', 'Anvil Stone', 'Perfect Obsidian'],
+        output: 'The same item (mercenary only, +1 to All Skills)',
+        note: null,
+      },
+      {
+        inputs: ['Weapon or armor (no runeword)', 'Anvil Stone', 'Perfect Ruby'],
+        output: 'The same item (mercenary only, All Resists +50)',
         note: null,
       },
       {
@@ -534,17 +636,20 @@ describe('cube families', () => {
     ]);
   });
 
-  it('shows the Kill Ledger kill counts from the row conditions and groups the boss rows, without traps', () => {
+  it('shows the Kill Ledger kill counts from the row conditions and each bonus, the markers hidden, without traps', () => {
     expect(collectFamily(family('kill-ledger-tiers'), esr())).toEqual([
-      { inputs: ['Kill Ledger (at least 500 kills)', 'Flawless Gem'], output: 'The Kill Ledger with kill bonus 1', note: null },
-      { inputs: ['Kill Ledger (at least 5,000 kills)', '2× Perfect Gem'], output: 'The Kill Ledger with kill bonus 2', note: null },
-    ]);
-    expect(collectFamily(family('kill-ledger-bosses'), esr())).toEqual([
       {
-        inputs: ['Kill Ledger', '2× Flawed Enigmatic Cinnabar / 2× Flawed Tainted Tourmaline'],
-        output: "The Kill Ledger with that boss's bonus",
+        inputs: ['Kill Ledger (at least 500 kills)', 'Flawless Gem'],
+        output: 'The Kill Ledger with kill bonus 1 (All Resists +10)',
         note: null,
       },
+      // mythicaldesc (the book's description lines) is a marker: no bonus left to show
+      { inputs: ['Kill Ledger (at least 5,000 kills)', '2× Perfect Gem'], output: 'The Kill Ledger with kill bonus 2', note: null },
+    ]);
+    // One row per boss in file order; a row without a bonus mod keeps the generic text
+    expect(collectFamily(family('kill-ledger-bosses'), esr())).toEqual([
+      { inputs: ['Kill Ledger', '2× Flawed Enigmatic Cinnabar'], output: 'The Kill Ledger (regen 500)', note: null },
+      { inputs: ['Kill Ledger', '2× Flawed Tainted Tourmaline'], output: "The Kill Ledger with that boss's bonus", note: null },
       { inputs: ['Kill Ledger', 'Maple Leaf', 'Flawed Tainted Tourmaline'], output: "The Kill Ledger with that boss's bonus", note: null },
     ]);
   });
@@ -571,6 +676,7 @@ describe('cube families', () => {
     ]);
   });
 
+  // The bonuses depend on the slot as well as the class, so they are hidden (outputBonus: 'hide')
   it('shows one class craft row per class and leaves the Legacy crafts out', () => {
     expect(collectFamily(family('class-craft'), esr())).toEqual([
       {
@@ -631,6 +737,15 @@ describe('cube families', () => {
     expect(block.rows).toHaveLength(MAX_FAMILY_ROWS);
     expect(block.rows[0]).toEqual({ inputs: ['Dragon Stone'], output: 'Holy Symbol', note: null });
     expect(block.caption).toBe('Many (… and 2 more)');
+  });
+
+  it('shows up to the family maxRows instead of MAX_FAMILY_ROWS', () => {
+    const all = familyBlock({ id: 'many', label: 'Many', match: /^Filler /, maxRows: MAX_FAMILY_ROWS + 2 }, esr());
+    expect(all.rows).toHaveLength(MAX_FAMILY_ROWS + 2);
+    expect(all.caption).toBe('Many');
+    const few = familyBlock({ id: 'many', label: 'Many', match: /^Filler /, maxRows: 3 }, esr());
+    expect(few.rows).toHaveLength(3);
+    expect(few.caption).toBe(`Many (… and ${String(MAX_FAMILY_ROWS - 1)} more)`);
   });
 });
 
@@ -693,12 +808,120 @@ describe('::recipes', () => {
   });
 });
 
+describe('output bonuses', () => {
+  const output = (spec: string, mods: [string, number, number?][]): CubeOutput => ({
+    spec,
+    mods: mods.map(([mod, min, max = min]) => ({ mod, param: '', min, max })),
+  });
+
+  it('renders the bonus mods after the qualifiers, leaves markers and stocker counters out and writes sockets itself', () => {
+    const tables = esr();
+    expect(
+      formatOutput(
+        output('useitem', [
+          ['craftflag', 1],
+          ['hp', 5],
+        ]),
+        tables
+      )
+    ).toBe('The same item (+5 to Life)');
+    expect(formatOutput(output('usetype,crf', [['ama', 1, 2]]), tables)).toBe(
+      'Crafted item of the same type (+1 to 2 to Amazon Skill Levels)'
+    );
+    expect(
+      formatOutput(
+        output('useitem', [
+          ['sock', 2],
+          ['item-24', 1],
+          ['gem-r', -243],
+          ['mercflag', 1],
+        ]),
+        tables
+      )
+    ).toBe('The same item (2 sockets)');
+    expect(formatOutput(output('useitem', [['hp', 5]]), tables, { bonus: false })).toBe('The same item');
+  });
+
+  it('knows the markers by code and pattern', () => {
+    for (const code of ['craftflag', 'tinkerflag2', 'mercflag', 'item-upgraded', 'sanctified-dummy', 'mythicaldesc', 'soul-counter']) {
+      expect(isHiddenMod(code)).toBe(true);
+    }
+    for (const code of [
+      'kill-ledger-tier-3',
+      'ascendancy-tier-2',
+      'item-24',
+      'junk-09',
+      'xtal-00',
+      'rune-12',
+      'rune-white',
+      'gem-k',
+      'hp%-cap',
+    ]) {
+      expect(isHiddenMod(code)).toBe(true);
+    }
+    for (const code of ['hp', 'allskills', 'levelreq', 'ethereal', 'corrupted', 'gem-meld']) expect(isHiddenMod(code)).toBe(false);
+  });
+
+  it('counts a large random pool of one item instead of listing it', () => {
+    const options = (count: number) => Array.from({ length: count }, (_, i) => `The same item (+${String(i + 1)} to Strength)`);
+    expect(randomPool(options(2))).toBe('The same item (+1 to Strength) / The same item (+2 to Strength)');
+    expect(randomPool(options(MAX_POOL_OPTIONS))).toMatch(/… \(6 variants\)$/);
+    expect(randomPool(options(MAX_POOL_OPTIONS + 1))).toBe('The same item (one random bonus, 7 possible)');
+    // Different items stay listed
+    expect(randomPool([...options(MAX_POOL_OPTIONS), 'Ring'])).toMatch(/… \(7 variants\)$/);
+  });
+
+  it('falls back to the variants without bonus when the bonuses split a recipe past MAX_GROUP_ROWS', () => {
+    const variants = (bonus: boolean) =>
+      ['a', 'b', 'c', 'd'].map((organ) => ({ inputs: ['Weapon', organ], output: bonus ? `The same item (+${organ})` : 'The same item' }));
+    expect(clusterWithBonus(variants(true), variants(false))).toEqual([
+      { inputs: ['Weapon', 'a / b / c / … (4 variants)'], output: 'The same item' },
+    ]);
+    const few = (bonus: boolean) => variants(bonus).slice(0, MAX_GROUP_ROWS);
+    expect(clusterWithBonus(few(true), few(false))).toHaveLength(MAX_GROUP_ROWS);
+  });
+});
+
 describe.skipIf(!existsSync(ESR_DIR))('cube families against the ESR clone', () => {
-  const tables = existsSync(ESR_DIR) ? buildEsrGuideTables(readEsrGuideSources(ESR_DIR)) : null;
+  const sources = existsSync(ESR_DIR) ? readEsrGuideSources(ESR_DIR) : null;
+  const tables = sources === null ? null : buildEsrGuideTables(sources);
 
   it.each(CUBE_FAMILIES.map((candidate) => [candidate.id, candidate] as const))('%s matches at least one row', (_, candidate) => {
     if (tables === null) return;
     expect(familyRows(candidate, tables).length).toBeGreaterThan(0);
     expect(familyBlock(candidate, tables).rows.length).toBeGreaterThan(0);
+  });
+
+  it('renders real cubemain bonuses through the game-data stat renderer, a fixed value without a range', () => {
+    if (tables === null) return;
+    const outputOf = (description: string, input?: string) => {
+      const row = tables.cube.find(
+        (candidate) => candidate.description === description && (input === undefined || candidate.inputs.includes(input))
+      );
+      const first = row?.outputs[0];
+      if (first === undefined) throw new Error(`no row ${description}`);
+      return formatOutput(first, tables);
+    };
+    // Tinkering: `mod 2 = hp, min 5, max 5`, the tinkering marker hidden
+    expect(outputOf('Tinkering Adds Life +1: Equipment + 3 Hearts')).toBe('The same item (+5 to Life)');
+    expect(outputOf('Tinkering Adds Fdam 1-3: Equipment + Fang')).toBe('The same item (Adds 5-10 Fire Damage to Attacks)');
+    // A skill from `mod N param` (aura and oskill)
+    expect(outputOf('Aura Forging', 'an3')).toBe('The same item (Level 10 Blessed Aim Aura When Equipped)');
+    expect(outputOf('Merc Only Conversion', 'gwb')).toBe('The same item (+10 to Molten Focus, +10 to Glacial Focus, +10 to Static Focus)');
+    expect(outputOf('All Skill Forging Set')).toBe('The same item (+1 to All Skills)');
+    expect(outputOf('Kill Ledger Tier 1')).toBe('The same item (All Resists +10)');
+  });
+
+  it('reads every shown cubemain bonus without renderer warnings', () => {
+    if (sources === null || tables === null) return;
+    const renderer = createStatRenderer(readStatTables(sources.statTables), buildStringTable(sources.strings).strings);
+    const warnings = tables.cube.flatMap((row) =>
+      row.outputs.flatMap((candidate) => {
+        const mods = candidate.mods.filter((mod) => !isHiddenMod(mod.mod));
+        const inputs = mods.map((mod) => ({ code: mod.mod, param: mod.param === '' ? null : mod.param, min: mod.min, max: mod.max }));
+        return renderer.renderMods(inputs).warnings.map((warning) => `${row.description}: ${warning}`);
+      })
+    );
+    expect(warnings).toEqual([]);
   });
 });

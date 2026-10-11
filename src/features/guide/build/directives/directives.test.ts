@@ -22,7 +22,7 @@ describe('cube text', () => {
 describe('secret recipes', () => {
   it('merges the variants of one recipe number and skips disabled rows', () => {
     const recipes = collectSecretRecipes(fixtureEsr());
-    expect([...recipes.keys()]).toEqual([1, 2]);
+    expect([...recipes.keys()]).toEqual([1, 2, 4, 5]);
     // Identical inputs with different outputs are one pool; the note is only the recipe number (no dev label)
     expect(recipes.get(1)).toEqual([
       {
@@ -34,9 +34,22 @@ describe('secret recipes', () => {
     expect(recipes.get(2)?.[0]?.output).toBe('An item of the same type (keeps its stats, 1 socket)');
   });
 
+  it('shows the bonus of a recipe, without markers, unless it splits the recipe past the rows shown', () => {
+    const recipes = collectSecretRecipes(fixtureEsr());
+    expect(recipes.get(4)?.map((row) => row.output)).toEqual(['The same item (+25% to Experience Gained)', 'The same item']);
+    // Four organs with four bonuses would be four rows: merged without the bonus instead
+    expect(recipes.get(5)).toEqual([
+      {
+        inputs: ['Ring (no runeword)', '3× hrt / 3× sol / fng / … (4 variants)', '05a'],
+        output: 'The same item',
+        note: '#5 (+3 variants)',
+      },
+    ]);
+  });
+
   it('resolves all recipes and a single recipe', () => {
     const all = resolve('secret-recipes', null);
-    expect('kind' in all && all.kind === 'recipes' && all.rows).toHaveLength(2);
+    expect('kind' in all && all.kind === 'recipes' && all.rows).toHaveLength(5);
     const one = resolve('secret-recipe', '2');
     expect(one).toMatchObject({
       kind: 'recipes',

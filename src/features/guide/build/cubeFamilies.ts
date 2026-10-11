@@ -8,19 +8,22 @@
  */
 import type { RecipeRow, RecipesBlock } from '../engine/schema.ts';
 import {
+  bonusLines,
   capGroup,
   clusterVariants,
+  clusterWithBonus,
   countValues,
   formatInput,
   formatOutput,
   joinOptions,
   parseCubeCell,
+  type OutputTables,
   type RecipeVariant,
 } from './cubeText.ts';
 import type { CubeRow, EsrGuideTables } from './esrGuideSources.ts';
 
 /** What families read: the cube rows, display names and the item list (internal names, e.g. a coupon's tier) */
-export type FamilyTables = Pick<EsrGuideTables, 'cube' | 'nameOf' | 'items'>;
+export type FamilyTables = Pick<EsrGuideTables, 'cube' | 'nameOf' | 'items' | 'renderMods'>;
 
 export interface CubeFamily {
   id: string;
@@ -39,6 +42,13 @@ export interface CubeFamily {
   collapse?: true | ((row: CubeRow, esr: FamilyTables) => string);
   /** Formats the outputs of a random pool (same inputs, several outputs), most frequent first */
   pool?: (ranked: string[]) => string;
+  /**
+   * `show` (default): outputs carry their bonus mods ("The same item (+5 to Life)"). `hide`: for families with one
+   * bonus per ingredient that would list hundreds of rows (rune forging); the rewrite names the bonus generically.
+   */
+  outputBonus?: 'show' | 'hide';
+  /** Rows the block shows before the caption counts the rest (default MAX_FAMILY_ROWS), for lookup lists */
+  maxRows?: number;
 }
 
 /** A family block shows at most this many rows; the caption counts the rest. */
@@ -305,7 +315,7 @@ function genericRuneForging(recipe: RecipeVariant, row: CubeRow, esr: FamilyTabl
     if (runeNumber(cell.token) === null) return recipe.inputs[i] ?? '';
     return `${String(cell.qty)}× the same rune (${runeRuns(runesOf(esr, row.description, cell.qty), esr)})`;
   });
-  return { inputs, output: recipe.output };
+  return { inputs, output: `${recipe.output} (that rune's bonus)` };
 }
 
 /** "Ancient Decal (Ho -> Pul)" → ["Ho", "Pul"] */
@@ -355,17 +365,6 @@ function genericRuneConversion(recipe: RecipeVariant, row: CubeRow, esr: FamilyT
 
 const KANJI_SOURCE = 'r50';
 
-const CLASSES: Readonly<Partial<Record<string, string>>> = {
-  Ama: 'Amazon',
-  Ass: 'Assassin',
-  Bar: 'Barbarian',
-  Dru: 'Druid',
-  Nec: 'Necromancer',
-  Pal: 'Paladin',
-  Sor: 'Sorceress',
-  War: 'Warlock',
-};
-
 /**
  * The quality/slot variants of a forging (set, unique, magic, rare, crafted, white, socketed; weapon, armor, ring,
  * amulet) as one generic item; jewels stay as they are.
@@ -376,11 +375,40 @@ function anyEquipment(recipe: RecipeVariant, row: CubeRow): RecipeVariant {
   return { inputs: recipe.inputs.map((input, i) => (i === 0 ? 'Equipment of any quality (no runeword)' : input)), output: recipe.output };
 }
 
-/** The class a skill forging row is for, named in the output (the descriptions are not shown). */
-function skillForgingClass(recipe: RecipeVariant, row: CubeRow): RecipeVariant {
-  const tag = /Skill Forging (\w{3})$/.exec(row.description)?.[1];
-  const name = tag === undefined ? undefined : CLASSES[tag];
-  return name === undefined ? recipe : { ...recipe, output: `${recipe.output} (+${name} skills)` };
+/** The chipped gem of a forging row (its last input), which picks the class or stat */
+function forgingGem(row: CubeRow): string {
+  return parseCubeCell(row.inputs.at(-1) ?? '').token;
+}
+
+/** The slots a stat forging row is for, when its bonus differs from the one on any equipment */
+function statForgingSlot(row: CubeRow): string | null {
+  if (/Mag\/Rar Jewel$/.test(row.description)) return 'magic or rare jewels';
+  if (/Unique Jewel$/.test(row.description)) return 'unique jewels';
+  const slot = /_(weap|armo)$/.exec(row.description)?.[1];
+  return slot === 'weap' ? 'weapons' : slot === 'armo' ? 'armor' : null;
+}
+
+/**
+ * Stat forging, one row per chipped gem: equipment of any quality and jewels as one input, the output the gem's
+ * bonus with the slots that get another one ("on weapons +48% Bonus to Attack Rating"); statForgingBonuses joins them.
+ */
+function genericStatForging(recipe: RecipeVariant, row: CubeRow, esr: FamilyTables): RecipeVariant {
+  const slot = statForgingSlot(row);
+  const bonus = row.outputs.flatMap((output) => bonusLines(output.mods, esr)).join(', ');
+  return {
+    inputs: recipe.inputs.map((input, i) => (i === 0 ? 'Equipment of any quality or a jewel (no runeword)' : input)),
+    output: slot === null ? bonus : `on ${slot} ${bonus}`,
+  };
+}
+
+/**
+ * The per-slot bonuses of one gem (not a random pool: each option names its slots), the bonus on any equipment
+ * first; a slot with that same bonus is not repeated.
+ */
+function statForgingBonuses(ranked: string[]): string {
+  const general = ranked.filter((option) => !option.startsWith('on '));
+  const slots = ranked.filter((option) => option.startsWith('on ') && !general.some((bonus) => option.endsWith(` ${bonus}`)));
+  return `The same item (${[...general, ...slots].join('; ')})`;
 }
 
 // --- shared helpers for the generic rewrites below ----------------------------------------------------------------
@@ -446,17 +474,30 @@ function allOptions(ranked: string[]): string {
 
 const PERFECT_GEM = /^Perfect (?:Amethyst|Topaz|Sapphire|Emerald|Ruby|Diamond|Skull|Obsidian)$/;
 
-/** One row for applying (any slot, any gem colour) and one for removing Merc Only Conversion */
+/** "The same item (+1 to All Skills)" → ["+1 to All Skills"]; null for another output */
+function sameItemDetails(text: string): string[] | null {
+  const match = /^The same item(?: \((.*)\))?$/.exec(text);
+  if (match === null) return null;
+  // The details group is optional: undefined for a plain "The same item"
+  const details = match.at(1);
+  return details === undefined ? [] : [details];
+}
+
+/**
+ * Merc Only Conversion: one row per Perfect Gem colour with its bonus (weapon and armor merged), and one row to
+ * remove it (the bonus comes off; the Anvil Stone and gem come back).
+ */
 function genericMercOnly(recipe: RecipeVariant, row: CubeRow): RecipeVariant {
   const flag = outputMod(row, 'mercflag');
-  const inputs = recipe.inputs.map((input, i) =>
-    i === 0 ? 'Weapon or armor (no runeword)' : PERFECT_GEM.test(input) ? 'Perfect Gem (the colour picks the bonus)' : input
-  );
+  const inputs = recipe.inputs.map((input, i) => (i === 0 ? 'Weapon or armor (no runeword)' : input));
   if (flag === null) return { inputs, output: recipe.output };
   const output = recipe.output
     .split(' + ')
-    .map((part) => (part === 'The same item' ? `The same item (${flag > 0 ? 'mercenary only' : 'no longer mercenary only'})` : part))
-    .map((part) => (PERFECT_GEM.test(part) ? 'the Perfect Gem' : part))
+    .map((part) => {
+      const details = sameItemDetails(part);
+      if (details === null) return PERFECT_GEM.test(part) ? 'the Perfect Gem' : part;
+      return flag > 0 ? `The same item (${['mercenary only', ...details].join(', ')})` : 'The same item (no longer mercenary only)';
+    })
     .join(' + ');
   return { inputs, output };
 }
@@ -580,17 +621,20 @@ function genericKillTier(recipe: RecipeVariant, row: CubeRow): RecipeVariant {
   const inputs = recipe.inputs.map((input, i) =>
     i === 0 && kills !== null ? `${input} (at least ${kills.toLocaleString('en-US')} kills)` : input
   );
-  const output = tier === undefined ? recipe.output : `The Kill Ledger with kill bonus ${tier.mod.replace(/^kill-ledger-tier-/, '')}`;
-  return { inputs, output };
+  const details = sameItemDetails(recipe.output);
+  if (tier === undefined || details === null) return { inputs, output: recipe.output };
+  const name = `The Kill Ledger with kill bonus ${tier.mod.replace(/^kill-ledger-tier-/, '')}`;
+  return { inputs, output: details.length === 0 ? name : `${name} (${details.join(', ')})` };
 }
 
+/** "The Kill Ledger (+10% to Spell Damage)": the crystals pick the boss, whose name is only in the dev label */
 function genericKillBoss(recipe: RecipeVariant): RecipeVariant {
-  return { inputs: recipe.inputs, output: recipe.output === 'The same item' ? "The Kill Ledger with that boss's bonus" : recipe.output };
-}
-
-/** The boss rows by ingredient shape: two crystals; two crystals and a Perfect Gem; a Maple Leaf and a crystal */
-function killBossShape(row: CubeRow): string {
-  return row.inputs.map((spec) => (parseCubeCell(spec).token === 'map' ? 'map' : String(parseCubeCell(spec).qty))).join(',');
+  const details = sameItemDetails(recipe.output);
+  if (details === null) return recipe;
+  return {
+    inputs: recipe.inputs,
+    output: details.length === 0 ? "The Kill Ledger with that boss's bonus" : `The Kill Ledger (${details.join(', ')})`,
+  };
 }
 
 // --- Ancient Scrolls ---------------------------------------------------------------------------------------------
@@ -768,6 +812,18 @@ function genericVessel(recipe: RecipeVariant): RecipeVariant {
   };
 }
 
+/**
+ * Lucion's Relic of Sanctification takes two transmutes: the Relic gives the jewel a hidden roll, then the jewel alone
+ * becomes one of the "Jewel Sanctification N" rows (N being the roll).
+ */
+function genericSanctification(recipe: RecipeVariant, row: CubeRow): RecipeVariant {
+  if (/^Add Sanctification Dummy Stat/.test(row.description)) {
+    return { inputs: recipe.inputs, output: 'The same jewel, ready to sanctify (transmute it again on its own)' };
+  }
+  if (/^Jewel Sanctification \d+$/.test(row.description)) return { inputs: ['That jewel, on its own'], output: recipe.output };
+  return recipe;
+}
+
 /** "Mythical Razor Axe / … (29 variants), each keeps its stats": details every option shares are written once */
 function sharedSuffixPool(ranked: string[]): string {
   const match = / \(([^()]+)\)$/.exec(ranked[0] ?? '');
@@ -783,15 +839,16 @@ export const CUBE_FAMILIES: readonly CubeFamily[] = [
     label: 'Removing a forging (Thawing Potions)',
     match: /^Remove .*Forging/,
     rewrite: genericRuneRemoval,
+    // Removal takes off what the forging added: the bonus is the negated forging bonus, one per gem, rune or aura
+    outputBonus: 'hide',
     collapse: (row) => /(All Skill|Skill|Stat|Rune|Aura) Forging/.exec(row.description)?.[1] ?? row.description,
   },
   {
     id: 'skill-forging',
     label: 'Class skill forging',
     match: /^(?:(?:Weapon|Armor|Ring|Amulet|Unique Charm) Skill Forging \w+|Skill Forging Unique Jewel)$/,
-    rewrite: skillForgingClass,
-    // One row per class: the gem picks the class, the rows only differ in the item slot.
-    collapse: (row) => /Skill Forging (\w+)$/.exec(row.description)?.[1] ?? row.description,
+    // One row per class (its bonus): the gem picks the class, the rows only differ in the item slot (jewels too).
+    collapse: forgingGem,
   },
   {
     id: 'all-skill-forging',
@@ -808,14 +865,17 @@ export const CUBE_FAMILIES: readonly CubeFamily[] = [
     // weapon and armor rows already accept those items, so they are left out to keep the rune lists honest.
     match: /^Rune Forging (?:weap|armo|ring|amul|Jewel [WH])$/,
     rewrite: genericRuneForging,
+    // Each rune has its own bonus per slot (hundreds of rows): the output names it generically
+    outputBonus: 'hide',
   },
   {
     id: 'stat-forging',
     label: 'Stat forging',
     match: /^(?!Remove )(?:\w+ )*Stat Forging (?:\w{3}_\w+|Unique Jewel|Mag\/Rar Jewel)$/,
-    rewrite: anyEquipment,
-    // One row for equipment (the gem colours merged) and one per jewel recipe.
-    collapse: (row) => (/Jewel$/.test(row.description) ? row.description : 'equipment'),
+    rewrite: genericStatForging,
+    // One row per chipped gem, the slots with another bonus (weapons, armor, jewels) named in its output.
+    collapse: forgingGem,
+    pool: statForgingBonuses,
   },
   {
     id: 'socket',
@@ -851,8 +911,11 @@ export const CUBE_FAMILIES: readonly CubeFamily[] = [
     id: 'legendary-consumables',
     label: 'Legendary consumables',
     match:
-      /^(?:Inarius' Everburning Halo|Astrogha's Petrified Heart|Lilith's Crystallized Tear|Tyrael's Eternal Feather|Add Sanctification Dummy Stat)/,
-    collapse: (row) => row.description.replace(/\s*(?:-\s*)?(?:Weapon|Armor|Ring|Amulet|Arrow Quiver|Bolt Quiver|Melee|Throw|Jewel)$/, ''),
+      /^(?:Inarius' Everburning Halo|Astrogha's Petrified Heart|Lilith's Crystallized Tear|Tyrael's Eternal Feather|Add Sanctification Dummy Stat|Jewel Sanctification \d+$)/,
+    rewrite: genericSanctification,
+    // The sanctifications (one per value of the Relic's hidden roll) are one random pool
+    collapse: (row) =>
+      row.description.replace(/\s*(?:-\s*)?(?:Weapon|Armor|Ring|Amulet|Arrow Quiver|Bolt Quiver|Melee|Throw|Jewel|\d+)$/, ''),
   },
   { id: 'respec-token', label: 'Token of Absolution', match: /^Token of Absolution$/ },
   { id: 'starter-pack', label: "Adventurer's Pack", match: /^(?:Another )?Adventurer's Pack$/ },
@@ -933,8 +996,9 @@ export const CUBE_FAMILIES: readonly CubeFamily[] = [
     id: 'kill-ledger-bosses',
     label: 'Kill Ledger boss bonuses',
     match: /^Kill Ledger (?!Tier )(?!.*Trap).+$/,
+    // One row per boss bonus (the crystals pick it), in file order; every boss shown so a player can look theirs up
+    maxRows: 20,
     rewrite: genericKillBoss,
-    collapse: killBossShape,
   },
   {
     id: 'ancient-scrolls',
@@ -964,6 +1028,8 @@ export const CUBE_FAMILIES: readonly CubeFamily[] = [
     match: /^magic [\w' ]+ \+ jewel \+ (?!rune )[\w' ]+ \+ [\w' ]+ -> \w+ \w+$/,
     rewrite: genericClassCraft,
     collapse: craftClass,
+    // The bonuses depend on the slot as well as the class (80 sets): one row per class cannot list them
+    outputBonus: 'hide',
   },
   {
     id: 'gem-meld',
@@ -977,6 +1043,8 @@ export const CUBE_FAMILIES: readonly CubeFamily[] = [
     match: /^(?!.*Trap)(?:Orb of Creation: 5 Orb of Elements|[\w ]+ Ascendancy: Orb of Creation \+ .+|[\w ]+ Ascend to Tier \d.*)$/,
     rewrite: genericAscendancy,
     pool: ascendancyPool,
+    // A stone's mods depend on the class it was made for (the class rows are merged)
+    outputBonus: 'hide',
   },
   {
     id: 'vessel-transform',
@@ -996,41 +1064,49 @@ export function familyRows(family: CubeFamily, esr: Pick<EsrGuideTables, 'cube'>
 }
 
 /** Output text; an item handed back unchanged (an output equal to an input) is left out, repeats are counted. */
-function rowOutput(row: CubeRow, esr: Pick<EsrGuideTables, 'nameOf'>): string {
+function rowOutput(row: CubeRow, esr: OutputTables, bonus: boolean): string {
   const kept = row.outputs.filter((output) => !row.inputs.includes(output.spec));
-  const texts = (kept.length > 0 ? kept : row.outputs).map((output) => formatOutput(output, esr));
+  const texts = (kept.length > 0 ? kept : row.outputs).map((output) => formatOutput(output, esr, { bonus }));
   return [...countValues(texts)].map(([text, count]) => (count > 1 ? `${String(count)}× ${text}` : text)).join(' + ');
 }
 
 /**
  * The family's rows in file order (of each group's first row), merged as configured, before the row cap. Notes stay
- * empty (the txt descriptions are dev labels) except for "… and N more" on a capped group.
+ * empty (the txt descriptions are dev labels) except for "… and N more" on a capped group. A collapsed group whose
+ * bonuses would split it past MAX_GROUP_ROWS is shown without them (clusterWithBonus).
  */
 export function collectFamily(family: CubeFamily, esr: FamilyTables): RecipeRow[] {
-  const groups = new Map<string, RecipeVariant[]>();
+  const groups = new Map<string, { withBonus: RecipeVariant[]; plain: RecipeVariant[] }>();
+  const bonus = family.outputBonus !== 'hide';
   for (const row of familyRows(family, esr)) {
-    const text = { inputs: row.inputs.map((input) => formatInput(input, esr)), output: rowOutput(row, esr) };
-    const variant = family.rewrite === undefined ? text : family.rewrite(text, row, esr);
+    const inputs = row.inputs.map((input) => formatInput(input, esr));
+    const variant = (output: string) => {
+      const text = { inputs, output };
+      return family.rewrite === undefined ? text : family.rewrite(text, row, esr);
+    };
+    const withBonus = variant(rowOutput(row, esr, bonus));
     const collapse = family.collapse;
     const key =
-      collapse === undefined ? '' : `${String(variant.inputs.length)}\u0000${collapse === true ? row.description : collapse(row, esr)}`;
-    const group = groups.get(key) ?? [];
-    group.push(variant);
+      collapse === undefined ? '' : `${String(withBonus.inputs.length)}\u0000${collapse === true ? row.description : collapse(row, esr)}`;
+    const group = groups.get(key) ?? { withBonus: [], plain: [] };
+    group.withBonus.push(withBonus);
+    group.plain.push(bonus ? variant(rowOutput(row, esr, false)) : withBonus);
     groups.set(key, group);
   }
-  return [...groups.values()].flatMap((variants) => {
-    const rows = clusterVariants(variants, family.pool);
-    return family.collapse === undefined ? rows.map((row) => ({ ...row, note: null })) : capGroup(rows, () => null);
+  return [...groups.values()].flatMap(({ withBonus, plain }) => {
+    if (family.collapse === undefined) return clusterVariants(withBonus, family.pool).map((row) => ({ ...row, note: null }));
+    return capGroup(clusterWithBonus(withBonus, plain, family.pool), () => null);
   });
 }
 
-/** The `recipes` block of a family: at most MAX_FAMILY_ROWS rows, the caption counting the rest. */
+/** The `recipes` block of a family: at most `maxRows` (default MAX_FAMILY_ROWS) rows, the caption counting the rest. */
 export function familyBlock(family: CubeFamily, esr: FamilyTables): RecipesBlock {
   const rows = collectFamily(family, esr);
-  const more = rows.length - MAX_FAMILY_ROWS;
+  const maxRows = family.maxRows ?? MAX_FAMILY_ROWS;
+  const more = rows.length - maxRows;
   return {
     kind: 'recipes',
     caption: more > 0 ? `${family.label} (… and ${String(more)} more)` : family.label,
-    rows: rows.slice(0, MAX_FAMILY_ROWS),
+    rows: rows.slice(0, maxRows),
   };
 }

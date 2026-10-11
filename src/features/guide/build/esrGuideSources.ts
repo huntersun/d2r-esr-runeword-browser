@@ -5,6 +5,13 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ESR_EXCEL_DIR, readModVersion, readStringFiles } from '../../game-data/build/esrSources.ts';
+import {
+  STAT_TABLES,
+  createStatRenderer,
+  readStatTables,
+  type StatRenderer,
+  type StatTableName,
+} from '../../game-data/build/stats/statRenderer.ts';
 import { buildStringTable, type StringsFile } from '../../game-data/build/strings.ts';
 import { parseTsv, type TsvRow, type TsvTable } from '../../game-data/build/tsv.ts';
 
@@ -14,14 +21,24 @@ export type GuideTableName = (typeof GUIDE_TABLES)[number];
 export interface EsrGuideSources {
   esrVersion: string;
   tables: Record<GuideTableName, string>;
+  /** The game-data stat renderer's tables (properties, itemstatcost, …), for the bonuses of cube outputs */
+  statTables: Record<StatTableName, string>;
   strings: StringsFile[];
 }
 
 export interface CubeMod {
   mod: string;
+  /** `mod N param` (a skill, aura or tab for skill mods; a stat layer); empty when unset */
+  param: string;
   min: number;
   max: number;
 }
+
+/**
+ * Display lines of cube output mods, rendered like the affix text of the game-data bundles ("+5 to Life"); a mod the
+ * renderer cannot read (unknown property or stat) is left out instead of showing its raw code.
+ */
+export type ModRenderer = (mods: readonly CubeMod[]) => string[];
 
 export interface CubeOutput {
   /** Raw output cell without quotes, e.g. `usetype,uni` or `Kill Ledger` */
@@ -85,13 +102,17 @@ export interface EsrGuideTables {
   isKnown: (token: string) => boolean;
   /** Lower-cased item names (display, internal and the name line of multi-line names) and item type names */
   names: ReadonlySet<string>;
+  /** Bonus text of cube output mods (the game-data stat renderer) */
+  renderMods: ModRenderer;
 }
 
 export function readEsrGuideSources(esrDir: string): EsrGuideSources {
   const excelDir = join(esrDir, ESR_EXCEL_DIR);
   const tables = {} as Record<GuideTableName, string>;
   for (const name of GUIDE_TABLES) tables[name] = readFileSync(join(excelDir, `${name}.txt`), 'utf8');
-  return { esrVersion: readModVersion(esrDir), tables, strings: readStringFiles(esrDir) };
+  const statTables = {} as Record<StatTableName, string>;
+  for (const name of STAT_TABLES) statTables[name] = readFileSync(join(excelDir, `${name}.txt`), 'utf8');
+  return { esrVersion: readModVersion(esrDir), tables, statTables, strings: readStringFiles(esrDir) };
 }
 
 /** Anchors (`id="…"` / `name="…"`) per file of the clone's docs/ folder (the official site); null without docs. */
@@ -138,7 +159,9 @@ function readMods(row: TsvRow, prefix: string): CubeMod[] {
     const column = `${prefix}mod ${String(i)}`;
     if (!row.has(column)) continue;
     const mod = row.str(column);
-    if (mod !== '') mods.push({ mod, min: numberOf(row, `${column} min`), max: numberOf(row, `${column} max`) });
+    if (mod === '') continue;
+    const param = row.has(`${column} param`) ? row.str(`${column} param`) : '';
+    mods.push({ mod, param, min: numberOf(row, `${column} min`), max: numberOf(row, `${column} max`) });
   }
   return mods;
 }
@@ -201,7 +224,26 @@ function readItems(table: TsvTable, kind: EsrItem['kind'], npcs: readonly string
   });
 }
 
-export function buildEsrGuideTables(sources: Pick<EsrGuideSources, 'tables' | 'strings'>): EsrGuideTables {
+/** The stat renderer, built on first use (the guide only renders a few hundred cube rows) */
+function statModRenderer(statTables: Record<StatTableName, string>, strings: ReadonlyMap<string, string>): ModRenderer {
+  let renderer: StatRenderer | null = null;
+  return (mods) => {
+    const current = (renderer ??= createStatRenderer(readStatTables(statTables), strings));
+    const inputs = mods.map((mod) => ({ code: mod.mod, param: mod.param === '' ? null : mod.param, min: mod.min, max: mod.max }));
+    // Rendered together (the renderer merges damage pairs and stat groups), without the mods it warns about
+    const readable = inputs.filter((input) => current.renderMods([input]).warnings.length === 0);
+    return readable.length === 0 ? [] : current.renderMods(readable).lines;
+  };
+}
+
+/**
+ * `renderMods` overrides the stat renderer (tests pass a stub); without it and without `statTables` (small fixtures)
+ * no bonus is rendered.
+ */
+export function buildEsrGuideTables(
+  sources: Pick<EsrGuideSources, 'tables' | 'strings'> & Partial<Pick<EsrGuideSources, 'statTables'>>,
+  renderMods?: ModRenderer
+): EsrGuideTables {
   const { strings } = buildStringTable(sources.strings);
   const misc = parseTsv(sources.tables.misc, 'misc.txt');
   const npcs = vendorNpcs(misc);
@@ -257,5 +299,6 @@ export function buildEsrGuideTables(sources: Pick<EsrGuideSources, 'tables' | 's
         .map((name) => name.trim().toLowerCase())
         .filter((name) => name !== '')
     ),
+    renderMods: renderMods ?? (sources.statTables === undefined ? () => [] : statModRenderer(sources.statTables, strings)),
   };
 }

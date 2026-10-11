@@ -3,7 +3,7 @@
  * number (the txt repeats a recipe per base type, quality or socket count).
  */
 import type { RecipeRow } from '../../engine/schema.ts';
-import { capGroup, clusterVariants, distinct, formatInput, formatOutput, type RecipeVariant } from '../cubeText.ts';
+import { capGroup, clusterWithBonus, distinct, formatInput, formatOutput, type RecipeVariant } from '../cubeText.ts';
 import type { EsrGuideTables } from '../esrGuideSources.ts';
 import { requireEsr, type DirectiveResolver } from './types.ts';
 
@@ -12,22 +12,21 @@ const RETURNED = '(the Ancient Scroll is returned)';
 
 /** Secret recipes keyed by number (each one or more rows, see clusterVariants), in file order. */
 export function collectSecretRecipes(esr: EsrGuideTables): Map<number, RecipeRow[]> {
-  const groups = new Map<number, { variants: RecipeVariant[]; descriptions: string[] }>();
+  const groups = new Map<number, { variants: RecipeVariant[]; plain: RecipeVariant[]; descriptions: string[] }>();
   for (const row of esr.cube) {
     const match = SECRET.exec(row.description);
     if (match === null) continue;
     const number = Number(match[1]);
     let group = groups.get(number);
     if (group === undefined) {
-      group = { variants: [], descriptions: [] };
+      group = { variants: [], plain: [], descriptions: [] };
       groups.set(number, group);
     }
     // An output identical to an input (the Ancient Scroll) is returned unchanged; the caption says so instead.
     const outputs = row.outputs.filter((output) => !row.inputs.includes(output.spec));
-    group.variants.push({
-      inputs: row.inputs.map((input) => formatInput(input, esr)),
-      output: outputs.map((output) => formatOutput(output, esr)).join(' + '),
-    });
+    const inputs = row.inputs.map((input) => formatInput(input, esr));
+    group.variants.push({ inputs, output: outputs.map((output) => formatOutput(output, esr)).join(' + ') });
+    group.plain.push({ inputs, output: outputs.map((output) => formatOutput(output, esr, { bonus: false })).join(' + ') });
     group.descriptions.push(match[2].trim());
   }
 
@@ -38,7 +37,8 @@ export function collectSecretRecipes(esr: EsrGuideTables): Map<number, RecipeRow
     const first = `#${String(number)}${more > 0 ? ` (+${String(more)} variant${more > 1 ? 's' : ''})` : ''}`;
     recipes.set(
       number,
-      capGroup(clusterVariants(group.variants), (i) => (i === 0 ? first : `#${String(number)}`))
+      // With the bonus (level requirement, experience, gold …) unless it splits a recipe past the rows shown (#22)
+      capGroup(clusterWithBonus(group.variants, group.plain), (i) => (i === 0 ? first : `#${String(number)}`))
     );
   }
   return recipes;

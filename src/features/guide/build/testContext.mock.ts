@@ -1,7 +1,7 @@
 /** Tiny inline fixtures for the guide build tests (a few txt rows, strings and game-data entries). */
 import type { GlossaryEntry } from '../engine/schema.ts';
 import { createGuideContext, type DocsIndex, type GameDataInputs, type GuideContext } from './context.ts';
-import { buildEsrGuideTables, type EsrGuideTables } from './esrGuideSources.ts';
+import { buildEsrGuideTables, type CubeMod, type EsrGuideTables } from './esrGuideSources.ts';
 
 /** Tab-separated rows with CRLF line ends, like the txt files. */
 export function tsv(rows: string[][]): string {
@@ -63,6 +63,14 @@ export const CUBEMAIN = tsv([
   ["Adventurer's Pack", '1', 'ama', '1', 'ag8', '', '', '"c11,nor"', 'sock', '1', '1', 'Kill Ledger', '', '0'],
   ["Adventurer's Pack", '1', 'sor', '1', 'ag8', '', '', '"c11,nor"', 'sock', '1', '1', 'Kill Ledger', '', '0'],
   ['[SECRET03] Disabled', '0', '', '1', 'jew', '', '', 'jew', '', '', '', '', '', '0'],
+  // A bonus is shown; markers (tinkerflag2) are not
+  ['[SECRET04] Ring Xp', '1', '', '2', '"ring,nru"', '04a', '', 'useitem', 'addxp', '25', '25', '04a', '', '0'],
+  ['[SECRET04] Ring Xp Remove', '1', '', '2', 'ring', 'wms', '', 'useitem', 'tinkerflag2', '-1', '-1', '', '', '0'],
+  // One bonus per organ would split the recipe past MAX_GROUP_ROWS: shown without bonuses, merged as before
+  ['[SECRET05] Tinkering hp', '1', '', '3', '"ring,nru"', '"hrt,qty=3"', '05a', 'useitem', 'hp', '5', '5', '05a', '', '0'],
+  ['[SECRET05] Tinkering mana', '1', '', '3', '"ring,nru"', '"sol,qty=3"', '05a', 'useitem', 'mana', '5', '5', '05a', '', '0'],
+  ['[SECRET05] Tinkering fire', '1', '', '3', '"ring,nru"', 'fng', '05a', 'useitem', 'dmg-fire', '5', '10', '05a', '', '0'],
+  ['[SECRET05] Tinkering light', '1', '', '3', '"ring,nru"', 'hrn', '05a', 'useitem', 'dmg-ltng', '5', '10', '05a', '', '0'],
 ]);
 
 export const MISC = tsv([
@@ -114,11 +122,42 @@ export const STRINGS = JSON.stringify([
   { Key: 'Kill Ledger', enUS: 'ÿc@Kill Ledger' },
 ]);
 
-export function fixtureEsr(): EsrGuideTables {
-  return buildEsrGuideTables({
-    tables: { cubemain: CUBEMAIN, misc: MISC, armor: ARMOR, weapons: WEAPONS, itemtypes: ITEMTYPES, difficultylevels: DIFFICULTYLEVELS },
-    strings: [{ name: 'item-names.json', text: STRINGS }],
+/** Stub labels per property code (`#` is the value); other codes render as "code(param) value" */
+const STUB_LABELS: Readonly<Partial<Record<string, string>>> = {
+  hp: '+# to Life',
+  allskills: '+# to All Skills',
+  ama: '+# to Amazon Skill Levels',
+  sor: '+# to Sorceress Skill Levels',
+  'mag%': '+#% Better Chance of Getting Magic Items',
+  'att%': '+#% Bonus to Attack Rating',
+  'mana%': 'Increase Maximum Mana +#%',
+  'res-all': 'All Resists +#',
+  levelreq: '+# Level Required',
+  addxp: '+#% to Experience Gained',
+  branded: 'Branded',
+};
+
+/**
+ * Stand-in for the game-data stat renderer (one line per mod, "5" or "5 to 10"), so the guide tests do not need the
+ * stat tables; it renders every mod it is given, hidden markers included, so a marker that leaks shows up. The real
+ * renderer is checked against the ESR clone in cubeFamilies.test.ts.
+ */
+export function stubRenderMods(mods: readonly CubeMod[]): string[] {
+  return mods.map((mod) => {
+    const value = mod.min === mod.max ? String(mod.max) : `${String(mod.min)} to ${String(mod.max)}`;
+    const label = STUB_LABELS[mod.mod];
+    return label === undefined ? `${mod.mod}${mod.param === '' ? '' : `(${mod.param})`} ${value}` : label.replace('#', value);
   });
+}
+
+export function fixtureEsr(): EsrGuideTables {
+  return buildEsrGuideTables(
+    {
+      tables: { cubemain: CUBEMAIN, misc: MISC, armor: ARMOR, weapons: WEAPONS, itemtypes: ITEMTYPES, difficultylevels: DIFFICULTYLEVELS },
+      strings: [{ name: 'item-names.json', text: STRINGS }],
+    },
+    stubRenderMods
+  );
 }
 
 export const GLOSSARY: GlossaryEntry[] = [

@@ -84,17 +84,62 @@ function modNotes(mods: readonly CubeMod[]): string[] {
   return mods.filter((mod) => mod.mod === 'sock').map((mod) => (mod.max === 1 ? '1 socket' : `${String(mod.max)} sockets`));
 }
 
+/**
+ * Output mods that are markers or counters rather than a bonus, by property code. The stat renderer shows several
+ * of them: craftflag "*** Forged (Equipment) ***", craftflag2 "*** Forged (Jewel) ***", mercflag "*** Merc Only
+ * Conversion ***", item-upgraded "*** Upgraded ***", weapon-mastery "Weapon Mastery Applied", sanctified-dummy
+ * "Transmute to Sanctify Item", anointed_dummy / corrupted_dummy "Transmute to Anoint / Corrupt Item", mythicaldesc
+ * (the mythical's description lines), soul-counter "Souls Remaining: -350", unusable-item "This item cannot be
+ * equipped", and the stocker counters ("Anvil Stone 1", "Ruby -243", "Frozen Soul 50", "Ring Point -7"). Others
+ * render nothing (no description function): tinkerflag2, meldflag, randomize, kill-ledger-*, ascendancy-tier-*, the
+ * *-cap stats; they are listed anyway so a later descfunc does not surface them. `sock` is written as "N sockets".
+ */
+const HIDDEN_MODS = new Set([
+  'sock',
+  'craftflag',
+  'craftflag2',
+  'tinkerflag2',
+  'mercflag',
+  'meldflag',
+  'item-upgraded',
+  'weapon-mastery',
+  'sanctified-dummy',
+  'anointed_dummy',
+  'corrupted_dummy',
+  'mythicaldesc',
+  'soul-counter',
+  'unusable-item',
+  'randomize',
+]);
+/** Kill Ledger and ascendancy tier markers, stocker counters (item-NN, junk-NN, xtal-NN, rune-…, gem-x), caps */
+const HIDDEN_MOD_PATTERN = /^(?:kill-ledger-|ascendancy-tier-|(?:item|junk|xtal)-\d+$|rune-|gem-[a-z]$)|-cap(?:-group)?$/;
+
+export function isHiddenMod(code: string): boolean {
+  return HIDDEN_MODS.has(code) || HIDDEN_MOD_PATTERN.test(code);
+}
+
+/** What describing an output reads: display names and the bonus text of its mods */
+export type OutputTables = Pick<EsrGuideTables, 'nameOf' | 'renderMods'>;
+
+export interface DescribeOptions {
+  /** Render the output's bonus mods (default true); families with one bonus per ingredient hide them */
+  bonus?: boolean;
+}
+
+/** The bonus lines of an output's mods through the game-data stat renderer ("+5 to Life"), markers left out */
+export function bonusLines(mods: readonly CubeMod[], esr: Pick<OutputTables, 'renderMods'>): string[] {
+  const shown = mods.filter((mod) => !isHiddenMod(mod.mod));
+  return shown.length === 0 ? [] : esr.renderMods(shown);
+}
+
 /** Output text plus the qualifiers on their own (for item lists). */
-export function describeOutput(output: CubeOutput, esr: Pick<EsrGuideTables, 'nameOf'>): { name: string; details: string[] } {
+export function describeOutput(output: CubeOutput, esr: OutputTables, options: DescribeOptions = {}): { name: string; details: string[] } {
   const parsed = parseSpec(output.spec);
-  const notes = [...parsed.notes, ...modNotes(output.mods)];
+  const notes = [...parsed.notes, ...modNotes(output.mods), ...(options.bonus === false ? [] : bonusLines(output.mods, esr))];
   if (parsed.token === 'useitem') return { name: 'The same item', details: [...parsed.adjectives, ...notes] };
   // A copy of input 1 (launcher plugin output code) with the row's mods added to the copy (e.g. Inarius' Halo:
-  // "branded"); a `useitem` next to it hands back the original as well.
-  if (parsed.token === 'cloneitem') {
-    const mods = output.mods.filter((mod) => mod.mod !== 'sock').map((mod) => mod.mod.charAt(0).toUpperCase() + mod.mod.slice(1));
-    return { name: 'A copy of the item', details: [...parsed.adjectives, ...notes, ...mods] };
-  }
+  // "Branded"); a `useitem` next to it hands back the original as well.
+  if (parsed.token === 'cloneitem') return { name: 'A copy of the item', details: [...parsed.adjectives, ...notes] };
   if (parsed.token === 'usetype') {
     const quality = parsed.adjectives.length === 0 ? 'An item' : `${parsed.adjectives.join(' ')} item`;
     return { name: `${quality} of the same type`, details: notes };
@@ -103,8 +148,8 @@ export function describeOutput(output: CubeOutput, esr: Pick<EsrGuideTables, 'na
   return { name: parsed.qty > 1 ? `${String(parsed.qty)}× ${name}` : name, details: [...parsed.adjectives, ...notes] };
 }
 
-export function formatOutput(output: CubeOutput, esr: Pick<EsrGuideTables, 'nameOf'>): string {
-  const { name, details } = describeOutput(output, esr);
+export function formatOutput(output: CubeOutput, esr: OutputTables, options: DescribeOptions = {}): string {
+  const { name, details } = describeOutput(output, esr, options);
   return details.length === 0 ? name : `${name} (${details.join(', ')})`;
 }
 
@@ -143,14 +188,29 @@ function byFrequency(values: readonly string[]): string[] {
   return [...countValues(values)].sort((a, b) => b[1] - a[1]).map(([value]) => value);
 }
 
+/** A random pool with more options than this is counted rather than listed (when the options share their name) */
+export const MAX_POOL_OPTIONS = 6;
+
+/**
+ * The default random pool: "a / b / c / … (N variants)"; a larger pool of one item with different bonuses (the 217
+ * sanctifications of a jewel) reads "The same item (one random bonus, 217 possible)".
+ */
+export function randomPool(ranked: string[]): string {
+  if (ranked.length <= MAX_POOL_OPTIONS) return joinOptions(ranked);
+  const names = distinct(ranked.map((option) => option.replace(/ \(.*\)$/, '')));
+  const name = names.at(0);
+  if (names.length !== 1 || name === undefined) return joinOptions(ranked);
+  return `${name} (one random bonus, ${String(ranked.length)} possible)`;
+}
+
 /**
  * Merges the variants of one recipe into as few honest rows as possible:
  * 1. variants with the same inputs but different outputs are one random pool (`pool` formats its outputs, most
- *    frequent first);
+ *    frequent first; default randomPool);
  * 2. variants with the same output that differ in exactly one input slot (always the same slot) merge into one row
  *    with that slot's values joined ("Weapon / Ring / …"); anything else stays a separate row.
  */
-export function clusterVariants(variants: readonly RecipeVariant[], pool: (ranked: string[]) => string = joinOptions): RecipeVariant[] {
+export function clusterVariants(variants: readonly RecipeVariant[], pool: (ranked: string[]) => string = randomPool): RecipeVariant[] {
   const pools = new Map<string, { inputs: string[]; outputs: string[] }>();
   for (const variant of variants) {
     const key = JSON.stringify(variant.inputs);
@@ -185,6 +245,19 @@ export function clusterVariants(variants: readonly RecipeVariant[], pool: (ranke
 
 /** Rows shown per merged recipe before "… and N more" */
 export const MAX_GROUP_ROWS = 3;
+
+/**
+ * Clusters a recipe's variants with their output bonus, unless the bonuses split it into more rows than are shown
+ * (e.g. one per organ): then the variants without the bonus (`plain`, same order), which merge as before.
+ */
+export function clusterWithBonus(
+  withBonus: readonly RecipeVariant[],
+  plain: readonly RecipeVariant[],
+  pool?: (ranked: string[]) => string
+): RecipeVariant[] {
+  const rows = clusterVariants(withBonus, pool);
+  return rows.length > MAX_GROUP_ROWS ? clusterVariants(plain, pool) : rows;
+}
 
 /** The first MAX_GROUP_ROWS rows with notes from `note(index)`; the last shown row says how many were left out. */
 export function capGroup(variants: readonly RecipeVariant[], note: (index: number) => string | null): RecipeRow[] {

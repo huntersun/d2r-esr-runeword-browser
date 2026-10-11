@@ -3,11 +3,11 @@
   "esrVersion": "3.2.12",
   "esrTag": "3.2.12",
   "esrCommit": "8c2bb1c1a50fe35e96ce8804120613bb3ae74d1b",
-  "generatedAt": "2026-10-11T20:12:01.425Z",
+  "generatedAt": "2026-10-11T20:32:01.492Z",
   "files": {
     "guide": {
-      "hash": "e1dc2456bb795047dac7d59c00dfc3b1dd0ff75d98d6d51ad95121ddccfed527",
-      "bytes": 180476
+      "hash": "29ebfbb202691f34535df092a4909a773c2ca9d6169d9b25e34e7d4269ee10c3",
+      "bytes": 186579
     }
   },
   "counts": {
