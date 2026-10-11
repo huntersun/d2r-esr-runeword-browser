@@ -1,7 +1,12 @@
 # Feature research: loot filter editor
 
-Status: **paused, waiting for the mod author** (decision of 2026-10-10, section 5). Branch `feat/loot-filter`.
+Status: **building** (unblocked 2026-10-11 by the author's guide, section 4). Branch `feat/loot-filter`.
 ESR at the time of research: 3.2.12 (loot filters exist since 3.2.09).
+
+> **2026-10-11:** the mod author supplied the "ESR Loot Filter Guide" (PDF and Markdown copy in
+> `builds-feature-docs/loot-filter/`), an updated `sullys-qol.json` (302 rules, 12 named styles), the sound files and
+> the `goldstar` minimap sprite. The guide is the authoritative schema and supersedes sections 2.3, 3 and 3.1 below,
+> which are kept as history. Section 4 records which questions it answers; section 5 holds the updated decisions.
 
 ## 1. The question
 
@@ -166,6 +171,33 @@ whether `sound` also accepts `sounds.txt` entries or TTS text.
 Where to ask: the ESR Discord (linked from easternsunresurrected.com) or a GitHub issue on
 `CelestialRayOne/Eastern_Sun_Resurrected`.
 
+### 4.1 Answers (the guide of 2026-10-11)
+
+1. Semantics: every matching rule applies, top to bottom, until one hides the item. Later wins for background, border,
+   name change, icon and droplight; chat lines and sounds add up; `hide` stops; `hideIfOtherConditionsFail` hides when
+   codes/types/location match but another condition fails; missing `location` = `onGround`; styles hold actions only
+   and the rule's own actions win over `useStyle`. A rule with an error is switched off and logged.
+2. Keys beyond Sully's file: `itemTypes`/`excludeItemTypes`, `itemLevel`, `maxSockets`, `isEthereal`, `isIdentified`,
+   `uniqueOrSetIds`/`excludeUniqueOrSetIds`, `playerStatsAnyOf`, `difficulty`, `areas`, `excludeItemCodes`; ops `!=`,
+   `>`, `<` and `between` (`value: [low, high]`); actions `chatMessageWhenHidden`, `notify`, `soundVolume`, `icon`,
+   `droplight`, `useStyle`, `comment`; top level `updateUrl`, `hideUnmatchedItems`, `soundVolume`, `notifications`,
+   `qualityColors`, `styles`.
+3. Numbers take one value, a list or `{ "min", "max" }`; named values take the name or its number.
+4. Placeholders: `{name}`, `{code}`, `{quality}`, `{baseTier}`, `{itemLevel}`, `{sockets}`, `{maxSockets}`,
+   `{ethereal}`, `{uniqueOrSetId}`, `{qualityColor}`, `{stat:ID[,PARAM]}`, `{playerStat:ID[,PARAM]}`, `{string:KEY}`,
+   `{link}` (chat only), `{level}`/`{filter}` (level change line). `$$` is not special: Sully's file renames gold to
+   the literal text `$$`.
+5. `sound`: a sounds.txt name or row number, or a .wav/.mp3/.flac file in the filter's `sounds` folder.
+6. `//` comments are allowed anywhere; `formatVersion` is always 1. Whether unknown keys are ignored or rejected is
+   not stated; the editor preserves them and reports them as warnings.
+7. Bundling Sully's filter, the sounds and the goldstar icon: okay given (owner, 2026-10-11).
+
+Still implicit in the guide, implemented as assumptions and listed in the engine file headers (`engine/evaluate.ts`,
+`engine/parse.ts`, `engine/validate.ts`) and in `docs/features/LOOT-FILTER.md` for in-game verification: per-key
+last-wins for `replaceName`/`namePrefix`/`nameSuffix`; a missing stat counts as 0; effects of earlier rules are dropped
+when a later rule hides; unique/set ids are 0-based row numbers (equal to `*ID` in ESR 3.2.12); sounds.txt row numbers
+are 0-based data rows (`*Index` is unreliable: it repeats for the Leoric taunt rows).
+
 ## 5. Decisions (owner, 2026-10-10)
 
 | Topic           | Decision                                                                                                      |
@@ -176,8 +208,20 @@ Where to ask: the ESR Discord (linked from easternsunresurrected.com) or a GitHu
 | Starting points | Blank filter, or upload. Nothing bundled (no Sully's, no presets).                                            |
 | Rule scope      | Every key seen in Sully's filter, in phase 1.                                                                 |
 | Sounds          | File-name field with the 9 known names as suggestions; optional local mp3 upload to preview. Nothing bundled. |
-| Spec risk       | **Ask the mod author first; the build waits for the answer.**                                                 |
+| Spec risk       | ~~Ask the mod author first; the build waits for the answer.~~ Answered 2026-10-11 (section 4.1).              |
 | Library         | Several named filters per browser: create, upload, duplicate, rename, delete.                                 |
+
+### 5.1 Updated decisions (owner, 2026-10-11)
+
+| Topic           | Decision                                                                                                     |
+| --------------- | ------------------------------------------------------------------------------------------------------------ |
+| Rule scope      | Form controls for **everything in the guide** (conditions, actions, styles, settings, notifications...).     |
+| Starting points | Blank, upload, or **Sully's QoL as a bundled template** (credited; author's okay given).                     |
+| Sounds          | The 9 mp3 files ship under `public/loot-filters/sounds/` for in-browser preview; sounds.txt names listed.    |
+| Icons           | `.sprite` files are decoded in the browser for preview; `goldstar` ships under `public/loot-filters/icons/`. |
+| Languages       | Forms edit plain strings (or enUS); per-language objects are preserved and edited in the JSON tab.           |
+| Tester          | A "test item" evaluator with a rule trace ships in phase 1 (engine `evaluate.ts`).                           |
+| Cadence         | Engine → data bundle → library/shell → rule builder/preview → tester → docs; commit per phase after review.  |
 
 ## 6. Design sketch (for when the answers arrive)
 
@@ -193,6 +237,9 @@ Where to ask: the ESR Discord (linked from easternsunresurrected.com) or a GitHu
 - Phase 2 candidates: Lua import, cloud save and sharing, presets, bundled sounds (needs the author's okay).
 
 ## 7. How to resume (for whoever picks this up)
+
+> Superseded on 2026-10-11: the build is under way. Current state and the phase table live in
+> `docs/features/LOOT-FILTER.md`; the steps below are the pre-build checklist, kept for history.
 
 1. `git checkout feat/loot-filter` (branched from master at v1.16.0, commit 50cffbd). Rebase or merge master first if
    releases happened meanwhile; the branch holds only this document so far.
