@@ -9,6 +9,7 @@ decisions: [FEATURE-LOOT-FILTER-RESEARCH.md](../../builds-feature-docs/FEATURE-L
 
 | Path                | Screen                  | Notes                                                                                           |
 | ------------------- | ----------------------- | ----------------------------------------------------------------------------------------------- |
+| `/loot-filters`     | LootFilterLayout        | Frame for both pages: an "Under development" notice (like the guide's "Experimental" one)       |
 | `/loot-filters`     | LootFilterLibraryScreen | The library: New filter, Upload, Start from Sully's QoL; one card per filter                    |
 | `/loot-filters/:id` | LootFilterEditorScreen  | The editor; `?tab=rules\|styles\|settings\|json\|test` (default `rules`); unknown id: not found |
 

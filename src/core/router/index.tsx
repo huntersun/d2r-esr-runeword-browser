@@ -100,6 +100,11 @@ const GameDataItemTypesScreen = lazy(async () => {
   return { default: module.ItemTypesScreen };
 });
 
+const LootFilterLayout = lazy(async () => {
+  const module = await import('@/features/loot-filter');
+  return { default: module.LootFilterLayout };
+});
+
 const LootFilterLibraryScreen = lazy(async () => {
   const module = await import('@/features/loot-filter');
   return { default: module.LootFilterLibraryScreen };
@@ -157,8 +162,14 @@ export const router = createBrowserRouter(
             { path: 'types', element: routeElement(GameDataItemTypesScreen) },
           ],
         },
-        { path: 'loot-filters', element: routeElement(LootFilterLibraryScreen) },
-        { path: 'loot-filters/:id', element: routeElement(LootFilterEditorScreen) },
+        {
+          path: 'loot-filters',
+          element: routeElement(LootFilterLayout),
+          children: [
+            { index: true, element: routeElement(LootFilterLibraryScreen) },
+            { path: ':id', element: routeElement(LootFilterEditorScreen) },
+          ],
+        },
         { path: 'builds', element: routeElement(BuildsScreen) },
         { path: 'builds/new', element: routeElement(CreateBuildScreen) },
         { path: 'builds/:buildId/edit', element: routeElement(EditBuildScreen) },
