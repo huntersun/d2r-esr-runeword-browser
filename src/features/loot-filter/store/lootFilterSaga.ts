@@ -29,6 +29,7 @@ import {
   rename,
   renameStyle,
   replaceFilter,
+  renumberLevel,
   setFilterLevels,
   setHeader,
   setNotifications,
@@ -39,12 +40,13 @@ import {
 import type { LootFilterEntry, LootFilterState } from './types';
 
 export const EDITOR_FLUSH_DELAY_MS = 400;
-export const STORAGE_FULL_MESSAGE = 'Could not save: browser storage is full';
+const STORAGE_FULL_MESSAGE = 'Could not save: browser storage is full';
 
 /** Editor actions that change the model (selection is not an edit). */
-export const isEditorMutation = isAnyOf(
+const isEditorMutation = isAnyOf(
   setHeader,
   setFilterLevels,
+  renumberLevel,
   setNotifications,
   setQualityColors,
   addRule,
@@ -60,7 +62,7 @@ export const isEditorMutation = isAnyOf(
 );
 
 /** Actions that can change `library.entries`. */
-export const isLibraryChange = isAnyOf(createBlank, importText, duplicate, rename, remove, editorFlushed, open, close);
+const isLibraryChange = isAnyOf(createBlank, importText, duplicate, rename, remove, editorFlushed, open, close);
 
 export interface LootFilterSagaOptions {
   readonly storage: PersistentStorage | null;

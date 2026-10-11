@@ -31,8 +31,10 @@ const CUSTOM_KEY = '__custom';
 export function PickerList({ options, query, onQueryChange, onPick, isSelected, custom, searchPlaceholder }: PickerListProps) {
   const { matches, total } = filterPickerOptions(options, query);
   const trimmed = query.trim();
-  const exact = options.some((option) => option.value.toLowerCase() === trimmed.toLowerCase());
-  const customOption = custom === undefined || trimmed === '' || exact ? null : custom(trimmed);
+  const offered = custom === undefined || trimmed === '' ? null : custom(trimmed);
+  // No custom entry for a value the list already has (`R33` for `r33`, `007` for id 7).
+  const customOption =
+    offered !== null && options.some((option) => option.value.toLowerCase() === offered.value.toLowerCase()) ? null : offered;
   const groups = groupPickerOptions(matches);
 
   return (

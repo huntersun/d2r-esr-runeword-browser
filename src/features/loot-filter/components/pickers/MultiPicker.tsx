@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ChevronsUpDown, Plus, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import type { PickerOption } from '../../utils/pickerSearch';
+import { focusAfterRemoval } from './focusAfterRemoval';
 import { PickerList, type PickerCustom } from './PickerList';
 
 /** How a selected value is shown: on a chip (multi) or on the trigger button (single). */
@@ -36,14 +37,14 @@ export interface MultiPickerProps {
   readonly searchPlaceholder: string;
   /** Offers typed text that is not in the list (codes and ids the game data does not know, or no data at all). */
   readonly custom?: PickerCustom;
-  readonly className?: string;
 }
 
 /**
  * Chips for the selected values plus an add button that opens a searchable list (Popover + cmdk). Picking an
  * option toggles it; the popover stays open so several can be added in a row.
  */
-export function MultiPicker({ id, options, values, onChange, describe, addLabel, searchPlaceholder, custom, className }: MultiPickerProps) {
+export function MultiPicker({ id, options, values, onChange, describe, addLabel, searchPlaceholder, custom }: MultiPickerProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState(false);
@@ -56,7 +57,7 @@ export function MultiPicker({ id, options, values, onChange, describe, addLabel,
   };
 
   return (
-    <div className={cn('flex flex-wrap items-center gap-1.5', className)}>
+    <div ref={containerRef} className="flex flex-wrap items-center gap-1.5">
       {shownValues.map((value, index) => {
         const { label, detail, muted, title } = describe(value);
         return (
@@ -73,8 +74,10 @@ export function MultiPicker({ id, options, values, onChange, describe, addLabel,
               type="button"
               className="rounded-full p-0.5 hover:bg-foreground/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               aria-label={`Remove ${label}`}
+              data-remove
               onClick={() => {
                 onChange(values.filter((_, position) => position !== index));
+                focusAfterRemoval(containerRef.current, index);
               }}
             >
               <X className="size-3" aria-hidden />
@@ -103,7 +106,7 @@ export function MultiPicker({ id, options, values, onChange, describe, addLabel,
         }}
       >
         <PopoverTrigger asChild>
-          <Button id={id} type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" aria-expanded={open}>
+          <Button id={id} type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" data-focus-fallback>
             <Plus className="size-3.5" aria-hidden />
             {addLabel}
           </Button>
@@ -136,6 +139,8 @@ export interface SinglePickerProps {
   readonly custom?: PickerCustom;
   readonly className?: string;
   readonly 'aria-label'?: string;
+  /** Radix's hook when the popover closes; `event.preventDefault()` keeps focus off the trigger. */
+  readonly onCloseAutoFocus?: (event: Event) => void;
 }
 
 /** A combobox over the same searchable list: the trigger shows the value; picking closes the popover. */
@@ -150,6 +155,7 @@ export function SinglePicker({
   custom,
   className,
   'aria-label': ariaLabel,
+  onCloseAutoFocus,
 }: SinglePickerProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -187,7 +193,7 @@ export function SinglePicker({
           <ChevronsUpDown className="size-3.5 shrink-0 opacity-50" aria-hidden />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className={POPOVER_CLASS} align="start">
+      <PopoverContent className={POPOVER_CLASS} align="start" onCloseAutoFocus={onCloseAutoFocus}>
         <PickerList
           options={options}
           query={query}

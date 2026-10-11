@@ -1,6 +1,9 @@
 import { ChevronRight } from 'lucide-react';
 
-/** The evaluator's guesses where the guide is silent (engine/evaluate.ts header), in plain words. */
+/** The full list: the "Verify in game" section of docs/features/LOOT-FILTER.md. */
+const FULL_LIST_URL = 'https://github.com/istvan-panczel/d2r-esr-runeword-browser/blob/master/docs/features/LOOT-FILTER.md#verify-in-game';
+
+/** The evaluator's main guesses where the guide is silent (engine/evaluate.ts header), in plain words; a short list. */
 const ASSUMPTIONS: readonly string[] = [
   'A rule limited to other filter levels is skipped and never hides the item, not even with "hide if other conditions fail".',
   '"Hide if other conditions fail" hides only when the item codes, item types and location match; every other condition counts as "other".',
@@ -29,6 +32,13 @@ export function AssumptionsNote() {
       </ul>
       <p className="mt-2 text-xs text-muted-foreground">
         {'{string:KEY}'} (a game string) is shown as written here; the game replaces it with the string&apos;s text.
+      </p>
+      <p className="mt-2 text-xs text-muted-foreground">
+        The full list (colour codes, sprite files, row numbers…) is in the{' '}
+        <a href={FULL_LIST_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">
+          loot filter docs
+        </a>
+        .
       </p>
     </details>
   );

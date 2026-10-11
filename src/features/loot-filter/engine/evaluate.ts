@@ -36,10 +36,12 @@ import type {
   RgbaColor,
   RuleActions,
   StatCheck,
-} from './types';
-import { BASE_TIERS, DEFAULT_LABEL_BACKGROUND_ALPHA, DIFFICULTIES, QUALITIES } from './types';
-import { DEFAULT_QUALITY_COLORS } from './colors';
-import { resolveText } from './text';
+} from './types.ts';
+import { BASE_TIERS, DEFAULT_LABEL_BACKGROUND_ALPHA, DIFFICULTIES, QUALITIES } from './types.ts';
+import { effectiveActions } from './actions.ts';
+import { DEFAULT_QUALITY_COLORS } from './colors.ts';
+import { isNamedList, isNumberList, namedToNumber } from './match.ts';
+import { resolveText } from './text.ts';
 
 export interface ItemStatEntry {
   readonly stat: number;
@@ -126,25 +128,10 @@ function qualityName(quality: number): QualityName | undefined {
   return QUALITIES[quality - 1];
 }
 
-function isNumberList(value: NumberMatch): value is readonly number[] {
-  return Array.isArray(value);
-}
-
 function matchesNumber(match: NumberMatch, actual: number): boolean {
   if (typeof match === 'number') return match === actual;
   if (isNumberList(match)) return match.includes(actual);
   return (match.min === undefined || actual >= match.min) && (match.max === undefined || actual <= match.max);
-}
-
-/** Resolves a name or number to its number; `offset` is 1 for the 1-based qualities. */
-function namedToNumber(value: string | number, names: readonly string[], offset: number): number | undefined {
-  if (typeof value === 'number') return value;
-  const index = names.indexOf(value);
-  return index < 0 ? undefined : index + offset;
-}
-
-function isNamedList(match: NamedMatch<string>): match is readonly (string | number)[] {
-  return Array.isArray(match);
 }
 
 function matchesNamed(match: NamedMatch<string>, actual: number, names: readonly string[], offset: number): boolean {
@@ -157,10 +144,14 @@ function matchesNamed(match: NamedMatch<string>, actual: number, names: readonly
   return (min === undefined || actual >= min) && (max === undefined || actual <= max);
 }
 
+/** A stat check's stat: an id, or an itemstatcost name (a numeric string is a name, which the validator flags). */
 function resolveStatId(stat: string | number, statIds: ReadonlyMap<string, number>): number | undefined {
-  if (typeof stat === 'number') return stat;
-  if (/^\d+$/.test(stat)) return Number(stat);
-  return statIds.get(stat);
+  return typeof stat === 'number' ? stat : statIds.get(stat);
+}
+
+/** A `{stat:ID}` placeholder's ID: digits are an id, anything else an itemstatcost name. */
+function resolvePlaceholderStatId(stat: string, statIds: ReadonlyMap<string, number>): number | undefined {
+  return /^\d+$/.test(stat) ? Number(stat) : statIds.get(stat);
 }
 
 /** The values a stat check compares: every entry of that stat (and param), or a single 0 when there is none. */
@@ -216,106 +207,39 @@ const GATE_KEYS: ReadonlySet<string> = new Set(['itemCodes', 'excludeItemCodes',
 /** Returns the keys of the rule's conditions that do not hold, in a stable order. */
 function failedConditions(rule: LootFilterRule, item: TestItem, context: TestContext): readonly string[] {
   const failed: ConditionKey[] = [];
-  const check = (key: ConditionKey, present: boolean, holds: () => boolean): void => {
-    if (present && !holds()) failed.push(key);
+  /** Records `key` when the rule sets it (`value` is defined) and `holds` says it does not hold. */
+  const check = <T>(key: ConditionKey, value: T | undefined, holds: (value: T) => boolean): void => {
+    if (value !== undefined && !holds(value)) failed.push(key);
   };
-  const { statIds } = context;
+  const { statIds, playerStats } = context;
+  const hasType = (types: readonly string[]): boolean => types.some((type) => item.typeAncestors.includes(type));
+  const { uniqueOrSetId } = item;
 
-  check('itemCodes', rule.itemCodes !== undefined, () => rule.itemCodes?.includes(item.code) ?? true);
-  check('excludeItemCodes', rule.excludeItemCodes !== undefined, () => !(rule.excludeItemCodes?.includes(item.code) ?? false));
-  check('itemTypes', rule.itemTypes !== undefined, () => rule.itemTypes?.some((type) => item.typeAncestors.includes(type)) ?? true);
-  check(
-    'excludeItemTypes',
-    rule.excludeItemTypes !== undefined,
-    () => !(rule.excludeItemTypes?.some((type) => item.typeAncestors.includes(type)) ?? false)
-  );
-  check('quality', rule.quality !== undefined, () => rule.quality === undefined || matchesNamed(rule.quality, item.quality, QUALITIES, 1));
-  check(
-    'baseTier',
-    rule.baseTier !== undefined,
-    () => rule.baseTier === undefined || matchesNamed(rule.baseTier, item.baseTier, BASE_TIERS, 0)
-  );
-  check('itemLevel', rule.itemLevel !== undefined, () => rule.itemLevel === undefined || matchesNumber(rule.itemLevel, item.itemLevel));
-  check('sockets', rule.sockets !== undefined, () => rule.sockets === undefined || matchesNumber(rule.sockets, item.sockets));
-  check(
-    'maxSockets',
-    rule.maxSockets !== undefined,
-    () => rule.maxSockets === undefined || matchesNumber(rule.maxSockets, item.maxSockets)
-  );
-  check('isFullySocketed', rule.isFullySocketed !== undefined, () => rule.isFullySocketed === item.isFullySocketed);
-  check('isEthereal', rule.isEthereal !== undefined, () => rule.isEthereal === item.isEthereal);
-  check('isIdentified', rule.isIdentified !== undefined, () => rule.isIdentified === item.isIdentified);
-  check('isRuneword', rule.isRuneword !== undefined, () => rule.isRuneword === item.isRuneword);
-  check(
-    'uniqueOrSetIds',
-    rule.uniqueOrSetIds !== undefined,
-    () => item.uniqueOrSetId !== null && (rule.uniqueOrSetIds?.includes(item.uniqueOrSetId) ?? true)
-  );
-  check(
-    'excludeUniqueOrSetIds',
-    rule.excludeUniqueOrSetIds !== undefined,
-    () => item.uniqueOrSetId === null || !(rule.excludeUniqueOrSetIds?.includes(item.uniqueOrSetId) ?? false)
-  );
-  check('itemStats', rule.itemStats !== undefined, () => (rule.itemStats ?? []).every((stat) => statCheckHolds(stat, item.stats, statIds)));
-  check('itemStatsAnyOf', rule.itemStatsAnyOf !== undefined, () =>
-    (rule.itemStatsAnyOf ?? []).some((stat) => statCheckHolds(stat, item.stats, statIds))
-  );
-  check('playerStats', rule.playerStats !== undefined, () =>
-    (rule.playerStats ?? []).every((stat) => statCheckHolds(stat, context.playerStats, statIds))
-  );
-  check('playerStatsAnyOf', rule.playerStatsAnyOf !== undefined, () =>
-    (rule.playerStatsAnyOf ?? []).some((stat) => statCheckHolds(stat, context.playerStats, statIds))
-  );
-  check('location', true, () => (rule.location ?? DEFAULT_LOCATIONS).includes(item.location));
-  check(
-    'difficulty',
-    rule.difficulty !== undefined,
-    () => rule.difficulty === undefined || matchesNamed(rule.difficulty, context.difficulty, DIFFICULTIES, 0)
-  );
-  check('areas', rule.areas !== undefined, () => rule.areas?.includes(context.area) ?? true);
-  check('excludeAreas', rule.excludeAreas !== undefined, () => !(rule.excludeAreas?.includes(context.area) ?? false));
-  check('activeInLevels', rule.activeInLevels !== undefined, () => rule.activeInLevels?.includes(context.filterLevel) ?? true);
+  check('itemCodes', rule.itemCodes, (codes) => codes.includes(item.code));
+  check('excludeItemCodes', rule.excludeItemCodes, (codes) => !codes.includes(item.code));
+  check('itemTypes', rule.itemTypes, hasType);
+  check('excludeItemTypes', rule.excludeItemTypes, (types) => !hasType(types));
+  check('quality', rule.quality, (quality) => matchesNamed(quality, item.quality, QUALITIES, 1));
+  check('baseTier', rule.baseTier, (tier) => matchesNamed(tier, item.baseTier, BASE_TIERS, 0));
+  check('itemLevel', rule.itemLevel, (level) => matchesNumber(level, item.itemLevel));
+  check('sockets', rule.sockets, (sockets) => matchesNumber(sockets, item.sockets));
+  check('maxSockets', rule.maxSockets, (sockets) => matchesNumber(sockets, item.maxSockets));
+  check('isFullySocketed', rule.isFullySocketed, (wanted) => wanted === item.isFullySocketed);
+  check('isEthereal', rule.isEthereal, (wanted) => wanted === item.isEthereal);
+  check('isIdentified', rule.isIdentified, (wanted) => wanted === item.isIdentified);
+  check('isRuneword', rule.isRuneword, (wanted) => wanted === item.isRuneword);
+  check('uniqueOrSetIds', rule.uniqueOrSetIds, (ids) => uniqueOrSetId !== null && ids.includes(uniqueOrSetId));
+  check('excludeUniqueOrSetIds', rule.excludeUniqueOrSetIds, (ids) => uniqueOrSetId === null || !ids.includes(uniqueOrSetId));
+  check('itemStats', rule.itemStats, (checks) => checks.every((stat) => statCheckHolds(stat, item.stats, statIds)));
+  check('itemStatsAnyOf', rule.itemStatsAnyOf, (checks) => checks.some((stat) => statCheckHolds(stat, item.stats, statIds)));
+  check('playerStats', rule.playerStats, (checks) => checks.every((stat) => statCheckHolds(stat, playerStats, statIds)));
+  check('playerStatsAnyOf', rule.playerStatsAnyOf, (checks) => checks.some((stat) => statCheckHolds(stat, playerStats, statIds)));
+  check('location', rule.location ?? DEFAULT_LOCATIONS, (locations) => locations.includes(item.location));
+  check('difficulty', rule.difficulty, (difficulty) => matchesNamed(difficulty, context.difficulty, DIFFICULTIES, 0));
+  check('areas', rule.areas, (areas) => areas.includes(context.area));
+  check('excludeAreas', rule.excludeAreas, (areas) => !areas.includes(context.area));
+  check('activeInLevels', rule.activeInLevels, (levels) => levels.includes(context.filterLevel));
   return failed;
-}
-
-// ---------------------------------------------------------------------------
-// Actions
-// ---------------------------------------------------------------------------
-
-type MutableActions = { -readonly [K in keyof RuleActions]: RuleActions[K] };
-
-const ACTION_KEYS: readonly (keyof RuleActions)[] = [
-  'hide',
-  'hideIfOtherConditionsFail',
-  'replaceName',
-  'namePrefix',
-  'nameSuffix',
-  'labelBackground',
-  'labelBorder',
-  'chatMessage',
-  'chatMessageWhenHidden',
-  'notify',
-  'sound',
-  'soundVolume',
-  'icon',
-  'droplight',
-  'useStyle',
-  'comment',
-];
-
-// The type parameter ties `key` to the value written through it; without it the assignment does not type-check.
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-function copyAction<K extends keyof RuleActions>(target: MutableActions, key: K, rule: RuleActions, style: RuleActions | undefined): void {
-  const value = rule[key] ?? style?.[key];
-  if (value !== undefined) target[key] = value;
-}
-
-/** The style's actions with the rule's own on top (per key), without undefined keys; a missing style is ignored. */
-function effectiveActions(rule: LootFilterRule, filter: LootFilter): RuleActions {
-  const style = rule.useStyle === undefined ? undefined : filter.styles?.[rule.useStyle];
-  const result: MutableActions = {};
-  for (const key of ACTION_KEYS) copyAction(result, key, rule, style);
-  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -330,7 +254,7 @@ function qualityColor(item: TestItem, filter: LootFilter): string {
 
 function statPlaceholder(args: string, entries: readonly ItemStatEntry[], statIds: ReadonlyMap<string, number>): string | undefined {
   const comma = args.indexOf(',');
-  const id = resolveStatId((comma < 0 ? args : args.slice(0, comma)).trim(), statIds);
+  const id = resolvePlaceholderStatId((comma < 0 ? args : args.slice(0, comma)).trim(), statIds);
   if (id === undefined) return undefined;
   const rawParam = comma < 0 ? '' : args.slice(comma + 1).trim();
   const param = rawParam === '' ? undefined : Number(rawParam);

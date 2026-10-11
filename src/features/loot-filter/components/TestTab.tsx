@@ -1,14 +1,11 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { FlaskConical, Info, Play, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { evaluateFilter, type EvaluationResult } from '../engine/evaluate';
 import type { LootFilter } from '../engine/types';
-import { useEditorTab } from '../hooks/useEditorTab';
 import { useLootFilterData } from '../hooks/useLootFilterData';
-import { selectRule } from '../store/lootFilterSlice';
-import { applyPreset, defaultTestItem, statIdMap, TEST_PRESETS, toTestContext, toTestItem, type TestItemForm } from '../utils/testItemForm';
+import { applyPreset, defaultTestItem, TEST_PRESETS, toTestContext, toTestItem, type TestItemForm } from '../utils/testItemForm';
 import { AssumptionsNote } from './test/AssumptionsNote';
 import { RuleTrace } from './test/RuleTrace';
 import { TestContextFields } from './test/TestContextFields';
@@ -20,6 +17,11 @@ const LIVE_RULE_LIMIT = 1500;
 
 interface TestTabProps {
   readonly filter: LootFilter;
+  /** The test item, held by the editor screen so it survives tab switches (not saved). */
+  readonly form: TestItemForm;
+  readonly onFormChange: (form: TestItemForm) => void;
+  /** Opens a rule in the Rules tab. */
+  readonly onShowRule: (index: number) => void;
 }
 
 interface ManualRun {
@@ -29,16 +31,12 @@ interface ManualRun {
 }
 
 /** "Test an item": describe an item and where it drops, and see what the filter does with it, rule by rule. */
-export function TestTab({ filter }: TestTabProps) {
-  const dispatch = useDispatch();
-  const [, setTab] = useEditorTab();
+export function TestTab({ filter, form, onFormChange: setForm, onShowRule: showRule }: TestTabProps) {
   const data = useLootFilterData();
   const { lookup } = data;
-  const [form, setForm] = useState(defaultTestItem);
   const [manualRun, setManualRun] = useState<ManualRun | null>(null);
 
-  const evaluate = (): EvaluationResult =>
-    evaluateFilter(filter, toTestItem(form, lookup), toTestContext(form, filter, statIdMap(data.data?.stats)));
+  const evaluate = (): EvaluationResult => evaluateFilter(filter, toTestItem(form, lookup), toTestContext(form, filter, lookup));
 
   const live = filter.rules.length <= LIVE_RULE_LIMIT;
   const hasItem = form.code.trim() !== '';
@@ -46,12 +44,6 @@ export function TestTab({ filter }: TestTabProps) {
   const stale = !live && manualRun !== null && (manualRun.form !== form || manualRun.filter !== filter);
   // The label colour follows the quality of the item that was evaluated.
   const resultQuality = live ? form.quality : (manualRun?.form.quality ?? form.quality);
-
-  const showRule = (index: number) => {
-    dispatch(selectRule(index));
-    setTab('rules');
-    window.scrollTo({ top: 0 });
-  };
 
   return (
     <div className="flex flex-col gap-4">

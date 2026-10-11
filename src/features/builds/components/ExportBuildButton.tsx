@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { downloadTextFile } from '@/utils/download';
 import type { BuildWithAuthor } from '../types';
 import { buildExportFilename, buildExportPayload } from '../utils/buildExport';
 
@@ -15,15 +16,7 @@ export function ExportBuildButton({ build }: ExportBuildButtonProps) {
 
   const handleDownload = () => {
     const payload = buildExportPayload(build, window.location.href, new Date().toISOString());
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = buildExportFilename(build);
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    URL.revokeObjectURL(url);
+    downloadTextFile(buildExportFilename(build), JSON.stringify(payload, null, 2));
     setOpen(false);
   };
 

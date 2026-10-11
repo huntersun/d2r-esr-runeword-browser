@@ -192,11 +192,9 @@ Where to ask: the ESR Discord (linked from easternsunresurrected.com) or a GitHu
    not stated; the editor preserves them and reports them as warnings.
 7. Bundling Sully's filter, the sounds and the goldstar icon: okay given (owner, 2026-10-11).
 
-Still implicit in the guide, implemented as assumptions and listed in the engine file headers (`engine/evaluate.ts`,
-`engine/parse.ts`, `engine/validate.ts`) and in `docs/features/LOOT-FILTER.md` for in-game verification: per-key
-last-wins for `replaceName`/`namePrefix`/`nameSuffix`; a missing stat counts as 0; effects of earlier rules are dropped
-when a later rule hides; unique/set ids are 0-based row numbers (equal to `*ID` in ESR 3.2.12); sounds.txt row numbers
-are 0-based data rows (`*Index` is unreliable: it repeats for the Leoric taunt rows).
+Still implicit in the guide: the editor implements these as assumptions (engine file headers in `engine/evaluate.ts`,
+`engine/parse.ts`, `engine/validate.ts`). The full list to check in game is kept in one place:
+[LOOT-FILTER.md, "Verify in game"](../docs/features/LOOT-FILTER.md#verify-in-game).
 
 ## 5. Decisions (owner, 2026-10-10)
 

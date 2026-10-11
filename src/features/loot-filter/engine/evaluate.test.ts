@@ -170,6 +170,8 @@ describe('stat checks', () => {
 
   it('fails a stat name it cannot resolve and reports the key', () => {
     expect(failedKeys({ itemStats: [{ stat: 'no_such_stat', op: '>=', value: 0 }] }, sockets)).toEqual(['itemStats']);
+    // A quoted id is a stat name, as the validator says; it does not resolve to id 194.
+    expect(failedKeys({ itemStats: [{ stat: '194', op: '>=', value: 0 }] }, sockets)).toEqual(['itemStats']);
   });
 
   it('counts a missing stat as 0', () => {

@@ -19,7 +19,7 @@ import { NumberInput } from '../NumberInput';
 import { SingleItemPicker, SinglePicker } from '../pickers';
 import { idCustom } from '../pickers/customOptions';
 import { StatRowsEditor } from './StatRowsEditor';
-import { TestField } from './TestField';
+import { Field } from '../Field';
 
 const LOCATION_LABELS: Readonly<Record<ItemLocation, string>> = {
   onGround: 'On the ground',
@@ -56,7 +56,7 @@ export function TestItemFields({ data, form, onChange }: TestItemFieldsProps) {
   return (
     <div className="grid gap-3">
       <div className="grid gap-3 sm:grid-cols-2">
-        <TestField id={`${ID}-item`} label="Item">
+        <Field id={`${ID}-item`} label="Item" dense>
           <SingleItemPicker
             data={data}
             id={`${ID}-item`}
@@ -66,8 +66,8 @@ export function TestItemFields({ data, form, onChange }: TestItemFieldsProps) {
             }}
             className="w-full"
           />
-        </TestField>
-        <TestField id={`${ID}-name`} label="Name ({name})">
+        </Field>
+        <Field id={`${ID}-name`} label="Name ({name})" dense>
           <Input
             id={`${ID}-name`}
             className="h-8"
@@ -77,10 +77,10 @@ export function TestItemFields({ data, form, onChange }: TestItemFieldsProps) {
               update({ name: event.target.value });
             }}
           />
-        </TestField>
+        </Field>
       </div>
 
-      <TestField id={`${ID}-type`} label="Item type">
+      <Field id={`${ID}-type`} label="Item type" dense>
         <div className="flex flex-wrap items-center gap-2">
           <Input
             id={`${ID}-type`}
@@ -99,10 +99,10 @@ export function TestItemFields({ data, form, onChange }: TestItemFieldsProps) {
               : `${typeInfo.name === '' ? type : typeInfo.name} · matches ${typeInfo.ancestors.join(', ')}`}
           </span>
         </div>
-      </TestField>
+      </Field>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <TestField id={`${ID}-quality`} label="Quality">
+        <Field id={`${ID}-quality`} label="Quality" dense>
           <Select
             value={String(form.quality)}
             onValueChange={(value) => {
@@ -120,8 +120,8 @@ export function TestItemFields({ data, form, onChange }: TestItemFieldsProps) {
               ))}
             </SelectContent>
           </Select>
-        </TestField>
-        <TestField id={`${ID}-tier`} label="Base tier">
+        </Field>
+        <Field id={`${ID}-tier`} label="Base tier" dense>
           <Select
             value={String(form.baseTier)}
             onValueChange={(value) => {
@@ -139,8 +139,8 @@ export function TestItemFields({ data, form, onChange }: TestItemFieldsProps) {
               ))}
             </SelectContent>
           </Select>
-        </TestField>
-        <TestField id={`${ID}-location`} label="Location" className="col-span-2 sm:col-span-1">
+        </Field>
+        <Field id={`${ID}-location`} label="Location" className="col-span-2 sm:col-span-1" dense>
           <Select
             value={form.location}
             onValueChange={(value) => {
@@ -159,8 +159,8 @@ export function TestItemFields({ data, form, onChange }: TestItemFieldsProps) {
               ))}
             </SelectContent>
           </Select>
-        </TestField>
-        <TestField id={`${ID}-ilvl`} label="Item level">
+        </Field>
+        <Field id={`${ID}-ilvl`} label="Item level" dense>
           <NumberInput
             id={`${ID}-ilvl`}
             integer
@@ -172,8 +172,8 @@ export function TestItemFields({ data, form, onChange }: TestItemFieldsProps) {
               update({ itemLevel });
             }}
           />
-        </TestField>
-        <TestField id={`${ID}-sockets`} label="Sockets">
+        </Field>
+        <Field id={`${ID}-sockets`} label="Sockets" dense>
           <NumberInput
             id={`${ID}-sockets`}
             integer
@@ -185,8 +185,8 @@ export function TestItemFields({ data, form, onChange }: TestItemFieldsProps) {
               update({ sockets });
             }}
           />
-        </TestField>
-        <TestField id={`${ID}-max-sockets`} label="Max sockets">
+        </Field>
+        <Field id={`${ID}-max-sockets`} label="Max sockets" dense>
           <NumberInput
             id={`${ID}-max-sockets`}
             integer
@@ -198,7 +198,7 @@ export function TestItemFields({ data, form, onChange }: TestItemFieldsProps) {
               update({ maxSockets });
             }}
           />
-        </TestField>
+        </Field>
       </div>
 
       <div className="flex flex-wrap gap-x-4 gap-y-2">
@@ -218,7 +218,7 @@ export function TestItemFields({ data, form, onChange }: TestItemFieldsProps) {
         ))}
       </div>
 
-      <TestField id={`${ID}-unique`} label="Unique or set item">
+      <Field id={`${ID}-unique`} label="Unique or set item" dense>
         <div className="flex gap-1">
           <SinglePicker
             id={`${ID}-unique`}
@@ -252,7 +252,7 @@ export function TestItemFields({ data, form, onChange }: TestItemFieldsProps) {
             </Button>
           )}
         </div>
-      </TestField>
+      </Field>
 
       <div className="flex flex-col gap-1">
         <span className="text-xs font-medium">Item stats</span>

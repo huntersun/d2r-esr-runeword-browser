@@ -23,11 +23,10 @@ export interface ItemPickerProps {
   readonly values: readonly string[];
   readonly onChange: (codes: readonly string[]) => void;
   readonly id?: string;
-  readonly addLabel?: string;
 }
 
 /** Item codes (weapons, armor, misc) as chips with name + code; search by name or code. */
-export function ItemPicker({ data, values, onChange, id, addLabel = 'Add item' }: ItemPickerProps) {
+export function ItemPicker({ data, values, onChange, id }: ItemPickerProps) {
   return (
     <MultiPicker
       id={id}
@@ -35,7 +34,7 @@ export function ItemPicker({ data, values, onChange, id, addLabel = 'Add item' }
       values={values}
       onChange={onChange}
       describe={describeItem(data)}
-      addLabel={addLabel}
+      addLabel="Add item"
       searchPlaceholder="Item name or code…"
       custom={codeCustom('item')}
     />

@@ -2,7 +2,7 @@ import { TriangleAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ConditionFieldProps {
-  /** Base id; the label gets `${id}-label` and labels the group. */
+  /** Base id; the label gets `${id}-label` and labels the group, the hint `${id}-hint` and describes it. */
   readonly id: string;
   readonly label: string;
   /** One line from the guide. */
@@ -16,8 +16,14 @@ interface ConditionFieldProps {
 /** A labelled condition control with a one-line hint. */
 export function ConditionField({ id, label, hint, invalid = false, className, children }: ConditionFieldProps) {
   const labelId = `${id}-label`;
+  const hintId = `${id}-hint`;
   return (
-    <div role="group" aria-labelledby={labelId} className={cn('flex min-w-0 flex-col gap-1.5', className)}>
+    <div
+      role="group"
+      aria-labelledby={labelId}
+      aria-describedby={hint === undefined ? undefined : hintId}
+      className={cn('flex min-w-0 flex-col gap-1.5', className)}
+    >
       <span id={labelId} className="text-sm leading-none font-medium">
         {label}
       </span>
@@ -28,7 +34,11 @@ export function ConditionField({ id, label, hint, invalid = false, className, ch
           The file&apos;s value has the wrong shape; it is kept until you set this field (see the JSON tab).
         </p>
       )}
-      {hint !== undefined && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {hint !== undefined && (
+        <p id={hintId} className="text-xs text-muted-foreground">
+          {hint}
+        </p>
+      )}
     </div>
   );
 }

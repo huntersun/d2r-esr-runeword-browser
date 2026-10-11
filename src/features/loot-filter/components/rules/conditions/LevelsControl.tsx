@@ -1,8 +1,10 @@
+import { useRef } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import type { FilterLevel } from '../../../engine/types';
+import { focusAfterRemoval } from '../../pickers/focusAfterRemoval';
 
 interface LevelsControlProps {
   readonly id: string;
@@ -14,6 +16,7 @@ interface LevelsControlProps {
 
 /** "Every level" or a tick per filter level; ids the filter has no level for are listed with a remove button. */
 export function LevelsControl({ id, levels, value, onChange }: LevelsControlProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const everyId = `${id}-every`;
   const levelIds = new Set(levels.map((level) => level.id));
   const unknown = (value ?? []).filter((levelId) => !levelIds.has(levelId));
@@ -23,10 +26,11 @@ export function LevelsControl({ id, levels, value, onChange }: LevelsControlProp
   }
 
   return (
-    <div className="space-y-2">
+    <div ref={containerRef} className="space-y-2">
       <div className="flex items-center gap-1.5">
         <Checkbox
           id={everyId}
+          data-focus-fallback
           checked={value === undefined}
           onCheckedChange={(checked) => {
             onChange(checked === true ? undefined : levels.map((level) => level.id));
@@ -46,7 +50,9 @@ export function LevelsControl({ id, levels, value, onChange }: LevelsControlProp
                   id={checkboxId}
                   checked={value.includes(level.id)}
                   onCheckedChange={(checked) => {
-                    onChange(checked === true ? [...value, level.id] : value.filter((levelId) => levelId !== level.id));
+                    onChange(
+                      checked === true ? [...value, level.id].sort((a, b) => a - b) : value.filter((levelId) => levelId !== level.id)
+                    );
                   }}
                 />
                 <Label htmlFor={checkboxId} className="font-normal">
@@ -55,7 +61,7 @@ export function LevelsControl({ id, levels, value, onChange }: LevelsControlProp
               </div>
             );
           })}
-          {unknown.map((levelId) => (
+          {unknown.map((levelId, position) => (
             <span key={`unknown-${String(levelId)}`} className="flex items-center gap-1 text-sm text-destructive">
               unknown level {levelId}
               <Button
@@ -64,8 +70,10 @@ export function LevelsControl({ id, levels, value, onChange }: LevelsControlProp
                 size="icon-sm"
                 className="size-6"
                 aria-label={`Remove unknown level ${String(levelId)}`}
+                data-remove
                 onClick={() => {
                   onChange(value.filter((current) => current !== levelId));
+                  focusAfterRemoval(containerRef.current, position);
                 }}
               >
                 <X />

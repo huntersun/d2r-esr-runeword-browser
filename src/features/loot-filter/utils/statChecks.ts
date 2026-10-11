@@ -4,9 +4,9 @@ import type { LootFilterLookup } from './lookup';
 
 export const DEFAULT_STAT_OP: StatOp = '>=';
 
-/** A new row: no stat yet (the validator flags it until one is picked), `>= 1`. */
-export function newStatCheck(): StatCheck {
-  return { stat: '', op: DEFAULT_STAT_OP, value: 1 };
+/** A new row for the picked stat: `>= 1`. */
+export function newStatCheck(stat: string | number): StatCheck {
+  return { stat, op: DEFAULT_STAT_OP, value: 1 };
 }
 
 /** What the user typed as a stat: whole digits are an id (number), anything else a name. Empty → null. */

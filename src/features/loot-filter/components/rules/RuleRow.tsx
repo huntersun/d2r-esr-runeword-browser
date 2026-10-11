@@ -12,6 +12,8 @@ export interface RuleRowProps {
   readonly selected: boolean;
   readonly isFirst: boolean;
   readonly isLast: boolean;
+  /** False while the list is filtered by a search (the neighbour may be hidden), which disables Move up/down. */
+  readonly canMove: boolean;
   /** The worst diagnostic of the rule, if any. */
   readonly severity: DiagnosticSeverity | undefined;
   readonly onSelect: (index: number) => void;
@@ -28,6 +30,7 @@ export function RuleRow({
   selected,
   isFirst,
   isLast,
+  canMove,
   severity,
   onSelect,
   onMove,
@@ -49,6 +52,7 @@ export function RuleRow({
     >
       <button
         type="button"
+        data-rule-main
         aria-current={selected ? 'true' : undefined}
         className="flex min-w-0 flex-1 items-start gap-2 px-2 py-1.5 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset"
         onClick={() => {
@@ -110,7 +114,8 @@ export function RuleRow({
           variant="ghost"
           size="icon-sm"
           className="size-7"
-          disabled={isFirst}
+          disabled={!canMove || isFirst}
+          data-move="up"
           aria-label={`Move rule ${number} up`}
           onClick={() => {
             onMove(index, index - 1);
@@ -123,7 +128,8 @@ export function RuleRow({
           variant="ghost"
           size="icon-sm"
           className="size-7"
-          disabled={isLast}
+          disabled={!canMove || isLast}
+          data-move="down"
           aria-label={`Move rule ${number} down`}
           onClick={() => {
             onMove(index, index + 1);

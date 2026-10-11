@@ -211,27 +211,17 @@ export function defaultFilterLevel(filter: LootFilter): number {
   return filter.defaultLevel ?? filter.filterLevels?.[0]?.id ?? 1;
 }
 
-const statMaps = new WeakMap<readonly { readonly id: number; readonly name: string }[], ReadonlyMap<string, number>>();
-
-/** itemstatcost name → id from the bundle's stats (cached per bundle); empty without the bundle. */
-export function statIdMap(stats: readonly { readonly id: number; readonly name: string }[] | undefined): ReadonlyMap<string, number> {
-  if (stats === undefined) return new Map();
-  let map = statMaps.get(stats);
-  if (map === undefined) {
-    map = new Map(stats.filter((stat) => stat.name !== '').map((stat) => [stat.name, stat.id]));
-    statMaps.set(stats, map);
-  }
-  return map;
-}
-
 /** The evaluator's context: the player level as stat 12 first, then the extra player stats. */
-export function toTestContext(form: TestItemForm, filter: LootFilter, statIds: ReadonlyMap<string, number>): TestContext {
+export function toTestContext(form: TestItemForm, filter: LootFilter, lookup: LootFilterLookup): TestContext {
   return {
-    playerStats: [{ stat: PLAYER_LEVEL_STAT, value: form.playerLevel ?? 1 }, ...statEntries(form.playerStats, (name) => statIds.get(name))],
+    playerStats: [
+      { stat: PLAYER_LEVEL_STAT, value: form.playerLevel ?? 1 },
+      ...statEntries(form.playerStats, (name) => lookup.statId(name)),
+    ],
     difficulty: form.difficulty,
     area: form.area,
     filterLevel: form.filterLevel ?? defaultFilterLevel(filter),
-    statIds,
+    statIds: lookup.statIds,
   };
 }
 

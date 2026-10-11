@@ -1,10 +1,11 @@
 import { readPersistentJson, writePersistentJson, type PersistentStorage } from '@/core/hooks/usePersistentState';
+import { isPlainObject } from '../engine/parse';
 import type { LootFilterEntry } from './types';
 
 export const LIBRARY_STORAGE_KEY = 'loot-filters/library';
 /** Where an unreadable stored library is copied once before the app starts writing a fresh one. */
 export const LIBRARY_BACKUP_STORAGE_KEY = 'loot-filters/library.unreadable';
-export const LIBRARY_STORAGE_VERSION = 1;
+const LIBRARY_STORAGE_VERSION = 1;
 
 export interface StoredLibrary {
   readonly version: typeof LIBRARY_STORAGE_VERSION;
@@ -13,13 +14,9 @@ export interface StoredLibrary {
 
 const SOURCES: readonly string[] = ['blank', 'upload', 'template'];
 
-function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 export function isLootFilterEntry(value: unknown): value is LootFilterEntry {
   return (
-    isRecord(value) &&
+    isPlainObject(value) &&
     typeof value.id === 'string' &&
     value.id !== '' &&
     typeof value.name === 'string' &&
@@ -34,7 +31,7 @@ export function isLootFilterEntry(value: unknown): value is LootFilterEntry {
 }
 
 export function isStoredLibrary(value: unknown): value is StoredLibrary {
-  if (!isRecord(value) || value.version !== LIBRARY_STORAGE_VERSION || !Array.isArray(value.entries)) return false;
+  if (!isPlainObject(value) || value.version !== LIBRARY_STORAGE_VERSION || !Array.isArray(value.entries)) return false;
   const entries: readonly unknown[] = value.entries;
   const ids = new Set<string>();
   for (const entry of entries) {

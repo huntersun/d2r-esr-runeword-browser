@@ -1,20 +1,17 @@
-import { Plus, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { resolveText } from '../../engine/text';
-import { DEFAULT_LABEL_BACKGROUND_ALPHA, type LootFilter, type RuleActions } from '../../engine/types';
+import type { LootFilter, RuleActions } from '../../engine/types';
 import { effectiveActions, findStyle, previewLabelText } from '../../utils/effectiveActions';
 import type { ShallowPatch } from '../../utils/patch';
+import { CheckField, Field } from '../Field';
 import { LabelPreview } from '../LabelPreview';
-import { NumberInput } from '../NumberInput';
 import { ColorControl } from './ColorControl';
 import { ColorTextField } from './ColorTextField';
 import { IconField } from './IconField';
+import { LabelSection } from './LabelSection';
+import { Section } from './Section';
 import { SoundField } from './SoundField';
-import { StyleSummary } from './StyleSummary';
+import { StyleSection } from './StyleSection';
 
 export interface ActionsEditorProps {
   /** The actions being edited (a rule's own actions, or a style's). */
@@ -29,43 +26,7 @@ export interface ActionsEditorProps {
   readonly styleName?: string;
 }
 
-const NO_STYLE = '__none';
 const DEFAULT_DROP_FORMAT = '{qualityColor}{name}';
-
-function Section({ title, children }: { readonly title: string; readonly children: React.ReactNode }) {
-  return (
-    <section className="flex flex-col gap-3 border-t pt-4 first:border-t-0 first:pt-0">
-      <h3 className="text-sm font-semibold">{title}</h3>
-      {children}
-    </section>
-  );
-}
-
-interface CheckFieldProps {
-  readonly id: string;
-  readonly label: string;
-  readonly hint: React.ReactNode;
-  readonly checked: boolean;
-  readonly onChange: (checked: boolean) => void;
-}
-
-function CheckField({ id, label, hint, checked, onChange }: CheckFieldProps) {
-  return (
-    <div className="flex items-start gap-2">
-      <Checkbox
-        id={id}
-        checked={checked}
-        onCheckedChange={(value) => {
-          onChange(value === true);
-        }}
-      />
-      <div className="grid min-w-0 gap-1">
-        <Label htmlFor={id}>{label}</Label>
-        <p className="text-xs text-muted-foreground">{hint}</p>
-      </div>
-    </div>
-  );
-}
 
 /**
  * Form for every action key of the guide (names, label colours, chat, notify, sound, icon, droplight,
@@ -79,9 +40,7 @@ export function ActionsEditor({ actions, onChange, filter, owner, styleName }: A
 
   const effective = owner === 'rule' ? effectiveActions(actions, filter) : actions;
   const style = owner === 'rule' ? findStyle(actions, filter) : undefined;
-  const styleNames = Object.keys(filter.styles ?? {});
   const dropFormat = resolveText(filter.notifications?.dropFormat) ?? DEFAULT_DROP_FORMAT;
-  const border = actions.labelBorder;
 
   return (
     <div className="flex flex-col gap-4">
@@ -104,42 +63,7 @@ export function ActionsEditor({ actions, onChange, filter, owner, styleName }: A
         </p>
       </div>
 
-      {owner === 'rule' && (
-        <Section title="Style">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={id('use-style')}>Use style</Label>
-            <Select
-              value={actions.useStyle ?? NO_STYLE}
-              onValueChange={(value) => {
-                onChange({ useStyle: value === NO_STYLE ? undefined : value });
-              }}
-            >
-              <SelectTrigger id={id('use-style')} className="w-full sm:w-72">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NO_STYLE}>None</SelectItem>
-                {actions.useStyle !== undefined && !styleNames.includes(actions.useStyle) && (
-                  <SelectItem value={actions.useStyle}>{actions.useStyle} (missing)</SelectItem>
-                )}
-                {styleNames.map((name) => (
-                  <SelectItem key={name} value={name}>
-                    {name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              {actions.useStyle === undefined
-                ? 'Pulls in a named set of actions from the Styles tab.'
-                : style === undefined
-                  ? `The filter has no style "${actions.useStyle}".`
-                  : "The style's actions apply underneath; the rule's own actions win."}
-            </p>
-          </div>
-          {style !== undefined && actions.useStyle !== undefined && <StyleSummary name={actions.useStyle} style={style} />}
-        </Section>
-      )}
+      {owner === 'rule' && <StyleSection idPrefix={idPrefix} actions={actions} filter={filter} onChange={onChange} />}
 
       <Section title="Visibility">
         <div className="grid gap-4 sm:grid-cols-2">
@@ -212,86 +136,7 @@ export function ActionsEditor({ actions, onChange, filter, owner, styleName }: A
         </div>
       </Section>
 
-      <Section title="Label">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={id('label-background')}>Background</Label>
-            <ColorControl
-              id={id('label-background')}
-              label="label background"
-              value={actions.labelBackground}
-              withAlpha
-              defaultAlpha={DEFAULT_LABEL_BACKGROUND_ALPHA}
-              initialColor={[0, 0, 0]}
-              onChange={(labelBackground) => {
-                onChange({ labelBackground });
-              }}
-            />
-            <p className="text-xs text-muted-foreground">Fills the ground label; alpha defaults to {DEFAULT_LABEL_BACKGROUND_ALPHA}.</p>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={id('label-border')}>Border</Label>
-            {border === undefined ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm text-muted-foreground">none</span>
-                <Button
-                  id={id('label-border')}
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    onChange({ labelBorder: { color: [255, 255, 255], width: 1 } });
-                  }}
-                >
-                  <Plus />
-                  Add border
-                </Button>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <div className="flex items-start gap-2">
-                  <ColorControl
-                    id={id('label-border')}
-                    label="border colour"
-                    value={border.color}
-                    withAlpha
-                    clearable={false}
-                    onChange={(color) => {
-                      if (color) onChange({ labelBorder: { ...border, color } });
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label="Remove the border"
-                    onClick={() => {
-                      onChange({ labelBorder: undefined });
-                    }}
-                  >
-                    <X />
-                  </Button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Label htmlFor={id('label-border-width')} className="text-xs font-normal text-muted-foreground">
-                    Width
-                  </Label>
-                  <NumberInput
-                    id={id('label-border-width')}
-                    className="w-20"
-                    min={0}
-                    value={border.width}
-                    onCommit={(width) => {
-                      onChange({ labelBorder: { ...border, width: width ?? 0 } });
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-            <p className="text-xs text-muted-foreground">Outlines the ground label.</p>
-          </div>
-        </div>
-      </Section>
+      <LabelSection idPrefix={idPrefix} actions={actions} onChange={onChange} />
 
       <Section title="Chat">
         <ColorTextField
@@ -358,8 +203,7 @@ export function ActionsEditor({ actions, onChange, filter, owner, styleName }: A
           }}
         />
         {actions.droplight !== undefined && (
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={id('droplight-color')}>Tint</Label>
+          <Field id={id('droplight-color')} label="Tint">
             <ColorControl
               id={id('droplight-color')}
               label="droplight tint"
@@ -369,26 +213,22 @@ export function ActionsEditor({ actions, onChange, filter, owner, styleName }: A
                 onChange({ droplight: color === undefined ? {} : { color: [color[0], color[1], color[2]] } });
               }}
             />
-          </div>
+          </Field>
         )}
       </Section>
 
       {owner === 'style' && (
-        <Section title="Comment">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={id('comment')} className="sr-only">
-              Comment
-            </Label>
-            <Textarea
+        <Section title="Notes">
+          <Field id={id('comment')} label="Comment" hint="A note for yourself; the plugin ignores it.">
+            <Input
               id={id('comment')}
-              rows={2}
               value={actions.comment ?? ''}
-              placeholder="Notes for yourself; the plugin ignores them."
+              autoComplete="off"
               onChange={(event) => {
                 onChange({ comment: event.target.value === '' ? undefined : event.target.value });
               }}
             />
-          </div>
+          </Field>
         </Section>
       )}
     </div>

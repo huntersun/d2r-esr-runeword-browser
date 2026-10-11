@@ -3,7 +3,8 @@
 A browser-only editor for the JSON loot filter files that ESR's loot filter plugin reads (since ESR 3.2.09). Filters
 are kept in the browser's localStorage and downloaded as files for the ESR launcher. Format reference:
 [ESR-LOOT-FILTER-GUIDE.md](../../builds-feature-docs/loot-filter/ESR-LOOT-FILTER-GUIDE.md). Research and owner
-decisions: [FEATURE-LOOT-FILTER-RESEARCH.md](../../builds-feature-docs/FEATURE-LOOT-FILTER-RESEARCH.md) §5–6.
+decisions: [FEATURE-LOOT-FILTER-RESEARCH.md](../../builds-feature-docs/FEATURE-LOOT-FILTER-RESEARCH.md) §4.1 (the format
+answers), §5 and §5.1 (owner decisions).
 
 ## Routes
 
@@ -35,6 +36,8 @@ command `lootfilter` shows the plugin's state and problems, `lootfilter reload` 
   `loot-filters/library.unreadable` before the library starts empty, so the next save cannot destroy it.
 - A refused write (quota) shows one toast, "Could not save: browser storage is full", until a write succeeds again;
   editing keeps working in memory.
+- Two browser tabs editing the library overwrite each other: each writes its whole library, the last write wins. There is
+  no cross-tab sync (no `storage` event listener).
 
 ## State (`src/features/loot-filter/store/`)
 
@@ -53,7 +56,7 @@ command `lootfilter` shows the plugin's state and problems, `lootfilter reload` 
   drop the whole object when it ends up empty.
 - Ids and timestamps come from `prepare` callbacks, so every reducer is a pure function of (state, payload).
 - Selectors: `selectLibraryEntries`, `selectLibraryEntry(state, id)`, `selectEditor`, `selectEditorFilter`,
-  `selectEditorRule(state, index)`, `selectDiagnostics(state, reference?)` (parse diagnostics + `validateLootFilter`).
+  `selectDiagnostics(state, reference?)` (re-reads the model's shape diagnostics through `readLootFilter(toPlainJson(filter))` plus `validateLootFilter`; the stored parse diagnostics are used only when the text is not valid JSON).
   The validator's reference holds Sets, so it stays out of Redux: `useLootFilterReference()` loads the `lootfilter` and
   `types` game-data bundles and passes the reference to the selector (module-level cache keeps its identity stable).
 
@@ -64,17 +67,19 @@ command `lootfilter` shows the plugin's state and problems, `lootfilter reload` 
    `open`/`close` flush synchronously, and the editor screen dispatches `editorFlushed` on `pagehide`/`beforeunload`;
 3. after every library change writes the library to localStorage.
 
-The slice imports the engine's parser and serializer, so they are in the entry chunk (about 18 KB minified).
+The reducer is registered statically, and the slice imports the engine's parser and serializer, so they are in the entry
+chunk (about 6.5 KB gzip); a documented exception, see [SAGAS.md](../technical/SAGAS.md).
 
 ## Library screen
 
 Title, a short how-to (launcher import, `sounds`/`icons` folders), and:
 
-- **New filter**: a name dialog, then opens the editor on a blank filter (`formatVersion: 1`, `title` = name, one level
+- **New filter**: a name dialog ("It also becomes the filter's title (Settings tab), which the launcher shows."), then
+  opens the editor on a blank filter (`formatVersion: 1`, `title` = name, one level
   `{ id: 1, name: 'Default' }`, `defaultLevel: 1`, no rules).
 - **Upload**: a `.json` file read as UTF-8. A JSON syntax error shows a toast with the line and column and imports
   nothing; a file with diagnostics (unknown keys, wrong shapes) is imported and the editor lists them. The entry name is
-  the file's `title`, else the file name.
+  the file's `title`, else the file name. A successful upload opens the editor, like New filter and the template.
 - **Start from Sully's QoL**: fetches `public/loot-filters/sullys-qol.json` and opens it as a `template` entry. Credit
   line: "Sully's QoL filter, converted by the ESR author, bundled with permission".
 - One card per entry (newest first): name, title/author and rule count (a quick JSON read of the text, cached), last
@@ -83,20 +88,31 @@ Title, a short how-to (launcher import, `sounds`/`icons` folders), and:
 
 ## Editor screen
 
-Header row: back link, the filter name (pencil to rename inline), a problems chip ("N errors / M warnings"; click opens
-the JSON tab and scrolls to the problems list) and **Download** (the serialized model). When the stored text is not
-valid JSON, every tab but JSON shows a "cannot be read" card; Apply in the JSON tab recovers the filter.
+Header row: back link, the filter name (pencil to rename inline; Enter or Escape returns the focus to the pencil), a
+problems chip ("N errors / M warnings", also announced to screen readers through a polite live region) and
+**Download**. Clicking the chip opens the JSON tab and bumps a counter the screen passes to `JsonTab`
+(`scrollToProblems`); `JsonTab` scrolls to the problems list in an effect once it has rendered (the tab switch runs in a
+transition, so scrolling from the click handler could miss the element) and resets the counter. Download saves the
+stored `text` (comments and formatting as uploaded) unless edits are not yet written back (`editor.dirty`), then the
+serialized model. When the stored text is not valid JSON, every tab but JSON shows a "cannot be read" card; Apply in the
+JSON tab recovers the filter.
 
-| Tab      | Status | What it does                                                                                                                                                                                                                                                                                   |
-| -------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rules    | done   | Rule list (summary, badges, problem dot, move up/down, duplicate, delete) with search and Add rule, next to the selected rule's editor: comment, the rule's problems, every condition with game-data pickers, then the actions editor. See below.                                              |
-| Styles   | done   | Style list (name, action count, "used by N rules"), Add style, rename (rules' `useStyle` follow), duplicate ("Name (copy)"), delete (warns how many rules use it); the selected style opens the actions editor. Conditions found in a style are listed read-only ("styles hold actions only"). |
-| Settings | done   | Title, author, version, description, update URL, hide unmatched items, sound volume; filter levels (id + name, add/remove, default level, "used by N rules", ids rules use that are missing); drop line and level change line; one colour-code select per quality.                             |
-| JSON     | done   | The serialized file in a textarea: Apply (parse; a syntax error shows line/column and selects the spot), Revert, Copy. Below it every problem with severity, path and message; a rule problem links to its rule (selects it, opens Rules).                                                     |
-| Test     | done   | Describe an item (presets, item fields, unique/set, stats, location) and the context (difficulty, area, filter level, player level and stats); see the ground label, chat lines, sounds, icon and droplight, and a rule-by-rule trace. See below.                                              |
+The tabs are a `role="tablist"` of buttons that set `?tab=`; each tab unmounts when another is shown, so the state that
+must outlive a switch lives in the screen: the JSON tab's unapplied draft (reset when another filter opens) and the Test
+tab's item form (not saved).
+
+| Tab      | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rules    | Rule list (summary, badges, problem dot, move up/down, duplicate, delete) with search and Add rule, next to the selected rule's editor: comment, the rule's problems, every condition with game-data pickers, then the actions editor. See below.                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Styles   | Style list (name, action count, "used by N rules"), Add style, rename (rules' `useStyle` follow), duplicate ("Name (copy)"), delete (warns how many rules use it); the selected style opens the actions editor. Conditions found in a style are listed read-only ("styles hold actions only").                                                                                                                                                                                                                                                                                                                                                                         |
+| Settings | Title, author, version, description, update URL, hide unmatched items, sound volume; filter levels (id + name, add/remove, default level, "used by N rules", ids rules use that are missing); drop line and level change line; one colour-code select per quality.                                                                                                                                                                                                                                                                                                                                                                                                     |
+| JSON     | The serialized file in a textarea: Apply (parse; a syntax error shows line/column and selects the spot), Revert, Copy. The draft survives tab switches; leaving the page with unapplied text asks first (`beforeunload`); when an edit in another editor tab changed the filter meanwhile a note says Apply replaces those changes and Revert loads them. Only the `//` comment lines at the top of the file are kept: comments between rules are not shown here (the text is the serialized model) and are dropped by Apply and by any form edit. Below it every problem with severity, path and message; a rule problem links to its rule (selects it, opens Rules). |
+| Test     | Describe an item (presets, item fields, unique/set, stats, location) and the context (difficulty, area, filter level, player level and stats); see the ground label, chat lines, sounds, icon and droplight, and a rule-by-rule trace. See below.                                                                                                                                                                                                                                                                                                                                                                                                                      |
 
 Settings changes dispatch the slice reducers directly; the only local state is what a half-typed number needs
-(`NumberInput`). A per-language text (`{ "enUS": …, "deDE": … }`) is shown read-only with "multi-language text, edit in
+(`NumberInput`: a text input with a numeric keyboard that commits only valid numbers, so "-" or "1." is kept as typed
+and does not clear the key). Form rows share `Field` (label, control, hint; `dense` in the Test tab) and `CheckField`
+(`components/Field.tsx`); the actions editor and the test result share `actions/Section.tsx`. A per-language text (`{ "enUS": …, "deDE": … }`) is shown read-only with "multi-language text, edit in
 the JSON tab". Unknown keys appear in the problems list as warnings: they travel through unchanged, but only the JSON tab
 can edit them.
 
@@ -146,12 +162,14 @@ removes the key); `passthrough` is never patched. Sections:
 - **Label preview** (top): `LabelPreview` of prefix + (`replaceName` or `{name}`) + suffix in enUS, with `{name}` shown
   as "Item Name" and other placeholders as written; background and border from the effective actions. For a rule with
   `useStyle`, the style's actions are underneath and the rule's own win, per key (`utils/effectiveActions.ts`).
-- **Style** (rules only): `useStyle` select (None, every style, a missing name kept as "(missing)"); a collapsed read-only
-  list of the style's actions. A rule's `comment` belongs to the rule editor; a style's comment is edited here.
+- **Style** (rules only, `StyleSection`): `useStyle` select (None, every style, a missing name kept as "(missing)"); a
+  collapsed read-only list of the style's actions (`StyleSummary`; its `comment` is shown but not counted). A rule's
+  `comment` belongs to the rule editor; a style's is a one-line field under **Notes** ("A note for yourself; the plugin
+  ignores it.").
 - **Visibility**: `hide`, `hideIfOtherConditionsFail` (checkboxes; unchecked removes the key), `chatMessageWhenHidden`.
 - **Name**: `replaceName`, `namePrefix`, `nameSuffix`. **Chat**: `chatMessage`, `notify` (the hint shows the filter's
   effective drop line).
-- **Label**: `labelBackground` (colour + alpha, default alpha 242), `labelBorder` (colour + alpha, width; "Add border" /
+- **Label** (`LabelSection`): `labelBackground` (colour + alpha, default alpha 242), `labelBorder` (colour + alpha, width; "Add border" /
   remove).
 - **Sound**: combobox over the 9 bundled files and the sounds.txt names (digits typed free become a row number), play
   button for bundled files (an `Audio` at `soundVolume ?? filter.soundVolume ?? 100`), "preview a local file" input
@@ -161,8 +179,10 @@ removes the key); `passthrough` is never patched. Sections:
 - **Droplight**: on/off (`{}`), tint or "the effect's own colours".
 
 Text fields (`ColorTextField`) take raw `ÿc` codes and have two insert menus: colour codes (swatch grid of `COLOR_CODES`)
-and the placeholders of the field's context (`names` for names, `chat` for chat lines); the token goes in at the caret
-(`utils/insertAtCaret.ts`). Below the field a small preview; a `{...}` token the guide does not know, or one that does
+and the placeholders of the field's context (`names` for names, `chat` for chat lines, `dropFormat` and
+`levelChangeFormat` for the Settings tab's notification lines); the token goes in at the caret
+(`utils/insertAtCaret.ts`) and, once the menu has closed, the field gets the focus back with the caret after the token
+(the popover's `onCloseAutoFocus` is prevented, else Radix would focus the menu button). Below the field a small preview; a `{...}` token the guide does not know, or one that does
 not work in that context, gets a hint. Per-language texts are read-only ("multi-language text, edit in the JSON tab").
 `ColorControl` is a native colour input + optional alpha slider + `[r, g, b(, a)]` readout + clear
 (`utils/colorValues.ts`).
@@ -178,7 +198,8 @@ sound has no preview (it plays from the game files).
 
 Runs the engine's `evaluateFilter` against an item the user describes. Two columns from `lg` up (form left, result
 right, sticky), stacked below. The form is local state (`TestItemForm`, start value `defaultTestItem()`: no item, Rogue
-Encampment, normal difficulty, player level 1, the filter's default level); it is not saved.
+Encampment, normal difficulty, player level 1, the filter's default level), held by the editor screen so it survives
+tab switches; it is not saved.
 
 - **Presets**: Zod rune on the ground (`r83`), Unique bow, 2 sockets (`m01`, unique), Gold pile 1500 (`gld` with
   stat 14 = 1500, the stat Sully's gold rules check), Rare ring (`rin`), and Reset. A preset replaces the item fields
@@ -191,8 +212,7 @@ Encampment, normal difficulty, player level 1, the filter's default level); it i
 - **Context**: difficulty, player level (sent as player stat 12), area (with an "in town" hint for 1/40/75/103/109),
   filter level (the filter's levels, default marked) and more player stat rows.
 - **Conversion** (`utils/testItemForm.ts`): `toTestItem(form, lookup)` (type ancestors from the `types` bundle via the
-  lookup; without it only the typed type), `toTestContext(form, filter, statIds)` (`statIdMap(bundle.stats)` is cached
-  per bundle), `applyPreset`, `withItem`, `withUniqueOrSet`. The unique/set picker uses the option keys
+  lookup; without it only the typed type), `toTestContext(form, filter, lookup)` (stat ids by name from the lookup), `applyPreset`, `withItem`, `withUniqueOrSet`. The unique/set picker uses the option keys
   (`Unique:12`, `Set:12`) as values because the two tables share ids.
 - **Result**: the ground label (`LabelPreview` with the rules' background and border; text before the first colour
   code in the game's quality colour) or "Hidden: no ground label" with a link to the hiding rule; chat lines (each a
@@ -202,8 +222,8 @@ Encampment, normal difficulty, player level 1, the filter's default level); it i
   conditions" red, skipped muted), style, `ruleSummary`, and the failed condition keys as chips. Skipped rules are
   hidden unless "Show skipped rules (N)" is ticked. A row opens the rule in the Rules tab (`selectRule` + `?tab=rules`).
   After a hiding rule the note says how many rules did not run.
-- **Assumptions (verify in game)**: a collapsed list of the evaluator's assumptions (below), plus the note that
-  `{string:KEY}` is shown as written.
+- **Assumptions (verify in game)**: a collapsed, shortened list of the evaluator's assumptions that points here for the
+  full list ("Verify in game" below), plus the note that `{string:KEY}` is shown as written.
 - While the bundles load (or when they fail) a hint says that typed codes work but item-type conditions only see the
   typed type.
 
@@ -219,7 +239,8 @@ Encampment, normal difficulty, player level 1, the filter's default level); it i
 
 ## Verify in game
 
-Assumptions the engine makes where the guide is silent (from the engine file headers):
+Assumptions the engine makes where the guide is silent (from the engine file headers). This is the one full list; the
+research doc and the Test tab's note link here.
 
 - `activeInLevels` is a precondition: a rule inactive at the current level is skipped and never hides, not even with
   `hideIfOtherConditionsFail`.
@@ -238,3 +259,5 @@ Assumptions the engine makes where the guide is silent (from the engine file hea
 - Colour codes `ÿcN` to `ÿcV` use preview approximations (the guide gives no RGB for them).
 - `.sprite` icons: header layout and RGBA pixel order as observed in `goldstar.sprite`; only the first frame is drawn.
 - The serializer does not keep comments between rules (only the `//` lines before the object).
+- `uniqueOrSetIds` are 0-based row numbers of uniqueitems.txt / setitems.txt (equal to `*ID` in ESR 3.2.12).
+- A numeric `sound` is a 0-based data row of sounds.txt (`*Index` is unreliable: it repeats for the Leoric taunt rows).

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Download, FileWarning } from 'lucide-react';
@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
+import { TAB_ACTIVE, TAB_BASE, TAB_INACTIVE } from '@/core/components/navTabClasses';
 import type { RootState } from '@/core/store';
 import { serializeLootFilter } from '../engine/serialize';
 import { DiagnosticsChip } from '../components/DiagnosticsChip';
-import { DIAGNOSTICS_LIST_ID } from '../components/DiagnosticsList';
 import { InlineName } from '../components/InlineName';
-import { JsonTab } from '../components/JsonTab';
+import { JsonTab, type JsonDraft } from '../components/JsonTab';
 import { RulesTab } from '../components/RulesTab';
 import { SettingsTab } from '../components/SettingsTab';
 import { StylesTab } from '../components/StylesTab';
@@ -21,17 +21,12 @@ import { useLootFilterReference } from '../hooks/useLootFilterReference';
 import { close, editorFlushed, open, rename, selectRule } from '../store/lootFilterSlice';
 import { selectDiagnostics, selectEditor, selectLibraryEntry, selectLibraryHydrated } from '../store/selectors';
 import { downloadTextFile, filterFileName } from '../utils/download';
+import { defaultTestItem } from '../utils/testItemForm';
 
-// Same styling as the Game Data sub-page tabs
-const TAB_BASE = 'rounded-md px-3 py-2 text-sm font-medium transition-colors';
-const TAB_INACTIVE = 'text-muted-foreground hover:text-foreground';
-const TAB_ACTIVE = 'bg-accent text-accent-foreground';
-
-function scrollToDiagnostics() {
-  // After the JSON tab has rendered.
-  requestAnimationFrame(() => {
-    document.getElementById(DIAGNOSTICS_LIST_ID)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
+interface EntryDraft {
+  /** The library entry the draft belongs to: opening another filter starts without one. */
+  readonly entryId: string;
+  readonly draft: JsonDraft;
 }
 
 export function LootFilterEditorScreen() {
@@ -44,6 +39,11 @@ export function LootFilterEditorScreen() {
   const diagnostics = useSelector((state: RootState) => selectDiagnostics(state, reference));
   const [tab, setTab] = useEditorTab();
   const entryExists = entry !== undefined;
+  // State the tabs share or that must outlive a tab switch (each tab unmounts when another is shown).
+  const [entryDraft, setEntryDraft] = useState<EntryDraft | null>(null);
+  const jsonDraft = entryDraft !== null && entryDraft.entryId === id ? entryDraft.draft : null;
+  const [problemsScroll, setProblemsScroll] = useState(0);
+  const [testForm, setTestForm] = useState(defaultTestItem);
 
   // Open the entry once the library is loaded; closing (route change, unmount) writes pending edits back.
   useEffect(() => {
@@ -66,6 +66,21 @@ export function LootFilterEditorScreen() {
       window.removeEventListener('beforeunload', flush);
     };
   }, [dispatch]);
+
+  // Unapplied JSON text lives only in this component: ask before the page unloads with it.
+  const editorFilter = editor.filter;
+  const entryText = entry?.text;
+  useEffect(() => {
+    if (jsonDraft === null) return;
+    const warn = (event: BeforeUnloadEvent) => {
+      const modelText = editorFilter === null ? entryText : serializeLootFilter(editorFilter);
+      if (jsonDraft.text !== modelText) event.preventDefault();
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => {
+      window.removeEventListener('beforeunload', warn);
+    };
+  }, [jsonDraft, editorFilter, entryText]);
 
   if (!hydrated || (entryExists && editor.id !== id)) {
     return (
@@ -96,13 +111,19 @@ export function LootFilterEditorScreen() {
 
   const filter = editor.filter;
 
+  // The stored text keeps the file's comments and formatting; it is re-serialized only while edits are not yet saved.
   const handleDownload = () => {
-    downloadTextFile(filterFileName(entry.name), filter === null ? entry.text : serializeLootFilter(filter));
+    downloadTextFile(filterFileName(entry.name), editor.dirty && filter !== null ? serializeLootFilter(filter) : entry.text);
   };
 
   const showDiagnostics = () => {
     setTab('json');
-    scrollToDiagnostics();
+    // JsonTab scrolls once it has rendered (the tab switch runs in a transition).
+    setProblemsScroll((count) => count + 1);
+  };
+
+  const handleDraftChange = (draft: JsonDraft | null) => {
+    setEntryDraft(draft === null ? null : { entryId: entry.id, draft });
   };
 
   const showRule = (index: number) => {
@@ -112,7 +133,22 @@ export function LootFilterEditorScreen() {
   };
 
   const renderTab = (active: EditorTab) => {
-    if (active === 'json') return <JsonTab filter={filter} entryText={entry.text} diagnostics={diagnostics} onShowRule={showRule} />;
+    if (active === 'json') {
+      return (
+        <JsonTab
+          filter={filter}
+          entryText={entry.text}
+          diagnostics={diagnostics}
+          onShowRule={showRule}
+          draft={jsonDraft}
+          onDraftChange={handleDraftChange}
+          scrollToProblems={problemsScroll}
+          onScrolledToProblems={() => {
+            setProblemsScroll(0);
+          }}
+        />
+      );
+    }
     if (filter === null) {
       return (
         <Card className="mx-auto max-w-xl">
@@ -137,13 +173,13 @@ export function LootFilterEditorScreen() {
     }
     switch (active) {
       case 'rules':
-        return <RulesTab filter={filter} selectedRule={editor.selectedRule} />;
+        return <RulesTab filter={filter} selectedRule={editor.selectedRule} diagnostics={diagnostics} />;
       case 'styles':
         return <StylesTab filter={filter} />;
       case 'settings':
         return <SettingsTab filter={filter} />;
       case 'test':
-        return <TestTab filter={filter} />;
+        return <TestTab filter={filter} form={testForm} onFormChange={setTestForm} onShowRule={showRule} />;
     }
   };
 
@@ -166,12 +202,15 @@ export function LootFilterEditorScreen() {
             </Button>
           </div>
         </div>
-        <nav className="flex flex-wrap gap-1" aria-label="Filter editor tabs">
+        <div role="tablist" className="flex flex-wrap gap-1" aria-label="Filter editor tabs">
           {EDITOR_TABS.map((item) => (
             <button
               key={item.id}
               type="button"
-              aria-current={tab === item.id ? 'page' : undefined}
+              id={`loot-filter-tab-${item.id}`}
+              role="tab"
+              aria-selected={tab === item.id}
+              aria-controls="loot-filter-tab-panel"
               className={cn(TAB_BASE, tab === item.id ? TAB_ACTIVE : TAB_INACTIVE)}
               onClick={() => {
                 setTab(item.id);
@@ -180,9 +219,11 @@ export function LootFilterEditorScreen() {
               {item.label}
             </button>
           ))}
-        </nav>
+        </div>
       </div>
-      {renderTab(tab)}
+      <div id="loot-filter-tab-panel" role="tabpanel" aria-labelledby={`loot-filter-tab-${tab}`}>
+        {renderTab(tab)}
+      </div>
     </div>
   );
 }

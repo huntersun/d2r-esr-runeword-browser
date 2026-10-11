@@ -1,4 +1,5 @@
-import { Plus, X } from 'lucide-react';
+import { useRef } from 'react';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { STAT_OPS, type StatCheck, type StatOp } from '../../../engine/types';
@@ -14,6 +15,8 @@ import {
 } from '../../../utils/statChecks';
 import { NumberInput } from '../../NumberInput';
 import { StatPicker } from '../../pickers';
+import { focusAfterRemoval } from '../../pickers/focusAfterRemoval';
+import { RequiredNumberInput } from './RequiredNumberInput';
 
 function toOp(value: string): StatOp | undefined {
   return STAT_OPS.find((op) => op === value);
@@ -48,6 +51,7 @@ function StatCheckRow({ id, data, check, onChange, onRemove }: StatCheckRowProps
         placeholder="param"
         value={check.param}
         onCommit={(param) => {
+          // An emptied param removes it, so the field and the model agree.
           onChange(setStatParam(check, param));
         }}
       />
@@ -69,28 +73,29 @@ function StatCheckRow({ id, data, check, onChange, onRemove }: StatCheckRowProps
           ))}
         </SelectContent>
       </Select>
-      <NumberInput
+      <RequiredNumberInput
         aria-label={typeof value === 'number' ? 'Value' : 'Low end'}
         className="h-8 w-20"
+        data-stat-value
         value={typeof value === 'number' ? value : value[0]}
         onCommit={(next) => {
-          if (next !== undefined) onChange(setStatValue(check, 0, next));
+          onChange(setStatValue(check, 0, next));
         }}
       />
       {typeof value !== 'number' && (
         <>
           <span className="text-xs text-muted-foreground">and</span>
-          <NumberInput
+          <RequiredNumberInput
             aria-label="High end"
             className="h-8 w-20"
             value={value[1]}
             onCommit={(next) => {
-              if (next !== undefined) onChange(setStatValue(check, 1, next));
+              onChange(setStatValue(check, 1, next));
             }}
           />
         </>
       )}
-      <Button type="button" variant="ghost" size="icon-sm" aria-label="Remove stat check" onClick={onRemove}>
+      <Button type="button" variant="ghost" size="icon-sm" aria-label="Remove stat check" data-remove onClick={onRemove}>
         <X />
       </Button>
     </li>
@@ -105,11 +110,14 @@ interface StatCheckListProps {
   readonly onChange: (value: readonly StatCheck[] | undefined) => void;
 }
 
-/** Rows of stat, optional param, op and value (two values for `between`). */
+/** Rows of stat, optional param, op and value (two values for `between`); a row is added by picking its stat. */
 export function StatCheckList({ id, data, value, onChange }: StatCheckListProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  // Set when a stat is picked, so the popover's close moves focus to the new row.
+  const addedRef = useRef(false);
   const checks = value ?? [];
   return (
-    <div className="space-y-1.5">
+    <div ref={containerRef} className="space-y-1.5">
       {checks.length > 0 && (
         <ul className="space-y-1.5">
           {checks.map((check, index) => (
@@ -125,24 +133,35 @@ export function StatCheckList({ id, data, value, onChange }: StatCheckListProps)
               }}
               onRemove={() => {
                 onChange(removeStatCheck(checks, index));
+                focusAfterRemoval(containerRef.current, index);
               }}
             />
           ))}
         </ul>
       )}
-      <Button
-        id={checks.length === 0 ? id : undefined}
-        type="button"
-        variant="outline"
-        size="sm"
-        className="h-7 px-2 text-xs"
-        onClick={() => {
-          onChange([...checks, newStatCheck()]);
-        }}
-      >
-        <Plus className="size-3.5" aria-hidden />
-        Add stat check
-      </Button>
+      <div data-focus-fallback>
+        <StatPicker
+          id={checks.length === 0 ? id : undefined}
+          data={data}
+          value={undefined}
+          placeholder="Add stat check"
+          aria-label="Add stat check"
+          className="h-7 w-full text-xs sm:w-56"
+          onChange={(stat) => {
+            onChange([...checks, newStatCheck(stat)]);
+            addedRef.current = true;
+          }}
+          onCloseAutoFocus={(event) => {
+            if (!addedRef.current) return;
+            // A stat was added: the new row's value is what the user sets next, not the add control.
+            addedRef.current = false;
+            event.preventDefault();
+            Array.from(containerRef.current?.querySelectorAll<HTMLInputElement>('[data-stat-value]') ?? [])
+              .at(-1)
+              ?.focus();
+          }}
+        />
+      </div>
     </div>
   );
 }

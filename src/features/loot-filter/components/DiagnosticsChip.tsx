@@ -14,41 +14,48 @@ const plural = (count: number, word: string) => `${String(count)} ${word}${count
 export function DiagnosticsChip({ diagnostics, onClick }: DiagnosticsChipProps) {
   const { errors, warnings } = countDiagnostics(diagnostics);
   const clean = errors === 0 && warnings === 0;
+  const announcement = clean ? 'No problems' : `${plural(errors, 'error')}, ${plural(warnings, 'warning')}`;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      title="Show the problems list"
-      className={cn(
-        'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition-colors hover:bg-accent',
-        errors > 0
-          ? 'border-destructive/50 text-destructive'
-          : warnings > 0
-            ? 'border-amber-500/50 text-amber-700 dark:text-amber-400'
-            : 'text-muted-foreground'
-      )}
-    >
-      {clean ? (
-        <>
-          <CircleCheck className="size-3.5" aria-hidden />
-          No problems
-        </>
-      ) : (
-        <>
-          {errors > 0 && (
-            <span className="inline-flex items-center gap-1">
-              <CircleAlert className="size-3.5" aria-hidden />
-              {plural(errors, 'error')}
-            </span>
-          )}
-          {warnings > 0 && (
-            <span className="inline-flex items-center gap-1">
-              <TriangleAlert className="size-3.5" aria-hidden />
-              {plural(warnings, 'warning')}
-            </span>
-          )}
-        </>
-      )}
-    </button>
+    <>
+      {/* Screen readers hear the count change as edits add or fix problems. */}
+      <span className="sr-only" aria-live="polite">
+        {announcement}
+      </span>
+      <button
+        type="button"
+        onClick={onClick}
+        title="Show the problems list"
+        className={cn(
+          'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition-colors hover:bg-accent',
+          errors > 0
+            ? 'border-destructive/50 text-destructive'
+            : warnings > 0
+              ? 'border-amber-500/50 text-amber-700 dark:text-amber-400'
+              : 'text-muted-foreground'
+        )}
+      >
+        {clean ? (
+          <>
+            <CircleCheck className="size-3.5" aria-hidden />
+            No problems
+          </>
+        ) : (
+          <>
+            {errors > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <CircleAlert className="size-3.5" aria-hidden />
+                {plural(errors, 'error')}
+              </span>
+            )}
+            {warnings > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <TriangleAlert className="size-3.5" aria-hidden />
+                {plural(warnings, 'warning')}
+              </span>
+            )}
+          </>
+        )}
+      </button>
+    </>
   );
 }

@@ -16,7 +16,11 @@ function parse(text: string, integer: boolean): number | undefined | null {
   return value;
 }
 
-/** A number field that keeps what the user types (an empty or half-typed value) and commits only valid numbers. */
+/**
+ * A number field that keeps what the user types (an empty or half-typed value) and commits only valid numbers.
+ * A text input, not `type="number"`: a number input reports a half-typed value such as "-" as "", which would
+ * commit undefined (clear the key).
+ */
 export function NumberInput({ value, onCommit, integer = false, ...props }: NumberInputProps) {
   const [text, setText] = useState(value === undefined ? '' : String(value));
   const [lastValue, setLastValue] = useState(value);
@@ -30,8 +34,9 @@ export function NumberInput({ value, onCommit, integer = false, ...props }: Numb
   return (
     <Input
       {...props}
-      type="number"
+      type="text"
       inputMode={integer ? 'numeric' : 'decimal'}
+      autoComplete="off"
       value={text}
       onChange={(event) => {
         setText(event.target.value);

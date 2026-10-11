@@ -125,6 +125,18 @@ describe('lootFilterSaga', () => {
     expect(parseLootFilter(storedEntries(storage)[0].text).filter.author).toBe('Me');
   });
 
+  it('close cancels the pending debounced flush: the timer does not write again', async () => {
+    const storage = testStorage([STORED]);
+    const { store } = setup(storage);
+    store.dispatch(open('stored'));
+    store.dispatch(setHeader({ author: 'Me' }));
+    store.dispatch(close());
+    expect(storage.setItem).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(EDITOR_FLUSH_DELAY_MS * 2);
+    expect(storage.setItem).toHaveBeenCalledTimes(1);
+    expect(parseLootFilter(storedEntries(storage)[0].text).filter.author).toBe('Me');
+  });
+
   it('reports a full storage once and keeps working', () => {
     const storage = testStorage([STORED]);
     const { store, onSaveFailed } = setup(storage);

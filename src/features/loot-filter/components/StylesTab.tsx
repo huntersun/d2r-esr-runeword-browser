@@ -47,7 +47,9 @@ export function StylesTab({ filter }: StylesTabProps) {
   const names = entries.map(([name]) => name);
   const [selected, setSelected] = useState<string | null>(null);
   const [nameDialog, setNameDialog] = useState<NameDialogState>(null);
+  // The style being deleted stays set while the dialog closes, so its text does not change during the animation.
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   // A renamed, deleted or not-yet-chosen selection falls back to the first style.
   const [current, currentStyle] = entries.find(([name]) => name === selected) ?? entries.at(0) ?? [null, undefined];
@@ -80,7 +82,7 @@ export function StylesTab({ filter }: StylesTabProps) {
 
   const handleDelete = () => {
     if (deleting !== null) dispatch(removeStyle(deleting));
-    setDeleting(null);
+    setDeleteOpen(false);
   };
 
   const handleChange = (name: string, style: LootFilterStyle, patch: ShallowPatch<RuleActions>) => {
@@ -176,6 +178,7 @@ export function StylesTab({ filter }: StylesTabProps) {
                   title="Delete"
                   onClick={() => {
                     setDeleting(current);
+                    setDeleteOpen(true);
                   }}
                 >
                   <Trash2 />
@@ -236,6 +239,7 @@ export function StylesTab({ filter }: StylesTabProps) {
       />
 
       <ConfirmDeleteDialog
+        open={deleteOpen}
         name={deleting}
         title="Delete style?"
         description={`“${deleting ?? ''}” is removed from the filter.${
@@ -244,7 +248,7 @@ export function StylesTab({ filter }: StylesTabProps) {
             : ' No rule uses it.'
         }`}
         onCancel={() => {
-          setDeleting(null);
+          setDeleteOpen(false);
         }}
         onConfirm={handleDelete}
       />

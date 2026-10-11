@@ -23,6 +23,7 @@ sagaRegistry (core/store/sagaRegistry.ts)
 - `registerSaga(saga)` - Register a feature saga; queued before startup, started immediately after (each saga starts exactly once)
 - `runSagas()` - Start saga middleware and run all queued sagas; sagas registered later (lazy-loaded chunks) start on registration
 - Feature sagas are registered in `src/core/startup.ts` by `startDataSync()`, `startAuth()`, `startBuilds()` and `startFavorites()`, which `main.tsx` calls after the React root renders. Each dynamically imports its feature module (keeps the heavy saga/parser code out of the entry chunk; guarded by `src/mainStartup.test.ts`); the three Supabase-backed ones are no-ops when Supabase is not configured. The loot-filter saga is the exception: `src/features/loot-filter/index.ts` registers it (and calls `runSagas()`) when the lazy route chunk first loads, see [LOOT-FILTER.md](../features/LOOT-FILTER.md)
+- Reducers, unlike sagas, are registered statically in `core/store/store.ts`. This is a documented exception for the loot filter: its `lootFilter` reducer is in the static store, and because the slice parses and serializes filter text, the engine's parser and serializer end up in the entry chunk (about 6.5 KB gzip). Accepted to keep the store setup simple (no reducer injection); the saga, the screens and the rest of the engine stay in the lazy route chunk
 
 ### Feature Saga Structure
 

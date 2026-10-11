@@ -25,7 +25,9 @@ export function LootFilterLibraryScreen() {
   const entries = useSelector(selectLibraryEntries);
   const fileInput = useRef<HTMLInputElement>(null);
   const [nameDialog, setNameDialog] = useState<NameDialogState>(null);
+  // The entry being deleted stays set while the dialog closes, so its text does not change during the animation.
   const [pendingDelete, setPendingDelete] = useState<LootFilterEntry | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [loadingTemplate, setLoadingTemplate] = useState(false);
 
   const sorted = [...entries].sort((a, b) => b.updatedAt - a.updatedAt);
@@ -44,11 +46,13 @@ export function LootFilterLibraryScreen() {
       toast.error(`Could not read ${file.name}`, { description: check.message });
       return;
     }
-    dispatch(importText({ name: check.title ?? fileBaseName(file.name), text, source: 'upload' }));
+    const action = importText({ name: check.title ?? fileBaseName(file.name), text, source: 'upload' });
+    dispatch(action);
     const problems = check.diagnostics.length;
     toast.success(`Imported ${file.name}`, {
       description: problems === 0 ? undefined : `${String(problems)} ${problems === 1 ? 'problem' : 'problems'} to review in the editor.`,
     });
+    void navigate(`/loot-filters/${action.payload.id}`);
   };
 
   const handleTemplate = async () => {
@@ -146,6 +150,7 @@ export function LootFilterLibraryScreen() {
               }}
               onDelete={() => {
                 setPendingDelete(entry);
+                setDeleteOpen(true);
               }}
               onDownload={() => {
                 downloadTextFile(filterFileName(entry.name), entry.text);
@@ -161,7 +166,9 @@ export function LootFilterLibraryScreen() {
           if (!open) setNameDialog(null);
         }}
         title={nameDialog?.kind === 'rename' ? 'Rename filter' : 'New filter'}
-        description={nameDialog?.kind === 'rename' ? undefined : 'The name is also the filter title the launcher shows.'}
+        description={
+          nameDialog?.kind === 'rename' ? undefined : "It also becomes the filter's title (Settings tab), which the launcher shows."
+        }
         initialName={nameDialog?.kind === 'rename' ? nameDialog.entry.name : 'My filter'}
         submitLabel={nameDialog?.kind === 'rename' ? 'Rename' : 'Create'}
         onSubmit={(name) => {
@@ -173,13 +180,14 @@ export function LootFilterLibraryScreen() {
       />
 
       <ConfirmDeleteDialog
+        open={deleteOpen}
         name={pendingDelete?.name ?? null}
         onCancel={() => {
-          setPendingDelete(null);
+          setDeleteOpen(false);
         }}
         onConfirm={() => {
           if (pendingDelete) dispatch(remove(pendingDelete.id));
-          setPendingDelete(null);
+          setDeleteOpen(false);
         }}
       />
     </div>

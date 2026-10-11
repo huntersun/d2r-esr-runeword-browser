@@ -25,6 +25,7 @@ import reducer, {
   renameStyle,
   replaceFilter,
   selectRule,
+  renumberLevel,
   setFilterLevels,
   setHeader,
   setNotifications,
@@ -32,6 +33,7 @@ import reducer, {
   setStyle,
   updateRule,
 } from './lootFilterSlice';
+import { selectDiagnostics } from './selectors';
 import type { LootFilterEntry, LootFilterState } from './types';
 
 const NOW = 1_000;
@@ -77,11 +79,10 @@ describe('createBlankFilter', () => {
 });
 
 describe('library reducers', () => {
-  it('hydrate marks the library loaded and keeps entries created before it', () => {
-    const early = run(initialState, { type: createBlank.type, payload: { id: 'early', name: 'Early', now: NOW } });
-    const state = reducer(early, hydrate([entry('stored')]));
+  it('hydrate marks the library loaded and replaces its entries', () => {
+    const state = reducer(initialState, hydrate([entry('stored')]));
     expect(state.library.hydrated).toBe(true);
-    expect(state.library.entries.map((e) => e.id)).toEqual(['stored', 'early']);
+    expect(state.library.entries.map((e) => e.id)).toEqual(['stored']);
   });
 
   it('createBlank adds a blank entry whose text is the blank filter', () => {
@@ -204,7 +205,8 @@ describe('open and close', () => {
   });
 
   it('open flushes the previously open, dirty filter', () => {
-    const base = run(openState(), hydrate([entry('two')]), setHeader({ title: 'Kept' }));
+    const two = { type: importText.type, payload: { id: 'two', name: 'Two', text: entry('two').text, source: 'upload', now: NOW } };
+    const base = run(openState(), two, setHeader({ title: 'Kept' }));
     const state = reducer(base, { type: open.type, payload: { id: 'two', now: LATER } });
     expect(state.editor.id).toBe('two');
     const one = state.library.entries.find((candidate) => candidate.id === 'one');
@@ -240,6 +242,45 @@ describe('settings reducers', () => {
     const state = reducer(openState(), setFilterLevels(levels));
     expect(state.editor.filter?.filterLevels).toEqual(levels);
     expect(reducer(state, setFilterLevels(undefined)).editor.filter?.filterLevels).toBeUndefined();
+  });
+
+  describe('renumberLevel', () => {
+    const levelled = () =>
+      openState(
+        filterWith({
+          filterLevels: [
+            { id: 1, name: 'One' },
+            { id: 2, name: 'Two' },
+          ],
+          defaultLevel: 2,
+          rules: [{ activeInLevels: [1, 2], hide: true }, { activeInLevels: [1] }, { hide: true }],
+        })
+      );
+
+    it('changes the id and the rules and default level that use it', () => {
+      const state = reducer(levelled(), renumberLevel({ from: 2, to: 5 }));
+      expect(state.editor.filter?.filterLevels).toEqual([
+        { id: 1, name: 'One' },
+        { id: 5, name: 'Two' },
+      ]);
+      expect(state.editor.filter?.defaultLevel).toBe(5);
+      expect(state.editor.filter?.rules.map((rule) => rule.activeInLevels)).toEqual([[1, 5], [1], undefined]);
+      expect(state.editor.dirty).toBe(true);
+    });
+
+    it('leaves the default level alone when it is another level', () => {
+      const state = reducer(levelled(), renumberLevel({ from: 1, to: 3 }));
+      expect(state.editor.filter?.defaultLevel).toBe(2);
+      expect(state.editor.filter?.rules.map((rule) => rule.activeInLevels)).toEqual([[3, 2], [3], undefined]);
+    });
+
+    it('is a no-op for a taken, non-integer or unknown id', () => {
+      const before = levelled();
+      expect(reducer(before, renumberLevel({ from: 1, to: 2 }))).toBe(before);
+      expect(reducer(before, renumberLevel({ from: 1, to: 1.5 }))).toBe(before);
+      expect(reducer(before, renumberLevel({ from: 9, to: 10 }))).toBe(before);
+      expect(reducer(before, renumberLevel({ from: 1, to: 1 }))).toBe(before);
+    });
   });
 
   it('setNotifications patches formats and drops the object when empty', () => {
@@ -378,6 +419,30 @@ describe('style reducers', () => {
     const empty = reducer(state, removeStyle('Red'));
     expect(empty.editor.filter && 'styles' in empty.editor.filter).toBe(false);
     expect(reducer(empty, removeStyle('Red'))).toBe(empty);
+  });
+});
+
+describe('selectDiagnostics', () => {
+  const text = '{"formatVersion": 1, "rules": [{"hide": true}, {"hide": true}, {"quality": "legendary", "hide": true}]}';
+
+  it('follows the rules: shape diagnostics move with their rule and go when the key is fixed', () => {
+    const opened = run(initialState, hydrate([{ ...entry('x'), text }]), { type: open.type, payload: { id: 'x', now: NOW } });
+    expect(selectDiagnostics({ lootFilter: opened })).toEqual([
+      expect.objectContaining({ severity: 'error', rule: 2, path: 'rules/2/quality' }),
+    ]);
+
+    const moved = reducer(opened, moveRule({ from: 2, to: 0 }));
+    expect(selectDiagnostics({ lootFilter: moved })).toEqual([
+      expect.objectContaining({ severity: 'error', rule: 0, path: 'rules/0/quality' }),
+    ]);
+
+    const fixed = reducer(moved, patchRule({ index: 0, patch: { quality: 'unique' } }));
+    expect(selectDiagnostics({ lootFilter: fixed })).toEqual([]);
+  });
+
+  it('keeps the syntax error when there is no model', () => {
+    const broken = run(initialState, hydrate([{ ...entry('bad'), text: '{' }]), { type: open.type, payload: { id: 'bad', now: NOW } });
+    expect(selectDiagnostics({ lootFilter: broken })).toBe(broken.editor.parseDiagnostics);
   });
 });
 

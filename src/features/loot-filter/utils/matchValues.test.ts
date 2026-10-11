@@ -1,4 +1,5 @@
 import {
+  BASE_TIER_SCALE,
   convertNamedMatch,
   convertNumberMatch,
   formatNamedMatch,
@@ -8,11 +9,11 @@ import {
   namedValueName,
   numberMatchMode,
   parseNumberList,
+  QUALITY_SCALE,
   setNamedRangeBound,
   setRangeBound,
   toggleNamedValue,
 } from './matchValues';
-import { BASE_TIER_SCALE, QUALITY_SCALE } from './ruleSummary';
 
 describe('number matches', () => {
   it('detects the mode', () => {
@@ -24,7 +25,7 @@ describe('number matches', () => {
 
   it('converts between modes keeping the numbers', () => {
     expect(convertNumberMatch(3, 'list', 1)).toEqual([3]);
-    expect(convertNumberMatch(3, 'range', 1)).toEqual({ min: 3 });
+    expect(convertNumberMatch(3, 'range', 1)).toEqual({ min: 3, max: 3 });
     expect(convertNumberMatch([4, 2, 4], 'range', 1)).toEqual({ min: 2, max: 4 });
     expect(convertNumberMatch([4, 2], 'exactly', 1)).toBe(4);
     expect(convertNumberMatch({ max: 5 }, 'exactly', 1)).toBe(5);
@@ -46,7 +47,7 @@ describe('number matches', () => {
 
   it('sets and clears range bounds, allowing min only or max only', () => {
     expect(setRangeBound({ min: 1, max: 5 }, 'max', undefined)).toEqual({ min: 1 });
-    expect(setRangeBound({ min: 1 }, 'min', undefined)).toEqual({});
+    expect(setRangeBound({ min: 1 }, 'min', undefined)).toBeUndefined();
     expect(setRangeBound({}, 'max', 4)).toEqual({ max: 4 });
   });
 
@@ -88,6 +89,8 @@ describe('named matches', () => {
     expect(convertNamedMatch(undefined, 'several', BASE_TIER_SCALE)).toEqual(['normal']);
     expect(convertNamedMatch(99, 'several', QUALITY_SCALE)).toEqual(['inferior']);
     expect(convertNamedMatch('unique', 'any', QUALITY_SCALE)).toBeUndefined();
+    expect(convertNamedMatch(undefined, 'range', BASE_TIER_SCALE)).toEqual({ min: 'normal', max: 'normal' });
+    expect(convertNamedMatch(7, 'range', QUALITY_SCALE)).toEqual({ min: 'unique', max: 'unique' });
   });
 
   it('keeps numbers the user did not touch', () => {
@@ -95,6 +98,7 @@ describe('named matches', () => {
     expect(convertNamedMatch(value, 'several', QUALITY_SCALE)).toBe(value);
     expect(setNamedRangeBound({ min: 4, max: 6 }, 'max', 'rare')).toEqual({ min: 4, max: 'rare' });
     expect(setNamedRangeBound({ min: 4, max: 6 }, 'min', undefined)).toEqual({ max: 6 });
+    expect(setNamedRangeBound({ max: 6 }, 'max', undefined)).toBeUndefined();
   });
 
   it('toggles names in a list, normalizing it to names in scale order', () => {

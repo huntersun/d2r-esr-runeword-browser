@@ -1,3 +1,4 @@
+import { slugify } from '@/utils/download';
 import type { BuildWithAuthor } from '../types';
 
 export const EXPORT_APP_NAME = 'D2R ESR Browser';
@@ -17,11 +18,5 @@ export function buildExportPayload(build: BuildWithAuthor, source: string, expor
 
 /** Download filename: a slug of the build name plus a short id, e.g. "hammerdin-mf-1a2b3c4d.json". */
 export function buildExportFilename(build: Pick<BuildWithAuthor, 'name' | 'id'>): string {
-  const slug = build.name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-  const base = slug.length > 0 ? slug : 'build';
-  return `${base}-${build.id.slice(0, 8)}.json`;
+  return `${slugify(build.name, 'build')}-${build.id.slice(0, 8)}.json`;
 }

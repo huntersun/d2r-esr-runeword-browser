@@ -150,6 +150,26 @@ describe('validateLootFilter', () => {
     expect(checkRule({ location: ['stored', 'onGround'], labelBackground: [0, 0, 0] })).toEqual([]);
   });
 
+  it("counts a style's ground-only actions for a rule that does not look at the ground", () => {
+    const filter: LootFilter = {
+      ...base,
+      styles: { Bg: { labelBackground: [0, 0, 0] } },
+      rules: [{ location: ['stored'], useStyle: 'Bg' }],
+    };
+    expect(validateLootFilter(filter).map((d) => [d.severity, d.path])).toEqual([['warning', 'rules/0/labelBackground']]);
+  });
+
+  it('reports a stat check without a stat, with or without a reference', () => {
+    expect(checkRule({ itemStats: [{ stat: '', value: 1 }], hide: true })).toEqual([['error', 'rules/0/itemStats/0/stat']]);
+    expect(checkRule({ itemStats: [{ stat: '', value: 1 }], hide: true }, reference)).toEqual([['error', 'rules/0/itemStats/0/stat']]);
+  });
+
+  it('warns about a stat id written as a string', () => {
+    const diagnostics = validateLootFilter({ ...base, rules: [{ itemStats: [{ stat: '194', value: 1 }], hide: true }] }, reference);
+    expect(diagnostics).toEqual([expect.objectContaining({ severity: 'warning', path: 'rules/0/itemStats/0/stat' })]);
+    expect(diagnostics[0].message).toMatch(/as a number/);
+  });
+
   it('checks names against the reference only when it has them', () => {
     const rule: LootFilterRule = {
       itemCodes: ['r01', 'zzz'],

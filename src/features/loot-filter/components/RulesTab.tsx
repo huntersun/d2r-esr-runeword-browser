@@ -1,17 +1,14 @@
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { ListPlus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import type { RootState } from '@/core/store';
-import type { DiagnosticSeverity, LootFilter } from '../engine/types';
+import type { Diagnostic, DiagnosticSeverity, LootFilter } from '../engine/types';
 import { useLootFilterData } from '../hooks/useLootFilterData';
-import { useLootFilterReference } from '../hooks/useLootFilterReference';
 import { addRule, duplicateRule, moveRule, removeRule, selectRule } from '../store/lootFilterSlice';
-import { selectDiagnostics } from '../store/selectors';
 import { ruleMatchesSearch, ruleSearchText, ruleSummary } from '../utils/ruleSummary';
-import { ConfirmRuleDeleteDialog } from './rules/ConfirmRuleDeleteDialog';
+import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 import { RULE_EDITOR_ID, RuleEditor } from './rules/RuleEditor';
 import { RuleList, type RuleListEntry } from './rules/RuleList';
 
@@ -21,16 +18,17 @@ const TWO_PANE_QUERY = '(min-width: 1024px)';
 interface RulesTabProps {
   readonly filter: LootFilter;
   readonly selectedRule: number | null;
+  /** Every diagnostic of the open filter (the screen computes them once for all tabs). */
+  readonly diagnostics: readonly Diagnostic[];
 }
 
 /** The rule list (search, add, reorder, duplicate, delete) next to the selected rule's editor. */
-export function RulesTab({ filter, selectedRule }: RulesTabProps) {
+export function RulesTab({ filter, selectedRule, diagnostics }: RulesTabProps) {
   const dispatch = useDispatch();
   const data = useLootFilterData();
-  const { reference } = useLootFilterReference();
-  const diagnostics = useSelector((state: RootState) => selectDiagnostics(state, reference));
   const [query, setQuery] = useState('');
   const [pendingDelete, setPendingDelete] = useState<number | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const severities = new Map<number, DiagnosticSeverity>();
   for (const diagnostic of diagnostics) {
@@ -44,7 +42,8 @@ export function RulesTab({ filter, selectedRule }: RulesTabProps) {
     summary: ruleSummary(rule, data.lookup),
     severity: severities.get(index),
   }));
-  const entries = query.trim() === '' ? all : all.filter((entry) => ruleMatchesSearch(ruleSearchText(entry.rule, data.lookup), query));
+  const searching = query.trim() !== '';
+  const entries = searching ? all.filter((entry) => ruleMatchesSearch(ruleSearchText(entry.rule, data.lookup, entry.summary), query)) : all;
   const hiddenCount = all.length - entries.length;
 
   const rule = selectedRule === null ? undefined : filter.rules.at(selectedRule);
@@ -105,11 +104,15 @@ export function RulesTab({ filter, selectedRule }: RulesTabProps) {
             className="max-h-[45vh] divide-y overflow-y-auto lg:max-h-none lg:min-h-0 lg:flex-1"
             entries={entries}
             ruleCount={all.length}
+            canMove={!searching}
             selectedRule={selectedRule}
             onSelect={handleSelect}
             onMove={(from, to) => dispatch(moveRule({ from, to }))}
             onDuplicate={(index) => dispatch(duplicateRule(index))}
-            onDelete={setPendingDelete}
+            onDelete={(index) => {
+              setPendingDelete(index);
+              setDeleteOpen(true);
+            }}
           />
         )}
       </section>
@@ -137,15 +140,17 @@ export function RulesTab({ filter, selectedRule }: RulesTabProps) {
         )}
       </div>
 
-      <ConfirmRuleDeleteDialog
-        index={pendingDelete}
-        summary={pendingDelete === null ? '' : (all.at(pendingDelete)?.summary ?? '')}
+      <ConfirmDeleteDialog
+        open={deleteOpen}
+        name={pendingDelete === null ? null : `rule ${String(pendingDelete + 1)}`}
+        title={pendingDelete === null ? 'Delete rule?' : `Delete rule ${String(pendingDelete + 1)}?`}
+        description={<span className="break-words">{pendingDelete === null ? '' : (all.at(pendingDelete)?.summary ?? '')}</span>}
         onCancel={() => {
-          setPendingDelete(null);
+          setDeleteOpen(false);
         }}
         onConfirm={() => {
           if (pendingDelete !== null) dispatch(removeRule(pendingDelete));
-          setPendingDelete(null);
+          setDeleteOpen(false);
         }}
       />
     </div>

@@ -1,15 +1,14 @@
 import { useDispatch } from 'react-redux';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { LootFilter } from '../engine/types';
 import { setHeader, setNotifications, type LootFilterHeader } from '../store/lootFilterSlice';
 import type { ShallowPatch } from '../utils/patch';
+import { ColorTextField } from './actions/ColorTextField';
+import { CheckField, Field } from './Field';
 import { NumberInput } from './NumberInput';
 import { FilterLevelsEditor } from './settings/FilterLevelsEditor';
-import { FilterTextField } from './settings/FilterTextField';
 import { QualityColorsEditor } from './settings/QualityColorsEditor';
 
 type HeaderPatch = ShallowPatch<LootFilterHeader>;
@@ -52,24 +51,22 @@ export function SettingsTab({ filter }: SettingsTabProps) {
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           {TEXT_FIELDS.map((field) => (
-            <div key={field.key} className="flex flex-col gap-1.5">
-              <Label htmlFor={`loot-filter-${field.key}`}>{field.label}</Label>
+            <Field key={field.key} id={`loot-filter-${field.key}`} label={field.label}>
               <Input
                 id={`loot-filter-${field.key}`}
                 value={filter[field.key] ?? ''}
                 placeholder={field.placeholder}
                 onChange={(event) => patch(field.toPatch(emptyToUndefined(event.target.value)))}
               />
-            </div>
+            </Field>
           ))}
-          <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <Label htmlFor="loot-filter-description">Description</Label>
+          <Field id="loot-filter-description" label="Description" className="sm:col-span-2">
             <Textarea
               id="loot-filter-description"
               value={filter.description ?? ''}
               onChange={(event) => patch({ description: emptyToUndefined(event.target.value) })}
             />
-          </div>
+          </Field>
         </CardContent>
       </Card>
 
@@ -78,19 +75,14 @@ export function SettingsTab({ filter }: SettingsTabProps) {
           <CardTitle>Behaviour</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
-          <div className="flex items-start gap-2">
-            <Checkbox
-              id="loot-filter-hide-unmatched"
-              checked={filter.hideUnmatchedItems === true}
-              onCheckedChange={(checked) => patch({ hideUnmatchedItems: checked === true })}
-            />
-            <div className="grid gap-1">
-              <Label htmlFor="loot-filter-hide-unmatched">Hide unmatched items</Label>
-              <p className="text-xs text-muted-foreground">Hides every ground item no rule applied to.</p>
-            </div>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="loot-filter-sound-volume">Sound volume</Label>
+          <CheckField
+            id="loot-filter-hide-unmatched"
+            label="Hide unmatched items"
+            hint="Hides every ground item no rule applied to."
+            checked={filter.hideUnmatchedItems === true}
+            onChange={(checked) => patch({ hideUnmatchedItems: checked })}
+          />
+          <Field id="loot-filter-sound-volume" label="Sound volume" hint="0 to 100, for rules that set no volume of their own.">
             <NumberInput
               id="loot-filter-sound-volume"
               className="w-28"
@@ -100,8 +92,7 @@ export function SettingsTab({ filter }: SettingsTabProps) {
               placeholder="100"
               onCommit={(soundVolume) => patch({ soundVolume })}
             />
-            <p className="text-xs text-muted-foreground">0 to 100, for rules that set no volume of their own.</p>
-          </div>
+          </Field>
         </CardContent>
       </Card>
 
@@ -120,17 +111,21 @@ export function SettingsTab({ filter }: SettingsTabProps) {
           <CardTitle>Notifications</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
-          <FilterTextField
+          <ColorTextField
             id="loot-filter-drop-format"
             label="Drop line"
+            context="dropFormat"
+            defaultColor="0"
             hint="Printed by rules with notify. Placeholders such as {name} and {qualityColor} are filled in."
             placeholder="{qualityColor}{name}"
             value={filter.notifications?.dropFormat}
             onChange={(dropFormat) => dispatch(setNotifications({ dropFormat }))}
           />
-          <FilterTextField
+          <ColorTextField
             id="loot-filter-level-change-format"
             label="Level change line"
+            context="levelChangeFormat"
+            defaultColor="0"
             hint="Printed when the level changes; takes {level} and {filter}."
             placeholder="ÿc4Loot filter level: ÿc0{level}"
             value={filter.notifications?.levelChangeFormat}

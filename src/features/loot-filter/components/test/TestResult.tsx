@@ -1,13 +1,13 @@
-import type { ReactNode } from 'react';
 import { EyeOff, Play, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DEFAULT_QUALITY_COLORS } from '../../engine/colors';
-import type { EvaluatedSound, EvaluationResult } from '../../engine/evaluate';
+import type { EvaluationResult } from '../../engine/evaluate';
 import { QUALITIES, type LabelColor } from '../../engine/types';
 import type { LootFilterData } from '../../hooks/useLootFilterData';
 import { useSoundPreview } from '../../hooks/useSoundPreview';
-import { bundledSoundUrl, findBundledSound } from '../../utils/bundledAssets';
+import { bundledSoundUrl, findBundledSound, soundLabel } from '../../utils/bundledAssets';
 import { LabelPreview } from '../LabelPreview';
+import { Section } from '../actions/Section';
 
 interface TestResultProps {
   readonly data: LootFilterData;
@@ -25,21 +25,6 @@ function Swatch({ color }: { readonly color: LabelColor }) {
       style={{ backgroundColor: `rgb(${String(color[0])} ${String(color[1])} ${String(color[2])})` }}
       aria-hidden
     />
-  );
-}
-
-function soundLabel(sound: EvaluatedSound['sound'], soundNames: readonly string[]): string {
-  if (typeof sound === 'string') return sound;
-  const name = sound >= 0 ? (soundNames.at(sound) ?? '') : '';
-  return name === '' ? `sounds.txt row ${String(sound)}` : `sounds.txt row ${String(sound)} (${name})`;
-}
-
-function Section({ title, children }: { readonly title: string; readonly children: ReactNode }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs font-medium text-muted-foreground">{title}</span>
-      {children}
-    </div>
   );
 }
 
@@ -81,13 +66,13 @@ export function TestResult({ data, result, quality, onShowRule }: TestResultProp
           </span>
         </div>
       ) : (
-        <Section title="Ground label">
+        <Section dense title="Ground label">
           <LabelPreview text={result.name} background={result.labelBackground} border={result.labelBorder} defaultColor={defaultColor} />
           {!result.matched && <p className="text-xs text-muted-foreground">No rule applied: the game&apos;s own label.</p>}
         </Section>
       )}
 
-      <Section title="Chat">
+      <Section dense title="Chat">
         {result.chatMessages.length === 0 ? (
           <p className="text-xs text-muted-foreground">Nothing is printed.</p>
         ) : (
@@ -99,7 +84,7 @@ export function TestResult({ data, result, quality, onShowRule }: TestResultProp
         )}
       </Section>
 
-      <Section title="Sound">
+      <Section dense title="Sound">
         {result.sounds.length === 0 ? (
           <p className="text-xs text-muted-foreground">No sound.</p>
         ) : (
@@ -137,7 +122,7 @@ export function TestResult({ data, result, quality, onShowRule }: TestResultProp
       </Section>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <Section title="Minimap icon">
+        <Section dense title="Minimap icon">
           {result.icon === null ? (
             <p className="text-xs text-muted-foreground">None.</p>
           ) : (
@@ -150,7 +135,7 @@ export function TestResult({ data, result, quality, onShowRule }: TestResultProp
             </p>
           )}
         </Section>
-        <Section title="Droplight">
+        <Section dense title="Droplight">
           {result.droplight === null ? (
             <p className="text-xs text-muted-foreground">None.</p>
           ) : (

@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { TAB_ACTIVE, TAB_BASE, TAB_INACTIVE } from '@/core/components/navTabClasses';
 import { GameDataVersionBanner } from '../components/GameDataVersionBanner';
 
 const SUB_PAGES = [
@@ -8,11 +9,6 @@ const SUB_PAGES = [
   { to: 'affixes', label: 'Affixes' },
   { to: 'types', label: 'Item Types' },
 ] as const;
-
-// Same styling as the header nav links
-const TAB_BASE = 'rounded-md px-3 py-2 text-sm font-medium transition-colors';
-const TAB_INACTIVE = 'text-muted-foreground hover:text-foreground';
-const TAB_ACTIVE = 'bg-accent text-accent-foreground';
 
 export function GameDataLayout() {
   return (

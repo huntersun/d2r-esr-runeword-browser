@@ -2,6 +2,7 @@
 export const TEMPLATE_NAME = "Sully's QoL Filter";
 export const TEMPLATE_CREDIT = "Sully's QoL filter, converted by the ESR author, bundled with permission";
 
+/** A file under `public/loot-filters/` (the template, bundled sounds and icons). */
 export function lootFilterAssetUrl(path: string): string {
   return `${import.meta.env.BASE_URL}loot-filters/${path}`;
 }

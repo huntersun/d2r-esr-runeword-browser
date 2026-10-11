@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { JsoncSyntaxError, parseJsonc } from './jsonc.ts';
 
 describe('parseJsonc', () => {
@@ -12,7 +13,7 @@ describe('parseJsonc', () => {
   });
 
   it('accepts CRLF and a BOM', () => {
-    const text = '﻿// hello\r\n{\r\n  "a": "b" // c\r\n}\r\n';
+    const text = '\uFEFF// hello\r\n{\r\n  "a": "b" // c\r\n}\r\n';
     expect(parseJsonc(text)).toEqual({ value: { a: 'b' }, leadingComments: ['// hello'] });
   });
 
@@ -36,6 +37,55 @@ describe('parseJsonc', () => {
       expect(caught.line).toBe(4);
       expect(caught.column).toBe(3);
       expect(caught.message).toMatch(/line 4, column 3/);
+    }
+  });
+
+  it('locates a single-quoted value and does not repeat the source in the message', () => {
+    let caught: unknown;
+    try {
+      parseJsonc('{\n  "a": 1,\n  "b": \'x\'\n}');
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBeInstanceOf(JsoncSyntaxError);
+    if (caught instanceof JsoncSyntaxError) {
+      expect(caught.line).toBe(3);
+      expect(caught.column).toBe(8);
+      expect(caught.message).toMatch(/line 3, column 8/);
+      expect(caught.message).not.toMatch(/is not valid JSON/);
+      expect(caught.message.match(/"b"/g)).toBeNull();
+    }
+  });
+
+  it('omits the location when the engine gives none and it cannot be found', () => {
+    const parse = vi.spyOn(JSON, 'parse').mockImplementation(() => {
+      throw new SyntaxError('Unexpected token \'}\', "{"a": }" is not valid JSON');
+    });
+    try {
+      let caught: unknown;
+      try {
+        parseJsonc('{"a": }');
+      } catch (error) {
+        caught = error;
+      }
+      expect(caught).toBeInstanceOf(JsoncSyntaxError);
+      if (caught instanceof JsoncSyntaxError) {
+        expect(caught.line).toBeUndefined();
+        expect(caught.message).toBe("Invalid JSON: Unexpected token '}'");
+      }
+    } finally {
+      parse.mockRestore();
+    }
+  });
+
+  it("reads Firefox's line and column", () => {
+    const parse = vi.spyOn(JSON, 'parse').mockImplementation(() => {
+      throw new SyntaxError('JSON.parse: unexpected character at line 2 column 5 of the JSON data');
+    });
+    try {
+      expect(() => parseJsonc('{\n  x}')).toThrow('Invalid JSON: unexpected character (line 2, column 5)');
+    } finally {
+      parse.mockRestore();
     }
   });
 

@@ -1,7 +1,7 @@
 import { parseLootFilter } from '../engine/parse';
 import type { Diagnostic } from '../engine/types';
 
-export type FilterTextCheck =
+type FilterTextCheck =
   | { readonly ok: true; readonly title: string | null; readonly diagnostics: readonly Diagnostic[] }
   | { readonly ok: false; readonly message: string };
 

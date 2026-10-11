@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { FilterLevel, LootFilter } from '../../engine/types';
-import { setFilterLevels, setHeader } from '../../store/lootFilterSlice';
+import { renumberLevel, setFilterLevels, setHeader } from '../../store/lootFilterSlice';
 import { NumberInput } from '../NumberInput';
 
 const NO_DEFAULT = '__none';
@@ -36,10 +36,20 @@ export function FilterLevelsEditor({ filter }: FilterLevelsEditorProps) {
     if (next.length === 0 && filter.defaultLevel !== undefined) dispatch(setHeader({ defaultLevel: undefined }));
   };
 
-  const updateLevel = (index: number, level: FilterLevel) => {
+  const renameLevel = (index: number, name: string) => {
+    commit(levels.map((current, position) => (position === index ? { ...current, name } : current)));
+  };
+
+  /** Changes a level's id along with the rules and default level that use it; a taken id is not committed. */
+  const changeLevelId = (index: number, id: number) => {
     const previous = levels[index];
-    commit(levels.map((current, position) => (position === index ? level : current)));
-    if (previous.id !== level.id && filter.defaultLevel === previous.id) dispatch(setHeader({ defaultLevel: level.id }));
+    if (previous.id === id || levelIds.has(id)) return;
+    if (levels.filter((level) => level.id === previous.id).length > 1) {
+      // A duplicated id (from the file): only this row changes; the rules still have a level with the old id.
+      commit(levels.map((current, position) => (position === index ? { ...current, id } : current)));
+      return;
+    }
+    dispatch(renumberLevel({ from: previous.id, to: id }));
   };
 
   const addLevel = () => {
@@ -80,7 +90,7 @@ export function FilterLevelsEditor({ filter }: FilterLevelsEditorProps) {
                   className="w-20"
                   value={level.id}
                   onCommit={(id) => {
-                    if (id !== undefined) updateLevel(index, { ...level, id });
+                    if (id !== undefined) changeLevelId(index, id);
                   }}
                 />
                 <Label className="sr-only" htmlFor={`loot-filter-level-name-${String(index)}`}>
@@ -91,7 +101,7 @@ export function FilterLevelsEditor({ filter }: FilterLevelsEditorProps) {
                   className="min-w-40 flex-1"
                   value={level.name}
                   onChange={(event) => {
-                    updateLevel(index, { ...level, name: event.target.value });
+                    renameLevel(index, event.target.value);
                   }}
                 />
                 <span className="w-28 text-xs text-muted-foreground">
@@ -115,7 +125,7 @@ export function FilterLevelsEditor({ filter }: FilterLevelsEditorProps) {
 
       {levels.some((level) => (usage.get(level.id) ?? 0) > 0) && (
         <p className="text-xs text-muted-foreground">
-          Removing or renumbering a level that rules use leaves those rules pointing at a missing level.
+          Removing a level that rules use leaves those rules pointing at a missing level; changing its id updates them.
         </p>
       )}
       {missing.length > 0 && (

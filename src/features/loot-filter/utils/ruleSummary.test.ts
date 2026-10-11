@@ -41,6 +41,13 @@ describe('ruleSummary', () => {
     );
   });
 
+  it('counts more than two areas and names excluded types and uniques', () => {
+    expect(ruleSummary({ areas: [1, 2, 40] }, TEST_LOOKUP)).toBe('in 3 areas');
+    expect(ruleSummary({ areas: [1, 2] }, TEST_LOOKUP)).toBe('in Rogue Encampment, Blood Moor');
+    expect(ruleSummary({ excludeItemTypes: ['axe', 'nope'] }, TEST_LOOKUP)).toBe('not Axe, nope');
+    expect(ruleSummary({ excludeUniqueOrSetIds: [0, 9] }, TEST_LOOKUP)).toBe('not The Gnasher, #9');
+  });
+
   it('says "any item" for a rule without conditions', () => {
     expect(ruleSummary({}, TEST_LOOKUP)).toBe('any item');
     expect(ruleSummary({ comment: 'note' }, TEST_LOOKUP)).toBe('any item');
@@ -70,6 +77,10 @@ describe('ruleSearchText', () => {
       TEST_LOOKUP
     );
     for (const term of ['r33', 'zod rune', 'high runes', 'jackpot', 'item_numsockets', 'lut gholein']) expect(text).toContain(term);
+  });
+
+  it('reuses a given summary', () => {
+    expect(ruleSearchText({ itemCodes: ['r33'] }, TEST_LOOKUP, 'Precomputed')).toBe('precomputed r33 zod rune');
   });
 
   it('matches every query term', () => {

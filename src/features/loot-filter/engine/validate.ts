@@ -3,7 +3,9 @@
  * Reference checks (item codes, stats, areas, sounds…) run only when a reference is given and the
  * relevant set is non-empty, and they are warnings: the game data may lag behind the mod.
  */
-import { CONDITION_KEYS } from './parse.ts';
+import { effectiveActions } from './actions.ts';
+import { isNamedList, isNumberList, namedToNumber } from './match.ts';
+import { CONDITION_KEYS, EFFECT_KEYS } from './parse.ts';
 import {
   BASE_TIERS,
   DIFFICULTIES,
@@ -28,25 +30,6 @@ export const SOUND_FILE_EXTENSIONS = ['.wav', '.mp3', '.flac'] as const;
 /** Actions that only show on a ground item (label, minimap icon, droplight). */
 const GROUND_ONLY_ACTIONS = ['labelBackground', 'labelBorder', 'icon', 'droplight'] as const;
 
-/** Keys that make a rule do something; `comment` does not count. */
-const EFFECT_KEYS = [
-  'hide',
-  'hideIfOtherConditionsFail',
-  'replaceName',
-  'namePrefix',
-  'nameSuffix',
-  'labelBackground',
-  'labelBorder',
-  'chatMessage',
-  'chatMessageWhenHidden',
-  'notify',
-  'sound',
-  'soundVolume',
-  'icon',
-  'droplight',
-  'useStyle',
-] as const satisfies readonly (keyof RuleActions)[];
-
 interface Owner {
   readonly path: string;
   readonly rule?: number;
@@ -65,15 +48,6 @@ function reporter(diagnostics: Diagnostic[], owner: Owner): Report {
       ...(owner.style === undefined ? {} : { style: owner.style }),
     });
   };
-}
-
-// Array.isArray does not narrow readonly arrays out of a union, so these guards do.
-function isNumberList(value: NumberMatch): value is readonly number[] {
-  return Array.isArray(value);
-}
-
-function isNamedList<N extends string>(value: NamedMatch<N>): value is readonly NamedValue<N>[] {
-  return Array.isArray(value);
 }
 
 // ---------------------------------------------------------------------------
@@ -120,10 +94,9 @@ function checkNamedMatch<N extends string>(
       report('error', path, `Unknown ${what} ${String(value)} (${String(offset)} to ${String(offset + names.length - 1)})`);
       return undefined;
     }
-    const index = names.indexOf(value);
-    if (index >= 0) return index + offset;
-    report('error', path, `Unknown ${what} "${value}" (${names.join(', ')})`);
-    return undefined;
+    const number = namedToNumber(value, names, offset);
+    if (number === undefined) report('error', path, `Unknown ${what} "${value}" (${names.join(', ')})`);
+    return number;
   };
   if (typeof match === 'number' || typeof match === 'string') {
     toNumber(match, key);
@@ -168,13 +141,18 @@ function checkStats(
     if (check.op !== 'between' && isPair)
       report('error', `${path}/value`, `A [low, high] value needs "op": "between", not "${check.op ?? '>='}"`);
     if (isPair && check.value[0] > check.value[1]) report('warning', `${path}/value`, 'The low end is above the high end; nothing matches');
+    if (check.stat === '') {
+      report('error', `${path}/stat`, 'Pick a stat');
+      return;
+    }
     if (!reference) return;
     if (typeof check.stat === 'number') {
       if (reference.statIds.size > 0 && !reference.statIds.has(check.stat)) {
         report('warning', `${path}/stat`, `Unknown stat id ${String(check.stat)}`);
       }
     } else if (reference.statNames.size > 0 && !reference.statNames.has(check.stat)) {
-      report('warning', `${path}/stat`, `Unknown stat "${check.stat}"`);
+      const hint = /^\d+$/.test(check.stat) ? '; write a stat id as a number, without quotes' : '';
+      report('warning', `${path}/stat`, `Unknown stat "${check.stat}"${hint}`);
     }
   });
 }
@@ -247,7 +225,7 @@ function checkRule(
   if (!hasConditions && !hasEffects) report('warning', '', 'The rule has neither conditions nor actions');
   else if (!hasEffects) report('warning', '', 'The rule has conditions but no actions, so it does nothing');
 
-  if (rule.useStyle !== undefined && filter.styles?.[rule.useStyle] === undefined) {
+  if (rule.useStyle !== undefined && (filter.styles === undefined || !Object.hasOwn(filter.styles, rule.useStyle))) {
     report('error', 'useStyle', `There is no style named "${rule.useStyle}"`);
   }
   if (rule.hideIfOtherConditionsFail === true && rule.itemCodes === undefined && rule.itemTypes === undefined) {
@@ -275,8 +253,9 @@ function checkRule(
     checkStats(report, key, rule[key], reference);
 
   if (rule.location !== undefined && !rule.location.includes('onGround')) {
+    const actions = effectiveActions(rule, filter);
     for (const key of GROUND_ONLY_ACTIONS) {
-      if (rule[key] !== undefined)
+      if (actions[key] !== undefined)
         report('warning', key, `"${key}" shows on ground items only, but the rule's "location" leaves out onGround`);
     }
   }

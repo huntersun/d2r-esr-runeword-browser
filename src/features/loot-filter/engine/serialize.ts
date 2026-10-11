@@ -14,9 +14,9 @@ import { ACTION_KEYS, CONDITION_KEYS, TOP_LEVEL_KEYS, isPlainObject } from './pa
 import type { LootFilter, LootFilterRule, LootFilterStyle, Passthrough } from './types.ts';
 
 /** Longest line a rule or style is kept on as a whole. */
-export const ONE_LINE_RULE_WIDTH = 150;
+const ONE_LINE_RULE_WIDTH = 150;
 /** Longest line other values are kept on before they wrap or expand. */
-export const LINE_WIDTH = 140;
+const LINE_WIDTH = 140;
 /** Longest line of a wrapped list of strings or numbers. */
 const PACKED_LIST_WIDTH = 116;
 
@@ -25,7 +25,7 @@ type PlainObject = Record<string, unknown>;
 function addPassthrough(out: PlainObject, passthrough: Passthrough | undefined): void {
   if (!passthrough) return;
   for (const [key, value] of Object.entries(passthrough)) {
-    if (out[key] === undefined) out[key] = value;
+    if (!Object.hasOwn(out, key)) out[key] = value;
   }
 }
 

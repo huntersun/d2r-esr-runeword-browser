@@ -6,8 +6,8 @@ import { ACTION_KEYS } from '../../engine/parse';
 import type { Diagnostic, LootFilter, LootFilterRule, RuleActions } from '../../engine/types';
 import type { LootFilterData } from '../../hooks/useLootFilterData';
 import { patchRule } from '../../store/lootFilterSlice';
+import { BASE_TIER_SCALE, DIFFICULTY_SCALE, QUALITY_SCALE } from '../../utils/matchValues';
 import type { ShallowPatch } from '../../utils/patch';
-import { BASE_TIER_SCALE, DIFFICULTY_SCALE, QUALITY_SCALE } from '../../utils/ruleSummary';
 import { ActionsEditor } from '../actions/ActionsEditor';
 import { AreaPicker, ItemPicker, ItemTypePicker, UniqueOrSetPicker } from '../pickers';
 import { ConditionField, ConditionSection } from './conditions/ConditionField';
@@ -32,12 +32,100 @@ function listOrUndefined<T>(list: readonly T[]): readonly T[] | undefined {
   return list.length === 0 ? undefined : list;
 }
 
+/** The form's id for a rule key (`loot-filter-rule-itemCodes`). */
+function fieldId(key: string): string {
+  return `loot-filter-rule-${key}`;
+}
+
+interface ListPickerProps<T> {
+  readonly data: LootFilterData;
+  readonly values: readonly T[];
+  readonly onChange: (values: readonly T[]) => void;
+  readonly id?: string;
+}
+
+interface FieldText {
+  readonly label: string;
+  readonly hint: string;
+}
+
+type ListField = FieldText &
+  (
+    | {
+        readonly key: 'itemCodes' | 'excludeItemCodes' | 'itemTypes' | 'excludeItemTypes';
+        readonly codes: true;
+        readonly Picker: (props: ListPickerProps<string>) => React.ReactNode;
+      }
+    | {
+        readonly key: 'uniqueOrSetIds' | 'excludeUniqueOrSetIds' | 'areas' | 'excludeAreas';
+        readonly codes: false;
+        readonly Picker: (props: ListPickerProps<number>) => React.ReactNode;
+      }
+  );
+
+/** "Which items", in order. */
+const ITEM_LIST_FIELDS: readonly ListField[] = [
+  { key: 'itemCodes', codes: true, Picker: ItemPicker, label: 'Item codes', hint: 'Any of these items. Empty = every item.' },
+  { key: 'excludeItemCodes', codes: true, Picker: ItemPicker, label: 'Except item codes', hint: 'None of these items.' },
+  {
+    key: 'itemTypes',
+    codes: true,
+    Picker: ItemTypePicker,
+    label: 'Item types',
+    hint: 'itemtypes.txt codes; parent types match too (weap = every weapon).',
+  },
+  {
+    key: 'excludeItemTypes',
+    codes: true,
+    Picker: ItemTypePicker,
+    label: 'Except item types',
+    hint: 'Not of these types (parent types included).',
+  },
+  {
+    key: 'uniqueOrSetIds',
+    codes: false,
+    Picker: UniqueOrSetPicker,
+    label: 'Unique or set items',
+    hint: 'Row ids; a unique and a set item can share one, so add a quality to tell them apart.',
+  },
+  {
+    key: 'excludeUniqueOrSetIds',
+    codes: false,
+    Picker: UniqueOrSetPicker,
+    label: 'Except unique or set items',
+    hint: 'Not one of these rows.',
+  },
+];
+
+/** The first two of "Where and when". */
+const AREA_FIELDS: readonly ListField[] = [
+  { key: 'areas', codes: false, Picker: AreaPicker, label: 'Areas', hint: 'You are in one of these areas.' },
+  { key: 'excludeAreas', codes: false, Picker: AreaPicker, label: 'Except areas', hint: 'You are in none of these areas.' },
+];
+
+/** Number matches of "Item properties", after quality and base tier. */
+const NUMBER_FIELDS: readonly (FieldText & { readonly key: 'itemLevel' | 'sockets' | 'maxSockets'; readonly max: number })[] = [
+  { key: 'itemLevel', label: 'Item level', hint: '0 to 999.', max: 999 },
+  { key: 'sockets', label: 'Sockets', hint: 'Sockets the item has, 0 to 99.', max: 99 },
+  { key: 'maxSockets', label: 'Max sockets', hint: 'The most sockets its base can have, 0 to 99.', max: 99 },
+];
+
+const STAT_FIELDS: readonly (FieldText & { readonly key: 'itemStats' | 'itemStatsAnyOf' | 'playerStats' | 'playerStatsAnyOf' })[] = [
+  { key: 'itemStats', label: 'Item stats', hint: 'All of these hold for the item.' },
+  { key: 'itemStatsAnyOf', label: 'Item stats, any of', hint: 'At least one of these holds for the item.' },
+  { key: 'playerStats', label: 'Player stats', hint: 'All of these hold for your character (e.g. level).' },
+  { key: 'playerStatsAnyOf', label: 'Player stats, any of', hint: 'At least one of these holds for your character.' },
+];
+
 const FLAGS = [
   { key: 'isEthereal', label: 'Ethereal' },
   { key: 'isRuneword', label: 'Runeword' },
   { key: 'isIdentified', label: 'Identified' },
   { key: 'isFullySocketed', label: 'Fully socketed' },
 ] as const;
+
+const COMMENT_ID = fieldId('comment');
+const COMMENT_HINT_ID = `${COMMENT_ID}-hint`;
 
 interface RuleEditorProps {
   readonly filter: LootFilter;
@@ -53,7 +141,26 @@ export function RuleEditor({ filter, index, rule, diagnostics, data }: RuleEdito
   const patch = (value: ShallowPatch<LootFilterRule>) => dispatch(patchRule({ index, patch: value }));
   const passthroughKeys = Object.keys(rule.passthrough ?? {});
   const invalid = (key: string) => passthroughKeys.includes(key);
-  const field = (key: string) => `rule-${key}`;
+
+  const listField = (field: ListField) => (
+    <ConditionField key={field.key} id={fieldId(field.key)} label={field.label} hint={field.hint} invalid={invalid(field.key)}>
+      {field.codes ? (
+        <field.Picker
+          id={fieldId(field.key)}
+          data={data}
+          values={rule[field.key] ?? []}
+          onChange={(values) => patch({ [field.key]: listOrUndefined(values) })}
+        />
+      ) : (
+        <field.Picker
+          id={fieldId(field.key)}
+          data={data}
+          values={rule[field.key] ?? []}
+          onChange={(values) => patch({ [field.key]: listOrUndefined(values) })}
+        />
+      )}
+    </ConditionField>
+  );
 
   return (
     <div id={RULE_EDITOR_ID} className="scroll-mt-4 space-y-4">
@@ -63,102 +170,31 @@ export function RuleEditor({ filter, index, rule, diagnostics, data }: RuleEdito
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="rule-comment">Comment</Label>
+            <Label htmlFor={COMMENT_ID}>Comment</Label>
             <Input
-              id="rule-comment"
+              id={COMMENT_ID}
+              aria-describedby={COMMENT_HINT_ID}
               value={rule.comment ?? ''}
-              placeholder="A note for yourself; the game ignores it"
               onChange={(event) => patch({ comment: event.target.value === '' ? undefined : event.target.value })}
             />
+            <p id={COMMENT_HINT_ID} className="text-xs text-muted-foreground">
+              A note for yourself; the plugin ignores it.
+            </p>
           </div>
 
           <RuleDiagnostics index={index} diagnostics={diagnostics} />
 
-          <ConditionSection title="Which items">
-            <ConditionField
-              id={field('itemCodes')}
-              label="Item codes"
-              hint="Any of these items. Empty = every item."
-              invalid={invalid('itemCodes')}
-            >
-              <ItemPicker
-                id={field('itemCodes')}
-                data={data}
-                values={rule.itemCodes ?? []}
-                onChange={(codes) => patch({ itemCodes: listOrUndefined(codes) })}
-              />
-            </ConditionField>
-            <ConditionField
-              id={field('excludeItemCodes')}
-              label="Except item codes"
-              hint="None of these items."
-              invalid={invalid('excludeItemCodes')}
-            >
-              <ItemPicker
-                id={field('excludeItemCodes')}
-                data={data}
-                values={rule.excludeItemCodes ?? []}
-                onChange={(codes) => patch({ excludeItemCodes: listOrUndefined(codes) })}
-              />
-            </ConditionField>
-            <ConditionField
-              id={field('itemTypes')}
-              label="Item types"
-              hint="itemtypes.txt codes; parent types match too (weap = every weapon)."
-              invalid={invalid('itemTypes')}
-            >
-              <ItemTypePicker
-                id={field('itemTypes')}
-                data={data}
-                values={rule.itemTypes ?? []}
-                onChange={(codes) => patch({ itemTypes: listOrUndefined(codes) })}
-              />
-            </ConditionField>
-            <ConditionField
-              id={field('excludeItemTypes')}
-              label="Except item types"
-              hint="Not of these types (parent types included)."
-              invalid={invalid('excludeItemTypes')}
-            >
-              <ItemTypePicker
-                id={field('excludeItemTypes')}
-                data={data}
-                values={rule.excludeItemTypes ?? []}
-                onChange={(codes) => patch({ excludeItemTypes: listOrUndefined(codes) })}
-              />
-            </ConditionField>
-            <ConditionField
-              id={field('uniqueOrSetIds')}
-              label="Unique or set items"
-              hint="Row ids; a unique and a set item can share one, so add a quality to tell them apart."
-              invalid={invalid('uniqueOrSetIds')}
-            >
-              <UniqueOrSetPicker
-                id={field('uniqueOrSetIds')}
-                data={data}
-                values={rule.uniqueOrSetIds ?? []}
-                onChange={(ids) => patch({ uniqueOrSetIds: listOrUndefined(ids) })}
-              />
-            </ConditionField>
-            <ConditionField
-              id={field('excludeUniqueOrSetIds')}
-              label="Except unique or set items"
-              hint="Not one of these rows."
-              invalid={invalid('excludeUniqueOrSetIds')}
-            >
-              <UniqueOrSetPicker
-                id={field('excludeUniqueOrSetIds')}
-                data={data}
-                values={rule.excludeUniqueOrSetIds ?? []}
-                onChange={(ids) => patch({ excludeUniqueOrSetIds: listOrUndefined(ids) })}
-              />
-            </ConditionField>
-          </ConditionSection>
+          <ConditionSection title="Which items">{ITEM_LIST_FIELDS.map(listField)}</ConditionSection>
 
           <ConditionSection title="Item properties">
-            <ConditionField id={field('quality')} label="Quality" hint="inferior … tempered (numbers 1 to 9)." invalid={invalid('quality')}>
+            <ConditionField
+              id={fieldId('quality')}
+              label="Quality"
+              hint="inferior … tempered (numbers 1 to 9)."
+              invalid={invalid('quality')}
+            >
               <NamedMatchControl
-                id={field('quality')}
+                id={fieldId('quality')}
                 label="Quality"
                 scale={QUALITY_SCALE}
                 value={rule.quality}
@@ -166,57 +202,32 @@ export function RuleEditor({ filter, index, rule, diagnostics, data }: RuleEdito
               />
             </ConditionField>
             <ConditionField
-              id={field('baseTier')}
+              id={fieldId('baseTier')}
               label="Base tier"
               hint="normal, exceptional, elite (0 to 2)."
               invalid={invalid('baseTier')}
             >
               <NamedMatchControl
-                id={field('baseTier')}
+                id={fieldId('baseTier')}
                 label="Base tier"
                 scale={BASE_TIER_SCALE}
                 value={rule.baseTier}
                 onChange={(baseTier) => patch({ baseTier })}
               />
             </ConditionField>
-            <ConditionField id={field('itemLevel')} label="Item level" hint="0 to 999." invalid={invalid('itemLevel')}>
-              <NumberMatchControl
-                id={field('itemLevel')}
-                label="Item level"
-                fallback={1}
-                min={0}
-                max={999}
-                value={rule.itemLevel}
-                onChange={(itemLevel) => patch({ itemLevel })}
-              />
-            </ConditionField>
-            <ConditionField id={field('sockets')} label="Sockets" hint="Sockets the item has, 0 to 99." invalid={invalid('sockets')}>
-              <NumberMatchControl
-                id={field('sockets')}
-                label="Sockets"
-                fallback={1}
-                min={0}
-                max={99}
-                value={rule.sockets}
-                onChange={(sockets) => patch({ sockets })}
-              />
-            </ConditionField>
-            <ConditionField
-              id={field('maxSockets')}
-              label="Max sockets"
-              hint="The most sockets its base can have, 0 to 99."
-              invalid={invalid('maxSockets')}
-            >
-              <NumberMatchControl
-                id={field('maxSockets')}
-                label="Max sockets"
-                fallback={1}
-                min={0}
-                max={99}
-                value={rule.maxSockets}
-                onChange={(maxSockets) => patch({ maxSockets })}
-              />
-            </ConditionField>
+            {NUMBER_FIELDS.map((field) => (
+              <ConditionField key={field.key} id={fieldId(field.key)} label={field.label} hint={field.hint} invalid={invalid(field.key)}>
+                <NumberMatchControl
+                  id={fieldId(field.key)}
+                  label={field.label}
+                  fallback={1}
+                  min={0}
+                  max={field.max}
+                  value={rule[field.key]}
+                  onChange={(value) => patch({ [field.key]: value })}
+                />
+              </ConditionField>
+            ))}
             <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-1.5">
               {FLAGS.map((flag) => (
                 <div key={flag.key} className="contents">
@@ -228,106 +239,49 @@ export function RuleEditor({ filter, index, rule, diagnostics, data }: RuleEdito
           </ConditionSection>
 
           <ConditionSection title="Stats">
-            <ConditionField
-              id={field('itemStats')}
-              label="Item stats"
-              hint="All of these hold for the item."
-              invalid={invalid('itemStats')}
-            >
-              <StatCheckList id={field('itemStats')} data={data} value={rule.itemStats} onChange={(itemStats) => patch({ itemStats })} />
-            </ConditionField>
-            <ConditionField
-              id={field('itemStatsAnyOf')}
-              label="Item stats, any of"
-              hint="At least one of these holds for the item."
-              invalid={invalid('itemStatsAnyOf')}
-            >
-              <StatCheckList
-                id={field('itemStatsAnyOf')}
-                data={data}
-                value={rule.itemStatsAnyOf}
-                onChange={(itemStatsAnyOf) => patch({ itemStatsAnyOf })}
-              />
-            </ConditionField>
-            <ConditionField
-              id={field('playerStats')}
-              label="Player stats"
-              hint="All of these hold for your character (e.g. level)."
-              invalid={invalid('playerStats')}
-            >
-              <StatCheckList
-                id={field('playerStats')}
-                data={data}
-                value={rule.playerStats}
-                onChange={(playerStats) => patch({ playerStats })}
-              />
-            </ConditionField>
-            <ConditionField
-              id={field('playerStatsAnyOf')}
-              label="Player stats, any of"
-              hint="At least one of these holds for your character."
-              invalid={invalid('playerStatsAnyOf')}
-            >
-              <StatCheckList
-                id={field('playerStatsAnyOf')}
-                data={data}
-                value={rule.playerStatsAnyOf}
-                onChange={(playerStatsAnyOf) => patch({ playerStatsAnyOf })}
-              />
-            </ConditionField>
+            {STAT_FIELDS.map((field) => (
+              <ConditionField key={field.key} id={fieldId(field.key)} label={field.label} hint={field.hint} invalid={invalid(field.key)}>
+                <StatCheckList
+                  id={fieldId(field.key)}
+                  data={data}
+                  value={rule[field.key]}
+                  onChange={(value) => patch({ [field.key]: value })}
+                />
+              </ConditionField>
+            ))}
           </ConditionSection>
 
           <ConditionSection title="Where and when">
-            <ConditionField id={field('areas')} label="Areas" hint="You are in one of these areas." invalid={invalid('areas')}>
-              <AreaPicker
-                id={field('areas')}
-                data={data}
-                values={rule.areas ?? []}
-                onChange={(ids) => patch({ areas: listOrUndefined(ids) })}
-              />
-            </ConditionField>
+            {AREA_FIELDS.map(listField)}
             <ConditionField
-              id={field('excludeAreas')}
-              label="Except areas"
-              hint="You are in none of these areas."
-              invalid={invalid('excludeAreas')}
-            >
-              <AreaPicker
-                id={field('excludeAreas')}
-                data={data}
-                values={rule.excludeAreas ?? []}
-                onChange={(ids) => patch({ excludeAreas: listOrUndefined(ids) })}
-              />
-            </ConditionField>
-            <ConditionField
-              id={field('location')}
+              id={fieldId('location')}
               label="Location"
               hint="None ticked = on the ground only (the default)."
               invalid={invalid('location')}
             >
-              <LocationControl id={field('location')} value={rule.location} onChange={(location) => patch({ location })} />
+              <LocationControl id={fieldId('location')} value={rule.location} onChange={(location) => patch({ location })} />
             </ConditionField>
             <ConditionField
-              id={field('activeInLevels')}
+              id={fieldId('activeInLevels')}
               label="Filter levels"
               hint="The levels the rule is active at."
               invalid={invalid('activeInLevels')}
             >
               <LevelsControl
-                id={field('activeInLevels')}
+                id={fieldId('activeInLevels')}
                 levels={filter.filterLevels ?? []}
                 value={rule.activeInLevels}
                 onChange={(activeInLevels) => patch({ activeInLevels })}
               />
             </ConditionField>
             <ConditionField
-              id={field('difficulty')}
+              id={fieldId('difficulty')}
               label="Difficulty"
               hint="normal, nightmare, hell (0 to 2)."
               invalid={invalid('difficulty')}
             >
               <NamedMatchControl
-                id={field('difficulty')}
+                id={fieldId('difficulty')}
                 label="Difficulty"
                 scale={DIFFICULTY_SCALE}
                 value={rule.difficulty}

@@ -1,32 +1,35 @@
 import { createSelector } from '@reduxjs/toolkit';
-import type { RootState } from '@/core/store/store';
+import { readLootFilter } from '../engine/parse';
+import { toPlainJson } from '../engine/serialize';
 import { validateLootFilter } from '../engine/validate';
-import type { Diagnostic, LootFilterReference, LootFilterRule } from '../engine/types';
-import type { LootFilterEntry } from './types';
+import type { Diagnostic, LootFilterReference } from '../engine/types';
+import type { LootFilterEntry, LootFilterState } from './types';
 
-export const selectLibraryHydrated = (state: RootState): boolean => state.lootFilter.library.hydrated;
-export const selectLibraryEntries = (state: RootState): readonly LootFilterEntry[] => state.lootFilter.library.entries;
+/** The part of the root state these selectors read (the app's `LootFilterRootState` is one). */
+interface LootFilterRootState {
+  readonly lootFilter: LootFilterState;
+}
 
-export const selectLibraryEntry = (state: RootState, id: string | undefined): LootFilterEntry | undefined =>
+export const selectLibraryHydrated = (state: LootFilterRootState): boolean => state.lootFilter.library.hydrated;
+export const selectLibraryEntries = (state: LootFilterRootState): readonly LootFilterEntry[] => state.lootFilter.library.entries;
+
+export const selectLibraryEntry = (state: LootFilterRootState, id: string | undefined): LootFilterEntry | undefined =>
   id === undefined ? undefined : state.lootFilter.library.entries.find((entry) => entry.id === id);
 
-export const selectEditor = (state: RootState) => state.lootFilter.editor;
-export const selectEditorFilter = (state: RootState) => state.lootFilter.editor.filter;
-export const selectParseDiagnostics = (state: RootState) => state.lootFilter.editor.parseDiagnostics;
-export const selectSelectedRule = (state: RootState) => state.lootFilter.editor.selectedRule;
-
-export const selectEditorRule = (state: RootState, index: number): LootFilterRule | undefined =>
-  state.lootFilter.editor.filter?.rules[index];
+export const selectEditor = (state: LootFilterRootState) => state.lootFilter.editor;
+export const selectEditorFilter = (state: LootFilterRootState) => state.lootFilter.editor.filter;
+export const selectParseDiagnostics = (state: LootFilterRootState) => state.lootFilter.editor.parseDiagnostics;
 
 /**
- * Parse diagnostics plus `validateLootFilter` on the open model. The reference is passed by the caller (from
- * `useLootFilterReference`) instead of living in Redux: it holds Sets, which Redux state should not.
- * Memoized on (filter, parse diagnostics, reference) identity.
+ * The open model's diagnostics: shape diagnostics from re-reading the model as JSON (so rule indices and fixed keys
+ * follow edits) plus `validateLootFilter`. Without a model (a JSONC syntax error) it is the stored parse diagnostics.
+ * The reference is passed by the caller (from `useLootFilterReference`) instead of living in Redux: it holds Sets,
+ * which Redux state should not. Memoized on (filter, parse diagnostics, reference) identity.
  */
 export const selectDiagnostics = createSelector(
-  [selectEditorFilter, selectParseDiagnostics, (_state: RootState, reference?: LootFilterReference) => reference],
+  [selectEditorFilter, selectParseDiagnostics, (_state: LootFilterRootState, reference?: LootFilterReference) => reference],
   (filter, parseDiagnostics, reference): readonly Diagnostic[] =>
-    filter === null ? parseDiagnostics : [...parseDiagnostics, ...validateLootFilter(filter, reference)]
+    filter === null ? parseDiagnostics : [...readLootFilter(toPlainJson(filter)).diagnostics, ...validateLootFilter(filter, reference)]
 );
 
 export interface DiagnosticCounts {

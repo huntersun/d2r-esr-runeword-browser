@@ -6,7 +6,7 @@ import { NumberInput } from '../NumberInput';
 import { SinglePicker } from '../pickers';
 import { idCustom } from '../pickers/customOptions';
 import { StatRowsEditor } from './StatRowsEditor';
-import { TestField } from './TestField';
+import { Field } from '../Field';
 
 const ID = 'loot-filter-test-context';
 
@@ -30,7 +30,7 @@ export function TestContextFields({ data, filter, form, onChange }: TestContextF
   return (
     <div className="grid gap-3">
       <div className="grid grid-cols-2 gap-3">
-        <TestField id={`${ID}-difficulty`} label="Difficulty">
+        <Field id={`${ID}-difficulty`} label="Difficulty" dense>
           <Select
             value={String(form.difficulty)}
             onValueChange={(value) => {
@@ -48,8 +48,8 @@ export function TestContextFields({ data, filter, form, onChange }: TestContextF
               ))}
             </SelectContent>
           </Select>
-        </TestField>
-        <TestField id={`${ID}-player-level`} label="Player level (stat 12)">
+        </Field>
+        <Field id={`${ID}-player-level`} label="Player level (stat 12)" dense>
           <NumberInput
             id={`${ID}-player-level`}
             integer
@@ -62,10 +62,10 @@ export function TestContextFields({ data, filter, form, onChange }: TestContextF
               update({ playerLevel });
             }}
           />
-        </TestField>
+        </Field>
       </div>
 
-      <TestField id={`${ID}-area`} label="Area">
+      <Field id={`${ID}-area`} label="Area" dense>
         <SinglePicker
           id={`${ID}-area`}
           options={data.options.areas}
@@ -87,9 +87,9 @@ export function TestContextFields({ data, filter, form, onChange }: TestContextF
         {isTown(form.area) && (
           <p className="text-xs text-muted-foreground">In town: rules whose excluded areas list the towns are skipped here.</p>
         )}
-      </TestField>
+      </Field>
 
-      <TestField id={`${ID}-level`} label="Filter level">
+      <Field id={`${ID}-level`} label="Filter level" dense>
         {levels.length === 0 ? (
           <p className="text-xs text-muted-foreground">The filter has no levels; testing at level {level}.</p>
         ) : (
@@ -112,7 +112,7 @@ export function TestContextFields({ data, filter, form, onChange }: TestContextF
             </SelectContent>
           </Select>
         )}
-      </TestField>
+      </Field>
 
       <div className="flex flex-col gap-1">
         <span className="text-xs font-medium">More player stats</span>

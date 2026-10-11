@@ -12,6 +12,8 @@ export interface LootFilterLookup {
   readonly statName: (stat: string | number) => string | undefined;
   /** The stat's id for a name, or the id itself when it is a known id. */
   readonly statId: (stat: string | number) => number | undefined;
+  /** itemstatcost name → id (the evaluator's context takes it as is); empty without the data. */
+  readonly statIds: ReadonlyMap<string, number>;
   readonly areaName: (id: number) => string | undefined;
   /** The unique's and/or the set item's name for the row id ("Unique / Set" when both tables have that row). */
   readonly uniqueOrSetName: (id: number) => string | undefined;
@@ -26,6 +28,7 @@ export const EMPTY_LOOKUP: LootFilterLookup = {
   typeName: none,
   statName: none,
   statId: none,
+  statIds: new Map(),
   areaName: none,
   uniqueOrSetName: none,
 };
@@ -51,6 +54,7 @@ export function buildLookup(data: LootFilterDataBundle, types: TypesBundle): Loo
       if (typeof stat === 'number') return statById.has(stat) ? stat : undefined;
       return statByName.get(stat);
     },
+    statIds: statByName,
     areaName: (id) => areas.get(id),
     uniqueOrSetName: (id) => {
       const names = [uniques.get(id), sets.get(id)].filter((name) => name !== undefined && name !== '');

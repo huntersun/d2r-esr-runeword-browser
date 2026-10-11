@@ -79,7 +79,7 @@ so it stays active on every sub-page) and a lazy `GameDataLayout` that renders:
 Game Data
 Game files: ESR 3.2.10 (tag 3.2.10 @ 10b540e, generated 2026-10-09)
 [amber note when the HTM docs ESR version differs]
-[Bases] [Best Base] [Affixes] [Item Types]      <- NavLinks, same classes as the header links
+[Bases] [Best Base] [Affixes] [Item Types]      <- NavLinks, same classes as the header links (navTabClasses.ts)
 ----------------------------------------------
 <Outlet />                                        <- child route screen
 ```
@@ -87,6 +87,11 @@ Game files: ESR 3.2.10 (tag 3.2.10 @ 10b540e, generated 2026-10-09)
 Each child route is its own lazy screen wrapped in `<Suspense>` (all from `@/features/game-data`, so they share one chunk).
 The version line comes from `public/game-data/manifest.json`; the docs version from Dexie `metadata.esrVersion`. The note
 never says which version is newer (HTM and git-tag version strings do not compare).
+
+The header links, the Game Data sub-tabs and the loot filter editor's tabs share one set of classes
+(`TAB_BASE` / `TAB_INACTIVE` / `TAB_ACTIVE` in `src/core/components/navTabClasses.ts`). The editor's tabs are not routes but
+buttons in a `role="tablist"` (`role="tab"`, `aria-selected`) that set `?tab=`. The amber notices of `GuideLayout` and
+`LootFilterLayout` are both `DevNotice` (`src/core/components/DevNotice.tsx`).
 
 ### Navigation Style
 

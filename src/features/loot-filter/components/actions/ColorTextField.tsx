@@ -2,13 +2,13 @@ import { useRef, useState } from 'react';
 import { Braces, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { COLOR_CODES } from '../../engine/colors';
 import { PLACEHOLDERS, findPlaceholder, listPlaceholders, resolveText, type PlaceholderContext } from '../../engine/text';
 import type { FilterText } from '../../engine/types';
 import { previewPlaceholders } from '../../utils/effectiveActions';
 import { insertAtCaret } from '../../utils/insertAtCaret';
+import { Field } from '../Field';
 import { LabelPreview } from '../LabelPreview';
 
 interface ColorTextFieldProps {
@@ -20,7 +20,7 @@ interface ColorTextFieldProps {
   /** Which placeholders the insert menu offers and the field accepts. */
   readonly context: PlaceholderContext;
   readonly placeholder?: string;
-  readonly hint?: string;
+  readonly hint?: React.ReactNode;
   /** The colour code before the first `ÿc` in the preview (`=` for labels, `0` for chat). */
   readonly defaultColor?: string;
 }
@@ -51,12 +51,14 @@ export function ColorTextField({ id, label, value, onChange, context, placeholde
   const inputRef = useRef<HTMLInputElement>(null);
   const [colorsOpen, setColorsOpen] = useState(false);
   const [placeholdersOpen, setPlaceholdersOpen] = useState(false);
+  // Where the caret goes after an insert. Set by `insert`, used once the menu has closed: Radix's close auto-focus
+  // (after the close animation) would otherwise move the focus back to the menu button.
+  const pendingCaret = useRef<number | null>(null);
 
   if (typeof value === 'object') {
     const enUS = resolveText(value);
     return (
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor={id}>{label}</Label>
+      <Field id={id} label={label}>
         <div id={id} className="rounded-md border border-dashed px-3 py-2 text-sm">
           <p className="text-muted-foreground">Multi-language text, edit in the JSON tab.</p>
           {enUS !== undefined && <p className="mt-1 break-all font-mono text-xs">enUS: {enUS}</p>}
@@ -64,7 +66,7 @@ export function ColorTextField({ id, label, value, onChange, context, placeholde
         {enUS !== undefined && (
           <LabelPreview text={previewPlaceholders(enUS)} defaultColor={defaultColor} className="px-2 py-1.5 text-sm" />
         )}
-      </div>
+      </Field>
     );
   }
 
@@ -72,19 +74,26 @@ export function ColorTextField({ id, label, value, onChange, context, placeholde
   const insert = (token: string) => {
     const input = inputRef.current;
     const result = insertAtCaret(text, token, input?.selectionStart ?? null, input?.selectionEnd ?? null);
+    pendingCaret.current = result.caret;
     onChange(result.text);
-    // After the new value has rendered: put the caret right after the inserted token.
-    requestAnimationFrame(() => {
-      inputRef.current?.focus();
-      inputRef.current?.setSelectionRange(result.caret, result.caret);
-    });
+  };
+  // The menu has closed: after an insert, focus the field with the caret right after the inserted token instead of
+  // letting Radix refocus the menu button. Closing without an insert (Escape, outside click) keeps Radix's behaviour.
+  const restoreCaret = (event: Event) => {
+    const caret = pendingCaret.current;
+    if (caret === null) return;
+    pendingCaret.current = null;
+    event.preventDefault();
+    const input = inputRef.current;
+    if (!input) return;
+    input.focus();
+    input.setSelectionRange(caret, caret);
   };
   const problems = placeholderProblems(text, context);
   const offered = PLACEHOLDERS.filter((entry) => entry.contexts.includes(context));
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <Label htmlFor={id}>{label}</Label>
+    <Field id={id} label={label} hint={hint}>
       <div className="flex gap-1">
         <Input
           ref={inputRef}
@@ -110,7 +119,11 @@ export function ColorTextField({ id, label, value, onChange, context, placeholde
               <Palette />
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="end" className="max-h-80 w-[min(24rem,calc(100vw-2rem))] overflow-y-auto p-2">
+          <PopoverContent
+            align="end"
+            className="max-h-80 w-[min(24rem,calc(100vw-2rem))] overflow-y-auto p-2"
+            onCloseAutoFocus={restoreCaret}
+          >
             <div className="grid grid-cols-2 gap-1">
               {COLOR_CODES.map((entry) => (
                 <button
@@ -151,7 +164,11 @@ export function ColorTextField({ id, label, value, onChange, context, placeholde
               <Braces />
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="end" className="max-h-80 w-[min(24rem,calc(100vw-2rem))] overflow-y-auto p-1">
+          <PopoverContent
+            align="end"
+            className="max-h-80 w-[min(24rem,calc(100vw-2rem))] overflow-y-auto p-1"
+            onCloseAutoFocus={restoreCaret}
+          >
             {offered.map((entry) => (
               <button
                 key={entry.token}
@@ -175,7 +192,6 @@ export function ColorTextField({ id, label, value, onChange, context, placeholde
           {problem}
         </p>
       ))}
-      {hint !== undefined && <p className="text-xs text-muted-foreground">{hint}</p>}
-    </div>
+    </Field>
   );
 }

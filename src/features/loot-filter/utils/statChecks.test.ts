@@ -13,7 +13,7 @@ import { TEST_LOOKUP } from './testLookup.mock';
 
 describe('stat check helpers', () => {
   it('starts a row with no stat, >= 1', () => {
-    expect(newStatCheck()).toEqual({ stat: '', op: '>=', value: 1 });
+    expect(newStatCheck('strength')).toEqual({ stat: 'strength', op: '>=', value: 1 });
   });
 
   it('reads a typed stat as an id or a name', () => {

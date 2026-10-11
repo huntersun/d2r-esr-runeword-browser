@@ -14,6 +14,9 @@ import {
 import { cn } from '@/lib/utils';
 import { openDrawer, selectTheme, setTheme } from '@/features/settings';
 import { AuthControls, selectAuthIsConfigured } from '@/features/auth';
+// Shared nav-link styling (also the page sub-tabs) so the visible items, the overflow trigger, and the hidden
+// measurement row all render at identical widths.
+import { TAB_ACTIVE, TAB_BASE, TAB_INACTIVE } from './navTabClasses';
 
 const ESR_DOCS_URL = 'https://easternsunresurrected.com/';
 const CHANGELOG_URL = 'https://easternsunresurrected.com/changelogs.html';
@@ -50,12 +53,6 @@ const EXTERNAL_LINKS: readonly ExternalEntry[] = [
   { key: 'esr-docs', kind: 'external', href: ESR_DOCS_URL, label: 'ESR Documentation' },
   { key: 'changelog', kind: 'external', href: CHANGELOG_URL, label: 'Changelog' },
 ];
-
-// Shared nav-link styling so the visible items, the overflow trigger, and the hidden
-// measurement row all render at identical widths.
-const NAV_LINK_BASE = 'rounded-md px-3 py-2 text-sm font-medium transition-colors';
-const NAV_LINK_INACTIVE = 'text-muted-foreground hover:text-foreground';
-const NAV_LINK_ACTIVE = 'bg-accent text-accent-foreground';
 
 // Flex gap between nav items (gap-1 = 4px) plus a small safety buffer so a measured
 // item never ends up one pixel too wide for its slot.
@@ -153,8 +150,8 @@ export function Header() {
     setMobileMenuOpen(false);
   };
 
-  const navLinkClass = ({ isActive }: { isActive: boolean }) => cn(NAV_LINK_BASE, isActive ? NAV_LINK_ACTIVE : NAV_LINK_INACTIVE);
-  const externalLinkClass = cn(NAV_LINK_BASE, NAV_LINK_INACTIVE, 'inline-flex items-center gap-1');
+  const navLinkClass = ({ isActive }: { isActive: boolean }) => cn(TAB_BASE, isActive ? TAB_ACTIVE : TAB_INACTIVE);
+  const externalLinkClass = cn(TAB_BASE, TAB_INACTIVE, 'inline-flex items-center gap-1');
 
   const mobileNavLinkClass = ({ isActive }: { isActive: boolean }) =>
     cn(
@@ -195,11 +192,7 @@ export function Header() {
           {overflow.length > 0 && (
             <DropdownMenu>
               <DropdownMenuTrigger
-                className={cn(
-                  NAV_LINK_BASE,
-                  overflowHasActive ? NAV_LINK_ACTIVE : NAV_LINK_INACTIVE,
-                  'inline-flex items-center gap-1 outline-none'
-                )}
+                className={cn(TAB_BASE, overflowHasActive ? TAB_ACTIVE : TAB_INACTIVE, 'inline-flex items-center gap-1 outline-none')}
                 aria-label="More navigation links"
               >
                 More
@@ -239,17 +232,17 @@ export function Header() {
           <div ref={measureRef} aria-hidden className="pointer-events-none invisible absolute left-0 top-0 flex items-center gap-1">
             {entries.map((item) =>
               item.kind === 'internal' ? (
-                <span key={item.key} data-measure-item className={cn(NAV_LINK_BASE, NAV_LINK_INACTIVE)}>
+                <span key={item.key} data-measure-item className={cn(TAB_BASE, TAB_INACTIVE)}>
                   {item.label}
                 </span>
               ) : (
-                <span key={item.key} data-measure-item className={cn(NAV_LINK_BASE, NAV_LINK_INACTIVE, 'inline-flex items-center gap-1')}>
+                <span key={item.key} data-measure-item className={cn(TAB_BASE, TAB_INACTIVE, 'inline-flex items-center gap-1')}>
                   {item.label}
                   <ExternalLink className="size-3" />
                 </span>
               )
             )}
-            <span ref={moreRef} className={cn(NAV_LINK_BASE, NAV_LINK_INACTIVE, 'inline-flex items-center gap-1')}>
+            <span ref={moreRef} className={cn(TAB_BASE, TAB_INACTIVE, 'inline-flex items-center gap-1')}>
               More
               <ChevronDown className="size-4" />
             </span>

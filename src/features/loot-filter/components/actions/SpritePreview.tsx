@@ -73,6 +73,8 @@ export function SpritePreview({ idPrefix, iconName, iconSize, color }: SpritePre
   const bundledName = findBundledIcon(iconName);
   const bundled = useBundledSprite(bundledName);
   const [local, setLocal] = useState<LocalSprite | null>(null);
+  // The file picked last: a slower decode of an earlier pick must not replace its result.
+  const latestFile = useRef<File | null>(null);
 
   if (bundledName !== undefined) {
     if (bundled.status === 'ready') return <SpriteCanvas sprite={bundled.sprite} iconSize={iconSize} color={color} />;
@@ -86,12 +88,14 @@ export function SpritePreview({ idPrefix, iconName, iconSize, color }: SpritePre
   }
 
   const handleFile = (file: File | undefined) => {
+    latestFile.current = file ?? null;
     if (!file) {
       setLocal(null);
       return;
     }
     file.arrayBuffer().then(
       (bytes) => {
+        if (latestFile.current !== file) return;
         try {
           setLocal({ name: file.name, sprite: decodeSprite(bytes) });
         } catch (error) {
@@ -99,6 +103,7 @@ export function SpritePreview({ idPrefix, iconName, iconSize, color }: SpritePre
         }
       },
       (error: unknown) => {
+        if (latestFile.current !== file) return;
         setLocal({ name: file.name, error: errorMessage(error) });
       }
     );

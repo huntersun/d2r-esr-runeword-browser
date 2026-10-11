@@ -50,7 +50,7 @@ import {
 // Value readers: each returns the typed value or a reason the shape is wrong
 // ---------------------------------------------------------------------------
 
-export type ReadResult<T> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly reason: string };
+type ReadResult<T> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly reason: string };
 type Reader<T> = (raw: unknown) => ReadResult<T>;
 
 const ok = <T>(value: T): ReadResult<T> => ({ ok: true, value });
@@ -368,6 +368,10 @@ function keysOf<T extends object>(table: T): readonly (keyof T & string)[] {
 export const CONDITION_KEYS = keysOf(CONDITION_READERS);
 /** Rule and style action keys in the order of `RuleActions`. */
 export const ACTION_KEYS = keysOf(ACTION_READERS);
+/** Action keys that make a rule do something (`comment` does not). */
+export const EFFECT_KEYS: readonly Exclude<keyof RuleActions, 'comment'>[] = ACTION_KEYS.filter(
+  (key): key is Exclude<keyof RuleActions, 'comment'> => key !== 'comment'
+);
 /** Top-level keys in the guide's order. */
 export const TOP_LEVEL_KEYS = ['formatVersion', ...keysOf(HEADER_READERS), 'styles', 'rules'] as const;
 
@@ -447,7 +451,7 @@ function inFileOrder(
   raw: Readonly<Record<string, unknown>>,
   passthrough: Readonly<Record<string, unknown>>
 ): Record<string, unknown> | undefined {
-  const keys = Object.keys(raw).filter((key) => key in passthrough);
+  const keys = Object.keys(raw).filter((key) => Object.hasOwn(passthrough, key));
   if (keys.length === 0) return undefined;
   return Object.fromEntries(keys.map((key) => [key, passthrough[key]]));
 }

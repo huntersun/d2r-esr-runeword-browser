@@ -9,6 +9,7 @@ import {
 } from '../../../utils/matchValues';
 import { NumberInput } from '../../NumberInput';
 import { NumberListInput } from './NumberListInput';
+import { RequiredNumberInput } from './RequiredNumberInput';
 import { SegmentedControl } from './SegmentedControl';
 
 const MODE_LABELS: Readonly<Record<NumberMatchMode, string>> = { any: 'any', exactly: 'exactly', list: 'list', range: 'range' };
@@ -39,7 +40,7 @@ export function NumberMatchControl({ id, label, value, onChange, fallback, min, 
         }}
       />
       {typeof value === 'number' && (
-        <NumberInput
+        <RequiredNumberInput
           id={id}
           aria-label={label}
           integer
@@ -47,9 +48,7 @@ export function NumberMatchControl({ id, label, value, onChange, fallback, min, 
           max={max}
           className="h-8 w-24"
           value={value}
-          onCommit={(next) => {
-            if (next !== undefined) onChange(next);
-          }}
+          onCommit={onChange}
         />
       )}
       {value !== undefined && typeof value === 'object' && isNumberList(value) && (

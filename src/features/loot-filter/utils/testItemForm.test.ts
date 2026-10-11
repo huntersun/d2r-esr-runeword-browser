@@ -11,7 +11,6 @@ import {
   defaultTestItem,
   newStatRow,
   parseUniqueOrSetValue,
-  statIdMap,
   TEST_PRESETS,
   toTestContext,
   toTestItem,
@@ -30,7 +29,6 @@ function readJson(path: string): unknown {
 const bundle = readJson('public/game-data/lootfilter.json') as LootFilterDataBundle;
 const types = readJson('public/game-data/types.json') as TypesBundle;
 const lookup = buildLookup(bundle, types);
-const statIds = statIdMap(bundle.stats);
 const sully = parseLootFilter(readFileSync(resolve(process.cwd(), 'public/loot-filters/sullys-qol.json'), 'utf8')).filter;
 
 function preset(id: string): TestPreset {
@@ -103,22 +101,37 @@ describe('unique or set picks', () => {
 
 describe('toTestContext', () => {
   it('sends the player level as stat 12 before the extra player stats', () => {
-    const context = toTestContext(form({ playerLevel: 92, playerStats: [newStatRow('strength', 100)] }), bareFilter, statIds);
+    const context = toTestContext(form({ playerLevel: 92, playerStats: [newStatRow('strength', 100)] }), bareFilter, lookup);
     expect(context.playerStats).toEqual([
       { stat: 12, value: 92 },
       { stat: 0, value: 100 },
     ]);
   });
 
+  it('resolves player stats by name through the game data and drops unknown names', () => {
+    const rows = [newStatRow('item_numsockets', 2), newStatRow('nope', 1), newStatRow(7, 50)];
+    const context = toTestContext(form({ playerStats: rows }), bareFilter, lookup);
+    expect(context.playerStats).toEqual([
+      { stat: 12, value: 1 },
+      { stat: 194, value: 2 },
+      { stat: 7, value: 50 },
+    ]);
+    expect(context.statIds.get('item_numsockets')).toBe(194);
+    expect(toTestContext(form({ playerStats: rows }), bareFilter, EMPTY_LOOKUP).playerStats).toEqual([
+      { stat: 12, value: 1 },
+      { stat: 7, value: 50 },
+    ]);
+  });
+
   it("uses the filter's default level unless one is chosen", () => {
-    expect(toTestContext(form(), sully, statIds).filterLevel).toBe(3);
-    expect(toTestContext(form({ filterLevel: 1 }), sully, statIds).filterLevel).toBe(1);
+    expect(toTestContext(form(), sully, lookup).filterLevel).toBe(3);
+    expect(toTestContext(form({ filterLevel: 1 }), sully, lookup).filterLevel).toBe(1);
     expect(defaultFilterLevel({ ...bareFilter, filterLevels: [{ id: 5, name: 'Five' }] })).toBe(5);
     expect(defaultFilterLevel(bareFilter)).toBe(1);
   });
 
   it('defaults to Rogue Encampment, normal difficulty', () => {
-    expect(toTestContext(form(), bareFilter, statIds)).toMatchObject({ area: 1, difficulty: 0 });
+    expect(toTestContext(form(), bareFilter, lookup)).toMatchObject({ area: 1, difficulty: 0 });
   });
 });
 
@@ -143,7 +156,7 @@ describe('presets', () => {
 
   it("show the Zod preset with Sully's high-rune treatment", () => {
     const zod = applyPreset(form(), preset('zod'), lookup);
-    const result = evaluateFilter(sully, toTestItem(zod, lookup), toTestContext(zod, sully, statIds));
+    const result = evaluateFilter(sully, toTestItem(zod, lookup), toTestContext(zod, sully, lookup));
     const applied = result.trace.filter((rule) => rule.outcome === 'applied');
     expect(result.hidden).toBe(false);
     expect(applied).toHaveLength(1);
@@ -153,9 +166,9 @@ describe('presets', () => {
 
   it("let Sully's filter hide small gold piles out of town", () => {
     const gold = applyPreset(form({ area: 2, playerLevel: 95 }), preset('gold'), lookup);
-    const result = evaluateFilter(sully, toTestItem(gold, lookup), toTestContext(gold, sully, statIds));
+    const result = evaluateFilter(sully, toTestItem(gold, lookup), toTestContext(gold, sully, lookup));
     expect(result.hidden).toBe(true);
     const inTown = { ...gold, area: 1 };
-    expect(evaluateFilter(sully, toTestItem(inTown, lookup), toTestContext(inTown, sully, statIds)).name).toBe('ÿc0$$');
+    expect(evaluateFilter(sully, toTestItem(inTown, lookup), toTestContext(inTown, sully, lookup)).name).toBe('ÿc0$$');
   });
 });

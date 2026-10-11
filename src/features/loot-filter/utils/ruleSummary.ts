@@ -1,24 +1,12 @@
 /** One-line rule summaries for the rule list, and the text its search box matches. */
-import {
-  BASE_TIERS,
-  DIFFICULTIES,
-  QUALITIES,
-  type FilterText,
-  type ItemLocation,
-  type LootFilterRule,
-  type StatCheck,
-} from '../engine/types';
+import type { FilterText, ItemLocation, LootFilterRule, StatCheck } from '../engine/types';
 import { resolveText, splitColorRuns } from '../engine/text';
 import type { LootFilterLookup } from './lookup';
-import { formatNamedMatch, formatNumberMatch } from './matchValues';
+import { BASE_TIER_SCALE, DIFFICULTY_SCALE, formatNamedMatch, formatNumberMatch, QUALITY_SCALE } from './matchValues';
 import { formatStatCheck } from './statChecks';
 
 /** How many names a list shows before "+N". */
 const LIST_PREVIEW = 2;
-
-export const QUALITY_SCALE = { names: QUALITIES, offset: 1 } as const;
-export const BASE_TIER_SCALE = { names: BASE_TIERS, offset: 0 } as const;
-export const DIFFICULTY_SCALE = { names: DIFFICULTIES, offset: 0 } as const;
 
 /** The text without colour codes and line breaks (the language's text, else enUS). */
 export function plainText(text: FilterText | undefined): string | undefined {
@@ -116,9 +104,9 @@ export function ruleSummary(rule: LootFilterRule, lookup: LootFilterLookup): str
 }
 
 /** Lowercase text the rule list's search box matches: codes, names, types, ids, comment, style, name changes, chat. */
-export function ruleSearchText(rule: LootFilterRule, lookup: LootFilterLookup): string {
+export function ruleSearchText(rule: LootFilterRule, lookup: LootFilterLookup, summary = ruleSummary(rule, lookup)): string {
   const parts: (string | undefined)[] = [
-    ruleSummary(rule, lookup),
+    summary,
     rule.comment,
     rule.useStyle,
     plainText(rule.replaceName),

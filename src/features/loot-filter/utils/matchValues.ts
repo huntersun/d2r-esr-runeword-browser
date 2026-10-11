@@ -5,7 +5,16 @@
  * Named matches (`quality`, `baseTier`, `difficulty`): the same shapes over names or their numbers. A value the
  * user picks is stored as a name; numbers from the file stay numbers until the user changes that part.
  */
-import type { NamedMatch, NamedRange, NamedValue, NumberMatch, NumberRange } from '../engine/types';
+import {
+  BASE_TIERS,
+  DIFFICULTIES,
+  QUALITIES,
+  type NamedMatch,
+  type NamedRange,
+  type NamedValue,
+  type NumberMatch,
+  type NumberRange,
+} from '../engine/types';
 
 // Array.isArray does not narrow readonly arrays out of a union, so these guards do.
 export function isNumberList(value: NumberMatch): value is readonly number[] {
@@ -39,7 +48,7 @@ function numbersOf(value: NumberMatch | undefined): number[] {
 
 /**
  * The match in another mode, keeping what it can: exactly takes the first number, a list keeps all of them,
- * a range spans them (`{ min }` from a single value). `fallback` fills an empty match.
+ * a range spans them (`{ min: N, max: N }` from a single value). `fallback` fills an empty match.
  */
 export function convertNumberMatch(value: NumberMatch | undefined, mode: NumberMatchMode, fallback: number): NumberMatch | undefined {
   if (mode === numberMatchMode(value)) return value;
@@ -51,18 +60,16 @@ export function convertNumberMatch(value: NumberMatch | undefined, mode: NumberM
       return numbers[0] ?? fallback;
     case 'list':
       return numbers.length === 0 ? [fallback] : [...new Set(numbers)];
-    case 'range': {
-      if (numbers.length === 0) return { min: fallback };
-      if (numbers.length === 1) return { min: numbers[0] };
-      return { min: Math.min(...numbers), max: Math.max(...numbers) };
-    }
+    case 'range':
+      return numbers.length === 0 ? { min: fallback } : { min: Math.min(...numbers), max: Math.max(...numbers) };
   }
 }
 
-/** Sets or clears one bound; a range keeps whichever bounds are left (`{}` when both are cleared). */
-export function setRangeBound(range: NumberRange, bound: 'min' | 'max', value: number | undefined): NumberRange {
+/** Sets or clears one bound; a range keeps whichever bounds are left (`undefined`, "any", when both are cleared). */
+export function setRangeBound(range: NumberRange, bound: 'min' | 'max', value: number | undefined): NumberRange | undefined {
   const min = bound === 'min' ? value : range.min;
   const max = bound === 'max' ? value : range.max;
+  if (min === undefined && max === undefined) return undefined;
   return { ...(min === undefined ? {} : { min }), ...(max === undefined ? {} : { max }) };
 }
 
@@ -104,6 +111,10 @@ export interface NamedScale<N extends string> {
   readonly names: readonly N[];
   readonly offset: number;
 }
+
+export const QUALITY_SCALE = { names: QUALITIES, offset: 1 } as const;
+export const BASE_TIER_SCALE = { names: BASE_TIERS, offset: 0 } as const;
+export const DIFFICULTY_SCALE = { names: DIFFICULTIES, offset: 0 } as const;
 
 export function namedMatchMode<N extends string>(value: NamedMatch<N> | undefined): NamedMatchMode {
   if (value === undefined) return 'any';
@@ -176,10 +187,15 @@ export function namedListHas<N extends string>(list: readonly NamedValue<N>[], n
   return list.some((value) => namedValueName(value, scale) === name);
 }
 
-/** Sets or clears one bound of a named range (the other bound keeps its form, name or number). */
-export function setNamedRangeBound<N extends string>(range: NamedRange<N>, bound: 'min' | 'max', name: N | undefined): NamedRange<N> {
+/** Sets or clears one bound of a named range (the other bound keeps its form, name or number); both cleared → `undefined`. */
+export function setNamedRangeBound<N extends string>(
+  range: NamedRange<N>,
+  bound: 'min' | 'max',
+  name: N | undefined
+): NamedRange<N> | undefined {
   const min = bound === 'min' ? name : range.min;
   const max = bound === 'max' ? name : range.max;
+  if (min === undefined && max === undefined) return undefined;
   return { ...(min === undefined ? {} : { min }), ...(max === undefined ? {} : { max }) };
 }
 

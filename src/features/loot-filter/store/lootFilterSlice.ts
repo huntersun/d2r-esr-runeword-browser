@@ -114,13 +114,13 @@ function parseEntryText(text: string): Pick<LootFilterEditorState, 'filter' | 'p
 // Payloads
 // ---------------------------------------------------------------------------
 
-export interface CreateBlankPayload {
+interface CreateBlankPayload {
   readonly id: string;
   readonly name: string;
   readonly now: number;
 }
 
-export interface ImportTextPayload {
+interface ImportTextPayload {
   readonly id: string;
   readonly name: string;
   readonly text: string;
@@ -128,7 +128,7 @@ export interface ImportTextPayload {
   readonly now: number;
 }
 
-export interface DuplicatePayload {
+interface DuplicatePayload {
   readonly id: string;
   readonly newId: string;
   readonly now: number;
@@ -146,12 +146,9 @@ const lootFilterSlice = createSlice({
   reducers: {
     // ----- library -----
 
-    /** Loads the stored library (saga, at startup). Entries created before hydration are kept after the stored ones. */
+    /** Loads the stored library (saga, at startup), replacing whatever the library held. */
     hydrate(state, action: PayloadAction<readonly LootFilterEntry[]>): State {
-      const stored = action.payload;
-      const storedIds = new Set(stored.map((entry) => entry.id));
-      const entries = [...stored, ...state.library.entries.filter((entry) => !storedIds.has(entry.id))];
-      return { ...state, library: { hydrated: true, entries } };
+      return { ...state, library: { hydrated: true, entries: action.payload } };
     },
 
     createBlank: {
@@ -266,6 +263,29 @@ const lootFilterSlice = createSlice({
       });
     },
 
+    /**
+     * Changes a level's id and points `activeInLevels` and `defaultLevel` at the new one. No-op when `from` is not a
+     * level, `to` is not an integer or another level already has it.
+     */
+    renumberLevel(state, action: PayloadAction<{ readonly from: number; readonly to: number }>): State {
+      const { from, to } = action.payload;
+      return editFilter(state, (filter) => {
+        const levels = filter.filterLevels;
+        if (from === to || !Number.isInteger(to) || !levels?.some((level) => level.id === from)) return undefined;
+        if (levels.some((level) => level.id === to)) return undefined;
+        const renumber = (id: number): number => (id === from ? to : id);
+        const rules = filter.rules.map((rule) =>
+          rule.activeInLevels?.includes(from) ? { ...rule, activeInLevels: rule.activeInLevels.map(renumber) } : rule
+        );
+        return {
+          ...filter,
+          filterLevels: levels.map((level) => (level.id === from ? { ...level, id: to } : level)),
+          ...(filter.defaultLevel === undefined ? {} : { defaultLevel: renumber(filter.defaultLevel) }),
+          rules,
+        };
+      });
+    },
+
     // ----- editor: rules -----
 
     /** Inserts a rule (default: an empty one) at `at` (default: the end) and selects it. */
@@ -362,7 +382,7 @@ const lootFilterSlice = createSlice({
       const { from, to } = action.payload;
       return editFilter(state, (filter) => {
         const styles = filter.styles;
-        if (!styles || !(from in styles) || to === '' || to in styles) return undefined;
+        if (!styles || !Object.hasOwn(styles, from) || to === '' || Object.hasOwn(styles, to)) return undefined;
         const renamed = Object.fromEntries(Object.entries(styles).map(([name, style]) => [name === from ? to : name, style]));
         const rules = filter.rules.map((rule) => (rule.useStyle === from ? { ...rule, useStyle: to } : rule));
         return { ...filter, styles: renamed, rules };
@@ -373,7 +393,7 @@ const lootFilterSlice = createSlice({
     removeStyle(state, action: PayloadAction<string>): State {
       const name = action.payload;
       return editFilter(state, (filter) => {
-        if (!filter.styles || !(name in filter.styles)) return undefined;
+        if (!filter.styles || !Object.hasOwn(filter.styles, name)) return undefined;
         const styles = Object.fromEntries(Object.entries(filter.styles).filter(([key]) => key !== name));
         return applyPatch(filter, { styles: nonEmpty(styles) });
       });
@@ -392,7 +412,6 @@ const lootFilterSlice = createSlice({
   },
 });
 
-export const lootFilterActions = lootFilterSlice.actions;
 export const {
   hydrate,
   createBlank,
@@ -405,6 +424,7 @@ export const {
   close,
   setHeader,
   setFilterLevels,
+  renumberLevel,
   setNotifications,
   setQualityColors,
   addRule,

@@ -1,5 +1,7 @@
 import { useGameData, type GameDataStatus } from '@/features/game-data/hooks/useGameData';
 import type { LootFilterDataBundle, TypesBundle } from '@/features/game-data/engine/schema';
+import { buildLootFilterReference, EMPTY_LOOT_FILTER_REFERENCE } from '../engine/reference';
+import type { LootFilterReference } from '../engine/types';
 import {
   buildLookup,
   buildPickerOptions,
@@ -17,33 +19,38 @@ export interface LootFilterData {
   readonly lookup: LootFilterLookup;
   /** The pickers' option lists; empty until the bundles are in (the pickers then take typed codes and ids). */
   readonly options: LootFilterPickerOptions;
+  /** The validator's game-data lookups; the empty reference (no reference checks) until the bundles are in or on error. */
+  readonly reference: LootFilterReference;
 }
 
 const BUNDLES = ['lootfilter', 'types'] as const;
 
-// One lookup per loaded bundle pair: the bundles are cached for the page's lifetime, so the maps and option
-// lists are built once and every component shares them.
-let cached: {
-  readonly data: LootFilterDataBundle;
-  readonly types: TypesBundle;
-  readonly lookup: LootFilterLookup;
-  readonly options: LootFilterPickerOptions;
-} | null = null;
+const EMPTY = { data: null, types: null, lookup: EMPTY_LOOKUP, options: EMPTY_PICKER_OPTIONS, reference: EMPTY_LOOT_FILTER_REFERENCE };
+const LOADING: LootFilterData = { status: 'loading', ...EMPTY };
+const ERROR: LootFilterData = { status: 'error', ...EMPTY };
 
-function derived(data: LootFilterDataBundle, types: TypesBundle) {
+// One derived object per loaded bundle pair: the bundles are cached for the page's lifetime, so the maps, option
+// lists and the validator's reference are built once and every component shares them. A stable identity also
+// keeps the diagnostics selector (which memoizes on the reference) from recomputing.
+let cached: LootFilterData | null = null;
+
+function ready(data: LootFilterDataBundle, types: TypesBundle): LootFilterData {
   if (cached?.data !== data || cached.types !== types) {
-    cached = { data, types, lookup: buildLookup(data, types), options: buildPickerOptions(data, types) };
+    cached = {
+      status: 'ready',
+      data,
+      types,
+      lookup: buildLookup(data, types),
+      options: buildPickerOptions(data, types),
+      reference: buildLootFilterReference(data, types),
+    };
   }
   return cached;
 }
 
-/** Loads the `lootfilter` and `types` bundles for the rule editor's pickers, summaries and names. */
+/** Loads the `lootfilter` and `types` bundles for the rule editor's pickers, summaries, names and the validator. */
 export function useLootFilterData(): LootFilterData {
   const gameData = useGameData(BUNDLES);
-  if (gameData.status !== 'ready') {
-    return { status: gameData.status, data: null, types: null, lookup: EMPTY_LOOKUP, options: EMPTY_PICKER_OPTIONS };
-  }
-  const { lootfilter, types } = gameData.data;
-  const { lookup, options } = derived(lootfilter, types);
-  return { status: 'ready', data: lootfilter, types, lookup, options };
+  if (gameData.status === 'ready') return ready(gameData.data.lootfilter, gameData.data.types);
+  return gameData.status === 'loading' ? LOADING : ERROR;
 }

@@ -1,15 +1,15 @@
 import { ChevronRight } from 'lucide-react';
 import type { RuleActions } from '../../engine/types';
-import { ACTION_KEYS } from '../../engine/parse';
+import { EFFECT_KEYS } from '../../engine/parse';
 
 interface StyleSummaryProps {
   readonly name: string;
   readonly style: RuleActions;
 }
 
-/** A collapsed, read-only list of a style's actions (key and JSON value). */
+/** A collapsed, read-only list of a style's actions (key and JSON value); its comment is not an action. */
 export function StyleSummary({ name, style }: StyleSummaryProps) {
-  const entries = ACTION_KEYS.filter((key) => style[key] !== undefined).map((key) => [key, JSON.stringify(style[key])] as const);
+  const entries = EFFECT_KEYS.filter((key) => style[key] !== undefined).map((key) => [key, JSON.stringify(style[key])] as const);
   return (
     <details className="group rounded-md border px-3 py-2 text-sm">
       <summary className="flex cursor-pointer list-none items-center gap-1 font-medium [&::-webkit-details-marker]:hidden">
@@ -28,6 +28,7 @@ export function StyleSummary({ name, style }: StyleSummaryProps) {
           ))}
         </dl>
       )}
+      {style.comment !== undefined && <p className="mt-2 text-xs text-muted-foreground">Comment: {style.comment}</p>}
       <p className="mt-2 text-xs text-muted-foreground">Edit it in the Styles tab; the rule&apos;s own actions win.</p>
     </details>
   );

@@ -2,6 +2,12 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface ConfirmDeleteDialogProps {
+  /**
+   * Whether the dialog is open. Default: while `name` is set. Pass it separately (and keep `name` after closing)
+   * so the text does not change during the close animation.
+   */
+  readonly open?: boolean;
+  /** The name in the default text. */
   readonly name: string | null;
   readonly onCancel: () => void;
   readonly onConfirm: () => void;
@@ -11,13 +17,13 @@ interface ConfirmDeleteDialogProps {
   readonly description?: React.ReactNode;
 }
 
-/** Asks before deleting something (a library entry by default); open while `name` is set. */
-export function ConfirmDeleteDialog({ name, onCancel, onConfirm, title = 'Delete filter?', description }: ConfirmDeleteDialogProps) {
+/** Asks before deleting something (a library entry by default). */
+export function ConfirmDeleteDialog({ open, name, onCancel, onConfirm, title = 'Delete filter?', description }: ConfirmDeleteDialogProps) {
   return (
     <Dialog
-      open={name !== null}
-      onOpenChange={(open) => {
-        if (!open) onCancel();
+      open={open ?? name !== null}
+      onOpenChange={(next) => {
+        if (!next) onCancel();
       }}
     >
       <DialogContent className="sm:max-w-md">

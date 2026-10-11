@@ -1,9 +1,8 @@
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import type { LabelColor, MinimapIcon } from '../../engine/types';
 import { BUNDLED_ICONS } from '../../utils/bundledAssets';
 import { applyPatch } from '../../utils/patch';
+import { CheckField, Field } from '../Field';
 import { NumberInput } from '../NumberInput';
 import { ColorControl } from './ColorControl';
 import { SpritePreview } from './SpritePreview';
@@ -19,23 +18,22 @@ export function IconField({ idPrefix, icon, onChange }: IconFieldProps) {
   const enabledId = `${idPrefix}-icon`;
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-start gap-2">
-        <Checkbox
-          id={enabledId}
-          checked={icon !== undefined}
-          onCheckedChange={(checked) => {
-            onChange(checked === true ? { iconName: BUNDLED_ICONS[0] } : undefined);
-          }}
-        />
-        <div className="grid gap-1">
-          <Label htmlFor={enabledId}>Minimap icon</Label>
-          <p className="text-xs text-muted-foreground">Drawn on the minimap where the item lies. HD graphics only.</p>
-        </div>
-      </div>
+      <CheckField
+        id={enabledId}
+        label="Minimap icon"
+        hint="Drawn on the minimap where the item lies. HD graphics only."
+        checked={icon !== undefined}
+        onChange={(checked) => {
+          onChange(checked ? { iconName: BUNDLED_ICONS[0] } : undefined);
+        }}
+      />
       {icon && (
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={`${idPrefix}-icon-name`}>Icon file</Label>
+          <Field
+            id={`${idPrefix}-icon-name`}
+            label="Icon file"
+            hint={<>A .sprite in the filter&apos;s icons folder; .sprite may be left off.</>}
+          >
             <Input
               id={`${idPrefix}-icon-name`}
               className="font-mono"
@@ -51,10 +49,12 @@ export function IconField({ idPrefix, icon, onChange }: IconFieldProps) {
                 <option key={name} value={name} />
               ))}
             </datalist>
-            <p className="text-xs text-muted-foreground">A .sprite in the filter&apos;s icons folder; .sprite may be left off.</p>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={`${idPrefix}-icon-size`}>Size</Label>
+          </Field>
+          <Field
+            id={`${idPrefix}-icon-size`}
+            label="Size"
+            hint={<>4 to 256: the longer side in minimap pixels; blank = the file&apos;s own size.</>}
+          >
             <NumberInput
               id={`${idPrefix}-icon-size`}
               className="w-28"
@@ -67,10 +67,8 @@ export function IconField({ idPrefix, icon, onChange }: IconFieldProps) {
                 onChange(applyPatch(icon, { iconSize }));
               }}
             />
-            <p className="text-xs text-muted-foreground">4 to 256: the longer side in minimap pixels; blank = the file&apos;s own size.</p>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={`${idPrefix}-icon-color`}>Tint</Label>
+          </Field>
+          <Field id={`${idPrefix}-icon-color`} label="Tint" hint={<>Multiplies the icon&apos;s colours; alpha fades it.</>}>
             <ColorControl
               id={`${idPrefix}-icon-color`}
               label="icon tint"
@@ -81,11 +79,11 @@ export function IconField({ idPrefix, icon, onChange }: IconFieldProps) {
                 onChange(applyPatch(icon, { color }));
               }}
             />
-            <p className="text-xs text-muted-foreground">Multiplies the icon&apos;s colours; alpha fades it.</p>
-          </div>
+          </Field>
           <div className="flex flex-col gap-1.5">
             <span className="text-sm font-medium">Preview</span>
-            <SpritePreview idPrefix={idPrefix} iconName={icon.iconName} iconSize={icon.iconSize} color={icon.color} />
+            {/* Keyed by the name: a local file picked for one name is not shown for another. */}
+            <SpritePreview key={icon.iconName} idPrefix={idPrefix} iconName={icon.iconName} iconSize={icon.iconSize} color={icon.color} />
           </div>
         </div>
       )}

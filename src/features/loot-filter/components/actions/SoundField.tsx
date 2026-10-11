@@ -6,14 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { useGameData } from '@/features/game-data/hooks/useGameData';
 import { SOUND_FILE_EXTENSIONS } from '../../engine/validate';
+import { useLootFilterData } from '../../hooks/useLootFilterData';
 import { useSoundPreview } from '../../hooks/useSoundPreview';
-import { BUNDLED_SOUNDS, bundledSoundUrl, findBundledSound } from '../../utils/bundledAssets';
+import { BUNDLED_SOUNDS, bundledSoundUrl, findBundledSound, soundLabel } from '../../utils/bundledAssets';
+import { Field } from '../Field';
 import { NumberInput } from '../NumberInput';
 
 const MAX_RESULTS = 100;
-const BUNDLES = ['lootfilter'] as const;
 
 interface SoundFieldProps {
   readonly idPrefix: string;
@@ -36,18 +36,10 @@ function parseSound(text: string): string | number {
   return /^\d+$/.test(trimmed) ? Number(trimmed) : trimmed;
 }
 
-function describeSound(sound: string | number, soundNames: readonly string[]): string {
-  if (typeof sound === 'number') {
-    const name = sound >= 0 ? (soundNames.at(sound) ?? '') : '';
-    return name === '' ? `row ${String(sound)}` : `row ${String(sound)} (${name})`;
-  }
-  return sound;
-}
-
 /** `sound` combobox (bundled files + sounds.txt names, free text allowed), a play button and `soundVolume`. */
 export function SoundField({ idPrefix, sound, soundVolume, filterVolume, onSoundChange, onVolumeChange }: SoundFieldProps) {
-  const gameData = useGameData(BUNDLES);
-  const soundNames = gameData.status === 'ready' ? gameData.data.lootfilter.sounds : [];
+  const gameData = useLootFilterData();
+  const soundNames = gameData.data?.sounds ?? [];
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const preview = useSoundPreview();
@@ -95,8 +87,7 @@ export function SoundField({ idPrefix, sound, soundVolume, filterVolume, onSound
 
   return (
     <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
-      <div className="flex min-w-0 flex-col gap-1.5">
-        <Label htmlFor={`${idPrefix}-sound`}>Sound</Label>
+      <Field id={`${idPrefix}-sound`} label="Sound">
         <div className="flex gap-1">
           <Popover
             open={open}
@@ -115,7 +106,7 @@ export function SoundField({ idPrefix, sound, soundVolume, filterVolume, onSound
                 className="min-w-0 flex-1 justify-between font-normal"
               >
                 <span className={cn('truncate font-mono', sound === undefined && 'font-sans text-muted-foreground')}>
-                  {sound === undefined ? 'No sound' : describeSound(sound, soundNames)}
+                  {sound === undefined ? 'No sound' : soundLabel(sound, soundNames)}
                 </span>
                 <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
               </Button>
@@ -218,9 +209,12 @@ export function SoundField({ idPrefix, sound, soundVolume, filterVolume, onSound
             </Button>
           )}
         </div>
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor={`${idPrefix}-sound-volume`}>Volume</Label>
+      </Field>
+      <Field
+        id={`${idPrefix}-sound-volume`}
+        label="Volume"
+        hint={soundVolume === undefined ? `Filter default (${String(filterVolume ?? 100)})` : '0 to 100'}
+      >
         <NumberInput
           id={`${idPrefix}-sound-volume`}
           className="w-28"
@@ -230,10 +224,7 @@ export function SoundField({ idPrefix, sound, soundVolume, filterVolume, onSound
           placeholder={String(filterVolume ?? 100)}
           onCommit={onVolumeChange}
         />
-        <p className="text-xs text-muted-foreground">
-          {soundVolume === undefined ? `Filter default (${String(filterVolume ?? 100)})` : '0 to 100'}
-        </p>
-      </div>
+      </Field>
     </div>
   );
 }
