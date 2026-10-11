@@ -9,11 +9,12 @@ directives that regenerate with the game data), and the official docs stay canon
 
 ## Routes
 
-| Path              | Screen           | Notes                                                                                                                |
-| ----------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `/guide` (layout) | GuideLayout      | Every guide page shows a small amber "Experimental" notice at the top: the guide is still being written and reviewed |
-| `/guide`          | GuideSpineScreen | "Start here": the five-step journey spine, each step expands to its note cards; an "I found something" row below     |
-| `/guide/:slug`    | GuideNoteScreen  | One note (anatomy below); unknown slug shows a "note not found" block with a link back to `/guide`                   |
+| Path              | Screen           | Notes                                                                                                                                                                                       |
+| ----------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/guide` (layout) | GuideLayout      | Every guide page shows a small amber "Experimental" notice at the top: the guide is still being written and reviewed                                                                        |
+| `/guide`          | GuideSpineScreen | "Start here": the five-step journey spine, each step expands to its note cards; an "I found something" row below                                                                            |
+| `/guide/map`      | GuideMapScreen   | Every note on one page: a graph on `lg+` and a list grouped by spine step (see Full map under Note anatomy); linked from the spine screen header and the note screen's "Connections" column |
+| `/guide/:slug`    | GuideNoteScreen  | One note (anatomy below); unknown slug shows a "note not found" block with a link back to `/guide`                                                                                          |
 
 Guide routes render **before** the HTM data sync finishes (`AppLayout` skips the "Loading data..." gate for paths
 under `/guide`). The guide bundle is static JSON and needs no Dexie data.
@@ -45,6 +46,27 @@ then backlinks). Inline SVG with rem labels (truncated to 18 chars, full title i
 arrowhead, the next edge is dashed, the current note is filled with the primary colour, read notes are filled grey.
 Nodes are links (keyboard focusable, same hover/focus peek as note links). Below `lg` the graph is hidden; the chips and
 the next link carry every edge, so the graph is never the only way to reach a note.
+
+**Full map** (`/guide/map`, `screens/GuideMapScreen.tsx`): every note on one page. The graph (`lg+` only;
+`components/FullGraph.tsx`, layout in `engine/fullGraph.ts`) sits in a bordered panel with a fixed aspect ratio (height
+0.6 × width). `fullGraphEdges()` collects knowFirst (arrowhead), next (dashed; the notes' `next` plus the spine order)
+and related (plain, fainter) edges, one per pair of notes in either direction (knowFirst > next > related).
+`layoutFullGraph()` runs a d3-force simulation **synchronously to completion** (`simulation.stop()`, then 400
+`tick()`s): link attraction, many-body repulsion, a pull of spine notes towards their step's column (steps read left to
+right) and a box-collision force on each node plus its hanging label, so labels do not overlap; each tick clamps the
+boxes into the panel and a last pass stretches the layout to fill it. **Deterministic**: initial positions come from
+the spine (step column, spine index; off-spine notes start at the centroid of their linked notes, offset by the golden
+angle × index), the random source is a seeded LCG and the tick count is fixed, so a bundle and panel width always give
+the same picture (recomputed when the width or root font size changes, so rem labels render 1:1 like the local graph).
+Outlines are coloured by spine step (legend below), off-spine notes are neutral, read notes are filled grey, labels
+are truncated to 22 characters (full title in `<title>`), nodes are links with the note-link peek and take focus in
+list order. No pan/zoom. **d3-force** was chosen because it is small and tree-shakes (only `forceSimulation`,
+`forceLink`, `forceManyBody`, `forceX`, `forceY`: about 13 kB minified / 5 kB gzip with its quadtree, dispatch and timer
+dependencies, in the guide chunk), has no DOM coupling and can be ticked by hand. Fallback if the picture is not
+liked: fixed "spine columns" (one column per step, off-spine notes in an extra column), no dependency. The list
+(always; alone below `lg`): `groupNotesForMap()` (`utils/guideMap.ts`) gives one card per spine step (title, summary,
+notes in spine order) and a final "Other topics" card (alphabetical, glossary last); rows reuse the spine screen's note
+cards (title, ✓ when read, freshness marker, summary, tags).
 
 **Visited notes**: `useVisitedNotes()` keeps the slugs the viewer has opened in localStorage (`guide.visited`, string
 array, most recent last, capped at 200; pure helpers in `utils/visited.ts`). Opening a note marks it read; chips and
@@ -102,7 +124,8 @@ Markdown (GFM tables and lists) with these additions. Anything else that is not 
 | `[label](base:crs)`, `(type:swor)`                                                                                | App links to Game Data bases (by base code → `?search="<name>"`) / item types (`?type=code`). Validated against the bundles.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `[label](bestbase:Enigma)`, `(affixes:base=7cr&ilvl=85)`, `(page:/game-data/bases)`                               | App links to Best Base, Affixes, or any raw app path.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `[label](docs:gems.htm#anchor)`                                                                                   | Link to the official docs (`https://easternsunresurrected.com/<file>#<anchor>`). When the ESR clone is present the file and anchor are checked offline (warning when missing).                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `[label](https://…)`                                                                                              | External link.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `[label](dropfinder:Hellfire Torch)`                                                                              | External link to the official Drop Finder (`https://easternsunresurrected.com/drop-finder.html`), for prose that tells the player to find an item outside a `::source` block. The name must be an item in `public/game-data/sources.json` (any kind: unique, set or misc; matched like `unique:`), so a typo fails the build, but it is **not** carried in the URL: the Drop Finder's `#i=…` deep links are positional and change with every ESR release. External, so not listed under "In the app".                                                                                                                      |
+| `[label](https://…)`                                                                                              | External link (a plain `https://easternsunresurrected.com/drop-finder.html` link works too, unvalidated).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `:term[Stocker]`, `:term[Stocker]{label=stockers}`                                                                | Glossary hover; the term must exist in `_glossary.yml`. Renders the label (default: the term).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `::source[Annihilus]`, `::source[Worldstone Shard]{item=misc}`                                                    | **Where it comes from** block for an item (unique, set or misc name) from `public/game-data/sources.json`. Unknown name fails the build; a name shared by several item kinds fails with "ambiguous" until `{item=unique\|set\|misc}` picks one.                                                                                                                                                                                                                                                                                                                                                                            |
 | `::secret-recipes`, `::secret-recipe[50]`                                                                         | Secret recipe rows (`[SECRETnn]` rows of cubemain.txt), all or one.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
@@ -126,24 +149,28 @@ ESR clone and the committed game-data bundles; the browser only renders the resu
 
 `::recipes` family ids:
 
-| Id                      | Recipes                                                                                                                                                                                  |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `dstone-cycle`          | Dragon Stone → Holy Symbol → … → Void Shard → Dragon Stone, one material into the next.                                                                                                  |
-| `anvil-stone`           | Making an Anvil Stone (4 Dragon Stones + a Perfect Gem; the Multi Stocker variant).                                                                                                      |
-| `remove-forging`        | Removing a skill, all-skills, stat, rune or aura forging with Thawing Potions.                                                                                                           |
-| `skill-forging`         | Class skill forging (Anvil Stones + the class's chipped gem), one row per class.                                                                                                         |
-| `all-skill-forging`     | All skills forging (Maple Leaf + Anvil Stone + chipped gem), one row per item quality.                                                                                                   |
-| `aura-forging`          | Aura forging on amulets, one row per Aura Stone.                                                                                                                                         |
-| `stat-forging`          | Stat forging (Anvil Stone + chipped gem), one row per stat, plus the jewel variants.                                                                                                     |
-| `socket`                | Socket Donut recipes: N gems → N sockets on normal/superior bases, a fixed count for magic/rare/crafted/set/unique, the gem grade per base tier; quivers, the odd charm, making a donut. |
-| `coupon-tiers`          | Coupons and Wild Cards: redeeming (3 coupons, or 2 + Wild Cards per tier), tier coupons → Wild Card, Randomizing Stone rerolls, Decipherers.                                             |
-| `gem-upgrade`           | Gem upgrades (3 → 1 per grade, and the Wild Card shortcuts).                                                                                                                             |
-| `crystal-upgrade`       | Crystal upgrades (5 Chipped → Flawed, 5 Flawed → normal).                                                                                                                                |
-| `legendary-consumables` | Inarius' Halo, Astrogha's Heart, Lilith's Tear, Tyrael's Feather, Lucion's Relic.                                                                                                        |
-| `respec-token`          | Token of Absolution (4 Dragon Stones).                                                                                                                                                   |
-| `starter-pack`          | Adventurer's Pack: opening it, and making another one.                                                                                                                                   |
-| `map-upgrade`           | Endgame maps: 3× Tier N map → Tier N+1 map, and Randomizing Stone rerolls within a tier.                                                                                                 |
-| `charm-reroll`          | Charm rerolls and upgrades (magic/rare rerolls, 3 → 1 charm upgrades, odd charm reset).                                                                                                  |
+| Id                      | Recipes                                                                                                                                                                                                                                                                                                                             |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dstone-cycle`          | Dragon Stone → Holy Symbol → … → Void Shard → Dragon Stone, one material into the next.                                                                                                                                                                                                                                             |
+| `anvil-stone`           | Making an Anvil Stone (4 Dragon Stones + a Perfect Gem; the Multi Stocker variant).                                                                                                                                                                                                                                                 |
+| `remove-forging`        | Removing a skill, all-skills, stat, rune or aura forging with Thawing Potions.                                                                                                                                                                                                                                                      |
+| `skill-forging`         | Class skill forging (Anvil Stones + the class's chipped gem), one row per class.                                                                                                                                                                                                                                                    |
+| `all-skill-forging`     | All skills forging (Maple Leaf + Anvil Stone + chipped gem): one row, the item qualities and slots merged into "equipment of any quality".                                                                                                                                                                                          |
+| `aura-forging`          | Aura forging on amulets, one row per Aura Stone.                                                                                                                                                                                                                                                                                    |
+| `stat-forging`          | Stat forging (Anvil Stone + chipped gem): one row for equipment of any quality (the gem colours merged), plus the jewel variants.                                                                                                                                                                                                   |
+| `rune-forging`          | Rune forging (2 identical runes + chipped gem): one row per slot group (weapon/armor, ring/amulet, jewel with its scroll), the accepted runes as ranges read from the rows. The rows that only override some runes' bonus on wands, staves, gloves, torsos, shields and belts are left out.                                         |
+| `socket`                | Socket Donut recipes: N gems → N sockets on normal/superior bases, a fixed count for magic/rare/crafted/set/unique, the gem grade per base tier; quivers, the odd charm, making a donut.                                                                                                                                            |
+| `coupon-tiers`          | Coupons and Wild Cards: redeeming (3 coupons, or 2 + Wild Cards per tier), tier coupons → Wild Card, Randomizing Stone rerolls, Decipherers.                                                                                                                                                                                        |
+| `gem-upgrade`           | Gem upgrades (3 → 1 per grade, and the Wild Card shortcuts).                                                                                                                                                                                                                                                                        |
+| `crystal-upgrade`       | Crystal upgrades (5 Chipped → Flawed, 5 Flawed → normal).                                                                                                                                                                                                                                                                           |
+| `legendary-consumables` | Inarius' Halo, Astrogha's Heart, Lilith's Tear, Tyrael's Feather, Lucion's Relic.                                                                                                                                                                                                                                                   |
+| `respec-token`          | Token of Absolution (4 Dragon Stones).                                                                                                                                                                                                                                                                                              |
+| `starter-pack`          | Adventurer's Pack: opening it, and making another one.                                                                                                                                                                                                                                                                              |
+| `map-upgrade`           | Endgame maps: 3× Tier N map → Tier N+1 map, and Randomizing Stone rerolls within a tier.                                                                                                                                                                                                                                            |
+| `charm-reroll`          | Charm rerolls and upgrades (magic/rare rerolls, 3 → 1 charm upgrades, odd charm reset).                                                                                                                                                                                                                                             |
+| `rune-conversion`       | Rune upgrades (2 → 1, ES and LoD) and ES downgrades, Wo ↔ Null Rune, Decal upgrades, Decal ON/OFF (shown as "Ancient Decal (X -> Y) + X Rune → Y Rune" only after checking every Decal names the runes of its row) and the Kanji runes (Null Rune + crystals; the Crystal Can rows that share their descriptions are filtered out). |
+| `tinkering`             | Tinkering with organs: one row per organ, weapon and armor merged (the bonus is not shown).                                                                                                                                                                                                                                         |
+| `uber-keys`             | Pandemonium keys: key conversions (Blemished gem + Thawing or Stamina Potion), Key Set wrap/unwrap, the uber portal and the Tristram portal.                                                                                                                                                                                        |
 
 ### spine.yml
 
@@ -188,9 +215,9 @@ changes (use next to `npm run dev`; a small Vite plugin reloads the page when `p
 folder. Sub-commands `verify` and `report`: see [Staleness](#staleness).
 
 Build errors (exit 1): invalid frontmatter, unknown `[[slug]]`, `knowFirst`/`related`/`next`/`sources` ids, unknown
-`rw:`/`unique:`/`mythical:`/`socketable:`/`base:`/`type:` targets, unknown `:term`, unresolvable directive arguments, unsupported markdown nodes, a note
+`rw:`/`unique:`/`mythical:`/`socketable:`/`dropfinder:`/`base:`/`type:` targets, unknown `:term`, unresolvable directive arguments, unsupported markdown nodes, a note
 that is neither on the spine nor linked from anywhere, a note whose `knowFirst`/`related`/`next` names itself, links
-left as text, `page:` targets that are not app routes, an ambiguous `::source` name. Warnings (manifest `warnings`): body above 400 words, `mentions`
+left as text, `page:` targets that are not app routes, a slug reserved by a guide route (`RESERVED_SLUGS` in `build/parseNote.ts`: `map`), an ambiguous `::source` name. Warnings (manifest `warnings`): body above 400 words, `mentions`
 not found in game data, `docs:` file/anchor not found, ESR clone missing (directives cannot resolve → error), a
 verified note without a matching `.verify-lock.json` entry. An unreadable `.verify-lock.json` is an error.
 
@@ -201,8 +228,9 @@ src/features/guide/
   engine/schema.ts              bundle types (GUIDE_SCHEMA, GuideBundle, GuideNote, GuideBlock, DataBlock …)
   engine/freshness.ts           noteFreshness() (versions compared with core/utils/versionUtils)
   engine/notes.ts               findNote(), noteTitle(), findSourceRef()
-  engine/linkSchemes.ts         LINK_SCHEMES, NAME_FOCUS_PAGES (shared by the generator and the app-link icons)
+  engine/linkSchemes.ts         LINK_SCHEMES, NAME_FOCUS_PAGES, OFFICIAL_SITE, DROP_FINDER_URL (shared by the generator and the app)
   engine/localGraph.ts          layoutLocalGraph()
+  engine/fullGraph.ts           fullGraphEdges(), layoutFullGraph() (d3-force, run synchronously)
   engine/browser/loadGuide.ts   browser loader (promise cache, schema check)
   build/                        generator-only code (excluded from the app tsconfig, included in tsconfig.scripts)
   build/generateGuide.ts        content + game data + ESR tables → bundle (pure; fs reads in readGuideInputs.ts)
@@ -216,7 +244,7 @@ src/features/guide/
   build/verifyLock.ts           .verify-lock.json, the guide:verify frontmatter edit
   build/report.ts               guide:report
   hooks/                        useGuide, useLoadedGuide (context), useVisitedNotes, useHoverPopover
-  utils/                        pure screen helpers (app links, search, source cells, card lookup, visited list)
+  utils/                        pure screen helpers (app links, search, source cells, card lookup, visited list, map groups)
   screens/, components/
   index.ts                      lazy-route exports
 scripts/generate-guide.ts       thin CLI
@@ -292,7 +320,10 @@ Generated by the **game-data** pipeline (`src/features/game-data/build/bundleSou
 item, in this order: `cube` ("Cube: Ancient Coupon" / "Cube: <family>" / "Cube"), `boss` ("Drops from <monster>"),
 `maps` ("Drops in Endgame Maps"), `drop` ("Drops (random)"), `buy` ("Buy: <NPC>"), `gamble` ("Gamble"), `plugin`
 ("Boss drop (launcher plugin)"), `unknown`. The UI shows "Derived from the game files; may be incomplete." The guide
-consumes it through `::source[...]`; the item cards show a Source line from it too.
+consumes it through `::source[...]`; the item cards show a Source line from it too. Every source block also renders a
+"Look it up in the Drop Finder ↗" link to the plain official Drop Finder page (`DROP_FINDER_URL` in
+`engine/linkSchemes.ts`) next to that line; it is added by the renderer (`GuideDataBlock`), so the bundle and the block
+hashes do not change.
 
 ## Tests
 
@@ -304,8 +335,8 @@ Logic only (no component tests), colocated `*.test.ts`:
   (`cubeFamilies`, plus a check against the ESR clone when present), block hashes, patch-note scan and staleReasons
   (`staleness`), the lock file and the byte-preserving `verified:` edit (`verifyLock`), the report (`report`), the
   manifest (`writeGuide`), whole-guide generation on fixtures (`generateGuide`).
-- engine: freshness states, note lookups, local-graph layout, the browser loader (cache eviction, schema error).
-- utils: app links, search, source cells, card name matching, the visited list.
+- engine: link schemes (`linkSchemes`), freshness states, note lookups, local-graph layout, full-map edges and layout (dedupe, determinism, bounds, no label overlap on a guide-sized fixture), the browser loader (cache eviction, schema error).
+- utils: app links, search, source cells, card name matching, the visited list, the map's grouping into spine steps and other topics.
 - `guideIntegrity.test.ts`: manifest schema and sha256 of the committed files always; regenerating from `content/` in
   memory and comparing is skipped when the ESR clone or sources.json is missing.
 
