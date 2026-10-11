@@ -1,4 +1,3 @@
-import { Fragment } from 'react';
 import { cn } from '@/lib/utils';
 import { colorCodeRgb } from '../engine/colors';
 import { splitColorRuns } from '../engine/text';
@@ -44,13 +43,16 @@ export function LabelPreview({ text, background, border, defaultColor = '=', cla
         style={style}
       >
         {segments.length === 0 ? <span className="text-neutral-500">(empty label)</span> : null}
+        {/* Segments have no identity of their own and the list is rebuilt on every text change, so the index is the key. */}
         {segments.map((segment, index) =>
           segment.kind === 'break' ? (
+            // eslint-disable-next-line react-x/no-array-index-key -- see above
             <br key={index} />
           ) : (
-            <Fragment key={index}>
-              <span style={{ color: textColor(segment.color, defaultColor) }}>{segment.text}</span>
-            </Fragment>
+            // eslint-disable-next-line react-x/no-array-index-key -- see above
+            <span key={index} style={{ color: textColor(segment.color, defaultColor) }}>
+              {segment.text}
+            </span>
           )
         )}
       </span>
