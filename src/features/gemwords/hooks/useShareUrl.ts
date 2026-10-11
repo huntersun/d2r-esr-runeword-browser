@@ -8,7 +8,7 @@ import {
 } from '@/core/utils/filterUrlParams';
 import {
   selectSearchText,
-  selectSocketCount,
+  selectSocketRange,
   selectMaxReqLevel,
   selectSelectedItemTypes,
   selectSelectedGems,
@@ -21,7 +21,7 @@ import {
  */
 export function useShareUrl(): () => string {
   const searchText = useSelector(selectSearchText);
-  const socketCount = useSelector(selectSocketCount);
+  const socketRange = useSelector(selectSocketRange);
   const maxReqLevel = useSelector(selectMaxReqLevel);
   const selectedItemTypes = useSelector(selectSelectedItemTypes);
   const selectedGems = useSelector(selectSelectedGems);
@@ -29,7 +29,7 @@ export function useShareUrl(): () => string {
 
   return () => {
     const params = new URLSearchParams();
-    appendCommonFilterParams(params, { searchText, socketCount, maxReqLevel, selectedItemTypes });
+    appendCommonFilterParams(params, { searchText, socketRange, maxReqLevel, selectedItemTypes });
     appendSelectionParam(params, FILTER_URL_PARAM_KEYS.GEMS, selectedGems);
     appendExactNameParam(params, exactName);
     return buildShareUrl('gemwords', params);

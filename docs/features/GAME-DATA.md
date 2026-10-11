@@ -311,7 +311,8 @@ URL. The Copy Link button builds the URL from the current filters (`encodeBaseFi
 | `cls`     | classOnly      | `none` or a class code                           |
 | `sort`    | sort + sortDir | `dmg` ascending, `-dmg` descending               |
 
-Keys are per page (`constants/urlParams.ts`; `search`, `sockets` and `maxlvl` are the app-wide shared keys), so `cls`, `type`
+Keys are per page (`constants/urlParams.ts`; `search`, `sockets` and `maxlvl` are the app-wide shared keys; `sockets` is a plain
+minimum here, while the recipe screens accept a range), so `cls`, `type`
 and `sort` mean the same kind of filter on Bases and Affixes.
 
 ### Item Types page

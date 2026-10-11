@@ -1,4 +1,5 @@
 import { NO_CATEGORIES_MARKER } from '@/core/constants/categoryFilter';
+import { formatSocketRange, parseSocketRange, type SocketRange } from '@/core/utils/socketRange';
 
 /**
  * Shared helpers for encoding/decoding recipe filter state in share URLs.
@@ -16,12 +17,12 @@ export const FILTER_URL_PARAM_KEYS = {
   NAME: 'name',
 } as const;
 
-export const SOCKET_COUNT_RANGE = { min: 1, max: 6 } as const;
+export { SOCKET_COUNT_RANGE } from '@/core/utils/socketRange';
 export const MAX_REQ_LEVEL_RANGE = { min: 1, max: 999 } as const;
 
 export interface CommonFilterState {
   readonly searchText: string;
-  readonly socketCount: number | null;
+  readonly socketRange: SocketRange | null;
   readonly maxReqLevel: number | null;
   readonly selectedItemTypes: Record<string, boolean>;
 }
@@ -52,8 +53,8 @@ export function appendCommonFilterParams(params: URLSearchParams, filters: Commo
     params.set(FILTER_URL_PARAM_KEYS.SEARCH, filters.searchText);
   }
 
-  if (filters.socketCount !== null) {
-    params.set(FILTER_URL_PARAM_KEYS.SOCKETS, String(filters.socketCount));
+  if (filters.socketRange !== null) {
+    params.set(FILTER_URL_PARAM_KEYS.SOCKETS, formatSocketRange(filters.socketRange));
   }
 
   if (filters.maxReqLevel !== null) {
@@ -79,6 +80,11 @@ export function decodeSelectionParam<K extends string>(
     selection[key] = selectedSet ? selectedSet.has(key) : (storedSelection?.[key] ?? true);
   }
   return selection;
+}
+
+/** Parses the `sockets` param (`4`, `2-4`, `-4`, `4-`), returning null when missing or malformed. */
+export function parseSocketRangeParam(value: string | null): SocketRange | null {
+  return value === null ? null : parseSocketRange(value);
 }
 
 /** Parses an integer URL param, returning null when missing or out of range. */

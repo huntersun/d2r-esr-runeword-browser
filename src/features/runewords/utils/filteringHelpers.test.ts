@@ -87,44 +87,59 @@ function createKanjiRune(name: string): KanjiRune {
 }
 
 describe('matchesSockets', () => {
-  it('should return true when socketCount is null', () => {
+  it('should return true when the socket filter is null', () => {
     const runeword = createRuneword({ sockets: 3 });
     expect(matchesSockets(runeword, null)).toBe(true);
   });
 
-  it('should return true when socket count matches', () => {
+  it('should return true when the exact socket count matches', () => {
     const runeword = createRuneword({ sockets: 4 });
-    expect(matchesSockets(runeword, 4)).toBe(true);
+    expect(matchesSockets(runeword, { min: 4, max: 4 })).toBe(true);
   });
 
-  it('should return false when socket count does not match', () => {
+  it('should return false when the exact socket count does not match', () => {
     const runeword = createRuneword({ sockets: 3 });
-    expect(matchesSockets(runeword, 4)).toBe(false);
+    expect(matchesSockets(runeword, { min: 4, max: 4 })).toBe(false);
+  });
+
+  it('should match a socket count inside a filter range', () => {
+    const runeword = createRuneword({ sockets: 3 });
+    expect(matchesSockets(runeword, { min: 1, max: 4 })).toBe(true);
+    expect(matchesSockets(runeword, { min: 3, max: 6 })).toBe(true);
+    expect(matchesSockets(runeword, { min: 4, max: 6 })).toBe(false);
+    expect(matchesSockets(runeword, { min: 1, max: 2 })).toBe(false);
   });
 
   it('should match every socket count within a socket range', () => {
     const runeword = createRuneword({ sockets: 3, socketsMax: 6 });
     for (const count of [3, 4, 5, 6]) {
-      expect(matchesSockets(runeword, count)).toBe(true);
+      expect(matchesSockets(runeword, { min: count, max: count })).toBe(true);
     }
   });
 
   it('should not match socket counts outside a socket range', () => {
     const runeword = createRuneword({ sockets: 3, socketsMax: 5 });
-    expect(matchesSockets(runeword, 2)).toBe(false);
-    expect(matchesSockets(runeword, 6)).toBe(false);
+    expect(matchesSockets(runeword, { min: 2, max: 2 })).toBe(false);
+    expect(matchesSockets(runeword, { min: 6, max: 6 })).toBe(false);
   });
 
-  it('should match a range runeword when socketCount is null', () => {
+  it('should match a socket range runeword when the filter range overlaps it', () => {
+    const runeword = createRuneword({ sockets: 3, socketsMax: 6 });
+    expect(matchesSockets(runeword, { min: 1, max: 3 })).toBe(true);
+    expect(matchesSockets(runeword, { min: 6, max: 6 })).toBe(true);
+    expect(matchesSockets(runeword, { min: 1, max: 2 })).toBe(false);
+  });
+
+  it('should match a range runeword when the socket filter is null', () => {
     const runeword = createRuneword({ sockets: 2, socketsMax: 3 });
     expect(matchesSockets(runeword, null)).toBe(true);
   });
 
   it('should only match the exact count for a runeword without socketsMax', () => {
     const runeword = createRuneword({ sockets: 4 });
-    expect(matchesSockets(runeword, 3)).toBe(false);
-    expect(matchesSockets(runeword, 4)).toBe(true);
-    expect(matchesSockets(runeword, 5)).toBe(false);
+    expect(matchesSockets(runeword, { min: 3, max: 3 })).toBe(false);
+    expect(matchesSockets(runeword, { min: 4, max: 4 })).toBe(true);
+    expect(matchesSockets(runeword, { min: 5, max: 5 })).toBe(false);
   });
 });
 

@@ -5,7 +5,7 @@ import type { Gemword } from '@/core/db/models';
 import { parseSearchTerms } from '@/core/utils/searchTerms';
 import {
   selectSearchText,
-  selectSocketCount,
+  selectSocketRange,
   selectMaxReqLevel,
   selectSelectedItemTypes,
   selectSelectedGems,
@@ -22,7 +22,7 @@ import {
 
 export function useFilteredGemwords(): readonly Gemword[] | undefined {
   const searchText = useSelector(selectSearchText);
-  const socketCount = useSelector(selectSocketCount);
+  const socketRange = useSelector(selectSocketRange);
   const maxReqLevel = useSelector(selectMaxReqLevel);
   const selectedItemTypes = useSelector(selectSelectedItemTypes);
   const selectedGems = useSelector(selectSelectedGems);
@@ -37,7 +37,7 @@ export function useFilteredGemwords(): readonly Gemword[] | undefined {
   return applyExactNameFocus(gemwords, exactName, (list) =>
     list.filter((gemword) => {
       if (!matchesGemwordSearch(gemword, searchTerms)) return false;
-      if (!matchesGemwordSockets(gemword, socketCount)) return false;
+      if (!matchesGemwordSockets(gemword, socketRange)) return false;
       if (!matchesGemwordMaxReqLevel(gemword, maxReqLevel)) return false;
       if (!matchesGemwordItemTypes(gemword, selectedItemTypes)) return false;
       if (!matchesGemSelection(gemword, selectedGems)) return false;

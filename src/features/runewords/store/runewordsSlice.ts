@@ -1,11 +1,12 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { createSelector } from 'reselect';
+import type { SocketRange } from '@/core/utils/socketRange';
 import { createItemTypeFilterSelectors, itemTypeFilterInitialState, itemTypeFilterReducers } from '@/core/store/itemTypeFilter';
 import type { RootState } from '@/core/store/store';
 
 interface RunewordsState {
   readonly searchText: string;
-  readonly socketCount: number | null;
+  readonly socketRange: SocketRange | null;
   readonly maxReqLevel: number | null;
   readonly selectedItemTypes: Record<string, boolean>;
   readonly exactName: string | null;
@@ -61,7 +62,7 @@ const runewordsSlice = createSlice({
 export const {
   setSearchText,
   setExactName,
-  setSocketCount,
+  setSocketRange,
   setMaxReqLevel,
   toggleItemType,
   setAllItemTypes,
@@ -82,7 +83,7 @@ export default runewordsSlice.reducer;
 // Selectors
 const selectRunewordsState = (state: RootState) => state.runewords;
 
-export const { selectSearchText, selectSocketCount, selectMaxReqLevel, selectSelectedItemTypes, selectExactName } =
+export const { selectSearchText, selectSocketRange, selectMaxReqLevel, selectSelectedItemTypes, selectExactName } =
   createItemTypeFilterSelectors(selectRunewordsState);
 
 export const selectSelectedRunes = createSelector([selectRunewordsState], (runewords) => runewords.selectedRunes);

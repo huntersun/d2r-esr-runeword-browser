@@ -1,4 +1,5 @@
 import type { Gemword } from '@/core/db/models';
+import { socketRangeOverlaps, type SocketRange } from '@/core/utils/socketRange';
 import type { GemQuality } from '@/core/db';
 import type { GemGroup } from '../types';
 
@@ -31,9 +32,8 @@ export function matchesGemwordSearch(gemword: Gemword, searchTerms: readonly str
   return searchTerms.every((term) => searchableText.includes(term));
 }
 
-export function matchesGemwordSockets(gemword: Gemword, socketCount: number | null): boolean {
-  if (socketCount === null) return true;
-  return gemword.sockets === socketCount;
+export function matchesGemwordSockets(gemword: Gemword, socketRange: SocketRange | null): boolean {
+  return socketRangeOverlaps(socketRange, gemword.sockets);
 }
 
 export function matchesGemwordMaxReqLevel(gemword: Gemword, maxReqLevel: number | null): boolean {

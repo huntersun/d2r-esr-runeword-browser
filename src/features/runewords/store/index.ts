@@ -1,7 +1,7 @@
 export {
   default as runewordsReducer,
   setSearchText,
-  setSocketCount,
+  setSocketRange,
   toggleItemType,
   setAllItemTypes,
   selectAllItemTypes,
@@ -12,7 +12,7 @@ export {
   deselectAllRunes,
   toggleRuneGroup,
   selectSearchText,
-  selectSocketCount,
+  selectSocketRange,
   selectSelectedItemTypes,
   selectSelectedRunes,
 } from './runewordsSlice';

@@ -5,21 +5,22 @@ import { readPersistentJson } from '@/core/hooks/usePersistentState';
 import {
   FILTER_URL_PARAM_KEYS,
   MAX_REQ_LEVEL_RANGE,
-  SOCKET_COUNT_RANGE,
   decodeSelectionParam,
   parseBoundedIntParam,
+  parseSocketRangeParam,
 } from '@/core/utils/filterUrlParams';
 import { parseExactNameParam } from '@/core/utils/exactName';
+import { SOCKET_COUNT_RANGE, type SocketRange } from '@/core/utils/socketRange';
 import { useExactNameFromUrl, type ExactNameFromUrl } from '@/core/hooks/useExactNameFromUrl';
 import { useAvailableItemTypes } from './useAvailableItemTypes';
 import { useGemGroups } from './useGemGroups';
-import { setSearchText, setExactName, setSocketCount, setMaxReqLevel, setAllItemTypes, setAllGems } from '../store/gemwordsSlice';
+import { setSearchText, setExactName, setSocketRange, setMaxReqLevel, setAllItemTypes, setAllGems } from '../store/gemwordsSlice';
 
 export const GEMWORD_FILTER_STORAGE_KEY = 'd2r-esr.gemwords.filters.v1';
 
 interface PersistedGemwordFilters {
   readonly searchText: string;
-  readonly socketCount: number | null;
+  readonly socketRange: SocketRange | null;
   readonly maxReqLevel: number | null;
   readonly selectedItemTypes: Record<string, boolean>;
   readonly selectedGems: Record<string, boolean>;
@@ -27,7 +28,7 @@ interface PersistedGemwordFilters {
 
 const DEFAULT_PERSISTED_FILTERS: PersistedGemwordFilters = {
   searchText: '',
-  socketCount: null,
+  socketRange: null,
   maxReqLevel: null,
   selectedItemTypes: {},
   selectedGems: {},
@@ -37,26 +38,44 @@ function isBooleanRecord(value: unknown): value is Record<string, boolean> {
   return typeof value === 'object' && value !== null && Object.values(value).every((entry) => typeof entry === 'boolean');
 }
 
+function isSocketRange(value: unknown): value is SocketRange {
+  if (typeof value !== 'object' || value === null) return false;
+  const candidate = value as Partial<SocketRange>;
+  return (
+    typeof candidate.min === 'number' &&
+    typeof candidate.max === 'number' &&
+    candidate.min >= SOCKET_COUNT_RANGE.min &&
+    candidate.max <= SOCKET_COUNT_RANGE.max &&
+    candidate.min <= candidate.max
+  );
+}
+
 function isPersistedGemwordFilters(value: unknown): value is PersistedGemwordFilters {
   if (typeof value !== 'object' || value === null) return false;
   const candidate = value as Partial<PersistedGemwordFilters>;
 
   return (
     typeof candidate.searchText === 'string' &&
-    (candidate.socketCount === null || typeof candidate.socketCount === 'number') &&
+    (candidate.socketRange === null || isSocketRange(candidate.socketRange)) &&
     (candidate.maxReqLevel === null || typeof candidate.maxReqLevel === 'number') &&
     isBooleanRecord(candidate.selectedItemTypes) &&
     isBooleanRecord(candidate.selectedGems)
   );
 }
 
+/** Filters saved before the socket range filter had `socketCount: number | null` instead of `socketRange`. */
+function upgradeLegacyStoredFilters(value: unknown): unknown {
+  if (typeof value !== 'object' || value === null || !('socketCount' in value)) return value;
+  const { socketCount, ...rest } = value;
+  const socketRange = typeof socketCount === 'number' ? { min: socketCount, max: socketCount } : null;
+  return { ...rest, socketRange };
+}
+
 function readStoredGemwordFilters(): PersistedGemwordFilters {
-  return readPersistentJson(
-    typeof window === 'undefined' ? null : window.localStorage,
-    GEMWORD_FILTER_STORAGE_KEY,
-    DEFAULT_PERSISTED_FILTERS,
-    isPersistedGemwordFilters
+  const stored = upgradeLegacyStoredFilters(
+    readPersistentJson<unknown>(typeof window === 'undefined' ? null : window.localStorage, GEMWORD_FILTER_STORAGE_KEY, null)
   );
+  return isPersistedGemwordFilters(stored) ? stored : DEFAULT_PERSISTED_FILTERS;
 }
 
 /**
@@ -99,9 +118,9 @@ export function useUrlInitialize(): ExactNameFromUrl {
         dispatch(setSearchText(urlSearch));
       }
 
-      const socketCount = parseBoundedIntParam(urlSockets, SOCKET_COUNT_RANGE);
-      if (socketCount !== null) {
-        dispatch(setSocketCount(socketCount));
+      const socketRange = parseSocketRangeParam(urlSockets);
+      if (socketRange !== null) {
+        dispatch(setSocketRange(socketRange));
       }
 
       const maxReqLevel = parseBoundedIntParam(urlMaxLvl, MAX_REQ_LEVEL_RANGE);
@@ -117,7 +136,7 @@ export function useUrlInitialize(): ExactNameFromUrl {
       const storedFilters = readStoredGemwordFilters();
 
       dispatch(setSearchText(storedFilters.searchText));
-      dispatch(setSocketCount(storedFilters.socketCount));
+      dispatch(setSocketRange(storedFilters.socketRange));
       dispatch(setMaxReqLevel(storedFilters.maxReqLevel));
       dispatch(setAllItemTypes(decodeSelectionParam(itemTypes, null, storedFilters.selectedItemTypes)));
       dispatch(setAllGems(decodeSelectionParam(allGemNames, null, storedFilters.selectedGems)));

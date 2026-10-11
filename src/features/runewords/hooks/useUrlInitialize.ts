@@ -4,9 +4,9 @@ import { useDispatch } from 'react-redux';
 import {
   FILTER_URL_PARAM_KEYS,
   MAX_REQ_LEVEL_RANGE,
-  SOCKET_COUNT_RANGE,
   decodeSelectionParam,
   parseBoundedIntParam,
+  parseSocketRangeParam,
 } from '@/core/utils/filterUrlParams';
 import { parseExactNameParam } from '@/core/utils/exactName';
 import { useExactNameFromUrl, type ExactNameFromUrl } from '@/core/hooks/useExactNameFromUrl';
@@ -15,7 +15,7 @@ import { useAvailableItemTypes } from './useAvailableItemTypes';
 import {
   setSearchText,
   setExactName,
-  setSocketCount,
+  setSocketRange,
   setMaxReqLevel,
   setAllRunes,
   setAllItemTypes,
@@ -80,9 +80,9 @@ export function useUrlInitialize(): ExactNameFromUrl {
         dispatch(setSearchText(urlSearch));
       }
 
-      const socketCount = parseBoundedIntParam(urlSockets, SOCKET_COUNT_RANGE);
-      if (socketCount !== null) {
-        dispatch(setSocketCount(socketCount));
+      const socketRange = parseSocketRangeParam(urlSockets);
+      if (socketRange !== null) {
+        dispatch(setSocketRange(socketRange));
       }
 
       const maxReqLevel = parseBoundedIntParam(urlMaxLvl, MAX_REQ_LEVEL_RANGE);

@@ -35,7 +35,7 @@ class RunewordService {
 // Good - readonly arrays and objects in types
 interface RunewordFilters {
   readonly selectedRunes: readonly string[];
-  readonly socketCount: number | null;
+  readonly socketRange: SocketRange | null;
 }
 
 // Good - function parameters (when possible)

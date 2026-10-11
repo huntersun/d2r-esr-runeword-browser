@@ -13,7 +13,7 @@ import { GEM_QUALITIES } from '@/features/data-sync/constants/constants';
 import type { GemQuality } from '@/core/db';
 import {
   setSearchText,
-  setSocketCount,
+  setSocketRange,
   setMaxReqLevel,
   toggleItemType,
   toggleItemTypeGroup,
@@ -21,7 +21,7 @@ import {
   deselectAllItemTypes,
   setAllGems,
   selectSearchText,
-  selectSocketCount,
+  selectSocketRange,
   selectMaxReqLevel,
   selectAllGems,
   deselectAllGems,
@@ -29,10 +29,10 @@ import {
   selectSelectedItemTypes,
 } from '../store/gemwordsSlice';
 
-const FILTER_SELECTORS = { selectSearchText, selectSocketCount, selectMaxReqLevel, selectSelectedItemTypes };
+const FILTER_SELECTORS = { selectSearchText, selectSocketRange, selectMaxReqLevel, selectSelectedItemTypes };
 const FILTER_ACTIONS = {
   setSearchText,
-  setSocketCount,
+  setSocketRange,
   setMaxReqLevel,
   toggleItemType,
   toggleItemTypeGroup,
@@ -43,7 +43,7 @@ const FILTER_ACTIONS = {
 export function GemwordFilters() {
   const dispatch = useDispatch();
   const searchText = useSelector(selectSearchText);
-  const socketCount = useSelector(selectSocketCount);
+  const socketRange = useSelector(selectSocketRange);
   const maxReqLevel = useSelector(selectMaxReqLevel);
   const selectedGems = useSelector(selectSelectedGems);
   const selectedItemTypes = useSelector(selectSelectedItemTypes);
@@ -66,12 +66,12 @@ export function GemwordFilters() {
 
     writePersistentJson(typeof window === 'undefined' ? null : window.localStorage, GEMWORD_FILTER_STORAGE_KEY, {
       searchText,
-      socketCount,
+      socketRange,
       maxReqLevel,
       selectedItemTypes,
       selectedGems,
     });
-  }, [maxReqLevel, searchText, selectedGems, selectedItemTypes, socketCount]);
+  }, [maxReqLevel, searchText, selectedGems, selectedItemTypes, socketRange]);
 
   const allGemsSelected = Object.keys(selectedGems).length > 0 && Object.values(selectedGems).every(Boolean);
   const noGemsSelected = Object.keys(selectedGems).length > 0 && Object.values(selectedGems).every((value) => !value);

@@ -79,8 +79,10 @@ describe('gemword filtering helpers', () => {
     const gemword = createGemword({ sockets: 3, reqLevel: 21 });
 
     expect(matchesGemwordSockets(gemword, null)).toBe(true);
-    expect(matchesGemwordSockets(gemword, 3)).toBe(true);
-    expect(matchesGemwordSockets(gemword, 2)).toBe(false);
+    expect(matchesGemwordSockets(gemword, { min: 3, max: 3 })).toBe(true);
+    expect(matchesGemwordSockets(gemword, { min: 2, max: 2 })).toBe(false);
+    expect(matchesGemwordSockets(gemword, { min: 1, max: 4 })).toBe(true);
+    expect(matchesGemwordSockets(gemword, { min: 4, max: 6 })).toBe(false);
     expect(matchesGemwordMaxReqLevel(gemword, null)).toBe(true);
     expect(matchesGemwordMaxReqLevel(gemword, 21)).toBe(true);
     expect(matchesGemwordMaxReqLevel(gemword, 20)).toBe(false);

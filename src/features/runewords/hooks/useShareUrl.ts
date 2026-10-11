@@ -8,7 +8,7 @@ import {
 } from '@/core/utils/filterUrlParams';
 import {
   selectSearchText,
-  selectSocketCount,
+  selectSocketRange,
   selectMaxReqLevel,
   selectSelectedItemTypes,
   selectSelectedRunes,
@@ -22,7 +22,7 @@ import {
  */
 export function useShareUrl(): () => string {
   const searchText = useSelector(selectSearchText);
-  const socketCount = useSelector(selectSocketCount);
+  const socketRange = useSelector(selectSocketRange);
   const maxReqLevel = useSelector(selectMaxReqLevel);
   const selectedItemTypes = useSelector(selectSelectedItemTypes);
   const selectedRunes = useSelector(selectSelectedRunes);
@@ -31,7 +31,7 @@ export function useShareUrl(): () => string {
 
   return () => {
     const params = new URLSearchParams();
-    appendCommonFilterParams(params, { searchText, socketCount, maxReqLevel, selectedItemTypes });
+    appendCommonFilterParams(params, { searchText, socketRange, maxReqLevel, selectedItemTypes });
     appendSelectionParam(params, FILTER_URL_PARAM_KEYS.RUNES, selectedRunes);
     appendExactNameParam(params, exactName);
 

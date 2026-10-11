@@ -1,11 +1,12 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { createSelector } from 'reselect';
+import type { SocketRange } from '@/core/utils/socketRange';
 import { createItemTypeFilterSelectors, itemTypeFilterInitialState, itemTypeFilterReducers } from '@/core/store/itemTypeFilter';
 import type { RootState } from '@/core/store/store';
 
 interface GemwordsState {
   readonly searchText: string;
-  readonly socketCount: number | null;
+  readonly socketRange: SocketRange | null;
   readonly maxReqLevel: number | null;
   readonly selectedItemTypes: Record<string, boolean>;
   readonly exactName: string | null;
@@ -51,7 +52,7 @@ const gemwordsSlice = createSlice({
 export const {
   setSearchText,
   setExactName,
-  setSocketCount,
+  setSocketRange,
   setMaxReqLevel,
   toggleItemType,
   setAllItemTypes,
@@ -69,7 +70,7 @@ export default gemwordsSlice.reducer;
 
 const selectGemwordsState = (state: RootState) => state.gemwords;
 
-export const { selectSearchText, selectSocketCount, selectMaxReqLevel, selectSelectedItemTypes, selectExactName } =
+export const { selectSearchText, selectSocketRange, selectMaxReqLevel, selectSelectedItemTypes, selectExactName } =
   createItemTypeFilterSelectors(selectGemwordsState);
 
 export const selectSelectedGems = createSelector([selectGemwordsState], (gemwords) => gemwords.selectedGems);

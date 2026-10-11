@@ -1,6 +1,7 @@
 import type { Runeword, EsrRune, LodRune, KanjiRune, Gem, SocketableBonuses } from '@/core/db/models';
 import { getRelevantCategories, getItemCategory } from '@/core/utils/itemCategoryMapping';
 import { hasColumnDifferences } from '@/core/utils/columnAffixes';
+import { socketRangeOverlaps, type SocketRange } from '@/core/utils/socketRange';
 
 export type RuneBonusMap = Map<string, SocketableBonuses>;
 export type GemBonusMap = Map<string, SocketableBonuses>;
@@ -86,14 +87,13 @@ export function matchesSearch(
 }
 
 /**
- * Check if a runeword matches the socket count filter.
+ * Check if a runeword matches the socket filter.
  * Recipes accepting optional jewels have a socket range (e.g. "3-6 Socket"); they match
- * any count within [sockets, socketsMax]. Others match only their exact `sockets` count.
+ * when any count within [sockets, socketsMax] falls inside the filter range. Others match
+ * only when their exact `sockets` count does.
  */
-export function matchesSockets(runeword: Runeword, socketCount: number | null): boolean {
-  if (socketCount === null) return true;
-  const max = runeword.socketsMax ?? runeword.sockets;
-  return socketCount >= runeword.sockets && socketCount <= max;
+export function matchesSockets(runeword: Runeword, socketRange: SocketRange | null): boolean {
+  return socketRangeOverlaps(socketRange, runeword.sockets, runeword.socketsMax);
 }
 
 /**

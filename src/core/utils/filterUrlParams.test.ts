@@ -11,6 +11,7 @@ import {
   decodeCategoryListParam,
   decodeSelectionParam,
   parseBoundedIntParam,
+  parseSocketRangeParam,
 } from './filterUrlParams';
 
 describe('appendSelectionParam', () => {
@@ -42,7 +43,7 @@ describe('appendCommonFilterParams', () => {
     const params = new URLSearchParams();
     appendCommonFilterParams(params, {
       searchText: 'fire resist',
-      socketCount: 3,
+      socketRange: { min: 3, max: 3 },
       maxReqLevel: null,
       selectedItemTypes: { Helm: true, Belt: false },
     });
@@ -79,6 +80,29 @@ describe('decodeSelectionParam', () => {
     appendSelectionParam(params, FILTER_URL_PARAM_KEYS.ITEMS, selection);
 
     expect(decodeSelectionParam(allKeys, params.get(FILTER_URL_PARAM_KEYS.ITEMS))).toEqual(selection);
+  });
+});
+
+describe('appendCommonFilterParams socket ranges', () => {
+  it('serializes a range as min-max', () => {
+    const params = new URLSearchParams();
+    appendCommonFilterParams(params, { searchText: '', socketRange: { min: 2, max: 4 }, maxReqLevel: null, selectedItemTypes: {} });
+
+    expect(params.toString()).toBe('sockets=2-4');
+  });
+});
+
+describe('parseSocketRangeParam', () => {
+  it('reads exact counts (old share links) and ranges', () => {
+    expect(parseSocketRangeParam('3')).toEqual({ min: 3, max: 3 });
+    expect(parseSocketRangeParam('2-4')).toEqual({ min: 2, max: 4 });
+    expect(parseSocketRangeParam('-4')).toEqual({ min: 1, max: 4 });
+  });
+
+  it('rejects missing and malformed values', () => {
+    expect(parseSocketRangeParam(null)).toBeNull();
+    expect(parseSocketRangeParam('abc')).toBeNull();
+    expect(parseSocketRangeParam('7')).toBeNull();
   });
 });
 

@@ -5,7 +5,7 @@ The primary feature - browse and filter all Eastern Sun Resurrected runewords.
 ## Purpose
 
 - View all runewords with complete data
-- Filter by runes, text search, sockets, item types, required level, and tier points
+- Filter by runes, text search, sockets (exact count or range), item types, required level, and tier points
 - See runeword bonuses (per-column: weapon/helm/armor) AND rune contributions
 - Share filtered views via URL
 
@@ -18,13 +18,15 @@ The primary feature - browse and filter all Eastern Sun Resurrected runewords.
 - Supports quoted phrases: `"exact phrase"`
 - Example: `resist life` matches runewords with both "resist" AND "life"
 
-### Socket Count
+### Sockets
 
-- Single-digit number input (1-6)
-- Default: empty (shows all runewords)
-- If set: only runewords that can be made with that socket count
-- Runewords without a range match their exact `sockets` count; recipes with optional jewels
-  (shown as "3-6 Socket") match any count in `[sockets, socketsMax]`
+- Text input taking an exact count or a range of socket counts (1-6): `4`, `2-4`, `-4` (up to 4),
+  `4-` (4 or more); a help popover lists the forms (`src/core/utils/socketRange.ts`)
+- Default: empty (shows all runewords); malformed text keeps the previous filter and is marked invalid
+- If set: only runewords that can be made with a socket count inside the range
+- Runewords without a range match when their exact `sockets` count is inside it; recipes with optional jewels
+  (shown as "3-6 Socket") match when `[sockets, socketsMax]` overlaps it
+- Share URL: `?sockets=4` or `?sockets=2-4` (old exact-count links keep working)
 
 ### Max Required Level
 
@@ -94,8 +96,8 @@ interface Runeword {
   Since ESR 3.2 the source also lists each socket count of such a recipe as its own row with plain
   "Jewel" lines; those rows get e.g. "(2) Jewels" and `sockets` = runes + gems + jewels.
 - **socketsMax**: Set only for the optional-jewel recipes, which the source shows as a range,
-  e.g. Moonlight `(3-6 Socket)`. `sockets` stays the base count; the socket filter matches any
-  count in `[sockets, socketsMax]` and the card shows "3-6 Socket".
+  e.g. Moonlight `(3-6 Socket)`. `sockets` stays the base count; the socket filter matches when
+  its range overlaps `[sockets, socketsMax]` and the card shows "3-6 Socket".
 
 ## RunewordCard Display
 
@@ -112,7 +114,7 @@ interface Runeword {
 ```typescript
 interface RunewordsState {
   readonly searchText: string;
-  readonly socketCount: number | null;
+  readonly socketRange: SocketRange | null; // { min, max }, exact counts have min === max
   readonly maxReqLevel: number | null;
   readonly selectedItemTypes: Record<string, boolean>;
   readonly selectedRunes: Record<string, boolean>; // "category:runeName" → checked
@@ -120,7 +122,7 @@ interface RunewordsState {
 }
 ```
 
-**Actions:** `setSearchText`, `setSocketCount`, `setMaxReqLevel`, `toggleItemType`, `setAllItemTypes`, `selectAllItemTypes`, `deselectAllItemTypes`, `toggleRune`, `setAllRunes`, `selectAllRunes`, `deselectAllRunes`, `toggleRuneGroup`, `toggleItemTypeGroup`, `setMaxTierPoints`, `clearAllTierPoints`
+**Actions:** `setSearchText`, `setSocketRange`, `setMaxReqLevel`, `toggleItemType`, `setAllItemTypes`, `selectAllItemTypes`, `deselectAllItemTypes`, `toggleRune`, `setAllRunes`, `selectAllRunes`, `deselectAllRunes`, `toggleRuneGroup`, `toggleItemTypeGroup`, `setMaxTierPoints`, `clearAllTierPoints`
 
 ## Hooks
 

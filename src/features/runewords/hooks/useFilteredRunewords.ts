@@ -5,7 +5,7 @@ import type { Runeword } from '@/core/db/models';
 import type { SocketableLookup } from '@/core/utils/socketableLookup';
 import {
   selectSearchText,
-  selectSocketCount,
+  selectSocketRange,
   selectMaxReqLevel,
   selectSelectedItemTypes,
   selectSelectedRunes,
@@ -30,7 +30,7 @@ import {
 /** `lookup` is the screen-level rune/gem lookup (see useSocketableLookupQuery), reused for search and rune filters. */
 export function useFilteredRunewords(lookup: SocketableLookup | undefined): readonly Runeword[] | undefined {
   const searchText = useSelector(selectSearchText);
-  const socketCount = useSelector(selectSocketCount);
+  const socketRange = useSelector(selectSocketRange);
   const maxReqLevel = useSelector(selectMaxReqLevel);
   const selectedItemTypes = useSelector(selectSelectedItemTypes);
   const selectedRunes = useSelector(selectSelectedRunes);
@@ -55,7 +55,7 @@ export function useFilteredRunewords(lookup: SocketableLookup | undefined): read
   return applyExactNameFocus(expandedRunewords, exactName, (list) =>
     list.filter((runeword) => {
       if (!matchesSearch(runeword, searchTerms, runeBonusMap, gemBonusMap)) return false;
-      if (!matchesSockets(runeword, socketCount)) return false;
+      if (!matchesSockets(runeword, socketRange)) return false;
       if (!matchesMaxReqLevel(runeword, maxReqLevel)) return false;
       if (!matchesItemTypes(runeword, selectedItemTypes)) return false;
       if (!matchesRunes(runeword, selectedRunes, runeCategoryMap)) return false;

@@ -7,14 +7,14 @@ import { useShareUrl } from '../hooks/useShareUrl';
 import { useAvailableItemTypes } from '../hooks/useAvailableItemTypes';
 import {
   setSearchText,
-  setSocketCount,
+  setSocketRange,
   setMaxReqLevel,
   toggleItemType,
   toggleItemTypeGroup,
   selectAllItemTypes,
   deselectAllItemTypes,
   selectSearchText,
-  selectSocketCount,
+  selectSocketRange,
   selectMaxReqLevel,
   selectSelectedItemTypes,
   selectAllRunes,
@@ -22,10 +22,10 @@ import {
   selectSelectedRunes,
 } from '../store/runewordsSlice';
 
-const FILTER_SELECTORS = { selectSearchText, selectSocketCount, selectMaxReqLevel, selectSelectedItemTypes };
+const FILTER_SELECTORS = { selectSearchText, selectSocketRange, selectMaxReqLevel, selectSelectedItemTypes };
 const FILTER_ACTIONS = {
   setSearchText,
-  setSocketCount,
+  setSocketRange,
   setMaxReqLevel,
   toggleItemType,
   toggleItemTypeGroup,
