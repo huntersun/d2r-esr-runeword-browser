@@ -21,6 +21,11 @@ describe('parseTsv', () => {
     expect(table.rows.map((row) => row.str('code'))).toEqual(['axe', 'club']);
   });
 
+  it('keeps Expansion marker rows on request (row-numbered tables)', () => {
+    const table = parseTsv(text, 'table', { keepExpansionRows: true });
+    expect(table.rows.map((row) => row.str('code'))).toEqual(['axe', '', 'club']);
+  });
+
   it('accepts CRLF line endings', () => {
     const table = parseTsv(text.replace(/\n/g, '\r\n'));
     expect(table.rows).toHaveLength(2);

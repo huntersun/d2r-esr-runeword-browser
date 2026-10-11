@@ -34,6 +34,9 @@ const TABLES = [
   'treasureclassex',
   'superuniques',
   'gamble',
+  // lootfilter.json
+  'levels',
+  'sounds',
 ] as const;
 export type EsrTableName = (typeof TABLES)[number];
 

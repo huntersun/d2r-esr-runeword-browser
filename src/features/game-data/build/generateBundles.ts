@@ -1,6 +1,7 @@
-import type { AffixesBundle, BasesBundle, SourcesBundle, TxtRunewordsBundle, TypesBundle } from '../engine/schema.ts';
+import type { AffixesBundle, BasesBundle, LootFilterDataBundle, SourcesBundle, TxtRunewordsBundle, TypesBundle } from '../engine/schema.ts';
 import { buildAffixesBundle } from './bundleAffixes.ts';
 import { buildBasesBundle } from './bundleBases.ts';
+import { buildLootFilterBundle } from './bundleLootFilter.ts';
 import { buildRunewordsBundle } from './bundleRunewords.ts';
 import { buildSourcesBundle } from './bundleSources.ts';
 import { buildTypesBundle } from './bundleTypes.ts';
@@ -16,6 +17,7 @@ export interface GeneratedBundles {
   runewords: TxtRunewordsBundle;
   affixes: AffixesBundle;
   sources: SourcesBundle;
+  lootfilter: LootFilterDataBundle;
   counts: Record<string, number>;
   /** Build warnings stored in the manifest */
   warnings: string[];
@@ -65,6 +67,22 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
   );
   const countSources = (item: string) => sourceItems.bundle.items.filter((source) => source.item === item).length;
 
+  // Row-numbered tables keep their Expansion marker rows so ids match the game's row numbers
+  const rowTable = (name: keyof EsrSources['tables']) => parseTsv(sources.tables[name], `${name}.txt`, { keepExpansionRows: true });
+  const lootfilter = buildLootFilterBundle(
+    {
+      weapons: table('weapons'),
+      armor: table('armor'),
+      misc: table('misc'),
+      itemstatcost: rowTable('itemstatcost'),
+      levels: table('levels'),
+      sounds: rowTable('sounds'),
+      uniqueitems: rowTable('uniqueitems'),
+      setitems: rowTable('setitems'),
+    },
+    strings
+  );
+
   const countKind = (kind: string) => bases.bundle.bases.filter((base) => base.kind === kind).length;
   return {
     types: types.bundle,
@@ -72,6 +90,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
     runewords: runewords.bundle,
     affixes: affixes.bundle,
     sources: sourceItems.bundle,
+    lootfilter: lootfilter.bundle,
     counts: {
       types: types.bundle.types.length,
       classes: types.bundle.classes.length,
@@ -95,8 +114,21 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       sourcesMisc: countSources('misc'),
       sourcesMerged: sourceItems.merged,
       sourcesUnknown: sourceItems.bundle.items.filter((source) => source.labels.some((entry) => entry.kind === 'unknown')).length,
+      lootFilterItems: lootfilter.bundle.items.length,
+      lootFilterStats: lootfilter.bundle.stats.length,
+      lootFilterAreas: lootfilter.bundle.areas.length,
+      lootFilterSounds: lootfilter.bundle.sounds.length,
+      lootFilterUniques: lootfilter.bundle.uniques.length,
+      lootFilterSets: lootfilter.bundle.sets.length,
     },
-    warnings: [...types.warnings, ...bases.warnings, ...runewords.warnings, ...affixes.warnings, ...sourceItems.warnings],
+    warnings: [
+      ...types.warnings,
+      ...bases.warnings,
+      ...runewords.warnings,
+      ...affixes.warnings,
+      ...sourceItems.warnings,
+      ...lootfilter.warnings,
+    ],
     stringWarnings: [...stringWarnings],
   };
 }

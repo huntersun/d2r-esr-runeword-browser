@@ -3,7 +3,8 @@
  *
  * - LF and CRLF line endings
  * - columns whose header starts with `*` are comments and are dropped
- * - `Expansion` marker rows (first cell `Expansion`, rest empty) are dropped
+ * - `Expansion` marker rows (first cell `Expansion`, rest empty) are dropped, unless `keepExpansionRows` is set
+ *   (the game loads them as rows, so tables addressed by row number need them to keep the numbering)
  * - a blank numeric cell means 0
  */
 
@@ -58,7 +59,12 @@ function isExpansionMarker(cells: readonly string[]): boolean {
   return cells[0]?.trim() === 'Expansion' && cells.slice(1).every((cell) => cell.trim() === '');
 }
 
-export function parseTsv(text: string, fileName = 'table'): TsvTable {
+export interface ParseTsvOptions {
+  /** Keep `Expansion` marker rows (all their cells read as blank but the first) so row indices match the game's */
+  keepExpansionRows?: boolean;
+}
+
+export function parseTsv(text: string, fileName = 'table', options: ParseTsvOptions = {}): TsvTable {
   const lines = text.split(/\r?\n/);
   const headerLine = lines[0] ?? '';
   if (headerLine.trim() === '') throw new Error(`${fileName}: missing header row`);
@@ -78,7 +84,7 @@ export function parseTsv(text: string, fileName = 'table'): TsvTable {
     const line = lines[lineNo] ?? '';
     if (line.trim() === '') continue;
     const cells = line.split('\t');
-    if (isExpansionMarker(cells)) continue;
+    if (options.keepExpansionRows !== true && isExpansionMarker(cells)) continue;
     rows.push(new TsvRow(cells, index, `${fileName}:${String(lineNo + 1)}`));
   }
 

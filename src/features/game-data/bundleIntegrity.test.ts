@@ -11,6 +11,7 @@ import {
   type BaseItem,
   type BasesBundle,
   type GameDataManifest,
+  type LootFilterDataBundle,
   type SourcesBundle,
   type TxtRunewordsBundle,
   type TypesBundle,
@@ -29,11 +30,13 @@ const basesText = readText('bases');
 const runewordsText = readText('runewords');
 const affixesText = readText('affixes');
 const sourcesText = readText('sources');
+const lootfilterText = readText('lootfilter');
 const { types } = JSON.parse(typesText) as TypesBundle;
 const { bases } = JSON.parse(basesText) as BasesBundle;
 const { runewords } = JSON.parse(runewordsText) as TxtRunewordsBundle;
 const { affixes } = JSON.parse(affixesText) as AffixesBundle;
 const { items: sourceItems } = JSON.parse(sourcesText) as SourcesBundle;
+const lootfilter = JSON.parse(lootfilterText) as LootFilterDataBundle;
 
 describe('committed game-data bundles', () => {
   it('match the app schema', () => {
@@ -47,6 +50,7 @@ describe('committed game-data bundles', () => {
       ['runewords', runewordsText],
       ['affixes', affixesText],
       ['sources', sourcesText],
+      ['lootfilter', lootfilterText],
     ] as const) {
       expect(manifest.files[name]?.hash).toBe(createHash('sha256').update(text, 'utf8').digest('hex'));
       expect(manifest.files[name]?.bytes).toBe(Buffer.byteLength(text, 'utf8'));
@@ -137,6 +141,38 @@ describe('committed game-data bundles', () => {
     expect(manifest.counts.sourcesUnknown).toBeLessThan(50);
   });
 
+  it('contain the loot-filter reference data with known item types and base codes', () => {
+    expect(manifest.counts.lootFilterItems).toBe(lootfilter.items.length);
+    expect(manifest.counts.lootFilterStats).toBe(lootfilter.stats.length);
+    expect(manifest.counts.lootFilterAreas).toBe(lootfilter.areas.length);
+    expect(manifest.counts.lootFilterSounds).toBe(lootfilter.sounds.length);
+    expect(manifest.counts.lootFilterUniques).toBe(lootfilter.uniques.length);
+    expect(manifest.counts.lootFilterSets).toBe(lootfilter.sets.length);
+    expect(lootfilter.stats.length).toBeGreaterThan(0);
+    expect(lootfilter.areas.length).toBeGreaterThan(0);
+    expect(lootfilter.sounds.length).toBeGreaterThan(0);
+    expect(lootfilter.uniques.length).toBeGreaterThan(1000);
+    expect(lootfilter.sets.length).toBeGreaterThan(0);
+
+    const itemCodes = new Set(lootfilter.items.map((item) => item.code));
+    expect(itemCodes.size).toBe(lootfilter.items.length);
+    // Every player-facing base is a loot-filter item; non-spawnable shadow bases are too
+    for (const base of bases) expect(itemCodes, base.code).toContain(base.code);
+    expect(lootfilter.items.some((item) => !item.spawnable)).toBe(true);
+
+    const typeCodes = new Set(types.map((type) => type.code));
+    for (const item of lootfilter.items) expect(typeCodes, `${item.code} → ${item.type}`).toContain(item.type);
+    for (const entry of [...lootfilter.uniques, ...lootfilter.sets])
+      expect(itemCodes, `${entry.name} → ${entry.code}`).toContain(entry.code);
+
+    // Ids are row numbers: increasing and unique per table
+    for (const list of [lootfilter.stats, lootfilter.uniques, lootfilter.sets]) {
+      expect(list.every((entry, i) => i === 0 || entry.id > (list[i - 1]?.id ?? -1))).toBe(true);
+    }
+    expect(lootfilter.stats.every((stat, i) => stat.id === i)).toBe(true);
+    expect(new Set(lootfilter.areas.map((area) => area.id)).size).toBe(lootfilter.areas.length);
+  });
+
   it('resolve the merc/helm name collision and class-only bases', () => {
     expect(types.find((type) => type.code === 'merc')?.name).toBe('Helm (merc)');
     expect(types.find((type) => type.code === 'helm')?.name).toBe('Helm');
@@ -180,6 +216,23 @@ describe.skipIf(!existsSync(ESR_DIR))('game data generated from the ESR clone', 
     expect(serializeBundle(generated.runewords)).toBe(runewordsText);
     expect(serializeBundle(generated.affixes)).toBe(affixesText);
     expect(serializeBundle(generated.sources)).toBe(sourcesText);
+    expect(serializeBundle(generated.lootfilter)).toBe(lootfilterText);
+  });
+
+  it('numbers uniques, sets, stats and sounds like the *ID / *Index comment columns where those are consistent', () => {
+    const commentIds = (file: string, column: string) => {
+      const [header = '', ...lines] = readFileSync(resolve(ESR_DIR, 'Eastern_Sun_Resurrected.mpq/data/global/excel', file), 'utf-8')
+        .split(/\r?\n/)
+        .filter((line) => line.trim() !== '');
+      const i = header.split('\t').indexOf(column);
+      return lines.map((line) => line.split('\t')[i]?.trim() ?? '');
+    };
+    const byId = (entries: { id: number }[], ids: string[]) => entries.every((entry) => ids[entry.id] === String(entry.id));
+    expect(byId(generated.lootfilter.uniques, commentIds('uniqueitems.txt', '*ID'))).toBe(true);
+    expect(byId(generated.lootfilter.sets, commentIds('setitems.txt', '*ID'))).toBe(true);
+    expect(byId(generated.lootfilter.stats, commentIds('itemstatcost.txt', '*ID'))).toBe(true);
+    // sounds.txt *Index is hand-maintained and repeats 11949 for the Leoric taunt rows (ESR 3.2.12); the game uses the row
+    expect(commentIds('sounds.txt', '*Index')).toHaveLength(generated.lootfilter.sounds.length);
   });
 
   it('labels the verified source examples', () => {

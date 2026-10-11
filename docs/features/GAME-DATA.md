@@ -23,26 +23,28 @@ A Node script converts a local clone of `CelestialRayOne/Eastern_Sun_Resurrected
 `public/game-data/`. The browser never parses txt files and never stores this data in IndexedDB; it fetches the JSON
 lazily (`src/features/game-data/engine/browser/loadGameData.ts`).
 
-| File             | Contents                                                                                                                         |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `manifest.json`  | schema, ESR version / tag / commit, `generatedAt`, sha256 + size per file, counts, warnings                                      |
-| `types.json`     | item types (Equiv parents, ancestors, socket caps per ilvl band, class, UI/runeword categories) + 8 classes with skill-tab names |
-| `bases.json`     | spawnable weapons (369) and armors (255) plus 29 equippable accessories (rings, amulets, charms, jewels)                         |
-| `runewords.json` | runes.txt runeword recipes: 391 `Runeword*` keys with 449 rows and rendered stats (see "Runewords")                              |
-| `affixes.json`   | 2528 spawnable magic prefixes, suffixes and automods with rendered text (see "Affixes")                                          |
-| `sources.json`   | "where does it come from" labels for uniques, set items and crafting-relevant misc items (see "Sources")                         |
+| File              | Contents                                                                                                                           |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `manifest.json`   | schema, ESR version / tag / commit, `generatedAt`, sha256 + size per file, counts, warnings                                        |
+| `types.json`      | item types (Equiv parents, ancestors, socket caps per ilvl band, class, UI/runeword categories) + 8 classes with skill-tab names   |
+| `bases.json`      | spawnable weapons (369) and armors (255) plus 29 equippable accessories (rings, amulets, charms, jewels)                           |
+| `runewords.json`  | runes.txt runeword recipes: 391 `Runeword*` keys with 449 rows and rendered stats (see "Runewords")                                |
+| `affixes.json`    | 2528 spawnable magic prefixes, suffixes and automods with rendered text (see "Affixes")                                            |
+| `sources.json`    | "where does it come from" labels for uniques, set items and crafting-relevant misc items (see "Sources")                           |
+| `lootfilter.json` | loot-filter editor reference data: every item code, stats, areas, sounds, uniques and sets with their ids (see "Loot filter data") |
 
 Arrays are written one element per line so diffs stay readable. Bundle URLs carry the manifest hash (`?v=<sha256>`);
 the manifest itself is always revalidated. The shape is defined in `src/features/game-data/engine/schema.ts`
 (`GAME_DATA_SCHEMA`); bump it whenever a bundle shape changes incompatibly.
 
-| Bundle           | ESR 3.2.12 size (raw / gzip) |
-| ---------------- | ---------------------------- |
-| `types.json`     | 44 KB / 5 KB                 |
-| `bases.json`     | 292 KB / 26 KB               |
-| `runewords.json` | 197 KB / 28 KB               |
-| `affixes.json`   | 795 KB / 61 KB               |
-| `sources.json`   | 298 KB / 29 KB               |
+| Bundle            | ESR 3.2.12 size (raw / gzip) |
+| ----------------- | ---------------------------- |
+| `types.json`      | 44 KB / 5 KB                 |
+| `bases.json`      | 292 KB / 26 KB               |
+| `runewords.json`  | 197 KB / 28 KB               |
+| `affixes.json`    | 795 KB / 61 KB               |
+| `sources.json`    | 298 KB / 29 KB               |
+| `lootfilter.json` | 686 KB / 98 KB               |
 
 ### Bases and types
 
@@ -130,6 +132,31 @@ Limitations (the help popover says "Derived from the ESR game files (ESR x.y.z);
 - Only one launcher plugin config is parsed; other plugins (cow set drops, drop caps, shrines) and DLL hard-codes are
   invisible. Items given by `useitem` cube rows (Starter's Pack → Character Augmenter) and drop-only duplicates (the
   `cx1-3` charms) show as `Unknown`.
+
+### Loot filter data
+
+`lootfilter.json` (`LootFilterDataBundle`, built by `build/bundleLootFilter.ts`) feeds the loot-filter editor's pickers
+and validator (`src/features/loot-filter/engine/reference.ts` turns it plus `types.json` into a
+`LootFilterReference`). It uses the ids the D2RLoader loot-filter plugin reads:
+
+- `items`: every `weapons.txt`, `armor.txt` and `misc.txt` row with a `code`, spawnable or not (uniques sit on
+  non-spawnable "shadow" bases and the plugin sees those codes on the ground); first row per code wins. Name =
+  `namestr` through the string table, else the `name` column; `type` = the `type` column (an `itemtypes.txt` code).
+- `stats`: every `itemstatcost.txt` row, `id` = 0-based row number (equal to the `*ID` comment column in ESR 3.2.12),
+  `name` = `Stat`.
+- `areas`: every `levels.txt` row with an `Id` (the `Expansion` marker has none); name = `LevelName` through the string
+  table, else the raw `LevelName`, else `Name`; `act` is the 0-based `Act` column.
+- `sounds`: `Sound` of every `sounds.txt` row by 0-based row number, so `sounds[row]` is the name the plugin's numeric
+  `sound` refers to (row 0 is the blank "none" row). The `*Index` comment column is not used: it is hand-maintained and
+  repeats 11949 for four Leoric taunt rows in ESR 3.2.12, so from row 11950 on it lags the row number by 1–3.
+- `uniques` / `sets`: `uniqueitems.txt` / `setitems.txt` rows with a base code, `id` = 0-based data-row number as the
+  game loads the table. Every data row counts, including `Expansion` marker rows (parsed with
+  `parseTsv(…, { keepExpansionRows: true })`), which are numbered but not listed. ESR 3.2.12 has no marker rows in
+  either table and `*ID` equals the row number. Name = `index` through the string table; `code` = `code` / `item`.
+
+Counts: `counts.lootFilterItems`, `lootFilterStats`, `lootFilterAreas`, `lootFilterSounds`, `lootFilterUniques`,
+`lootFilterSets` (ESR 3.2.12: 2292 / 923 / 215 / 12103 / 1390 / 270). Adding the file did not bump
+`GAME_DATA_SCHEMA`: older clients ignore files they do not load.
 
 ## Regenerating
 

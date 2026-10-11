@@ -11,6 +11,7 @@ import {
   type BasesBundle,
   type GameDataFile,
   type GameDataManifest,
+  type LootFilterDataBundle,
   type SourcesBundle,
   type TxtRunewordsBundle,
   type TypesBundle,
@@ -22,6 +23,7 @@ export interface GameDataBundles {
   runewords: TxtRunewordsBundle;
   affixes: AffixesBundle;
   sources: SourcesBundle;
+  lootfilter: LootFilterDataBundle;
 }
 
 export class GameDataSchemaError extends Error {

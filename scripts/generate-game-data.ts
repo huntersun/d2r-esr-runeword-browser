@@ -63,6 +63,7 @@ function main(): void {
     runewords: serializeBundle(generated.runewords),
     affixes: serializeBundle(generated.affixes),
     sources: serializeBundle(generated.sources),
+    lootfilter: serializeBundle(generated.lootfilter),
   };
   const manifest = buildManifest({
     esrVersion: sources.esrVersion,

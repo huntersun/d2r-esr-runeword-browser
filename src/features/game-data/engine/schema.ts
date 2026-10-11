@@ -5,7 +5,7 @@
 export const GAME_DATA_SCHEMA = 1;
 
 export type ClassCode = 'ama' | 'sor' | 'nec' | 'pal' | 'bar' | 'dru' | 'ass' | 'war';
-export type GameDataFile = 'types' | 'bases' | 'runewords' | 'affixes' | 'sources';
+export type GameDataFile = 'types' | 'bases' | 'runewords' | 'affixes' | 'sources' | 'lootfilter';
 
 export interface GameDataManifest {
   schema: number;
@@ -173,4 +173,41 @@ export interface ItemSource {
 
 export interface SourcesBundle {
   items: ItemSource[];
+}
+
+// ---------------------------------------------------------------------------
+// lootfilter.json: reference data for the loot-filter editor (pickers + validator)
+// ---------------------------------------------------------------------------
+
+export interface LootFilterItem {
+  code: string;
+  /** Display name (namestr through the string table, else the `name` column) */
+  name: string;
+  kind: 'weapon' | 'armor' | 'misc';
+  /** itemtypes.txt code of the `type` column */
+  type: string;
+  /** `spawnable` = 1; non-spawnable rows are kept (uniques sit on non-spawnable "shadow" bases) */
+  spawnable: boolean;
+}
+
+/** A unique (uniqueitems.txt) or set item (setitems.txt) */
+export interface LootFilterUniqueOrSet {
+  /** 0-based data-row number as the game loads the table (what the plugin's uniqueOrSetIds match) */
+  id: number;
+  name: string;
+  /** Base item code */
+  code: string;
+}
+
+export interface LootFilterDataBundle {
+  /** Every weapons/armor/misc row with a code, first row per code */
+  items: LootFilterItem[];
+  /** Every itemstatcost.txt row: id = row number (= `*ID`), name = `Stat` */
+  stats: { id: number; name: string }[];
+  /** Every levels.txt row with an `Id`; act is the 0-based `Act` column */
+  areas: { id: number; name: string; act: number }[];
+  /** sounds.txt `Sound` by row number (`sounds[row]`; row 0 is the blank "none" row) */
+  sounds: string[];
+  uniques: LootFilterUniqueOrSet[];
+  sets: LootFilterUniqueOrSet[];
 }
