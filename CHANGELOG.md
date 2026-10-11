@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.20.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.19.0...v1.20.0) (2026-10-11)
+
+
+### Features
+
+* **guide:** add thirteen recipe families so more notes show recipes from data ([59f0dbe](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/59f0dbeb2a90d73c666ed3273400095140cebbaa))
+* **guide:** show the bonus a cube recipe gives in the recipe blocks ([601592b](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/601592bdf2ab9ef53c07e481a3b88d713942fd3f))
+
+
+### Documentation
+
+* **esr-update:** cover the launcher sources, Drop Finder and generic recipe blocks ([e45975c](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/e45975c05a1a4776d5d47235c40fe72af582bdf4))
+
 ## [1.19.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.18.0...v1.19.0) (2026-10-11)
 
 
