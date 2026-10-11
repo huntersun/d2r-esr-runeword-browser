@@ -1,20 +1,160 @@
+import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { FlaskConical, Info, Play, RotateCcw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { evaluateFilter, type EvaluationResult } from '../engine/evaluate';
 import type { LootFilter } from '../engine/types';
-import { PlaceholderTab } from './PlaceholderTab';
+import { useEditorTab } from '../hooks/useEditorTab';
+import { useLootFilterData } from '../hooks/useLootFilterData';
+import { selectRule } from '../store/lootFilterSlice';
+import { applyPreset, defaultTestItem, statIdMap, TEST_PRESETS, toTestContext, toTestItem, type TestItemForm } from '../utils/testItemForm';
+import { AssumptionsNote } from './test/AssumptionsNote';
+import { RuleTrace } from './test/RuleTrace';
+import { TestContextFields } from './test/TestContextFields';
+import { TestItemFields } from './test/TestItemFields';
+import { TestResult } from './test/TestResult';
+
+/** Above this many rules the test runs on a button press instead of on every change. */
+const LIVE_RULE_LIMIT = 1500;
 
 interface TestTabProps {
   readonly filter: LootFilter;
 }
 
-/** Placeholder until the test-item tab lands (it will run engine/evaluate.ts against a described item). */
+interface ManualRun {
+  readonly form: TestItemForm;
+  readonly filter: LootFilter;
+  readonly result: EvaluationResult;
+}
+
+/** "Test an item": describe an item and where it drops, and see what the filter does with it, rule by rule. */
 export function TestTab({ filter }: TestTabProps) {
+  const dispatch = useDispatch();
+  const [, setTab] = useEditorTab();
+  const data = useLootFilterData();
+  const { lookup } = data;
+  const [form, setForm] = useState(defaultTestItem);
+  const [manualRun, setManualRun] = useState<ManualRun | null>(null);
+
+  const evaluate = (): EvaluationResult =>
+    evaluateFilter(filter, toTestItem(form, lookup), toTestContext(form, filter, statIdMap(data.data?.stats)));
+
+  const live = filter.rules.length <= LIVE_RULE_LIMIT;
+  const hasItem = form.code.trim() !== '';
+  const result = live ? (hasItem ? evaluate() : null) : (manualRun?.result ?? null);
+  const stale = !live && manualRun !== null && (manualRun.form !== form || manualRun.filter !== filter);
+  // The label colour follows the quality of the item that was evaluated.
+  const resultQuality = live ? form.quality : (manualRun?.form.quality ?? form.quality);
+
+  const showRule = (index: number) => {
+    dispatch(selectRule(index));
+    setTab('rules');
+    window.scrollTo({ top: 0 });
+  };
+
   return (
-    <PlaceholderTab
-      title="Test an item"
-      description="Describe an item and see which rules match it, the label it gets and what is printed."
-      facts={[
-        { label: 'Rules to check', value: String(filter.rules.length) },
-        { label: 'Filter levels', value: String(filter.filterLevels?.length ?? 0) },
-      ]}
-    />
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="mr-1 text-sm text-muted-foreground">Presets:</span>
+        {TEST_PRESETS.map((preset) => (
+          <Button
+            key={preset.id}
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-7 px-2 text-xs"
+            onClick={() => {
+              setForm(applyPreset(form, preset, lookup));
+            }}
+          >
+            {preset.label}
+          </Button>
+        ))}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 text-xs"
+          onClick={() => {
+            setForm(defaultTestItem());
+          }}
+        >
+          <RotateCcw className="size-3.5" aria-hidden />
+          Reset
+        </Button>
+      </div>
+
+      {data.status !== 'ready' && (
+        <p className="flex items-start gap-2 rounded-md border border-dashed p-2 text-xs text-muted-foreground">
+          <Info className="mt-px size-3.5 shrink-0" aria-hidden />
+          {data.status === 'loading'
+            ? 'Loading the game data. Typed item codes work; item-type conditions can only be evaluated once it has loaded (until then the item has only the type you type).'
+            : 'The game data could not be loaded. Typed item codes work, but item-type conditions only see the type you type.'}
+        </p>
+      )}
+
+      <div className="grid items-start gap-4 lg:grid-cols-2">
+        <div className="flex min-w-0 flex-col gap-4">
+          <Card className="gap-3 py-4">
+            <CardHeader className="px-4">
+              <CardTitle>Item</CardTitle>
+            </CardHeader>
+            <CardContent className="px-4">
+              <TestItemFields data={data} form={form} onChange={setForm} />
+            </CardContent>
+          </Card>
+          <Card className="gap-3 py-4">
+            <CardHeader className="px-4">
+              <CardTitle>Context</CardTitle>
+              <CardDescription>Where and when it drops.</CardDescription>
+            </CardHeader>
+            <CardContent className="px-4">
+              <TestContextFields data={data} filter={filter} form={form} onChange={setForm} />
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="min-w-0 gap-3 py-4 lg:sticky lg:top-4">
+          <CardHeader className="px-4">
+            <CardTitle>Result</CardTitle>
+            {!live && (
+              <CardDescription>
+                This filter has {filter.rules.length} rules, so the test runs when you press Run.
+                {stale && ' The item or the filter changed since the last run.'}
+              </CardDescription>
+            )}
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4 px-4">
+            {!live && (
+              <Button
+                type="button"
+                size="sm"
+                className="w-fit"
+                disabled={!hasItem}
+                onClick={() => {
+                  setManualRun({ form, filter, result: evaluate() });
+                }}
+              >
+                <Play />
+                Run
+              </Button>
+            )}
+            {result === null ? (
+              <p className="flex items-center gap-2 rounded-md border border-dashed p-4 text-sm text-muted-foreground">
+                <FlaskConical className="size-4 shrink-0" aria-hidden />
+                {hasItem ? 'Press Run to test the item.' : 'Pick an item or a preset to see what the filter does with it.'}
+              </p>
+            ) : (
+              <>
+                <TestResult data={data} result={result} quality={resultQuality} onShowRule={showRule} />
+                <RuleTrace filter={live ? filter : (manualRun?.filter ?? filter)} result={result} lookup={lookup} onShowRule={showRule} />
+              </>
+            )}
+            <AssumptionsNote />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }

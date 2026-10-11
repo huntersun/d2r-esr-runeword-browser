@@ -86,13 +86,13 @@ Header row: back link, the filter name (pencil to rename inline), a problems chi
 the JSON tab and scrolls to the problems list) and **Download** (the serialized model). When the stored text is not
 valid JSON, every tab but JSON shows a "cannot be read" card; Apply in the JSON tab recovers the filter.
 
-| Tab      | Status      | What it does                                                                                                                                                                                                                                                                                   |
-| -------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rules    | done        | Rule list (summary, badges, problem dot, move up/down, duplicate, delete) with search and Add rule, next to the selected rule's editor: comment, the rule's problems, every condition with game-data pickers, then the actions editor. See below.                                              |
-| Styles   | done        | Style list (name, action count, "used by N rules"), Add style, rename (rules' `useStyle` follow), duplicate ("Name (copy)"), delete (warns how many rules use it); the selected style opens the actions editor. Conditions found in a style are listed read-only ("styles hold actions only"). |
-| Settings | done        | Title, author, version, description, update URL, hide unmatched items, sound volume; filter levels (id + name, add/remove, default level, "used by N rules", ids rules use that are missing); drop line and level change line; one colour-code select per quality.                             |
-| JSON     | done        | The serialized file in a textarea: Apply (parse; a syntax error shows line/column and selects the spot), Revert, Copy. Below it every problem with severity, path and message; a rule problem links to its rule (selects it, opens Rules).                                                     |
-| Test     | placeholder | `TestTab`: rule and level counts. The test-item tab (engine `evaluate.ts`) replaces it.                                                                                                                                                                                                        |
+| Tab      | Status | What it does                                                                                                                                                                                                                                                                                   |
+| -------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rules    | done   | Rule list (summary, badges, problem dot, move up/down, duplicate, delete) with search and Add rule, next to the selected rule's editor: comment, the rule's problems, every condition with game-data pickers, then the actions editor. See below.                                              |
+| Styles   | done   | Style list (name, action count, "used by N rules"), Add style, rename (rules' `useStyle` follow), duplicate ("Name (copy)"), delete (warns how many rules use it); the selected style opens the actions editor. Conditions found in a style are listed read-only ("styles hold actions only"). |
+| Settings | done   | Title, author, version, description, update URL, hide unmatched items, sound volume; filter levels (id + name, add/remove, default level, "used by N rules", ids rules use that are missing); drop line and level change line; one colour-code select per quality.                             |
+| JSON     | done   | The serialized file in a textarea: Apply (parse; a syntax error shows line/column and selects the spot), Revert, Copy. Below it every problem with severity, path and message; a rule problem links to its rule (selects it, opens Rules).                                                     |
+| Test     | done   | Describe an item (presets, item fields, unique/set, stats, location) and the context (difficulty, area, filter level, player level and stats); see the ground label, chat lines, sounds, icon and droplight, and a rule-by-rule trace. See below.                                              |
 
 Settings changes dispatch the slice reducers directly; the only local state is what a half-typed number needs
 (`NumberInput`). A per-language text (`{ "enUS": …, "deDE": … }`) is shown read-only with "multi-language text, edit in
@@ -173,6 +173,39 @@ unmount. `useBundledSprite` fetches and decodes a bundled sprite once per name; 
 (`utils/tintSprite.ts`: RGB × colour/255, alpha × colour[3]/255); a decode error shows the decoder's message. A sounds.txt
 sound has no preview (it plays from the game files).
 
+## Test tab (`components/TestTab.tsx`, `components/test/`, `utils/testItemForm.ts`)
+
+Runs the engine's `evaluateFilter` against an item the user describes. Two columns from `lg` up (form left, result
+right, sticky), stacked below. The form is local state (`TestItemForm`, start value `defaultTestItem()`: no item, Rogue
+Encampment, normal difficulty, player level 1, the filter's default level); it is not saved.
+
+- **Presets**: Zod rune on the ground (`r83`), Unique bow, 2 sockets (`m01`, unique), Gold pile 1500 (`gld` with
+  stat 14 = 1500, the stat Sully's gold rules check), Rare ring (`rin`), and Reset. A preset replaces the item fields
+  and keeps the context; names and types fall back to built-in values without the game data.
+- **Item**: item picker (fills the name and the item type from the bundle), name (`{name}`, editable), item type
+  (typed when the data is missing; the hint lists the ancestors type conditions match), quality, base tier, location,
+  item level, sockets, max sockets, identified / ethereal / runeword / fully socketed, a unique or set item (picking one
+  switches to its base and name, and sets the quality to unique or set unless the user chose a quality) and item stat
+  rows (stat, optional param, value; incomplete rows are ignored).
+- **Context**: difficulty, player level (sent as player stat 12), area (with an "in town" hint for 1/40/75/103/109),
+  filter level (the filter's levels, default marked) and more player stat rows.
+- **Conversion** (`utils/testItemForm.ts`): `toTestItem(form, lookup)` (type ancestors from the `types` bundle via the
+  lookup; without it only the typed type), `toTestContext(form, filter, statIds)` (`statIdMap(bundle.stats)` is cached
+  per bundle), `applyPreset`, `withItem`, `withUniqueOrSet`. The unique/set picker uses the option keys
+  (`Unique:12`, `Set:12`) as values because the two tables share ids.
+- **Result**: the ground label (`LabelPreview` with the rules' background and border; text before the first colour
+  code in the game's quality colour) or "Hidden: no ground label" with a link to the hiding rule; chat lines (each a
+  `LabelPreview` with default colour `ÿc0`); sounds with volume (play button for the bundled files); minimap icon and
+  droplight. The evaluation runs on every change; above 1500 rules a Run button runs it instead.
+- **Rule trace**: one row per rule that ran, in order: number, outcome badge (applied green, hidden and "hidden: other
+  conditions" red, skipped muted), style, `ruleSummary`, and the failed condition keys as chips. Skipped rules are
+  hidden unless "Show skipped rules (N)" is ticked. A row opens the rule in the Rules tab (`selectRule` + `?tab=rules`).
+  After a hiding rule the note says how many rules did not run.
+- **Assumptions (verify in game)**: a collapsed list of the evaluator's assumptions (below), plus the note that
+  `{string:KEY}` is shown as written.
+- While the bundles load (or when they fail) a hint says that typed codes work but item-type conditions only see the
+  typed type.
+
 ## Phase status
 
 | Phase | Content                                                                                       | Status                                                    |
@@ -181,7 +214,7 @@ sound has no preview (it plays from the game files).
 | 2     | `lootfilter.json` reference bundle (items, stats, areas, sounds, uniques, sets)               | done                                                      |
 | 3     | Library, routes, editor shell and state, Settings tab, JSON tab                               | done                                                      |
 | 4     | Rule builder with pickers, style editor, label preview                                        | done (rule builder, actions editor, Styles tab, previews) |
-| 5     | Test-item tab with a rule trace                                                               | planned                                                   |
+| 5     | Test-item tab with a rule trace                                                               | done                                                      |
 
 ## Verify in game
 
