@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.18.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.17.0...v1.18.0) (2026-10-11)
+
+
+### Features
+
+* **game-data:** add the lootfilter.json reference bundle ([be53091](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/be530915dfd0c9d767d8aedca1c24920491fbb17))
+* **loot-filter:** add the filter engine, the author's guide and the bundled template assets ([06d7d49](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/06d7d49324a40e3f6d4579255cfa72431adc52fe))
+* **loot-filter:** add the filter library, routes, editor shell, settings and JSON tabs ([88e35b8](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/88e35b84b213a3a39adae1dc11f0ef78ee93bb99))
+* **loot-filter:** add the rule builder, the actions editor, the Styles tab and previews ([5601150](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/5601150d06806c8fb8b681b85ce3009232ea5d7b))
+* **loot-filter:** add the test-item tab ([f8a41eb](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/f8a41ebe76d117bed10f3cc7cdc90352be5db405))
+* **loot-filter:** show an "Under development" notice on every loot-filter page ([28ed8df](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/28ed8df14102c6fc9abc76186ed21a882bd8dcff))
+
+
+### Documentation
+
+* describe the finished loot filter feature in the docs index ([d349e9a](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/d349e9ab53d276ea846ac9f325c982b8e25b8ca7))
+* **loot-filter:** add a resume checklist for picking the feature up later ([3853d26](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/3853d267dbe313004092126a5b96e12eedd79663))
+* **loot-filter:** add the D2RLAN guide and engine findings and the Lua to JSON mapping ([c0ded96](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/c0ded96ba6575d1df35bc76267894ec6187d23b4))
+* **loot-filter:** record the guide's answers and the updated decisions ([e1ed4df](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/e1ed4df91de67b259aa48bcb5f5c4c847b290ad2))
+* **loot-filter:** research notes, decisions and questions for the mod author ([cf9a1f5](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/cf9a1f54d1c3d299a4210b2d969bae30dcdfc0c5))
+
+
+### Chores
+
+* **loot-filter:** add the ActionsEditor contract stub ([fb5673b](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/fb5673b42ed356328bf145f6487a1b1fe05114a4))
+* **loot-filter:** justify the index keys in LabelPreview ([00632db](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/00632db2eb1df2b58640006acd9750551b3d187a))
+
+
+### Refactoring
+
+* **loot-filter:** apply the code-quality review findings ([6693b4b](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/6693b4be68c4a5bc277661f70214cc11c0a3a7af))
+
 ## [1.17.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.16.0...v1.17.0) (2026-10-11)
 
 
