@@ -3,9 +3,11 @@ import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import type { SourceLabel } from '@/features/game-data/engine/schema';
 import { cn } from '@/lib/utils';
+import { DROP_FINDER_URL } from '../engine/linkSchemes';
 import type { DataBlock } from '../engine/schema';
 import { sourceCells } from '../utils/guideUtils';
 import { GuideCardBoundary } from './GuideCardBoundary';
+import { ExternalLink } from './ExternalLink';
 import { GuideCardFailed, GuideCardLoading } from './GuideCardPlaceholder';
 import { GuideTable } from './GuideTable';
 import { SectionLabel } from './SectionLabel';
@@ -43,7 +45,13 @@ function SourceBlock({ item, labels }: SourceBlockProps) {
           </div>
         ))}
       </div>
-      <p className="mt-2 text-xs text-muted-foreground">Derived from the game files; may be incomplete.</p>
+      <div className="mt-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-xs text-muted-foreground">
+        <p>Derived from the game files; may be incomplete.</p>
+        {/* The plain page only: the Drop Finder's deep links are positional and change with every ESR release. */}
+        <ExternalLink href={DROP_FINDER_URL} className={LINK_CLASS} iconClassName="ml-0.5 inline size-[0.9em] align-[-0.1em]">
+          Look it up in the Drop Finder
+        </ExternalLink>
+      </div>
     </section>
   );
 }

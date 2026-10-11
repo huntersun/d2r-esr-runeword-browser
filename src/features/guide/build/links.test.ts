@@ -65,6 +65,25 @@ describe('resolveLink', () => {
     expect(resolveLink('page:/game-data/bases?search=x', ctx)).toEqual({ kind: 'app', href: '/game-data/bases?search=x' });
   });
 
+  it('resolves dropfinder: to the plain Drop Finder page for any sources.json item, without the name in the URL', () => {
+    const external = { kind: 'external', href: 'https://easternsunresurrected.com/drop-finder.html' };
+    expect(resolveLink('dropfinder:Annihilus', ctx)).toEqual(external);
+    expect(resolveLink('dropfinder:Worldstone%20Shard', ctx)).toEqual(external);
+    expect(resolveLink('dropfinder:Anvil%20Stone', ctx)).toEqual(external);
+    expect(resolveLink('dropfinder:artemis’%20wrath', ctx)).toEqual(external);
+    // Without the clone it still checks sources.json
+    expect(resolveLink('dropfinder:Zod%20Rune', fixtureContext({ esr: null }))).toEqual(external);
+    // A plain link to the page stays a plain external link
+    expect(resolveLink('https://easternsunresurrected.com/drop-finder.html', ctx)).toEqual(external);
+  });
+
+  it('rejects dropfinder: names missing from sources.json', () => {
+    expect(resolveLink('dropfinder:Anihilus', ctx)).toEqual({
+      error: 'unknown item "Anihilus" (dropfinder:, checked against sources.json: uniques, set items and misc items)',
+    });
+    expect(resolveLink('dropfinder:%20', ctx)).toHaveProperty('error');
+  });
+
   it('warns about docs files or anchors missing from the clone, and skips the check without one', () => {
     expect(resolveLink('docs:gems.htm#x', ctx)).toMatchObject({ warning: 'docs: file "gems.htm" not found in the ESR clone\'s docs/' });
     expect(resolveLink('docs:Eastern%20Sun%20Resurrected%20Cube%20Recipes.html#nope', ctx)).toHaveProperty('warning');

@@ -1,13 +1,12 @@
 /**
  * Resolves the link schemes of the guide's markdown (see docs/features/GUIDE.md) into `{ kind, href }`.
- * App hrefs are app paths without the base URL; `docs:` becomes an absolute URL of the official site.
+ * App hrefs are app paths without the base URL; `docs:` becomes an absolute URL of the official site and `dropfinder:` the
+ * official Drop Finder page.
  */
 import { normaliseItemName } from '../../../core/utils/itemName.ts';
-import { NAME_FOCUS_PAGES } from '../engine/linkSchemes.ts';
+import { DROP_FINDER_URL, NAME_FOCUS_PAGES, OFFICIAL_SITE } from '../engine/linkSchemes.ts';
 import type { LinkKind } from '../engine/schema.ts';
 import type { BuildError, GuideContext } from './context.ts';
-
-const OFFICIAL_SITE = 'https://easternsunresurrected.com/';
 
 export interface ResolvedLink {
   kind: LinkKind;
@@ -111,6 +110,15 @@ export function resolveLink(url: string, ctx: GuideContext): ResolvedLink | Buil
       return { kind: 'app', href: target };
     case 'docs':
       return resolveDocsLink(target, ctx);
+    // Validated against sources.json (any item kind: unique, set or misc) so a typo fails the build, but not carried in
+    // the URL: the Drop Finder's deep links (`#i=…`) are positional and change with every ESR release.
+    case 'dropfinder': {
+      const name = normaliseItemName(target);
+      if (!Object.values(ctx.sourceNames).some((names) => names.has(name))) {
+        return { error: `unknown item "${target}" (dropfinder:, checked against sources.json: uniques, set items and misc items)` };
+      }
+      return { kind: 'external', href: DROP_FINDER_URL };
+    }
     default:
       return { error: `unknown link scheme "${scheme}:" in "${url}"` };
   }

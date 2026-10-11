@@ -17,8 +17,18 @@ export const LINK_SCHEMES = [
   'affixes',
   'page',
   'docs',
+  'dropfinder',
 ] as const;
 export type LinkScheme = (typeof LINK_SCHEMES)[number];
+
+/** The official ESR site; `docs:` links resolve against it. */
+export const OFFICIAL_SITE = 'https://easternsunresurrected.com/';
+
+/**
+ * The official Drop Finder: the target of `dropfinder:` links and of the link under every "Where it comes from" block.
+ * Never a deep link: its `#i=…` hash is a positional index into its data file that changes with every ESR release.
+ */
+export const DROP_FINDER_URL = `${OFFICIAL_SITE}drop-finder.html`;
 
 /** Schemes that focus a list page on one exact name (`?name=`), with that page's path; also the `::card` schemes. */
 export const NAME_FOCUS_PAGES = {
