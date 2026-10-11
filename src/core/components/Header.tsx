@@ -43,6 +43,7 @@ const INTERNAL_PAGES: readonly InternalEntry[] = [
   { key: 'mythicals', kind: 'internal', to: '/mythicals', label: 'Mythicals', end: false },
   { key: 'ascendancies', kind: 'internal', to: '/ascendancies', label: 'Ascendancies', end: false },
   { key: 'game-data', kind: 'internal', to: '/game-data', label: 'Game Data', end: false },
+  { key: 'loot-filters', kind: 'internal', to: '/loot-filters', label: 'Loot Filters', end: false },
 ];
 const BUILDS_ENTRY: InternalEntry = { key: 'builds', kind: 'internal', to: '/builds', label: 'Builds', end: false };
 const EXTERNAL_LINKS: readonly ExternalEntry[] = [

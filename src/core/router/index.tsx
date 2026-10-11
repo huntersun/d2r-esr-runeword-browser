@@ -100,6 +100,16 @@ const GameDataItemTypesScreen = lazy(async () => {
   return { default: module.ItemTypesScreen };
 });
 
+const LootFilterLibraryScreen = lazy(async () => {
+  const module = await import('@/features/loot-filter');
+  return { default: module.LootFilterLibraryScreen };
+});
+
+const LootFilterEditorScreen = lazy(async () => {
+  const module = await import('@/features/loot-filter');
+  return { default: module.LootFilterEditorScreen };
+});
+
 const routeLoadingFallback = (
   <div className="flex min-h-80 flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
     <Spinner className="size-8" />
@@ -147,6 +157,8 @@ export const router = createBrowserRouter(
             { path: 'types', element: routeElement(GameDataItemTypesScreen) },
           ],
         },
+        { path: 'loot-filters', element: routeElement(LootFilterLibraryScreen) },
+        { path: 'loot-filters/:id', element: routeElement(LootFilterEditorScreen) },
         { path: 'builds', element: routeElement(BuildsScreen) },
         { path: 'builds/new', element: routeElement(CreateBuildScreen) },
         { path: 'builds/:buildId/edit', element: routeElement(EditBuildScreen) },

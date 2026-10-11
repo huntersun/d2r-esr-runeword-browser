@@ -16,12 +16,13 @@ sagaRegistry (core/store/sagaRegistry.ts)
     ├── dataSyncSaga  (data-sync feature)
     ├── authSaga      (auth feature, Supabase only)
     ├── buildsSaga    (builds feature, Supabase only)
-    └── favoritesSaga (favorites feature, Supabase only)
+    ├── favoritesSaga (favorites feature, Supabase only)
+    └── lootFilterSaga (loot-filter feature, started when its route chunk loads)
 ```
 
 - `registerSaga(saga)` - Register a feature saga; queued before startup, started immediately after (each saga starts exactly once)
 - `runSagas()` - Start saga middleware and run all queued sagas; sagas registered later (lazy-loaded chunks) start on registration
-- Feature sagas are registered in `src/core/startup.ts` by `startDataSync()`, `startAuth()`, `startBuilds()` and `startFavorites()`, which `main.tsx` calls after the React root renders. Each dynamically imports its feature module (keeps the heavy saga/parser code out of the entry chunk; guarded by `src/mainStartup.test.ts`); the three Supabase-backed ones are no-ops when Supabase is not configured
+- Feature sagas are registered in `src/core/startup.ts` by `startDataSync()`, `startAuth()`, `startBuilds()` and `startFavorites()`, which `main.tsx` calls after the React root renders. Each dynamically imports its feature module (keeps the heavy saga/parser code out of the entry chunk; guarded by `src/mainStartup.test.ts`); the three Supabase-backed ones are no-ops when Supabase is not configured. The loot-filter saga is the exception: `src/features/loot-filter/index.ts` registers it (and calls `runSagas()`) when the lazy route chunk first loads, see [LOOT-FILTER.md](../features/LOOT-FILTER.md)
 
 ### Feature Saga Structure
 

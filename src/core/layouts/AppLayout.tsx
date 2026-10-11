@@ -8,17 +8,25 @@ import { selectIsInitialized, selectError } from '@/core/store';
 import { startDataSync } from '@/core/startup';
 import { AuthOverlays, selectAuthIsConfigured } from '@/features/auth';
 
+/**
+ * Route prefixes that render from static bundles only (no HTM/Dexie data), so they skip both startup gates below:
+ * the loading spinner and the fatal sync-error screen. See docs/technical/NAVIGATION.md "Startup loading gate".
+ */
+const STATIC_BUNDLE_ROUTE_PREFIXES = ['/guide', '/loot-filters'] as const;
+
+function isStaticBundlePath(pathname: string): boolean {
+  return STATIC_BUNDLE_ROUTE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
+
 export function AppLayout() {
   const isInitialized = useSelector(selectIsInitialized);
   const error = useSelector(selectError);
   const isSupabaseEnabled = useSelector(selectAuthIsConfigured);
   const { pathname } = useLocation();
-  // Guide routes (a static JSON bundle, no HTM/Dexie data) skip both startup gates below: the loading spinner and
-  // the fatal sync-error screen. See docs/technical/NAVIGATION.md "Startup loading gate".
-  const isGuidePath = pathname === '/guide' || pathname.startsWith('/guide/');
+  const skipsStartupGate = isStaticBundlePath(pathname);
 
-  // Fatal error state - error occurred and app is not initialized (guide routes still render, see above)
-  if (error && !isInitialized && !isGuidePath) {
+  // Fatal error state - error occurred and app is not initialized (static-bundle routes still render, see above)
+  if (error && !isInitialized && !skipsStartupGate) {
     const handleRetry = () => {
       // Retries the data-sync chunk import if it never loaded, then re-runs the startup check
       void startDataSync();
@@ -38,7 +46,7 @@ export function AppLayout() {
   }
 
   // Loading state during startup
-  if (!isInitialized && !isGuidePath) {
+  if (!isInitialized && !skipsStartupGate) {
     return (
       <div className="min-h-svh flex flex-col items-center justify-center">
         <Spinner className="size-12 mb-4" />

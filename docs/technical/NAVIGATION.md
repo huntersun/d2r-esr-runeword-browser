@@ -4,28 +4,30 @@ Documentation for routing, layout, and navigation patterns.
 
 ## Routes
 
-| Path                    | Screen                | Description                                                                             |
-| ----------------------- | --------------------- | --------------------------------------------------------------------------------------- |
-| `/`                     | RunewordsScreen       | Home page - browse and filter runewords, `?name=<Name>` focus                           |
-| `/guide`                | GuideLayout           | Guide frame: a small "Experimental" notice above every guide page, then the child route |
-| `/guide` (index)        | GuideSpineScreen      | New-player guide: "Start here" journey spine, note search, "I found something" row      |
-| `/guide/:slug`          | GuideNoteScreen       | One guide note; unknown slug shows a "Note not found" block linking back to `/guide`    |
-| `/gemwords`             | GemwordsScreen        | Gem-based socket recipes with filters, `?name=<Name>` focus                             |
-| `/socketables`          | SocketablesScreen     | All socketables with category filters & search, `?name=<Name>` focus                    |
-| `/uniques`              | HtmUniqueItemsScreen  | Unique items with category & coupon filters, `?name=<Name>` focus                       |
-| `/mythicals`            | MythicalUniquesScreen | Mythical unique items, `?name=<Name>` focus                                             |
-| `/ascendancies`         | AscendanciesScreen    | Ascendancies with their tier bonuses                                                    |
-| `/game-data`            | GameDataLayout        | Game-file data section; index redirects to `bases`                                      |
-| `/game-data/bases`      | BasesScreen           | Base items browser (txt game files)                                                     |
-| `/game-data/best-base`  | BestBaseScreen        | Best base finder for a runeword and a persisted character                               |
-| `/game-data/affixes`    | AffixesScreen         | Affix browser + "what can roll" on a base                                               |
-| `/game-data/types`      | ItemTypesScreen       | Item type tree + socket caps, `?type=<code>` focus                                      |
-| `/builds`               | BuildsScreen          | Shared builds list (Supabase only)                                                      |
-| `/builds/new`           | CreateBuildScreen     | Create a build (sign-in required)                                                       |
-| `/builds/:buildId/edit` | EditBuildScreen       | Edit an own build                                                                       |
-| `/build/:buildId`       | BuildDetailScreen     | Build detail page                                                                       |
-| `/user/:userId`         | UserProfileScreen     | A user's public builds                                                                  |
-| `*`                     | NotFoundScreen        | Catch-all for unknown URLs, with a link back home                                       |
+| Path                    | Screen                  | Description                                                                                         |
+| ----------------------- | ----------------------- | --------------------------------------------------------------------------------------------------- |
+| `/`                     | RunewordsScreen         | Home page - browse and filter runewords, `?name=<Name>` focus                                       |
+| `/guide`                | GuideLayout             | Guide frame: a small "Experimental" notice above every guide page, then the child route             |
+| `/guide` (index)        | GuideSpineScreen        | New-player guide: "Start here" journey spine, note search, "I found something" row                  |
+| `/guide/:slug`          | GuideNoteScreen         | One guide note; unknown slug shows a "Note not found" block linking back to `/guide`                |
+| `/gemwords`             | GemwordsScreen          | Gem-based socket recipes with filters, `?name=<Name>` focus                                         |
+| `/socketables`          | SocketablesScreen       | All socketables with category filters & search, `?name=<Name>` focus                                |
+| `/uniques`              | HtmUniqueItemsScreen    | Unique items with category & coupon filters, `?name=<Name>` focus                                   |
+| `/mythicals`            | MythicalUniquesScreen   | Mythical unique items, `?name=<Name>` focus                                                         |
+| `/ascendancies`         | AscendanciesScreen      | Ascendancies with their tier bonuses                                                                |
+| `/game-data`            | GameDataLayout          | Game-file data section; index redirects to `bases`                                                  |
+| `/game-data/bases`      | BasesScreen             | Base items browser (txt game files)                                                                 |
+| `/game-data/best-base`  | BestBaseScreen          | Best base finder for a runeword and a persisted character                                           |
+| `/game-data/affixes`    | AffixesScreen           | Affix browser + "what can roll" on a base                                                           |
+| `/game-data/types`      | ItemTypesScreen         | Item type tree + socket caps, `?type=<code>` focus                                                  |
+| `/loot-filters`         | LootFilterLibraryScreen | Loot filter library: new, upload, Sully's QoL template, download                                    |
+| `/loot-filters/:id`     | LootFilterEditorScreen  | Loot filter editor, `?tab=rules\|styles\|settings\|json\|test`; unknown id shows "Filter not found" |
+| `/builds`               | BuildsScreen            | Shared builds list (Supabase only)                                                                  |
+| `/builds/new`           | CreateBuildScreen       | Create a build (sign-in required)                                                                   |
+| `/builds/:buildId/edit` | EditBuildScreen         | Edit an own build                                                                                   |
+| `/build/:buildId`       | BuildDetailScreen       | Build detail page                                                                                   |
+| `/user/:userId`         | UserProfileScreen       | A user's public builds                                                                              |
+| `*`                     | NotFoundScreen          | Catch-all for unknown URLs, with a link back home                                                   |
 
 **`?name=<Name>` focus** (runewords, gemwords, socketables, uniques, mythicals): shows only the items whose name equals `<Name>`
 (`normaliseItemName` in `src/core/utils/itemName.ts`: case, whitespace, quotes/apostrophes and dashes unified; all variants of a
@@ -52,16 +54,19 @@ Copy Link keeps it. Guide `rw:`/`gw:`/`unique:`/`mythical:`/`socketable:` links 
 ### Startup loading gate
 
 `AppLayout` shows a full-screen "Loading data..." spinner until the HTM data sync has initialized (and a full-screen
-error with "Try Again" when it failed). Guide routes (`/guide`, `/guide/*`) skip the spinner and render the normal
-shell (Header + Outlet + SettingsDrawer) right away, because the guide is a static JSON bundle (`public/guide/`) that
-needs no Dexie data; the sync keeps running in the background. They also skip the fatal-error screen, so a failed
-first sync does not hide the guide.
-See [GUIDE.md](../features/GUIDE.md).
+error with "Try Again" when it failed). Routes that render from static bundles only skip the spinner and render the
+normal shell (Header + Outlet + SettingsDrawer) right away; the sync keeps running in the background. They also skip
+the fatal-error screen, so a failed first sync does not hide them. The prefixes are listed in
+`STATIC_BUNDLE_ROUTE_PREFIXES` in `AppLayout.tsx` (a path matches its prefix exactly or with a `/` after it):
+
+- `/guide`: the guide is a static JSON bundle (`public/guide/`), see [GUIDE.md](../features/GUIDE.md);
+- `/loot-filters`: the editor uses the game-data bundles, `public/loot-filters/` and localStorage, see
+  [LOOT-FILTER.md](../features/LOOT-FILTER.md).
 
 ### Header Components
 
 - **Logo/Title**: "D2R ESR" or similar branding
-- **Navigation Links**: Runewords, Guide, Gemwords, Socketables, Uniques, Mythicals, Ascendancies, Game Data, Builds (only when Supabase is configured), plus external ESR Documentation / Changelog links; items that don't fit collapse into a "More" menu (priority-plus, see `Header.tsx`)
+- **Navigation Links**: Runewords, Guide, Gemwords, Socketables, Uniques, Mythicals, Ascendancies, Game Data, Loot Filters, Builds (only when Supabase is configured), plus external ESR Documentation / Changelog links; items that don't fit collapse into a "More" menu (priority-plus, see `Header.tsx`)
 - **Settings Button**: Cog icon in top-right corner
 
 ### Sub-tab layouts
