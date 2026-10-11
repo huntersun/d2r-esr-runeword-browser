@@ -192,7 +192,26 @@ Where to ask: the ESR Discord (linked from easternsunresurrected.com) or a GitHu
 - Tests: parser round-trip on Sully's filter (byte-stable apart from comments), validation cases, preview rendering.
 - Phase 2 candidates: Lua import, cloud save and sharing, presets, bundled sounds (needs the author's okay).
 
-## 7. Sources
+## 7. How to resume (for whoever picks this up)
+
+1. `git checkout feat/loot-filter` (branched from master at v1.16.0, commit 50cffbd). Rebase or merge master first if
+   releases happened meanwhile; the branch holds only this document so far.
+2. Read this file top to bottom, then the mod author's answer (paste it into section 4 below the questions, with the
+   date). Update section 3 and 3.1 with confirmed keys and semantics; move anything still unknown into a short
+   "assumed" list.
+3. Re-check the ESR clone for format changes: `grep -n -i 'loot' ../Eastern_Sun_Resurrected/patchnotes/*.md`,
+   `git -C ../Eastern_Sun_Resurrected log --oneline -- LootFilters d2rloader/config/celestialrayone.loot-filter.toml`,
+   and whether `formatVersion` in `LootFilters/sullys-qol.json` is still 1.
+4. Reference material is not committed (external code): the D2RLAN engine is
+   `https://raw.githubusercontent.com/locbones/D2RLAN-Filters/main/lootfilter.lua` (rule loop around lines 980–1440,
+   placeholders around 620–660); the guide is https://locbones.github.io/D2RLAN-LootFilterGuide/.
+5. Build per section 6 under the decisions in section 5, with opus agents for implementation and review as on the
+   guide feature. Start with the engine (JSONC parse with pass-through, serialize, validate) and its round-trip test on
+   Sully's file, then the data bundles, then the library screen, then the rule builder and preview.
+6. The owner tests the downloaded JSON in-game through the ESR Launcher's Loot Filter tab (Import filter) and can use
+   the `lootfilter` console command to see problems the plugin reports.
+
+## 8. Sources
 
 - ESR repo: `LootFilters/sullys-qol.json`, `d2rloader/config/celestialrayone.loot-filter.toml`, `patchnotes/3.2.09.md`,
   `d2rloader/metadata.json` (D2RLoader 1.3.1).
