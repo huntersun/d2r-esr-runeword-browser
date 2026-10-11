@@ -29,10 +29,12 @@ An :term[Endgame map] is an item you cube alone in Act 5 Hell to open a high-lev
 
 ::recipes[map-upgrade]
 
-Map bosses drop higher maps, Orbs of Anointment ([[corruption-anointment]]), Weapon Mastery Tokens ([[weapon-mastery]]) and Primordial Soulstones for [[ascendancies]], and each boss kill can feed your [[kill-ledger]]. Maps are also the only source of :term[Mythical unique]s; some come from one boss only, such as Frostmourne from the Lich King:
+Map bosses drop higher maps, [Orbs of Anointment](<dropfinder:Orb of Anointment>) ([[corruption-anointment]]), Weapon Mastery Tokens ([[weapon-mastery]]) and Primordial Soulstones for [[ascendancies]], and each boss kill can feed your [[kill-ledger]]. Maps are also the only source of :term[Mythical unique]s; some come from one boss only, such as Frostmourne from the Lich King:
 
 ::card[mythical:Frostmourne]
 
-**Pandemonium keys** work as in vanilla: one Key of Terror, Hate and Destruction open a portal to one of three uber areas, whose bosses drop Diablo's Horn, Baal's Eye and Mephisto's Brain; those three open Uber Tristram. A Blemished gem with a Thawing or Stamina Potion turns one key into another.
+**Pandemonium keys** work as in vanilla: one Key of Terror, Hate and Destruction open a portal to one of three uber areas, whose bosses drop [Diablo's Horn](<dropfinder:Diablo's Horn>), Baal's Eye and Mephisto's Brain; those three open Uber Tristram. Map bosses drop keys too, and a tier 5 boss drops a whole Pandemonium Key Set. Keys convert into each other, and the set unwraps, in the cube:
+
+::recipes[uber-keys]
 
 ::source[Key of Terror]

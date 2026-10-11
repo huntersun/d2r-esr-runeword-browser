@@ -32,7 +32,7 @@ Unique charms only work from the charm inventory, and ESR limits how many count 
 
 ### The boss charms
 
-**Annihilus** drops from Diablo Clone, who spawns when you sell Devil's Food to a vendor.
+**Annihilus** [drops from Diablo Clone](dropfinder:Annihilus), who spawns when you sell Devil's Food to a vendor.
 
 ::card[unique:Annihilus]
 
@@ -40,14 +40,14 @@ Unique charms only work from the charm inventory, and ESR limits how many count 
 
 ::source[Hellfire Torch]
 
-The **Eternal Hourglass of the Timeless Sands** drops once you kill all the Eternal Ancients in their tier 5 Endgame Map; Rathma's Eternal Skull comes from Rathma's tier 5 map ([[endgame-roadmap]]).
+The Eternal Ancients in their tier 5 Endgame Map drop the pieces of the **Eternal Hourglass of the Timeless Sands**; kill all of them and cube the Broken hourglass with both shards. [Rathma's Eternal Skull](<dropfinder:Rathma's Eternal Skull>) comes from Rathma's tier 5 map ([[endgame-roadmap]]).
 
 ::source[Eternal Hourglass of the Timeless Sands]
 
 ### Making them stronger
 
-- A **Standard of Heroes**, dropped by the uber bosses, upgrades one unique charm once with a small bonus.
-- Diablo's Demonic Horn, Baal's Demonic Eye and Mephisto's Demonic Brain together anoint a unique charm once ([[corruption-anointment]]).
+- A **Standard of Heroes**, [dropped by the uber bosses](<dropfinder:Standard of Heroes>), upgrades one unique charm once with a small bonus.
+- [Diablo's Demonic Horn](<dropfinder:Diablo's Demonic Horn>), Baal's Demonic Eye and Mephisto's Demonic Brain together anoint a unique charm once ([[corruption-anointment]]).
 - Most unique charms reroll with Perfect Gems; the cost depends on the charm's required level.
 - Skill and Stat :term[Forging] accept unique charms ([[forging]]).
 

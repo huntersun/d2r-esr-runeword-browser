@@ -16,7 +16,7 @@ officialDocs:
 sources: [official-cube, esr-txt, patchnotes, esru-wiki]
 ---
 
-Each :term[Secret Recipe] has a number, and it only works with the identified :term[Ancient Scroll] of that number in the cube. The scroll comes back after the recipe, so one scroll serves for good. Older guides say a Decipherer is used up each time; that is no longer true.
+Each :term[Secret Recipe] has a number, and it only works with the identified :term[Ancient Scroll] of that number in the cube. The scroll comes back after the recipe, so one scroll serves for good. A Decipherer is spent only once, when you identify the scroll; older guides that say each recipe uses one are out of date.
 
 ### Getting the scroll you need
 

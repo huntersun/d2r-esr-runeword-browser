@@ -11,10 +11,10 @@
   definition: A drop that names one vanilla (LoD) unique; matching coupons, alone or with Wild Cards, cube into that unique.
   note: coupons
 - term: Wild Card
-  definition: A joker made from spare coupons that replaces the third matching coupon in unique recipes and appears in several gem recipes.
+  definition: A joker made from spare coupons that stands in for the third matching coupon in unique recipes (higher tiers need more of them) and appears in several gem recipes.
   note: coupons
 - term: Coupon reroll
-  definition: Cubing several coupons of one tier with a Randomizing Stone to get a random coupon.
+  definition: Cubing spare coupons with a Randomizing Stone to get a random coupon of the same or the next tier.
   note: coupons
 - term: Ancient Scroll
   definition: A numbered scroll (1 to 50) that unlocks the Secret Recipe with the same number; it is returned after each use.
@@ -59,16 +59,16 @@
   definition: Cubing an item with a Worldstone Shard for a random strong bonus, with a chance to turn the item into a random rare.
   note: corruption-anointment
 - term: Anointment
-  definition: A random bonus added with an Orb of Anointment (gear) or the three Demonic organs of the Prime Evils (unique charms); it cannot brick the item.
+  definition: A random bonus added with an Orb of Anointment (non-unique, non-runeword gear) or the three Demonic organs of the Prime Evils (unique charms); it cannot brick the item.
   note: corruption-anointment
 - term: Sanctify
   definition: Using Lucion's Relic of Sanctification on a jewel for a one-time bonus that cannot be undone.
   note: enhancement-order
 - term: Branded
-  definition: A modifier added by Inarius' Everburning Halo; a Branded item can no longer be changed by any recipe.
+  definition: A modifier on the copy that Inarius' Everburning Halo makes of an item (the original comes back unchanged); a Branded item can no longer be changed by any recipe.
   note: enhancement-order
 - term: Blemished gem
-  definition: An ESR gem grade between Flawless and Perfect, used for rare rerolls, socketing exceptional items and Ascendancy Stones.
+  definition: An ESR gem grade between Flawless and Perfect, used for rare rerolls, sockets on elite white bases and on exceptional items that are not white, and Ascendancy Stones.
   note: gems-crystals
 - term: Crystal
   definition: One of twelve ESR socketable minerals (such as Frozen Soul or Pulsing Opal) in Chipped, Flawed and normal grades.
@@ -80,7 +80,7 @@
   definition: ESR's own rune line, named after Japanese syllables from I up to Wo; used in ESR runewords, Rune Forging and many recipes.
   note: rune-families
 - term: Decal
-  definition: A drop that, cubed with the ES rune of the same number, becomes the vanilla rune of that number.
+  definition: A drop that, cubed with the ES rune named on it, becomes the vanilla (LoD) rune named on it.
   note: rune-families
 - term: LoD rune
   definition: A vanilla rune (El to Zod), built from a Decal and an ES rune; used in the reworked vanilla runewords.
@@ -92,7 +92,7 @@
   definition: One of ESR's top socketables (Moon, Fire, Water up to God), made from a Null Rune and crystals.
   note: rune-families
 - term: Gemword
-  definition: A runeword-like recipe that uses gems instead of runes in a socketed white item.
+  definition: A runeword-like recipe that uses gems instead of runes in a socketed white item or charm.
   note: runewords-gemwords
 - term: Socket Donut
   definition: The cube ingredient that adds sockets to an item, together with gems whose grade matches the item tier.

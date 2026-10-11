@@ -35,6 +35,6 @@ D-stoning cannot be removed. It works on runewords too: done to the white base b
 
 ::secret-recipe[50]
 
-Maple Leaves come mainly from spare unique charms ([[unique-charms]]) and from Secret Recipes 26 and 40 ([[secret-recipes]]).
+Maple Leaves come mainly from spare unique charms ([[unique-charms]]), spare Orbs of Anointment and Secret Recipes 26 and 40 ([[secret-recipes]]).
 
 If you D-stoned a white base before making a runeword, remove the runes before Mapling, or the materials are wasted.

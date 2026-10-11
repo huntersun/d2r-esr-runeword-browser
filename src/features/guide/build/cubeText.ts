@@ -89,10 +89,11 @@ export function describeOutput(output: CubeOutput, esr: Pick<EsrGuideTables, 'na
   const parsed = parseSpec(output.spec);
   const notes = [...parsed.notes, ...modNotes(output.mods)];
   if (parsed.token === 'useitem') return { name: 'The same item', details: [...parsed.adjectives, ...notes] };
-  // The input item itself with the row's mods added (e.g. Inarius' Halo: "branded"); see visibleOutputs.
+  // A copy of input 1 (launcher plugin output code) with the row's mods added to the copy (e.g. Inarius' Halo:
+  // "branded"); a `useitem` next to it hands back the original as well.
   if (parsed.token === 'cloneitem') {
     const mods = output.mods.filter((mod) => mod.mod !== 'sock').map((mod) => mod.mod.charAt(0).toUpperCase() + mod.mod.slice(1));
-    return { name: 'The same item', details: [...parsed.adjectives, ...notes, ...mods] };
+    return { name: 'A copy of the item', details: [...parsed.adjectives, ...notes, ...mods] };
   }
   if (parsed.token === 'usetype') {
     const quality = parsed.adjectives.length === 0 ? 'An item' : `${parsed.adjectives.join(' ')} item`;
@@ -100,16 +101,6 @@ export function describeOutput(output: CubeOutput, esr: Pick<EsrGuideTables, 'na
   }
   const name = esr.nameOf(parsed.token);
   return { name: parsed.qty > 1 ? `${String(parsed.qty)}× ${name}` : name, details: [...parsed.adjectives, ...notes] };
-}
-
-function outputToken(output: CubeOutput): string {
-  return parseCubeCell(output.spec).token;
-}
-
-/** A `cloneitem` output is the input item with the row's mods, so a `useitem` next to it is not a second item. */
-export function visibleOutputs(outputs: readonly CubeOutput[]): CubeOutput[] {
-  if (!outputs.some((output) => outputToken(output) === 'cloneitem')) return [...outputs];
-  return outputs.filter((output) => outputToken(output) !== 'useitem');
 }
 
 export function formatOutput(output: CubeOutput, esr: Pick<EsrGuideTables, 'nameOf'>): string {

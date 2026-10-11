@@ -26,6 +26,7 @@ Your starting inventory also holds:
 
 - a **Weapons Crate**: cube it alone for a set of class starter weapons;
 - an **Elixir of Skill**: drink it for one permanent skill point;
-- an **Introductory Book**: a few pages of tips; cube it alone to turn the page.
+- an **Introductory Book**: a few pages of tips; cube it alone to turn the page;
+- your class's chipped gem, which Skill Forging uses later.
 
 Charms only work from the separate charm inventory, not the normal one ([[avoid-disasters]]). If you lose the pack, a Tome of Town Portal plus a Tome of Identify in the cube makes a new one.

@@ -26,7 +26,7 @@ In ESR almost every upgrade is a cube recipe. The official Cube Recipes page is 
 
 - **Forging:** most recipes that reroll the input ignore items with a Forging; remove it first ([[forging]]).
 - **Level limits:** D-stoning stops once the item's level requirement penalty is too high ([[dstoning-and-mapling]]).
-- **Order:** base-upgraded uniques and sets cannot be rerolled, and uniques lose added sockets when rerolled ([[enhancement-order]]).
+- **Order:** base-upgraded uniques cannot be rerolled (sets must be converted back first), and uniques lose added sockets when rerolled ([[enhancement-order]]).
 - **Branded** items cannot be changed by any recipe.
 - **Too much in the cube:** older guides warn that more than 100 items can crash the game ([[avoid-disasters]]).
 

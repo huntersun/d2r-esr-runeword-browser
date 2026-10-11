@@ -17,7 +17,7 @@ Eastern Sun Resurrected (ESR) is a total conversion of Diablo II Resurrected by 
 
 - **Most items are new or reworked.** ESR has its own runes (:term[ES rune]s), :term[Gemword]s, coupon-made vanilla uniques and mythical uniques. Vanilla runewords still exist, but their runes are built from parts ([[rune-families]]).
 - **The Horadric Cube is your main tool.** Hundreds of recipes reroll, upgrade and enhance gear. Read [[cube-basics]] before you spend rare materials.
-- **Materials pile up fast.** Organs, Dragon Stones, coupons and scrolls drop all the time; :term[Stocker]s keep them as points instead of stash space ([[loot-triage]]).
+- **Materials pile up fast.** Organs, Dragon Stones, coupons and scrolls drop all the time; a :term[Stocker] keeps most of them as points and scrolls sit in the stash's currency tab ([[loot-triage]]).
 - **The campaign is harder.** Monsters and skills are rebalanced, and the step from Nightmare into Hell is steep ([[hell-survival]]). Character level goes up to 110.
 - **The endgame is new.** Endgame Maps, Ascendancies, Diablo Clone and Uber Tristram are reworked ([[endgame-roadmap]]).
 

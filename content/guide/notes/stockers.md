@@ -15,13 +15,13 @@ officialDocs:
 sources: [official-cube, esr-txt, esru-wiki]
 ---
 
-A :term[Stocker] destroys whatever you cube into it and records it as points. When a recipe needs the item, you take it out again. A stash full of hearts, runes and gems becomes a handful of stockers. Each stocker's tooltip lists what it accepts and which recipes it runs.
+A :term[Stocker] destroys whatever you cube into it and records it as points. When a recipe needs the item, you take it out again. A stash full of organs, Dragon Stones and coupons becomes a single Multi Stocker. Each stocker's tooltip lists what it accepts and which recipes it runs.
 
 ### Using one
 
 - **Store:** cube the stocker with the material.
 - **Choose the output:** cube the stocker alone to cycle through what it is set to.
-- **Take out:** cube it with a Key (Multi Stocker), with a Can Opener (Gem and Crystal Cans), or with the item named in its tooltip.
+- **Take out:** cube it with a Key (Multi Stocker, Rerolling Orb, Rune and Decal Stockers) or a Can Opener (Gem and Crystal Cans).
 
 ### The family
 
@@ -31,7 +31,7 @@ A :term[Stocker] destroys whatever you cube into it and records it as points. Wh
 
 The stash's material tabs help as well: Shift + click upgrades a stack in place, Alt + click downgrades it.
 
-Decipherer points pay for many recipes, including identifying scrolls for [[secret-recipes]].
+Decipherer points pay for Anvil Stones, and come back out as Decipherers to identify scrolls for [[secret-recipes]].
 
 ### What Gheed sells
 

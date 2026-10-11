@@ -17,16 +17,16 @@ sources: [official-cube, esr-txt, patchnotes, esru-wiki]
 
 ### Gems
 
-ESR has seven gem colours: the vanilla six plus Obsidian, which the Warlock's class recipes use. The grades run Chipped, Flawed, normal, Flawless, :term[Blemished gem]{label=Blemished}, Perfect. Gems of one colour cube into the next grade, and Wild Cards offer shortcuts into Blemished and Perfect:
+ESR has eight kinds of gem: the vanilla six colours and Skull, plus Obsidian, which the Warlock's class recipes use. The grades run Chipped, Flawed, normal, Flawless, :term[Blemished gem]{label=Blemished}, Perfect. Gems of one colour cube into the next grade, and Wild Cards offer shortcuts into Blemished and Perfect:
 
 ::recipes[gem-upgrade]
 
-Since 3.2.04 a gem also downgrades into three of the grade below, and in the stash's material tabs Shift + click and Alt + click do both without the cube.
+Since 3.2.04 a gem can also be split into three of the grade below: Alt + click it in the stash's material tab (Shift + click there upgrades without the cube too).
 
 Why you want them:
 
 - **Perfect gems** pay for most rerolls (uniques, jewels, charms), Anvil Stones and gem melding.
-- **Blemished gems** reroll rares, socket exceptional items and unlock Ascendancy Stones.
+- **Blemished gems** reroll rares, add sockets to elite white bases and to exceptional items that are not white, and unlock Ascendancy Stones.
 - **Chipped gems** pick the bonus in Forging recipes ([[forging]]).
 
 ### Crystals and ores

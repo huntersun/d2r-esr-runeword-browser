@@ -25,7 +25,7 @@ The ingredients are a :term[Socket Donut] plus gems whose grade rises with the i
 
 - **White or superior items:** one to six gems give that many sockets, but the item is recreated, so ethereal, superior and staff bonuses are lost. Secret Recipe 16 (weapons) and 17 (armor) add sockets and keep them ([[secret-recipes]]).
 - **Magic, rare, crafted, set and unique items:** the recipe adds a fixed number of sockets that depends on the rarity and slot; the rarer the item, the fewer.
-- **Rings, amulets and charms:** only through Secret Recipes; small and grand charms become square and odd charms with a socket ([[noobs-charm]] covers the Veteran's charm).
+- **Rings, amulets and charms:** Secret Recipes add a socket to rings and amulets and turn magic or unique small and grand charms into square and odd charms with a socket; the Veteran's Odd Charm takes Socket Donuts like other items ([[noobs-charm]]).
 
 ### Limits
 

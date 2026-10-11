@@ -17,4 +17,4 @@ A :term[Class craft] turns a magic helm, armor, weapon or other piece into a cra
 
 The vanilla crafts (Hit Power, Blood, Caster, Safety) return as stronger, costlier **Legacy crafts** that take a rune instead of a Dragon Stone form and accept any base of the slot.
 
-Crafted items accept Stat and Rune Forging ([[forging]]); spare jewels and Perfect Gems feed these recipes ([[gems-crystals]]).
+Crafted items accept every kind of Forging ([[forging]]); spare jewels and Perfect Gems feed these recipes ([[gems-crystals]]).

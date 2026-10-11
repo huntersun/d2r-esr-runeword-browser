@@ -15,7 +15,6 @@ import {
   formatOutput,
   joinOptions,
   parseCubeCell,
-  visibleOutputs,
   type RecipeVariant,
 } from './cubeText.ts';
 import type { CubeRow, EsrGuideTables } from './esrGuideSources.ts';
@@ -29,6 +28,8 @@ export interface CubeFamily {
   label: string;
   /** Tested against the cubemain `description` */
   match: RegExp;
+  /** Further narrows the matched rows, for descriptions other recipes share (e.g. the Crystal Can's "Moon Rune") */
+  filter?: (row: CubeRow) => boolean;
   /** Rewrites a recipe's formatted text before merging, e.g. to make the per-item rows of one recipe generic */
   rewrite?: (recipe: RecipeVariant, row: CubeRow, esr: FamilyTables) => RecipeVariant;
   /**
@@ -242,6 +243,118 @@ function genericRuneRemoval({ inputs, output }: RecipeVariant): RecipeVariant {
   };
 }
 
+// --- runes -------------------------------------------------------------------------------------------------------
+
+const RUNE_CODE = /^r(\d\d)$/;
+
+function runeNumber(token: string): number | null {
+  const match = RUNE_CODE.exec(token);
+  return match === null ? null : Number(match[1]);
+}
+
+/** Item code of a rune number: 1 → `r01` */
+function runeCode(n: number): string {
+  return `r${String(n).padStart(2, '0')}`;
+}
+
+const runesByDescription = new WeakMap<FamilyTables, Map<string, number[]>>();
+
+/**
+ * The rune numbers of the rune input cells with this `qty`, over every row with this description (sorted, distinct);
+ * the quantity keeps "2× I Rune → U Rune" apart from "Wo Rune + Full Rejuv Potion" under one description.
+ */
+function runesOf(esr: FamilyTables, description: string, qty: number): number[] {
+  let cache = runesByDescription.get(esr);
+  if (cache === undefined) {
+    cache = new Map();
+    runesByDescription.set(esr, cache);
+  }
+  const key = `${description}\u0000${String(qty)}`;
+  const cached = cache.get(key);
+  if (cached !== undefined) return cached;
+  const numbers = new Set<number>();
+  for (const row of esr.cube) {
+    if (row.description !== description) continue;
+    for (const cell of row.inputs.map(parseCubeCell)) {
+      const rune = runeNumber(cell.token);
+      if (rune !== null && cell.qty === qty) numbers.add(rune);
+    }
+  }
+  const sorted = [...numbers].sort((a, b) => a - b);
+  cache.set(key, sorted);
+  return sorted;
+}
+
+/** "I Rune to Wo Rune, Moon Rune to God Rune": runs of consecutive rune codes; "N kinds" past three runs */
+function runeRuns(numbers: readonly number[], esr: FamilyTables): string {
+  const runs: [number, number][] = [];
+  for (const n of numbers) {
+    const last = runs.at(-1);
+    if (last !== undefined && last[1] === n - 1) last[1] = n;
+    else runs.push([n, n]);
+  }
+  if (runs.length > 3) return `${String(numbers.length)} kinds`;
+  const name = (n: number) => esr.nameOf(runeCode(n));
+  return runs.map(([from, to]) => (from === to ? name(from) : `${name(from)} to ${name(to)}`)).join(', ');
+}
+
+/** Rune forging: one row per rune becomes "2× the same rune (I Rune to Wo Rune, …)" per slot. */
+function genericRuneForging(recipe: RecipeVariant, row: CubeRow, esr: FamilyTables): RecipeVariant {
+  const inputs = row.inputs.map((spec, i) => {
+    const cell = parseCubeCell(spec);
+    if (runeNumber(cell.token) === null) return recipe.inputs[i] ?? '';
+    return `${String(cell.qty)}× the same rune (${runeRuns(runesOf(esr, row.description, cell.qty), esr)})`;
+  });
+  return { inputs, output: recipe.output };
+}
+
+/** "Ancient Decal (Ho -> Pul)" → ["Ho", "Pul"] */
+function decalPair(name: string): [string, string] | null {
+  const match = /\((\S+) -> (\S+)\)$/.exec(name);
+  return match === null ? null : [match[1], match[2]];
+}
+
+function runeStem(name: string): string {
+  return name.replace(/ Rune$/, '');
+}
+
+/**
+ * Rune conversions, one generic row per recipe: "2× the same rune (…)" → "The next rune", and the Decal rows as
+ * "Ancient Decal (X -> Y) + X Rune → Y Rune", but only after checking that each Decal names the runes of its row.
+ */
+function genericRuneConversion(recipe: RecipeVariant, row: CubeRow, esr: FamilyTables): RecipeVariant {
+  const cells = row.inputs.map(parseCubeCell);
+  const outputs = row.outputs.map((output) => parseCubeCell(output.spec).token);
+  const only = cells.length === 1 ? cells[0] : undefined;
+  const runes = () => runeRuns(runesOf(esr, row.description, only?.qty ?? 1), esr);
+  if (row.description === 'rune upgrade' && only !== undefined && only.qty > 1 && runeNumber(only.token) !== null) {
+    return { inputs: [`${String(only.qty)}× the same rune (${runes()})`], output: 'The next rune' };
+  }
+  if (row.description === 'rune downgrade' && only !== undefined && runeNumber(only.token) !== null) {
+    return { inputs: [`A rune (${runes()})`], output: 'The rune one grade lower' };
+  }
+  if (row.description === 'decal upgrade' && only !== undefined && only.qty > 1) {
+    return { inputs: [`${String(only.qty)}× the same Ancient Decal`], output: 'The next Ancient Decal' };
+  }
+  const [decal, rune, lod] = [cells.at(0), cells.at(1), outputs.at(0)];
+  if (row.description === 'decal ON' && cells.length === 2 && decal !== undefined && rune !== undefined && lod !== undefined) {
+    const pair = decalPair(esr.nameOf(decal.token));
+    if (pair !== null && pair[0] === runeStem(esr.nameOf(rune.token)) && pair[1] === runeStem(esr.nameOf(lod))) {
+      return { inputs: ['Ancient Decal (X -> Y)', 'X Rune (the ES rune named on the Decal)'], output: 'Y Rune (an LoD rune)' };
+    }
+  }
+  const [es, decalOut] = [outputs.at(0), outputs.at(1)];
+  if (row.description === 'decal OFF' && only !== undefined && es !== undefined && decalOut !== undefined) {
+    const pair = decalPair(esr.nameOf(decalOut));
+    if (pair !== null && pair[0] === runeStem(esr.nameOf(es)) && pair[1] === runeStem(esr.nameOf(only.token))) {
+      return { inputs: [`An LoD rune (${runes()})`], output: 'The ES rune and the Ancient Decal named after it' };
+    }
+  }
+  return recipe;
+}
+
+const KANJI_SOURCE = 'r50';
+
 const CLASSES: Readonly<Partial<Record<string, string>>> = {
   Ama: 'Amazon',
   Ass: 'Assassin',
@@ -252,6 +365,16 @@ const CLASSES: Readonly<Partial<Record<string, string>>> = {
   Sor: 'Sorceress',
   War: 'Warlock',
 };
+
+/**
+ * The quality/slot variants of a forging (set, unique, magic, rare, crafted, white, socketed; weapon, armor, ring,
+ * amulet) as one generic item; jewels stay as they are.
+ */
+function anyEquipment(recipe: RecipeVariant, row: CubeRow): RecipeVariant {
+  const first = parseCubeCell(row.inputs[0] ?? '').token;
+  if (first === 'jewl') return recipe;
+  return { inputs: recipe.inputs.map((input, i) => (i === 0 ? 'Equipment of any quality (no runeword)' : input)), output: recipe.output };
+}
 
 /** The class a skill forging row is for, named in the output (the descriptions are not shown). */
 function skillForgingClass(recipe: RecipeVariant, row: CubeRow): RecipeVariant {
@@ -278,14 +401,29 @@ export const CUBE_FAMILIES: readonly CubeFamily[] = [
     // One row per class: the gem picks the class, the rows only differ in the item slot.
     collapse: (row) => /Skill Forging (\w+)$/.exec(row.description)?.[1] ?? row.description,
   },
-  { id: 'all-skill-forging', label: 'All skills forging', match: /^All Skill Forging /, collapse: true },
+  {
+    id: 'all-skill-forging',
+    label: 'All skills forging',
+    match: /^All Skill Forging /,
+    rewrite: anyEquipment,
+    collapse: () => 'all',
+  },
   { id: 'aura-forging', label: 'Aura forging (amulets)', match: /^Aura Forging$/ },
+  {
+    id: 'rune-forging',
+    label: 'Rune forging',
+    // The wand, staff, glove, torso, shield and belt rows only change the bonus of some runes on those items; the
+    // weapon and armor rows already accept those items, so they are left out to keep the rune lists honest.
+    match: /^Rune Forging (?:weap|armo|ring|amul|Jewel [WH])$/,
+    rewrite: genericRuneForging,
+  },
   {
     id: 'stat-forging',
     label: 'Stat forging',
     match: /^(?!Remove )(?:\w+ )*Stat Forging (?:\w{3}_\w+|Unique Jewel|Mag\/Rar Jewel)$/,
-    // One row per stat (the class tag / gem colour), merging item qualities and slots.
-    collapse: (row) => /Stat Forging (\w{3})_/.exec(row.description)?.[1] ?? row.description,
+    rewrite: anyEquipment,
+    // One row for equipment (the gem colours merged) and one per jewel recipe.
+    collapse: (row) => (/Jewel$/.test(row.description) ? row.description : 'equipment'),
   },
   {
     id: 'socket',
@@ -339,6 +477,33 @@ export const CUBE_FAMILIES: readonly CubeFamily[] = [
     match: /^(?:(?:\[SECRET\d+\] )?(?:Magic|Rare) Charm(?: Reroll)?: |Reset Nor Odd Charm$)/,
     collapse: true,
   },
+  {
+    id: 'rune-conversion',
+    label: 'Rune upgrades and conversions',
+    match: /^(?:rune upgrade|rune downgrade|decal upgrade|decal ON|decal OFF|Nul -> Wo|Wo -> Nul|\w+ Rune)$/,
+    // "Moon Rune" … "God Rune" also name the Crystal Can rows; the Kanji recipes start from a Null Rune.
+    filter: (row) => !/^\w+ Rune$/.test(row.description) || parseCubeCell(row.inputs[0] ?? '').token === KANJI_SOURCE,
+    rewrite: genericRuneConversion,
+    // Wo ↔ Null (also listed as a rune upgrade) is one group; the Kanji runes are one capped group.
+    collapse: (row) =>
+      /^(?:Nul -> Wo|Wo -> Nul)$/.test(row.description) || row.inputs.includes('rvl')
+        ? 'null'
+        : /^\w+ Rune$/.test(row.description)
+          ? 'kanji'
+          : row.description,
+  },
+  // One row per organ, weapon and armor merged (the bonus is in the row's mods, not shown)
+  {
+    id: 'tinkering',
+    label: 'Tinkering with organs',
+    match: /^Tinkering Adds /,
+    collapse: (row) => parseCubeCell(row.inputs[1] ?? '').token,
+  },
+  {
+    id: 'uber-keys',
+    label: 'Pandemonium keys and portals',
+    match: /^(?:Key of \w+ \+ Blemished Gem \+ .+ Conversion|Pandemonium Key Set (?:Wrap|Unwrap)|1 Key of Terror \+ |1 Diablo's Horn \+ )/,
+  },
 ];
 
 export function findCubeFamily(id: string): CubeFamily | undefined {
@@ -346,14 +511,13 @@ export function findCubeFamily(id: string): CubeFamily | undefined {
 }
 
 export function familyRows(family: CubeFamily, esr: Pick<EsrGuideTables, 'cube'>): CubeRow[] {
-  return esr.cube.filter((row) => family.match.test(row.description));
+  return esr.cube.filter((row) => family.match.test(row.description) && (family.filter?.(row) ?? true));
 }
 
 /** Output text; an item handed back unchanged (an output equal to an input) is left out, repeats are counted. */
 function rowOutput(row: CubeRow, esr: Pick<EsrGuideTables, 'nameOf'>): string {
-  const outputs = visibleOutputs(row.outputs);
-  const kept = outputs.filter((output) => !row.inputs.includes(output.spec));
-  const texts = (kept.length > 0 ? kept : outputs).map((output) => formatOutput(output, esr));
+  const kept = row.outputs.filter((output) => !row.inputs.includes(output.spec));
+  const texts = (kept.length > 0 ? kept : row.outputs).map((output) => formatOutput(output, esr));
   return [...countValues(texts)].map(([text, count]) => (count > 1 ? `${String(count)}× ${text}` : text)).join(' + ');
 }
 

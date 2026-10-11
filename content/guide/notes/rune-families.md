@@ -14,17 +14,19 @@ sources: [official-cube, esr-txt, esru-wiki]
 ---
 
 - :term[ES rune]s are ESR's own line, named after Japanese syllables, from I and U at the bottom to Wo at the top. They drop from the start and make the ESR runewords. Two runes of one grade cube into the next; one rune cubes down a grade.
-- :term[Decal]s stand in for vanilla runes. A Decal plus the ES rune of the same number makes an :term[LoD rune] (El up to Zod, the vanilla names). An LoD rune splits back into its Decal and ES rune, so nothing is lost.
+- :term[Decal]s stand in for vanilla runes. A Decal plus the ES rune named on it (each Decal reads like "I -> El") makes an :term[LoD rune] (El up to Zod, the vanilla names). An LoD rune splits back into its Decal and ES rune, so nothing is lost.
 - LoD runes make the vanilla runewords such as [Stealth](rw:Stealth) or [Enigma](rw:Enigma), with ESR stats.
 - The :term[Null Rune] is a Wo Rune cubed with a Full Rejuvenation Potion, and it converts back the same way.
 - :term[Kanji rune]s (Moon, Fire, Water and so on up to God) are made from a Null Rune and crystals ([[gems-crystals]]). They are strong late socketables.
+
+::recipes[rune-conversion]
 
 ### More than sockets
 
 Runes have uses beyond runewords:
 
-- Two identical runes and a chipped gem _forge_ the rune's bonus onto an item; Kanji runes work too ([[forging]]).
+- Two identical ES or Kanji runes and a chipped gem _forge_ the rune's bonus onto an item; LoD runes cannot be forged ([[forging]]).
 - Many recipes take a specific rune: a Sa Rune for Mapling, Yo and Tsu or Ra and Ru for base upgrades, and so on.
 - Socketed on their own, runes give their bonus like gems do.
 
-Keep them in a Rune Stocker and a Decal Stocker ([[stockers]]). The [Socketables](page:/socketables) page lists every rune's bonuses per slot, and [[runewords-gemwords]] covers what to build.
+Keep them in the stash's material tabs, or in a Rune Stocker and a Decal Stocker if you already have them ([[stockers]]). The [Socketables](page:/socketables) page lists every rune's bonuses per slot, and [[runewords-gemwords]] covers what to build.

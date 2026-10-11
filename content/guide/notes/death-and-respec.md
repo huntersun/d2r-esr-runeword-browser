@@ -10,7 +10,7 @@ mentions: [Token of Absolution, Dragon Stone, Ascendancy Stone, Key, Thawing Pot
 officialDocs:
   - label: Cube Recipes – Misc
     href: 'docs:Eastern Sun Resurrected Cube Recipes.html#mis'
-sources: [esr-txt, official-cube, official-docs, esru-wiki]
+sources: [esr-txt, esr-loader, official-cube, official-docs, esru-wiki]
 ---
 
 ### Respec
@@ -25,7 +25,7 @@ The official cube page still shows an older recipe with two Tomes; the game file
 
 ### Dying
 
-- The vanilla penalty applies: you lose some experience and gold and leave your corpse behind.
+- You lose some experience and gold, but no corpse is left behind: you respawn in town with all your gear.
 - Dying in an Endgame Map boss area costs no experience (gold is still lost).
 - After a death, re-equip your Ascendancy Stone: the official page says its bonuses stay off until you do ([[ascendancies]]).
 
@@ -34,5 +34,5 @@ The official cube page still shows an older recipe with two Tomes; the game file
 Most early decisions can be reversed, which makes experimenting cheap:
 
 - A Key in the cube pops every socketable out of an item and keeps both ([[socketing]]).
-- 3 :term[Thawing Potion]s remove a Forging and return its Anvil Stones ([[forging]]).
+- 3 :term[Thawing Potion]s remove a Forging and return its stones or runes; an Aura Stone is lost ([[forging]]).
 - Runewords are removed the same way as other socketables, so trying one costs nothing ([[runewords-gemwords]]).

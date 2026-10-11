@@ -23,11 +23,24 @@ const HEADER = [
   'output c',
   '*eol',
   'b mod 1',
+  'input 4',
+  'input 5',
 ];
+
+/** A cubemain row with up to five inputs and three outputs, in the HEADER column order */
+function cube(description: string, inputs: string[], outputs: string[]): string[] {
+  const [first = '', second = '', third = '', fourth = '', fifth = ''] = inputs;
+  const [output = '', b = '', c = ''] = outputs;
+  return [description, '1', '', String(inputs.length), first, second, third, output, b, c, '0', '', fourth, fifth];
+}
 
 const ITEMTYPES = tsv([
   ['ItemType', 'Code'],
   ['Weapon', 'weap'],
+  ['Any Armor', 'armo'],
+  ['Jewel', 'jewl'],
+  ['Chipped Gem', 'gem0'],
+  ['Blemished Gem', 'gem4'],
   ['Gem Can 8', 'can8'],
   ['Coupon norm', 'cpn1'],
 ]);
@@ -69,6 +82,50 @@ const CUBEMAIN = tsv([
   ['Coupon Reroll', '1', '', '2', 'rnd', '"cpn1,qty=3"', '', '02c', '', '', '0'],
   ["Inarius' Everburning Halo Ring", '1', '', '2', 'ring', 'u40', '', 'useitem', 'cloneitem', '', '0', 'branded'],
   ["Inarius' Everburning Halo Amulet", '1', '', '2', 'can8', 'u40', '', 'useitem', 'cloneitem', '', '0', 'branded'],
+  // Stat and all skills forging: equipment of any quality is one row, jewels keep their own
+  cube('Set Stat Forging Dru_else', ['"any,set"', 'qqq', 'gcg'], ['useitem']),
+  cube('Stat Forging Mag/Rar Jewel', ['jewl', 'qqq', 'gcg'], ['useitem']),
+  cube('Uni Stat Forging Sor_weap', ['"weap,uni"', 'qqq', 'gcb'], ['useitem']),
+  cube('All Skill Forging Set', ['"any,set"', 'map', 'qqq', 'gem0'], ['useitem']),
+  cube('All Skill Forging Normal', ['"weap,nor,nru"', 'map', 'qqq', 'gem0'], ['useitem']),
+  // Rune forging: one row per rune and slot; the wand rows only override bonuses and are left out
+  cube('Rune Forging Jewel W', ['jewl', '"r01,qty=2"', 'gem0', 'tsc'], ['useitem', 'tsc']),
+  cube('Rune Forging Jewel H', ['jewl', '"r01,qty=2"', 'gem0', 'isc'], ['useitem', 'isc']),
+  cube('Rune Forging wand', ['"wand,nru"', '"r02,qty=2"', 'gem0'], ['useitem']),
+  cube('Rune Forging weap', ['"weap,nru"', '"r01,qty=2"', 'gem0'], ['useitem']),
+  cube('Rune Forging weap', ['"weap,nru"', '"r02,qty=2"', 'gem0'], ['useitem']),
+  cube('Rune Forging weap', ['"weap,nru"', '"r03,qty=2"', 'gem0'], ['useitem']),
+  cube('Rune Forging weap', ['"weap,nru"', '"r84,qty=2"', 'gem0'], ['useitem']),
+  cube('Rune Forging armo', ['"armo,nru"', '"r01,qty=2"', 'gem0'], ['useitem']),
+  cube('Rune Forging armo', ['"armo,nru"', '"r02,qty=2"', 'gem0'], ['useitem']),
+  cube('Rune Forging armo', ['"armo,nru"', '"r03,qty=2"', 'gem0'], ['useitem']),
+  cube('Rune Forging armo', ['"armo,nru"', '"r84,qty=2"', 'gem0'], ['useitem']),
+  // Rune conversions
+  cube('rune upgrade', ['"r01,qty=2"'], ['r02']),
+  cube('rune upgrade', ['"r02,qty=2"'], ['r03']),
+  cube('rune upgrade', ['r03', 'rvl'], ['r50']),
+  cube('rune upgrade', ['"r51,qty=2"'], ['r52']),
+  cube('rune downgrade', ['r03'], ['r02']),
+  cube('rune downgrade', ['r02'], ['r01']),
+  cube('Nul -> Wo', ['r50', 'rvl'], ['r03']),
+  cube('Wo -> Nul', ['r03', 'rvl'], ['r50']),
+  cube('decal ON', ['01l', 'r01'], ['r51']),
+  cube('decal ON', ['02l', 'r03'], ['r52']),
+  cube('decal ON', ['03l', 'r02'], ['r53']),
+  cube('decal OFF', ['r51'], ['r01', '01l']),
+  cube('decal OFF', ['r52'], ['r03', '02l']),
+  cube('Moon Rune', ['r50', '"xt0,qty=1"'], ['r84']),
+  cube('Moon Rune', ['can9', 'r84'], ['useitem']),
+  // Tinkering: one row per organ, weapon and armor merged
+  cube('Tinkering Adds Life +1: Equipment + 3 Hearts', ['"weap,nru"', '"hrt,qty=3"'], ['useitem']),
+  cube('Tinkering Adds Fdam 1-3: Equipment + Fang', ['"weap,nru"', 'fng'], ['useitem']),
+  cube('Tinkering Adds Life +1: Equipment + 3 Hearts', ['"armo,nru"', '"hrt,qty=3"'], ['useitem']),
+  cube('Tinkering Adds Fdam 1-3: Equipment + Fang', ['"armo,nru"', 'fng'], ['useitem']),
+  // Pandemonium keys
+  cube('Key of Terror + Blemished Gem + Thawing Potion -> Key of Destruction Conversion', ['pk1', 'gem4', 'wms'], ['pk3', 'wms']),
+  cube('Pandemonium Key Set Unwrap', ['u10'], ['pk1', 'pk2', 'pk3']),
+  cube('Pandemonium Key Set Wrap', ['pk1', 'pk2', 'pk3', 'key'], ['u10', 'key']),
+  cube("1 Diablo's Horn + 1 Baal's Eye + 1 Mephisto's Brain -> Portal to Tristram", ['dhn', 'bey', 'mbr'], ['Pandemonium Finale Portal']),
   ...FILLER,
 ]);
 
@@ -90,6 +147,33 @@ const MISC = tsv([
   ['Coupon nor Armor 2', '02c', '02c', 'cpn1'],
   ['Inarius Everburning Halo', 'u40', 'u40'],
   ['Skeleton Key', 'key', 'key'],
+  ['Maple Leaf', 'map', 'map'],
+  ['Chipped Topaz', 'gcy', 'gcy'],
+  ['Scroll of Town Portal', 'tsc', 'tsc'],
+  ['Scroll of Identify', 'isc', 'isc'],
+  ['I Rune', 'r01', 'r01'],
+  ['U Rune', 'r02', 'r02'],
+  ['Shi Rune', 'r03', 'r03'],
+  ['Null Rune', 'r50', 'r50'],
+  ['El Rune', 'r51', 'r51'],
+  ['Eld Rune', 'r52', 'r52'],
+  ['Tir Rune', 'r53', 'r53'],
+  ['Moon Rune', 'r84', 'r84'],
+  ['Full Rejuv Potion', 'rvl', 'rvl'],
+  ['Ancient Decal (I -> El)', '01l', '01l'],
+  ['Ancient Decal (Shi -> Eld)', '02l', '02l'],
+  ['Ancient Decal (Ka -> Tir)', '03l', '03l'],
+  ['Frozen Soul', 'xt0', 'xt0'],
+  ['Crystal Can', 'can9', 'can9'],
+  ['Key of Terror', 'pk1', 'pk1'],
+  ['Key of Hate', 'pk2', 'pk2'],
+  ['Key of Destruction', 'pk3', 'pk3'],
+  ['Pandemonium Key Set', 'u10', 'u10'],
+  ["Diablo's Horn", 'dhn', 'dhn'],
+  ["Baal's Eye", 'bey', 'bey'],
+  ["Mephisto's Brain", 'mbr', 'mbr'],
+  ['Heart', 'hrt', 'hrt'],
+  ['Fang', 'fng', 'fng'],
 ]);
 
 const FAMILY_STRINGS = JSON.stringify([
@@ -165,13 +249,80 @@ describe('cube families', () => {
     ]);
   });
 
-  it('shows a cloned item as the same item with its mods, and a type by the one name its items share', () => {
+  it('shows a cloned item as a copy with its mods next to the original, and a type by the one name its items share', () => {
     expect(collectFamily(family('legendary-consumables'), esr())).toEqual([
       {
         inputs: ['Ring / Multi Stocker', "Inarius' Everburning Halo"],
-        output: 'The same item (Branded)',
+        output: 'The same item + A copy of the item (Branded)',
         note: null,
       },
+    ]);
+  });
+
+  it('shows stat and all skills forging on equipment of any quality as one row, jewels apart', () => {
+    expect(collectFamily(family('stat-forging'), esr())).toEqual([
+      {
+        inputs: ['Equipment of any quality (no runeword)', 'Anvil Stone', 'Chipped Emerald / Chipped Sapphire'],
+        output: 'The same item',
+        note: null,
+      },
+      { inputs: ['Jewel', 'Anvil Stone', 'Chipped Emerald'], output: 'The same item', note: null },
+    ]);
+    expect(collectFamily(family('all-skill-forging'), esr())).toEqual([
+      {
+        inputs: ['Equipment of any quality (no runeword)', 'Maple Leaf', 'Anvil Stone', 'Chipped Gem'],
+        output: 'The same item',
+        note: null,
+      },
+    ]);
+  });
+
+  it('merges the per-rune forging rows per slot, naming the runes as ranges, and leaves out the bonus overrides', () => {
+    expect(collectFamily(family('rune-forging'), esr())).toEqual([
+      {
+        inputs: ['Jewel', '2× the same rune (I Rune)', 'Chipped Gem', 'Scroll of Town Portal / Scroll of Identify'],
+        output: 'The same item',
+        note: null,
+      },
+      {
+        inputs: ['Weapon (no runeword) / Any Armor (no runeword)', '2× the same rune (I Rune to Shi Rune, Moon Rune)', 'Chipped Gem'],
+        output: 'The same item',
+        note: null,
+      },
+    ]);
+  });
+
+  it('shows rune conversions generically, checks the Decal pairs against their names and keeps Crystal Can rows out', () => {
+    expect(collectFamily(family('rune-conversion'), esr())).toEqual([
+      { inputs: ['2× the same rune (I Rune to U Rune, El Rune)'], output: 'The next rune', note: null },
+      { inputs: ['Shi Rune', 'Full Rejuv Potion'], output: 'Null Rune', note: null },
+      { inputs: ['Null Rune', 'Full Rejuv Potion'], output: 'Shi Rune', note: null },
+      { inputs: ['A rune (U Rune to Shi Rune)'], output: 'The rune one grade lower', note: null },
+      {
+        inputs: ['Ancient Decal (X -> Y)', 'X Rune (the ES rune named on the Decal)'],
+        output: 'Y Rune (an LoD rune)',
+        note: null,
+      },
+      // A Decal whose name does not match its row is shown as it is
+      { inputs: ['Ancient Decal (Ka -> Tir)', 'U Rune'], output: 'Tir Rune', note: null },
+      { inputs: ['An LoD rune (El Rune to Eld Rune)'], output: 'The ES rune and the Ancient Decal named after it', note: null },
+      { inputs: ['Null Rune', 'Frozen Soul'], output: 'Moon Rune', note: null },
+    ]);
+  });
+
+  it('lists tinkering once per organ', () => {
+    expect(collectFamily(family('tinkering'), esr())).toEqual([
+      { inputs: ['Weapon (no runeword) / Any Armor (no runeword)', '3× Heart'], output: 'The same item', note: null },
+      { inputs: ['Weapon (no runeword) / Any Armor (no runeword)', 'Fang'], output: 'The same item', note: null },
+    ]);
+  });
+
+  it('lists the Pandemonium key recipes', () => {
+    expect(collectFamily(family('uber-keys'), esr())).toEqual([
+      { inputs: ['Key of Terror', 'Blemished Gem', 'Thawing Potion'], output: 'Key of Destruction', note: null },
+      { inputs: ['Pandemonium Key Set'], output: 'Key of Terror + Key of Hate + Key of Destruction', note: null },
+      { inputs: ['Key of Terror', 'Key of Hate', 'Key of Destruction', 'Skeleton Key'], output: 'Pandemonium Key Set', note: null },
+      { inputs: ["Diablo's Horn", "Baal's Eye", "Mephisto's Brain"], output: 'Pandemonium Finale Portal', note: null },
     ]);
   });
 

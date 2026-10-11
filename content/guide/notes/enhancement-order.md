@@ -29,18 +29,18 @@ sources: [official-cube, official-docs, esru-wiki]
 
 ESR stacks many upgrades on one item. Some can be undone, some are random, and some lock the item for good, so the order matters.
 
-| Enhancement                                   | Removable?             | Random or fixed?                | How to undo                                                   |
-| --------------------------------------------- | ---------------------- | ------------------------------- | ------------------------------------------------------------- |
-| Socket contents                               | Yes                    | Fixed                           | Key returns item and socketables                              |
-| Added sockets                                 | No                     | Fixed                           | Count cannot change                                           |
-| Forging                                       | Yes, except Wo Forging | Fixed                           | 3 Thawing Potions; Aura Stones are lost                       |
-| [[mercenaries-oskills\|Merc Only Conversion]] | Yes                    | Fixed                           | 3 Antidote Potions                                            |
-| [[weapon-mastery\|Weapon mastery]]            | Yes                    | Fixed                           | Class Dragon Stone form + 3 Thawing Potions; token lost       |
-| D-stoning, gem melding                        | No                     | Fixed                           | Mapling only lowers the level penalty                         |
-| [[tinkering\|Tinkering]]                      | No                     | Fixed                           | Limited by hidden tinkering points                            |
-| Corruption                                    | Status only            | Random; can brick               | Astrogha's Petrified Heart clears the status, keeps the bonus |
-| Anointment                                    | No                     | Random                          | None                                                          |
-| Legendary consumables                         | No                     | Fixed, except Sanctify (random) | None; Branded items cannot be changed again                   |
+| Enhancement                                   | Removable?             | Random or fixed?                | How to undo                                                                       |
+| --------------------------------------------- | ---------------------- | ------------------------------- | --------------------------------------------------------------------------------- |
+| Socket contents                               | Yes                    | Fixed                           | Key returns item and socketables                                                  |
+| Added sockets                                 | No                     | Fixed                           | Count cannot change                                                               |
+| Forging                                       | Yes, except Wo Forging | Fixed                           | 3 Thawing Potions; Aura Stones are lost                                           |
+| [[mercenaries-oskills\|Merc Only Conversion]] | Yes                    | Fixed                           | 3 Antidote Potions                                                                |
+| [[weapon-mastery\|Weapon mastery]]            | Yes                    | Fixed                           | Class Dragon Stone form + 3 Thawing Potions; token and Anvil Stone lost           |
+| D-stoning, gem melding                        | No                     | Fixed                           | Mapling only lowers the level penalty                                             |
+| [[tinkering\|Tinkering]]                      | No                     | Fixed                           | Limited by hidden tinkering points                                                |
+| Corruption                                    | Status only            | Random; can brick               | Astrogha's Petrified Heart clears the status, keeps the bonus                     |
+| Anointment                                    | No                     | Random                          | None                                                                              |
+| Legendary consumables                         | No                     | Fixed, except Sanctify (random) | None; the Halo gives back your item plus a Branded copy that can never be changed |
 
 ### A sensible order
 
@@ -50,7 +50,7 @@ ESR stacks many upgrades on one item. Some can be undone, some are random, and s
 4. **D-stone or gem meld, then Maple and repeat** on items you will keep ([[dstoning-and-mapling]]).
 5. **:term[Tinkering]** with organs, until the item's hidden points run out ([[tinkering]]).
 6. **:term[Corruption]**, then **:term[Anointment]** ([[corruption-anointment]]). Corruption can turn the item into a random rare, so only corrupt what you can afford to lose.
-7. **Legendary consumables last:** Tyrael's Eternal Feather (ethereal), Lilith's Crystallized Tear (Spell Mastery), :term[Sanctify] for jewels (one random bonus, once per jewel), and :term[Branded] from Inarius' Everburning Halo, which freezes the item permanently.
+7. **Legendary consumables last:** Tyrael's Eternal Feather (ethereal), Lilith's Crystallized Tear (Spell Mastery), :term[Sanctify] for jewels (one random bonus, once per jewel), and Inarius' Everburning Halo, which gives back your item plus a :term[Branded] copy that can never be changed again.
 
 ::recipes[legendary-consumables]
 

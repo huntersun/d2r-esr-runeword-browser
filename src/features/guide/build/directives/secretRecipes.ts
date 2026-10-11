@@ -3,7 +3,7 @@
  * number (the txt repeats a recipe per base type, quality or socket count).
  */
 import type { RecipeRow } from '../../engine/schema.ts';
-import { capGroup, clusterVariants, distinct, formatInput, formatOutput, visibleOutputs, type RecipeVariant } from '../cubeText.ts';
+import { capGroup, clusterVariants, distinct, formatInput, formatOutput, type RecipeVariant } from '../cubeText.ts';
 import type { EsrGuideTables } from '../esrGuideSources.ts';
 import { requireEsr, type DirectiveResolver } from './types.ts';
 
@@ -23,7 +23,7 @@ export function collectSecretRecipes(esr: EsrGuideTables): Map<number, RecipeRow
       groups.set(number, group);
     }
     // An output identical to an input (the Ancient Scroll) is returned unchanged; the caption says so instead.
-    const outputs = visibleOutputs(row.outputs).filter((output) => !row.inputs.includes(output.spec));
+    const outputs = row.outputs.filter((output) => !row.inputs.includes(output.spec));
     group.variants.push({
       inputs: row.inputs.map((input) => formatInput(input, esr)),
       output: outputs.map((output) => formatOutput(output, esr)).join(' + '),

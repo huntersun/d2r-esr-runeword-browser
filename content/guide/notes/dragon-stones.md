@@ -61,7 +61,7 @@ An :term[Anvil Stone] is the costlier stone, made from Dragon Stones (or Multi S
 
 ::recipes[anvil-stone]
 
-Anvil Stones pay for Skill and Stat Forging ([[forging]]) and Merc Only Conversion ([[mercenaries-oskills]]). Removing either gives the Anvil Stones back.
+Anvil Stones pay for Skill, All Skill and Stat Forging ([[forging]]), Merc Only Conversion ([[mercenaries-oskills]]) and [[weapon-mastery]]. Removing a Forging or the conversion gives them back; removing a weapon mastery does not.
 
 ::source[Anvil Stone]
 

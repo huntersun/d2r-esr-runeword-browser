@@ -17,7 +17,7 @@ sources: [official-docs, official-cube, esr-txt]
 The vanilla rule still holds: put the right socketables, in the right order, into a white item of an allowed type with the right number of sockets. ESR has three families:
 
 - **ESR runewords** use ES runes, and many have low level requirements, for example [Luck](rw:Luck) or [Strength](rw:Strength).
-- **LoD runewords** use LoD runes and keep their vanilla names, such as [Insight](rw:Insight) or [Enigma](rw:Enigma), but with ESR stats. A few names exist in both families with different recipes, so check which runes the card shows.
+- **LoD runewords** use LoD runes and keep their vanilla names, such as [Insight](rw:Insight) or [Enigma](rw:Enigma), but with ESR stats. Many names, Insight among them, exist in both families with different runes and bases, so check which runes the card shows.
 - :term[Gemword]s use gems instead of runes, so the gems you pick up anyway become gear. [ArchDimeron](gw:ArchDimeron) is one example.
 
 A card shows the runes, bases and stats, for example the early LoD runeword Stealth:

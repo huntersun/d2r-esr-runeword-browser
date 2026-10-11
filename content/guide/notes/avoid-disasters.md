@@ -16,11 +16,11 @@ sources: [official-docs, official-cube, patchnotes, esr-txt, esru-wiki]
 
 ### Charms only work in the charm inventory
 
-ESR adds a separate charm inventory, opened from a button on the inventory panel. Charms left in the normal inventory get a red tint and give no bonus. Only one of Noob's or Veteran's Odd Charm counts at a time; the other turns red. Unique charms are limited as well: patch 3.2.11 fixed a bug that let you equip several in the charm inventory ([[unique-charms]]). <!-- verify: the game files do not show the rule (no carry-one flag on unique charms); check in-game whether the limit is one unique charm in total or one of each -->
+ESR adds a separate charm inventory, opened from a button on the inventory panel. Charms left in the normal inventory get a red tint and give no bonus. Only one of Noob's or Veteran's Odd Charm counts at a time; the other turns red. Unique charms are limited as well: you can carry only one of each of the big ones, such as Annihilus or the Hellfire Torch, and patch 3.2.11 fixed a bug that let you equip several in the charm inventory ([[unique-charms]]). <!-- verify: uniqueitems.txt gives 12 unique charms (Annihilus, Hellfire Torch, Gheed's Fortune, Eternal Hourglass, Rathma's Skull and others) each its own carry-one flag, so the files say one of each, not one in total; the other unique charms have no flag. Check in-game. -->
 
 ### Items that are not for you
 
-- Gear changed by **Merc Only Conversion** shows "(merc only)" and carries a huge hidden life drain (a -900 life regeneration stat; the original Eastern Sun used a Vitality penalty instead), so wearing it yourself empties your life to 1. Give it to your mercenary ([[mercenaries-oskills]]). Three Antidote Potions in the cube remove the conversion and return the Anvil Stone and gem.
+- Gear changed by **Merc Only Conversion** shows a red "Merc Only Conversion" line and carries a huge hidden life drain (a -900 life regeneration stat; the original Eastern Sun used a Vitality penalty instead), so wearing it yourself empties your life to 1. Give it to your mercenary ([[mercenaries-oskills]]). Three Antidote Potions in the cube remove the conversion and return the Anvil Stone and gem.
 - The :term[Vessel of Souls] is a mythical amulet you feed organs in the cube. It is not meant to be worn; the official page warns that wearing it sets your life to 1 ([[vessel-of-souls]]).
 
 ### Cube and save safety
