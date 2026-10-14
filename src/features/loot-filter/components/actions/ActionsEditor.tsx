@@ -70,7 +70,7 @@ export function ActionsEditor({ actions, onChange, filter, owner, styleName }: A
           <CheckField
             id={id('hide')}
             label="Hide"
-            hint="Hides the ground label; no later rule runs."
+            hint="Hides the ground label; no later rule runs, and no rule can show it again."
             checked={actions.hide === true}
             onChange={(value) => {
               onChange({ hide: flag(value) });
@@ -208,7 +208,7 @@ export function ActionsEditor({ actions, onChange, filter, owner, styleName }: A
               id={id('droplight-color')}
               label="droplight tint"
               value={actions.droplight.color}
-              noneLabel="the effect's own colours"
+              noneLabel="the game's white beam"
               onChange={(color) => {
                 onChange({ droplight: color === undefined ? {} : { color: [color[0], color[1], color[2]] } });
               }}

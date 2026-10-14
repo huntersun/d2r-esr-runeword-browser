@@ -82,7 +82,7 @@ export function SoundField({ idPrefix, sound, soundVolume, filterVolume, onSound
     previewNote =
       typeof sound === 'string' && isSoundFile(sound)
         ? 'Preview not available: your own file (pick it below to listen).'
-        : 'Preview not available: a sounds.txt sound plays from the game files.';
+        : "No preview: a game sound plays from the game's files.";
   }
 
   return (
@@ -176,7 +176,9 @@ export function SoundField({ idPrefix, sound, soundVolume, filterVolume, onSound
           )}
         </div>
         <p className="text-xs text-muted-foreground">
-          A bundled file (from Sully&apos;s QoL), a .wav/.mp3/.flac in the filter&apos;s sounds folder, or a sounds.txt name or row.
+          A .wav, .mp3 or .flac file in the <code>sounds</code> folder next to the filter (the bundled ones come from Sully&apos;s QoL), or
+          one of the game&apos;s own sounds by its sounds.txt name or row, such as <code>item_rune</code>. sounds.txt is a table inside the
+          mod&apos;s game data: you need no file, the game plays its own sound.
         </p>
         {previewNote !== null && <p className="text-xs text-muted-foreground">{previewNote}</p>}
         {preview.error !== null && <p className="text-xs text-destructive">{preview.error}</p>}

@@ -24,7 +24,8 @@ export function IconField({ idPrefix, icon, onChange }: IconFieldProps) {
         hint="Drawn on the minimap where the item lies. HD graphics only."
         checked={icon !== undefined}
         onChange={(checked) => {
-          onChange(checked ? { iconName: BUNDLED_ICONS[0] } : undefined);
+          // 50 px, as the mod's own filter uses; a sprite drawn at its own size is 200 px wide on the minimap.
+          onChange(checked ? { iconName: BUNDLED_ICONS[0], iconSize: 50 } : undefined);
         }}
       />
       {icon && (

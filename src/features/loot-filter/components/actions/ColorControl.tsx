@@ -16,7 +16,7 @@ interface ColorControlProps {
   readonly withAlpha?: boolean;
   /** The alpha the plugin uses when the colour has none (shown on the slider). Default 255. */
   readonly defaultAlpha?: number;
-  /** What an unset colour means, e.g. "none" or "the effect's own colours". */
+  /** What an unset colour means, e.g. "none" or "the game's white beam". */
   readonly noneLabel?: string;
   /** The colour "Set" starts from. Default white. */
   readonly initialColor?: LabelColor;

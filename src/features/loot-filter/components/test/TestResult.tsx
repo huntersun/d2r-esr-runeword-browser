@@ -141,7 +141,7 @@ export function TestResult({ data, result, quality, onShowRule }: TestResultProp
           ) : (
             <p className="flex items-center gap-1.5 text-sm">
               {result.droplight.color === undefined ? (
-                "The effect's own colours"
+                "The game's white beam"
               ) : (
                 <>
                   <Swatch color={result.droplight.color} />
