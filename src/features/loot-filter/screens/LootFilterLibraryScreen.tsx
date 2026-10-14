@@ -12,9 +12,10 @@ import { NameDialog } from '../components/NameDialog';
 import { createBlank, duplicate, importText, remove, rename } from '../store/lootFilterSlice';
 import { selectLibraryEntries, selectLibraryHydrated } from '../store/selectors';
 import type { LootFilterEntry } from '../store/types';
-import { downloadTextFile, filterFileName } from '../utils/download';
 import { checkFilterText, fileBaseName } from '../utils/readFilterText';
 import { TEMPLATE_CREDIT, TEMPLATE_NAME, fetchTemplateText } from '../utils/template';
+
+const CODE = 'rounded bg-muted px-1 py-0.5 text-xs';
 
 type NameDialogState = { readonly kind: 'new' } | { readonly kind: 'rename'; readonly entry: LootFilterEntry } | null;
 
@@ -84,11 +85,17 @@ export function LootFilterLibraryScreen() {
           <p>
             In the ESR launcher, open the <span className="font-medium text-foreground">Loot Filter</span> tab and choose{' '}
             <span className="font-medium text-foreground">Import</span> with the downloaded file. Your filters live in{' '}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">
-              {'<Saved Games>\\Diablo II Resurrected\\mods\\<mod>\\LootFilters\\'}
-            </code>
-            ; sound files go in a <code className="rounded bg-muted px-1 py-0.5 text-xs">sounds</code> folder and minimap icons in an{' '}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">icons</code> folder next to the filter.
+            <code className={CODE}>{'<Saved Games>\\Diablo II Resurrected\\mods\\<mod>\\LootFilters\\'}</code>; sound files go in a{' '}
+            <code className={CODE}>sounds</code> folder and minimap icons in an <code className={CODE}>icons</code> folder next to the
+            filter. Import copies only the filter file, so when a filter uses the bundled sounds or icons, choose{' '}
+            <span className="font-medium text-foreground">Download .zip with sounds and icons</span> and unzip it into your LootFilters
+            folder.
+          </p>
+          <p>
+            If a sound or icon does not work, check the <code className={CODE}>sounds</code>/<code className={CODE}>icons</code> folders
+            next to the filter; if chat lines do not print, run <code className={CODE}>lootfilter</code> in the game console and read{' '}
+            <code className={CODE}>{'d2rloader\\logs\\celestialrayone.loot-filter.log'}</code> (set{' '}
+            <code className={CODE}>debug_log = true</code> in the plugin&apos;s TOML to log every chat line).
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -107,7 +114,7 @@ export function LootFilterLibraryScreen() {
           </Button>
           <Button variant="outline" onClick={() => void handleTemplate()} disabled={!hydrated || loadingTemplate}>
             {loadingTemplate ? <Spinner /> : <Sparkles />}
-            Start from Sully&apos;s QoL
+            Start from the ESR default filter
           </Button>
           <input
             ref={fileInput}
@@ -134,7 +141,7 @@ export function LootFilterLibraryScreen() {
             <Filter className="size-8 text-muted-foreground" aria-hidden />
             <p className="font-medium">No filters yet</p>
             <p className="text-sm text-muted-foreground">
-              Start a new filter, upload one you already have, or begin from Sully&apos;s QoL filter.
+              Start a new filter, upload one you already have, or begin from the ESR default filter.
             </p>
           </CardContent>
         </Card>
@@ -151,9 +158,6 @@ export function LootFilterLibraryScreen() {
               onDelete={() => {
                 setPendingDelete(entry);
                 setDeleteOpen(true);
-              }}
-              onDownload={() => {
-                downloadTextFile(filterFileName(entry.name), entry.text);
               }}
             />
           ))}

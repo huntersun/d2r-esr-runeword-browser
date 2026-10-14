@@ -1,7 +1,7 @@
 import { lootFilterAssetUrl } from './template';
 
 /**
- * The sound and icon files shipped with Sully's QoL template under `public/loot-filters/`. The editor can
+ * The sound and icon files shipped with the ESR default filter template under `public/loot-filters/`. The editor can
  * preview these; any other file lives only in the user's own filter folder.
  */
 

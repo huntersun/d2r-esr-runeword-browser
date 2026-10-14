@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
-import { Copy, Download, Pencil, Trash2 } from 'lucide-react';
+import { Copy, Pencil, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import type { LootFilterEntry, LootFilterSource } from '../store/types';
 import { summarizeEntry } from '../utils/entrySummary';
+import { referencedAssetsOfText } from '../utils/referencedAssets';
+import { FilterDownloadMenu } from './FilterDownloadMenu';
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
@@ -25,10 +27,9 @@ interface LibraryEntryCardProps {
   readonly onDuplicate: () => void;
   readonly onRename: () => void;
   readonly onDelete: () => void;
-  readonly onDownload: () => void;
 }
 
-export function LibraryEntryCard({ entry, onDuplicate, onRename, onDelete, onDownload }: LibraryEntryCardProps) {
+export function LibraryEntryCard({ entry, onDuplicate, onRename, onDelete }: LibraryEntryCardProps) {
   const summary = summarizeEntry(entry.text);
   const byline = [summary.title, summary.author === null ? null : `by ${summary.author}`].filter((part) => part !== null).join(' ');
 
@@ -59,10 +60,7 @@ export function LibraryEntryCard({ entry, onDuplicate, onRename, onDelete, onDow
         <Button size="sm" asChild>
           <Link to={`/loot-filters/${entry.id}`}>Open</Link>
         </Button>
-        <Button size="sm" variant="outline" onClick={onDownload}>
-          <Download />
-          Download
-        </Button>
+        <FilterDownloadMenu name={entry.name} getText={() => entry.text} assets={referencedAssetsOfText(entry.text)} variant="outline" />
         <Button size="sm" variant="ghost" onClick={onDuplicate} aria-label={`Duplicate ${entry.name}`}>
           <Copy />
           Duplicate

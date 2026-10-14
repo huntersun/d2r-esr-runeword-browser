@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Download, FileWarning } from 'lucide-react';
+import { ArrowLeft, FileWarning } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
@@ -10,6 +10,7 @@ import { TAB_ACTIVE, TAB_BASE, TAB_INACTIVE } from '@/core/components/navTabClas
 import type { RootState } from '@/core/store';
 import { serializeLootFilter } from '../engine/serialize';
 import { DiagnosticsChip } from '../components/DiagnosticsChip';
+import { FilterDownloadMenu } from '../components/FilterDownloadMenu';
 import { InlineName } from '../components/InlineName';
 import { JsonTab, type JsonDraft } from '../components/JsonTab';
 import { RulesTab } from '../components/RulesTab';
@@ -20,7 +21,7 @@ import { EDITOR_TABS, useEditorTab, type EditorTab } from '../hooks/useEditorTab
 import { useLootFilterReference } from '../hooks/useLootFilterReference';
 import { close, editorFlushed, open, rename, selectRule } from '../store/lootFilterSlice';
 import { selectDiagnostics, selectEditor, selectLibraryEntry, selectLibraryHydrated } from '../store/selectors';
-import { downloadTextFile, filterFileName } from '../utils/download';
+import { collectReferencedAssets, referencedAssetsOfText } from '../utils/referencedAssets';
 import { defaultTestItem } from '../utils/testItemForm';
 
 interface EntryDraft {
@@ -112,9 +113,8 @@ export function LootFilterEditorScreen() {
   const filter = editor.filter;
 
   // The stored text keeps the file's comments and formatting; it is re-serialized only while edits are not yet saved.
-  const handleDownload = () => {
-    downloadTextFile(filterFileName(entry.name), editor.dirty && filter !== null ? serializeLootFilter(filter) : entry.text);
-  };
+  const downloadText = () => (editor.dirty && filter !== null ? serializeLootFilter(filter) : entry.text);
+  const assets = filter === null ? referencedAssetsOfText(entry.text) : collectReferencedAssets(filter);
 
   const showDiagnostics = () => {
     setTab('json');
@@ -196,10 +196,7 @@ export function LootFilterEditorScreen() {
           <InlineName name={entry.name} onRename={(name) => dispatch(rename({ id: entry.id, name }))} />
           <div className="flex flex-wrap items-center gap-2">
             <DiagnosticsChip diagnostics={diagnostics} onClick={showDiagnostics} />
-            <Button size="sm" onClick={handleDownload}>
-              <Download />
-              Download
-            </Button>
+            <FilterDownloadMenu name={entry.name} getText={downloadText} assets={assets} />
           </div>
         </div>
         <div role="tablist" className="flex flex-wrap gap-1" aria-label="Filter editor tabs">

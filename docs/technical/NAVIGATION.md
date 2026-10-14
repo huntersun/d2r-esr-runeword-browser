@@ -21,7 +21,7 @@ Documentation for routing, layout, and navigation patterns.
 | `/game-data/affixes`    | AffixesScreen           | Affix browser + "what can roll" on a base                                                           |
 | `/game-data/types`      | ItemTypesScreen         | Item type tree + socket caps, `?type=<code>` focus                                                  |
 | `/loot-filters`         | LootFilterLayout        | Loot filter frame: an "Under development" notice above every loot-filter page, then the child route |
-| `/loot-filters` (index) | LootFilterLibraryScreen | Loot filter library: new, upload, Sully's QoL template, download                                    |
+| `/loot-filters` (index) | LootFilterLibraryScreen | Loot filter library: new, upload, ESR default filter template, download (.json or .zip)             |
 | `/loot-filters/:id`     | LootFilterEditorScreen  | Loot filter editor, `?tab=rules\|styles\|settings\|json\|test`; unknown id shows "Filter not found" |
 | `/builds`               | BuildsScreen            | Shared builds list (Supabase only)                                                                  |
 | `/builds/new`           | CreateBuildScreen       | Create a build (sign-in required)                                                                   |
