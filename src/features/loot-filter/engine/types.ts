@@ -96,7 +96,7 @@ export interface MinimapIcon {
 }
 
 export interface Droplight {
-  /** Optional tint; `{}` keeps the effect's own colours. */
+  /** Optional beam colour; `{}` keeps the game's white beam. */
   readonly color?: RgbColor;
 }
 
@@ -250,4 +250,8 @@ export interface LootFilterReference {
   /** Number of rows in sounds.txt (a `sound` row number must be below it). */
   readonly soundRowCount: number;
   readonly uniqueOrSetIds: ReadonlySet<number>;
+  /** Item code → the ancestors of its `type` and `type2` (each including itself), for the "never matches" checks. */
+  readonly itemCodeTypes: ReadonlyMap<string, ReadonlySet<string>>;
+  /** Item type → its ancestors, including itself. */
+  readonly typeAncestors: ReadonlyMap<string, ReadonlySet<string>>;
 }

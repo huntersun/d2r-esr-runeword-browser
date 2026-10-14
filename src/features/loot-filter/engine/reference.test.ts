@@ -2,11 +2,11 @@ import { describe, it, expect } from 'vitest';
 import type { ItemTypeInfo, LootFilterDataBundle } from '../../game-data/engine/schema.ts';
 import { buildLootFilterReference, EMPTY_LOOT_FILTER_REFERENCE } from './reference.ts';
 
-const itemType = (code: string): ItemTypeInfo => ({
+const itemType = (code: string, parents: string[] = []): ItemTypeInfo => ({
   code,
   name: code,
-  parents: [],
-  ancestors: [code],
+  parents,
+  ancestors: [code, ...parents],
   sockets: [0, 0, 0],
   thresholds: [0, 0],
   cls: null,
@@ -47,6 +47,20 @@ describe('buildLootFilterReference', () => {
     expect([...reference.soundNames]).toEqual(['cursor_pass', 'item_rune']);
     expect(reference.soundRowCount).toBe(3);
     expect([...reference.uniqueOrSetIds].sort()).toEqual([0, 2]);
+  });
+
+  it('maps item codes to the ancestors of their type and type2', () => {
+    const withType2: LootFilterDataBundle = {
+      ...data,
+      items: [...data.items, { code: 'dbl', name: 'Double', kind: 'weapon', type: 'axe', type2: 'club', spawnable: true }],
+    };
+    const types = { types: [itemType('axe', ['weap']), itemType('club', ['blun', 'weap']), itemType('weap')], classes: [] };
+    const reference = buildLootFilterReference(withType2, types);
+    expect([...(reference.itemCodeTypes.get('hax') ?? [])]).toEqual(['axe', 'weap']);
+    // A type types.json lacks counts as itself.
+    expect([...(reference.itemCodeTypes.get('r01') ?? [])]).toEqual(['rune']);
+    expect([...(reference.itemCodeTypes.get('dbl') ?? [])].sort()).toEqual(['axe', 'blun', 'club', 'weap']);
+    expect([...(reference.typeAncestors.get('club') ?? [])]).toEqual(['club', 'blun', 'weap']);
   });
 
   it('has an empty fallback', () => {

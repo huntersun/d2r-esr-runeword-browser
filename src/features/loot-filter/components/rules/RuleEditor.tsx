@@ -17,6 +17,7 @@ import { NamedMatchControl } from './conditions/NamedMatchControl';
 import { NumberMatchControl } from './conditions/NumberMatchControl';
 import { StatCheckList } from './conditions/StatCheckList';
 import { TriStateControl } from './conditions/TriStateControl';
+import { HowRulesCombine } from './HowRulesCombine';
 import { RuleDiagnostics } from './RuleDiagnostics';
 
 export const RULE_EDITOR_ID = 'loot-filter-rule-editor';
@@ -183,6 +184,8 @@ export function RuleEditor({ filter, index, rule, diagnostics, data }: RuleEdito
           </div>
 
           <RuleDiagnostics index={index} diagnostics={diagnostics} />
+
+          <HowRulesCombine />
 
           <ConditionSection title="Which items">{ITEM_LIST_FIELDS.map(listField)}</ConditionSection>
 

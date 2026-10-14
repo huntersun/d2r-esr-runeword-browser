@@ -22,19 +22,36 @@ function checkRule(rule: LootFilterRule, reference?: LootFilterReference): [stri
 }
 
 const reference: LootFilterReference = {
-  itemCodes: new Set(['r01', 'hax']),
-  itemTypes: new Set(['rune', 'weap']),
+  itemCodes: new Set(['r01', 'hax', 'cap', 'dbl']),
+  itemTypes: new Set(['rune', 'misc', 'weap', 'axe', 'club', 'blun', 'helm', 'armo']),
   statNames: new Set(['item_numsockets']),
   statIds: new Set([194]),
   areaIds: new Set([1, 2]),
   soundNames: new Set(['item_rune']),
   soundRowCount: 100,
   uniqueOrSetIds: new Set([0, 1]),
+  itemCodeTypes: new Map([
+    ['r01', new Set(['rune', 'misc'])],
+    ['hax', new Set(['axe', 'weap'])],
+    ['cap', new Set(['helm', 'armo'])],
+    // A base with a type2 counts as both types.
+    ['dbl', new Set(['axe', 'club', 'blun', 'weap'])],
+  ]),
+  typeAncestors: new Map([
+    ['helm', new Set(['helm', 'armo'])],
+    ['axe', new Set(['axe', 'weap'])],
+    ['rune', new Set(['rune', 'misc'])],
+  ]),
 };
+
+/** The messages of the rule's diagnostics (`null` validates without a reference). */
+function messages(rule: LootFilterRule, ref: LootFilterReference | null = reference): string[] {
+  return validateLootFilter({ ...base, rules: [rule] }, ref ?? undefined).map((d) => `${d.path}: ${d.message}`);
+}
 
 describe('validateLootFilter', () => {
   it('finds no errors in Sully’s filter', () => {
-    const source = readFileSync(resolve(__dirname, '../../../../public/loot-filters/sullys-qol.json'), 'utf-8');
+    const source = readFileSync(resolve(__dirname, '../../../../public/loot-filters/esr-default-filter.json'), 'utf-8');
     const diagnostics = validateLootFilter(parseLootFilter(source).filter);
     expect(diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
     // It has no warnings either (also none against the real game-data reference when last checked).
@@ -204,7 +221,80 @@ describe('validateLootFilter', () => {
   });
 
   it('tags every rule diagnostic with its rule index', () => {
-    const diagnostics: Diagnostic[] = validateLootFilter({ ...base, rules: [{ hide: true }, { useStyle: 'X' }] });
+    const diagnostics: Diagnostic[] = validateLootFilter({ ...base, rules: [{ itemCodes: ['r01'], hide: true }, { useStyle: 'X' }] });
     expect(diagnostics).toEqual([expect.objectContaining({ rule: 1, path: 'rules/1/useStyle' })]);
+  });
+
+  describe('rules that never match', () => {
+    it('warns when no item code is of the item types', () => {
+      expect(messages({ itemCodes: ['cap', 'hax'], itemTypes: ['rune'], hide: true })).toEqual([
+        'rules/0/itemTypes: None of the item codes is of the item types, so the rule never matches',
+      ]);
+      expect(messages({ itemCodes: ['cap', 'hax'], itemTypes: ['armo'], hide: true })).toEqual([]);
+      // type2 counts: dbl is an axe and a club.
+      expect(messages({ itemCodes: ['dbl'], itemTypes: ['blun'], hide: true })).toEqual([]);
+      // Unknown codes are skipped; only unknown codes skip the check.
+      expect(messages({ itemCodes: ['zzz'], itemTypes: ['rune'], hide: true }, { ...reference, itemCodes: new Set() })).toEqual([]);
+      expect(messages({ itemCodes: ['cap'], itemTypes: ['rune'], hide: true }, null)).toEqual([]);
+    });
+
+    it('warns when every listed value is also excepted', () => {
+      expect(messages({ itemCodes: ['cap'], excludeItemCodes: ['cap', 'hax'], hide: true })).toEqual([
+        'rules/0/excludeItemCodes: Every item code is also an excepted item code, so the rule never matches',
+      ]);
+      expect(messages({ itemCodes: ['cap', 'r01'], excludeItemCodes: ['cap'], hide: true })).toEqual([]);
+      expect(messages({ uniqueOrSetIds: [0, 1], excludeUniqueOrSetIds: [1, 0], hide: true })).toEqual([
+        'rules/0/excludeUniqueOrSetIds: Every unique or set id is also an excepted id, so the rule never matches',
+      ]);
+      expect(messages({ areas: [1], excludeAreas: [1], hide: true })).toEqual([
+        'rules/0/excludeAreas: Every area is also an excepted area, so the rule never matches',
+      ]);
+    });
+
+    it('warns when every item type or code falls under an excepted type', () => {
+      expect(messages({ itemTypes: ['helm'], excludeItemTypes: ['armo'], hide: true })).toEqual([
+        'rules/0/excludeItemTypes: Every item type falls under an excepted item type, so the rule never matches',
+      ]);
+      // Without a reference a type still falls under itself.
+      expect(messages({ itemTypes: ['helm'], excludeItemTypes: ['helm'], hide: true }, null)).toHaveLength(1);
+      expect(messages({ itemTypes: ['helm', 'axe'], excludeItemTypes: ['armo'], hide: true })).toEqual([]);
+      expect(
+        messages({ itemCodes: ['cap', 'zzz'], excludeItemTypes: ['armo'], hide: true }, { ...reference, itemCodes: new Set() })
+      ).toEqual(['rules/0/excludeItemTypes: Every item code is of an excepted item type, so the rule never matches']);
+      expect(messages({ itemCodes: ['cap', 'hax'], excludeItemTypes: ['armo'], hide: true })).toEqual([]);
+      expect(messages({ itemCodes: ['zzz'], excludeItemTypes: ['armo'], hide: true }, { ...reference, itemCodes: new Set() })).toEqual([]);
+    });
+
+    it('warns when unique or set ids meet a quality that is neither', () => {
+      const message =
+        'rules/0/uniqueOrSetIds: Unique or set ids need a unique or set item, but the quality allows neither, so the rule never matches';
+      expect(messages({ uniqueOrSetIds: [0], quality: 'rare', hide: true })).toEqual([message]);
+      expect(messages({ uniqueOrSetIds: [0], quality: ['magic', 2], hide: true })).toEqual([message]);
+      expect(messages({ uniqueOrSetIds: [0], quality: { max: 'magic' }, hide: true })).toEqual([message]);
+      expect(messages({ uniqueOrSetIds: [0], quality: { min: 'crafted' }, hide: true })).toEqual([message]);
+      expect(messages({ uniqueOrSetIds: [0], quality: 'unique', hide: true })).toEqual([]);
+      expect(messages({ uniqueOrSetIds: [0], quality: ['rare', 5], hide: true })).toEqual([]);
+      expect(messages({ uniqueOrSetIds: [0], quality: { min: 'magic', max: 'rare' }, hide: true })).toEqual([]);
+      expect(messages({ uniqueOrSetIds: [0], hide: true })).toEqual([]);
+    });
+
+    it('warns about a hide rule without conditions that is not the last rule', () => {
+      const check = (rules: LootFilterRule[]) => validateLootFilter({ ...base, rules }).map((d) => `${d.path}: ${d.message}`);
+      const later: LootFilterRule = { itemCodes: ['r01'], namePrefix: 'x' };
+      expect(check([{ hide: true }, later, later])).toEqual([
+        'rules/0/hide: Hides every ground item; the 2 rules after it never run for ground items',
+      ]);
+      expect(check([{ hide: true, location: ['onGround', 'stored'] }, later])).toEqual([
+        'rules/0/hide: Hides every ground item; the rule after it never runs for ground items',
+      ]);
+      // A style's hide counts.
+      expect(validateLootFilter({ ...base, styles: { H: { hide: true } }, rules: [{ useStyle: 'H' }, later] }).map((d) => d.path)).toEqual([
+        'rules/0/hide',
+      ]);
+      expect(check([later, { hide: true }])).toEqual([]);
+      expect(check([{ hide: true, activeInLevels: [2] }, later])).toEqual([]);
+      expect(check([{ hide: true, location: ['stored'] }, later])).toEqual([]);
+      expect(check([{ hide: true, quality: 'normal' }, later])).toEqual([]);
+    });
   });
 });

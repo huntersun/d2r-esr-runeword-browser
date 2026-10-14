@@ -423,7 +423,9 @@ describe('style reducers', () => {
 });
 
 describe('selectDiagnostics', () => {
-  const text = '{"formatVersion": 1, "rules": [{"hide": true}, {"hide": true}, {"quality": "legendary", "hide": true}]}';
+  // The first two rules name an item: a hide rule without conditions gets its own "hides every ground item" warning.
+  const text =
+    '{"formatVersion": 1, "rules": [{"itemCodes": ["r01"], "hide": true}, {"itemCodes": ["r02"], "hide": true}, {"quality": "legendary", "hide": true}]}';
 
   it('follows the rules: shape diagnostics move with their rule and go when the key is fixed', () => {
     const opened = run(initialState, hydrate([{ ...entry('x'), text }]), { type: open.type, payload: { id: 'x', now: NOW } });

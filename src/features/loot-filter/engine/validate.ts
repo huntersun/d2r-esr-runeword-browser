@@ -213,6 +213,89 @@ function checkActions(report: Report, actions: RuleActions, reference: LootFilte
 // Rules and the filter
 // ---------------------------------------------------------------------------
 
+// "Never matches" checks: conditions that contradict each other.
+
+const NEVER = 'so the rule never matches';
+
+/** True when `list` is non-empty and every entry is in `excluded`. */
+function allExcluded<T>(list: readonly T[] | undefined, excluded: readonly T[] | undefined): boolean {
+  return list !== undefined && excluded !== undefined && list.length > 0 && list.every((value) => excluded.includes(value));
+}
+
+/** A type's ancestors (itself included); a type the reference lacks counts as itself only. */
+function typeAncestors(type: string, reference: LootFilterReference | undefined): ReadonlySet<string> {
+  return reference?.typeAncestors.get(type) ?? new Set([type]);
+}
+
+/** The type ancestors of the listed codes the reference knows (an empty list when it knows none). */
+function knownCodeTypes(codes: readonly string[], reference: LootFilterReference | undefined): ReadonlySet<string>[] {
+  if (!reference) return [];
+  return codes.flatMap((code) => {
+    const types = reference.itemCodeTypes.get(code);
+    return types ? [types] : [];
+  });
+}
+
+function hasAny(types: ReadonlySet<string>, wanted: readonly string[]): boolean {
+  return wanted.some((type) => types.has(type));
+}
+
+/** Whether a quality match lets `quality` (a number, 1 = inferior) through, like the evaluator. */
+function qualityAllows(match: NamedMatch<string>, quality: number): boolean {
+  const toNumber = (value: NamedValue<string>) => namedToNumber(value, QUALITIES, 1);
+  if (typeof match === 'number' || typeof match === 'string') return toNumber(match) === quality;
+  if (isNamedList(match)) return match.some((value) => toNumber(value) === quality);
+  const min = match.min === undefined ? undefined : toNumber(match.min);
+  const max = match.max === undefined ? undefined : toNumber(match.max);
+  return (min === undefined || quality >= min) && (max === undefined || quality <= max);
+}
+
+function checkNeverMatches(report: Report, rule: LootFilterRule, reference: LootFilterReference | undefined): void {
+  const { itemCodes, itemTypes, excludeItemTypes } = rule;
+  if (itemCodes && itemTypes && itemCodes.length > 0 && itemTypes.length > 0) {
+    const codeTypes = knownCodeTypes(itemCodes, reference);
+    if (codeTypes.length > 0 && !codeTypes.some((types) => hasAny(types, itemTypes))) {
+      report('warning', 'itemTypes', `None of the item codes is of the item types, ${NEVER}`);
+    }
+  }
+
+  if (allExcluded(itemCodes, rule.excludeItemCodes))
+    report('warning', 'excludeItemCodes', `Every item code is also an excepted item code, ${NEVER}`);
+  if (allExcluded(rule.uniqueOrSetIds, rule.excludeUniqueOrSetIds))
+    report('warning', 'excludeUniqueOrSetIds', `Every unique or set id is also an excepted id, ${NEVER}`);
+  if (allExcluded(rule.areas, rule.excludeAreas)) report('warning', 'excludeAreas', `Every area is also an excepted area, ${NEVER}`);
+
+  if (excludeItemTypes && excludeItemTypes.length > 0) {
+    if (itemTypes && itemTypes.length > 0 && itemTypes.every((type) => hasAny(typeAncestors(type, reference), excludeItemTypes))) {
+      report('warning', 'excludeItemTypes', `Every item type falls under an excepted item type, ${NEVER}`);
+    }
+    const codeTypes = knownCodeTypes(itemCodes ?? [], reference);
+    if (codeTypes.length > 0 && codeTypes.every((types) => hasAny(types, excludeItemTypes))) {
+      report('warning', 'excludeItemTypes', `Every item code is of an excepted item type, ${NEVER}`);
+    }
+  }
+
+  // Unique and set qualities (7 and 5): uniqueOrSetIds match only those.
+  if (rule.uniqueOrSetIds && rule.uniqueOrSetIds.length > 0 && rule.quality !== undefined) {
+    const { quality } = rule;
+    if (!qualityAllows(quality, 5) && !qualityAllows(quality, 7)) {
+      report('warning', 'uniqueOrSetIds', `Unique or set ids need a unique or set item, but the quality allows neither, ${NEVER}`);
+    }
+  }
+}
+
+/**
+ * True when a hiding rule has no condition but (at most) a location that includes onGround: it hides every ground
+ * item. A rule with passthrough keys is left alone: a wrong-shaped condition sits there, and the plugin switches
+ * such a rule off anyway.
+ */
+function hidesEveryGroundItem(rule: LootFilterRule, filter: LootFilter): boolean {
+  if (effectiveActions(rule, filter).hide !== true) return false;
+  if (rule.location !== undefined && !rule.location.includes('onGround')) return false;
+  if (rule.passthrough !== undefined && Object.keys(rule.passthrough).length > 0) return false;
+  return CONDITION_KEYS.every((key) => key === 'location' || rule[key] === undefined);
+}
+
 function checkRule(
   report: Report,
   rule: LootFilterRule,
@@ -261,6 +344,7 @@ function checkRule(
   }
 
   checkActions(report, rule, reference);
+  checkNeverMatches(report, rule, reference);
   checkKnown(report, 'itemCodes', rule.itemCodes, reference?.itemCodes, 'item code');
   checkKnown(report, 'excludeItemCodes', rule.excludeItemCodes, reference?.itemCodes, 'item code');
   checkKnown(report, 'itemTypes', rule.itemTypes, reference?.itemTypes, 'item type');
@@ -298,7 +382,13 @@ export function validateLootFilter(filter: LootFilter, reference?: LootFilterRef
   }
 
   filter.rules.forEach((rule, index) => {
-    checkRule(reporter(diagnostics, { path: `rules/${String(index)}`, rule: index }), rule, filter, levelIds, reference);
+    const report = reporter(diagnostics, { path: `rules/${String(index)}`, rule: index });
+    checkRule(report, rule, filter, levelIds, reference);
+    const after = filter.rules.length - index - 1;
+    if (after > 0 && hidesEveryGroundItem(rule, filter)) {
+      const later = after === 1 ? 'the rule after it never runs' : `the ${String(after)} rules after it never run`;
+      report('warning', 'hide', `Hides every ground item; ${later} for ground items`);
+    }
   });
   return diagnostics;
 }
