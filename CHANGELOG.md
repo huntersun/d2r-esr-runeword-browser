@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.21.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.20.0...v1.21.0) (2026-10-14)
+
+
+### Features
+
+* **game-data:** carry the bases' second item type in the loot-filter bundle ([7a3a7c6](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/7a3a7c6ee33914119a037c409e5cc15e81e07e41))
+* **loot-filter:** download a zip with the filter's sounds and icons ([0ec925d](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/0ec925dd0dfb923372d1e4d6aa2c189da4ea2791))
+* **loot-filter:** find items by type and add or remove every match at once ([0f9744d](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/0f9744d305369dc984b86e8b0e845191d95ccb53))
+* **loot-filter:** warn about rules that can never match and explain how rules combine ([75b0755](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/75b0755bbc0e95a8bc01801242111ebfee319717))
+
+
+### Bug Fixes
+
+* **loot-filter:** default the minimap icon to 50 px and explain sounds.txt ([2e76fd7](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/2e76fd77cf01db5e272fb8b6ebd17c4dd6138c2c))
+* **loot-filter:** keep the picker open, in place and on its search after a pick ([9ae4ecf](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/9ae4ecf878b7f228f371e3eccbca3b0bbd4b94af))
+
+
+### Documentation
+
+* **guide:** follow the 3.2.13 to 3.2.20 patch notes for ESR 3.2.20 ([8bf50e0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/8bf50e06bd656b12839e8ae4d10b6f7c1a9bb999))
+* **guide:** say where the five elemental orbs for the Orb of Creation drop ([bebda37](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/bebda37211bbf281fb1c484df848d5fa704256b4))
+* **loot-filter:** transcribe the 3.2.20 guide and describe the feedback changes ([e0f897c](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/e0f897caa5ed8487efd5d6b5747082f4e8242365))
+
+
+### Chores
+
+* **game-data:** update to ESR 3.2.20 ([e0039f8](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/e0039f81809d76c7a4b3f729b51363a2dcb7adc6))
+* **loot-filter:** bundle the ESR default filter in place of Sully's QoL ([f195c6a](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/f195c6a9644b125e2762da836210cf2a4b13e8d7))
+
 ## [1.20.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.19.0...v1.20.0) (2026-10-11)
 
 
