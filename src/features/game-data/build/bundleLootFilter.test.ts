@@ -5,7 +5,7 @@ import { parseTsv } from './tsv.ts';
 const table = (rows: string[][]) => parseTsv(rows.map((row) => row.join('\t')).join('\n'));
 const rowTable = (rows: string[][]) => parseTsv(rows.map((row) => row.join('\t')).join('\n'), 'table', { keepExpansionRows: true });
 
-const ITEM_COLUMNS = ['name', 'code', 'namestr', 'type', 'spawnable'];
+const ITEM_COLUMNS = ['name', 'code', 'namestr', 'type', 'type2', 'spawnable'];
 const strings = new Map([
   ['hax', 'Hand Axe'],
   ['r01', 'El Rune'],
@@ -15,14 +15,19 @@ const strings = new Map([
 
 const { bundle, warnings } = buildLootFilterBundle(
   {
-    weapons: table([ITEM_COLUMNS, ['Hand Axe', 'hax', 'hax', 'axe', '1'], ['Shadow Axe', 'zax', 'zax', 'axe', '0'], ['Expansion']]),
+    weapons: table([
+      ITEM_COLUMNS,
+      ['Hand Axe', 'hax', 'hax', 'axe', '1hsw', '1'],
+      ['Shadow Axe', 'zax', 'zax', 'axe', '', '0'],
+      ['Expansion'],
+    ]),
     armor: table([
       ITEM_COLUMNS,
-      ['Buckler', 'buc', 'buc', 'shie', '1'],
-      ['Dup Axe', 'hax', 'hax', 'axe', '1'],
-      ['Blank', '', '', 'shie', '1'],
+      ['Buckler', 'buc', 'buc', 'shie', '', '1'],
+      ['Dup Axe', 'hax', 'hax', 'axe', '', '1'],
+      ['Blank', '', '', 'shie', '', '1'],
     ]),
-    misc: table([ITEM_COLUMNS, ['El Rune', 'r01', 'r01', 'rune', '1']]),
+    misc: table([ITEM_COLUMNS, ['El Rune', 'r01', 'r01', 'rune', '', '1']]),
     itemstatcost: rowTable([
       ['Stat', '*ID'],
       ['strength', '0'],
@@ -51,9 +56,9 @@ const { bundle, warnings } = buildLootFilterBundle(
 );
 
 describe('buildLootFilterBundle', () => {
-  it('lists every item code once (first row wins), spawnable or not, named through the string table', () => {
+  it('lists every item code once (first row wins), spawnable or not, named through the string table, with type2 when set', () => {
     expect(bundle.items).toEqual([
-      { code: 'hax', name: 'Hand Axe', kind: 'weapon', type: 'axe', spawnable: true },
+      { code: 'hax', name: 'Hand Axe', kind: 'weapon', type: 'axe', type2: '1hsw', spawnable: true },
       { code: 'zax', name: 'Shadow Axe', kind: 'weapon', type: 'axe', spawnable: false },
       { code: 'buc', name: 'Buckler', kind: 'armor', type: 'shie', spawnable: true },
       { code: 'r01', name: 'El Rune', kind: 'misc', type: 'rune', spawnable: true },

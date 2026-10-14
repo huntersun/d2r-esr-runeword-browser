@@ -186,6 +186,8 @@ export interface LootFilterItem {
   kind: 'weapon' | 'armor' | 'misc';
   /** itemtypes.txt code of the `type` column */
   type: string;
+  /** itemtypes.txt code of the `type2` column, when the row has one (the game treats the item as both types) */
+  type2?: string;
   /** `spawnable` = 1; non-spawnable rows are kept (uniques sit on non-spawnable "shadow" bases) */
   spawnable: boolean;
 }

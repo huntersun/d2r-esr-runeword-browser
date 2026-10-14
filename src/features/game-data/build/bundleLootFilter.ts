@@ -35,11 +35,13 @@ function readItemRows(tables: LootFilterTables, warnings: string[], strings: Rea
       }
       seen.add(code);
       const name = row.str('name');
+      const type2 = row.str('type2');
       items.push({
         code,
         name: resolveName(strings, row.str('namestr'), name),
         kind,
         type: row.str('type'),
+        ...(type2 === '' ? {} : { type2 }),
         spawnable: row.num('spawnable') === 1,
       });
     }
