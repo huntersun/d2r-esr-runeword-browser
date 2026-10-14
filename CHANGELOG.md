@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.21.1](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.21.0...v1.21.1) (2026-10-14)
+
+
+### Bug Fixes
+
+* **router:** reload once when a chunk from a previous deploy fails to load ([4e1ce8c](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/4e1ce8cc46906c566847227cefbf89d3e2f4673a))
+
 ## [1.21.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.20.0...v1.21.0) (2026-10-14)
 
 
