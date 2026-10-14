@@ -2080,8 +2080,8 @@
     {"code":"03j","name":"Ancient Coupon Ring III (The Stone of Jordan)","kind":"misc","type":"cpn1","spawnable":true},
     {"code":"04j","name":"Ancient Coupon Ring IV (Dwarf Star)","kind":"misc","type":"cpn2","spawnable":true},
     {"code":"05j","name":"Ancient Coupon Ring V (Raven Frost)","kind":"misc","type":"cpn2","spawnable":true},
-    {"code":"06j","name":"Ancient Coupon Ring VI (Bul-Kathos' Wedding Band)","kind":"misc","type":"cpn2","spawnable":true},
-    {"code":"07j","name":"Ancient Coupon Ring VII (Carrion Wind)","kind":"misc","type":"cpn2","spawnable":true},
+    {"code":"06j","name":"Ancient Coupon Ring VI (Bul-Kathos' Wedding Band)","kind":"misc","type":"cpn3","spawnable":true},
+    {"code":"07j","name":"Ancient Coupon Ring VII (Carrion Wind)","kind":"misc","type":"cpn3","spawnable":true},
     {"code":"08j","name":"Ancient Coupon Ring VIII (Nature's Peace)","kind":"misc","type":"cpn3","spawnable":true},
     {"code":"09j","name":"Ancient Coupon Ring IX (Wisp Projector)","kind":"misc","type":"cpn3","spawnable":true},
     {"code":"10j","name":"Ancient Coupon Ring X (Constricting Ring)","kind":"misc","type":"cpn3","spawnable":true},
@@ -17202,6 +17202,6 @@
     {"id":266,"name":"Harbinger of Ruin's Merciless Rule","code":"abb"},
     {"id":267,"name":"Harbinger of Ruin's Smoldering Gemstone","code":"wam"},
     {"id":268,"name":"Harbinger of Ruin's Inevitable Conquest","code":"yms"},
-    {"id":269,"name":"Harbinger of Ruin's Soul Compendium","code":"ysh"}
+    {"id":269,"name":"Harbinger of Ruin's Soul Compendium","code":"waf"}
   ]
 }

@@ -29,7 +29,7 @@ lazily (`src/features/game-data/engine/browser/loadGameData.ts`).
 | `types.json`      | item types (Equiv parents, ancestors, socket caps per ilvl band, class, UI/runeword categories) + 8 classes with skill-tab names   |
 | `bases.json`      | spawnable weapons (369) and armors (255) plus 29 equippable accessories (rings, amulets, charms, jewels)                           |
 | `runewords.json`  | runes.txt runeword recipes: 391 `Runeword*` keys with 449 rows and rendered stats (see "Runewords")                                |
-| `affixes.json`    | 2528 spawnable magic prefixes, suffixes and automods with rendered text (see "Affixes")                                            |
+| `affixes.json`    | 2532 spawnable magic prefixes, suffixes and automods with rendered text (see "Affixes")                                            |
 | `sources.json`    | "where does it come from" labels for uniques, set items and crafting-relevant misc items (see "Sources")                           |
 | `lootfilter.json` | loot-filter editor reference data: every item code, stats, areas, sounds, uniques and sets with their ids (see "Loot filter data") |
 
@@ -79,7 +79,7 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 ### Affixes
 
 `affixes.json` (`AffixesBundle`, ~795 KB / 61 KB gzip) holds the spawnable rows of `magicprefix.txt` (kind `p`),
-`magicsuffix.txt` (`s`) and `automagic.txt` (`a`): ESR 3.2.12 → 2528 affixes (885 / 1504 / 139). Per affix: `id` (0-based
+`magicsuffix.txt` (`s`) and `automagic.txt` (`a`): ESR 3.2.20 → 2532 affixes (886 / 1504 / 142). Per affix: `id` (0-based
 row index within its file, unique together with `kind`), string-resolved `name`, `lvl`, `maxLvl`, `reqLvl`, `cls`
 (`classspecific`), `reqCls` + `clsReqLvl` (`class` / `classlevelreq`), `freq`, `group`, `rare`, `itypes`, `etypes`,
 structured `mods` and rendered `text`. Rows with `spawnable != 1` are dropped (`counts.affixesDropped`, 111); automagic
