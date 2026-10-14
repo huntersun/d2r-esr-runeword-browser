@@ -1,10 +1,10 @@
 import { useRef, useState } from 'react';
-import { ChevronsUpDown, Plus, X } from 'lucide-react';
+import { ChevronsUpDown, Minus, Plus, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import type { PickerOption } from '../../utils/pickerSearch';
+import { bulkPick, type PickerOption } from '../../utils/pickerSearch';
 import { focusAfterRemoval } from './focusAfterRemoval';
 import { PickerList, type PickerCustom } from './PickerList';
 
@@ -24,7 +24,17 @@ export type DescribeValue = (value: string) => PickerValueLabel;
 /** Chips shown before "Show all" (a filter can list dozens of codes). */
 const COLLAPSED_CHIPS = 12;
 
+/** Above this many values "Add all" / "Remove all" asks for a second click. */
+const BULK_CONFIRM = 50;
+
 const POPOVER_CLASS = 'w-[min(32rem,calc(100vw-2rem))] p-0';
+
+/** Singular and plural noun, e.g. `['item', 'items']`. */
+export type PickerNouns = readonly [string, string];
+
+function countOf(count: number, [one, many]: PickerNouns): string {
+  return `${String(count)} ${count === 1 ? one : many}`;
+}
 
 export interface MultiPickerProps {
   readonly id?: string;
@@ -37,27 +47,139 @@ export interface MultiPickerProps {
   readonly searchPlaceholder: string;
   /** Offers typed text that is not in the list (codes and ids the game data does not know, or no data at all). */
   readonly custom?: PickerCustom;
+  /** Offers "Add all N" / "Remove all N" for every match of the search, naming the values with these nouns. */
+  readonly bulkNouns?: PickerNouns;
+  /** What the muted options are (skipped by "Add all"), e.g. `['shadow base', 'shadow bases']`. */
+  readonly mutedNouns?: PickerNouns;
 }
 
 /**
- * Chips for the selected values plus an add button that opens a searchable list (Popover + cmdk). Picking an
- * option toggles it; the popover stays open so several can be added in a row.
+ * The add button plus chips for the selected values; the button opens a searchable list (Popover + cmdk). Picking an
+ * option toggles it; the popover stays open and keeps the search, so several can be added in a row. The button comes
+ * first so the list does not move as chips are added, and the search, the highlighted option and the scroll position
+ * survive closing and reopening.
  */
-export function MultiPicker({ id, options, values, onChange, describe, addLabel, searchPlaceholder, custom }: MultiPickerProps) {
+export function MultiPicker({
+  id,
+  options,
+  values,
+  onChange,
+  describe,
+  addLabel,
+  searchPlaceholder,
+  custom,
+  bulkNouns,
+  mutedNouns = ['muted option', 'muted options'],
+}: MultiPickerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const scrollTopRef = useRef(0);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [active, setActive] = useState('');
+  /** The bulk action waiting for its confirming click (`bulkKey`), if any. */
+  const [armed, setArmed] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const shownValues = expanded ? values : values.slice(0, COLLAPSED_CHIPS);
   const hiddenCount = values.length - shownValues.length;
 
+  const bulk = bulkNouns === undefined ? null : bulkPick(options, query, values);
+  const bulkKey = bulk === null ? '' : `${bulk.action}:${query}:${String(bulk.values.length)}`;
+  const needsConfirm = bulk !== null && bulk.values.length > BULK_CONFIRM;
+
   const toggle = (value: string) => {
     onChange(values.includes(value) ? values.filter((current) => current !== value) : [...values, value]);
-    setQuery('');
+  };
+
+  const applyBulk = () => {
+    if (bulk === null) return;
+    if (needsConfirm && armed !== bulkKey) {
+      setArmed(bulkKey);
+      return;
+    }
+    setArmed(null);
+    if (bulk.action === 'add') {
+      onChange([...values, ...bulk.values]);
+    } else {
+      const drop = new Set(bulk.values);
+      onChange(values.filter((value) => !drop.has(value)));
+    }
   };
 
   return (
     <div ref={containerRef} className="flex flex-wrap items-center gap-1.5">
+      <Popover
+        open={open}
+        onOpenChange={(next) => {
+          if (!next) {
+            scrollTopRef.current = listRef.current?.scrollTop ?? 0;
+            setArmed(null);
+          }
+          setOpen(next);
+        }}
+      >
+        <PopoverTrigger asChild>
+          <Button id={id} type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" data-focus-fallback>
+            <Plus className="size-3.5" aria-hidden />
+            {addLabel}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          // A fixed height: the popover does not flip sides as the matches (and the footer) come and go.
+          className={cn(POPOVER_CLASS, 'flex flex-col', options.length > 0 && 'h-[min(22rem,60vh)]')}
+          align="start"
+          onOpenAutoFocus={(event) => {
+            // Focus the kept search with its text selected (typing replaces it) and scroll back to where the list was.
+            event.preventDefault();
+            inputRef.current?.focus();
+            inputRef.current?.select();
+            const restore = () => {
+              if (listRef.current !== null) listRef.current.scrollTop = scrollTopRef.current;
+            };
+            restore();
+            // cmdk scrolls its highlighted option into view after mounting; restore once more after that.
+            requestAnimationFrame(restore);
+          }}
+          onInteractOutside={(event) => {
+            // Removing a chip or showing more chips while the list is open keeps it open.
+            if (event.target instanceof Node && containerRef.current?.contains(event.target) === true) event.preventDefault();
+          }}
+        >
+          <PickerList
+            options={options}
+            query={query}
+            onQueryChange={setQuery}
+            onPick={toggle}
+            isSelected={(value) => values.includes(value)}
+            custom={custom}
+            searchPlaceholder={searchPlaceholder}
+            active={active}
+            onActiveChange={setActive}
+            inputRef={inputRef}
+            listRef={listRef}
+            className="min-h-0 flex-1"
+            listClassName="max-h-none flex-1"
+          />
+          {bulk !== null && bulkNouns !== undefined && (
+            <div className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-t px-2 py-1.5">
+              <Button
+                type="button"
+                variant={needsConfirm && armed === bulkKey ? 'default' : 'secondary'}
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={applyBulk}
+              >
+                {bulk.action === 'add' ? <Plus className="size-3.5" aria-hidden /> : <Minus className="size-3.5" aria-hidden />}
+                {needsConfirm && armed === bulkKey
+                  ? `${bulk.action === 'add' ? 'Add' : 'Remove'} ${countOf(bulk.values.length, bulkNouns)}? Click again`
+                  : `${bulk.action === 'add' ? 'Add' : 'Remove'} all ${countOf(bulk.values.length, bulkNouns)}`}
+              </Button>
+              {bulk.skipped > 0 && <span className="text-xs text-muted-foreground">{countOf(bulk.skipped, mutedNouns)} skipped</span>}
+            </div>
+          )}
+        </PopoverContent>
+      </Popover>
       {shownValues.map((value, index) => {
         const { label, detail, muted, title } = describe(value);
         return (
@@ -98,31 +220,6 @@ export function MultiPicker({ id, options, values, onChange, describe, addLabel,
           {hiddenCount > 0 ? `+${String(hiddenCount)} more` : 'Show fewer'}
         </Button>
       )}
-      <Popover
-        open={open}
-        onOpenChange={(next) => {
-          setOpen(next);
-          if (!next) setQuery('');
-        }}
-      >
-        <PopoverTrigger asChild>
-          <Button id={id} type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" data-focus-fallback>
-            <Plus className="size-3.5" aria-hidden />
-            {addLabel}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className={POPOVER_CLASS} align="start">
-          <PickerList
-            options={options}
-            query={query}
-            onQueryChange={setQuery}
-            onPick={toggle}
-            isSelected={(value) => values.includes(value)}
-            custom={custom}
-            searchPlaceholder={searchPlaceholder}
-          />
-        </PopoverContent>
-      </Popover>
     </div>
   );
 }

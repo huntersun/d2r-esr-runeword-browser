@@ -1,3 +1,4 @@
+import type { Ref } from 'react';
 import { Check, Plus } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
@@ -20,6 +21,14 @@ interface PickerListProps {
   readonly isSelected: (value: string) => boolean;
   readonly custom?: PickerCustom;
   readonly searchPlaceholder: string;
+  /** The highlighted option's key, when the caller keeps it (so it survives closing and reopening the popover). */
+  readonly active?: string;
+  readonly onActiveChange?: (key: string) => void;
+  readonly inputRef?: Ref<HTMLInputElement>;
+  /** The scrolling list element (to save and restore its scroll position). */
+  readonly listRef?: Ref<HTMLDivElement>;
+  readonly className?: string;
+  readonly listClassName?: string;
 }
 
 const CUSTOM_KEY = '__custom';
@@ -28,7 +37,21 @@ const CUSTOM_KEY = '__custom';
  * The searchable list inside a picker popover: cmdk with our own filter, grouped, capped; Enter picks the highlighted
  * option. The typed-value entry comes last, so Enter on a name search picks the best match, not the raw text.
  */
-export function PickerList({ options, query, onQueryChange, onPick, isSelected, custom, searchPlaceholder }: PickerListProps) {
+export function PickerList({
+  options,
+  query,
+  onQueryChange,
+  onPick,
+  isSelected,
+  custom,
+  searchPlaceholder,
+  active,
+  onActiveChange,
+  inputRef,
+  listRef,
+  className,
+  listClassName,
+}: PickerListProps) {
   const { matches, total } = filterPickerOptions(options, query);
   const trimmed = query.trim();
   const offered = custom === undefined || trimmed === '' ? null : custom(trimmed);
@@ -38,9 +61,9 @@ export function PickerList({ options, query, onQueryChange, onPick, isSelected, 
   const groups = groupPickerOptions(matches);
 
   return (
-    <Command shouldFilter={false}>
-      <CommandInput placeholder={searchPlaceholder} value={query} onValueChange={onQueryChange} />
-      <CommandList className="max-h-[min(20rem,50vh)]">
+    <Command shouldFilter={false} value={active} onValueChange={onActiveChange} className={className}>
+      <CommandInput ref={inputRef} placeholder={searchPlaceholder} value={query} onValueChange={onQueryChange} />
+      <CommandList ref={listRef} className={cn('max-h-[min(20rem,50vh)]', listClassName)}>
         <CommandEmpty>{options.length === 0 ? 'Game data not loaded: type a code or id.' : 'Nothing found.'}</CommandEmpty>
         {groups.map((group) => (
           <CommandGroup key={group.heading} heading={group.heading === '' ? undefined : group.heading}>
