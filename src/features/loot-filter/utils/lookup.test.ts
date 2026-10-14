@@ -1,4 +1,5 @@
 import { buildPickerOptions, EMPTY_LOOKUP } from './lookup';
+import { filterPickerOptions } from './pickerSearch';
 import { TEST_DATA, TEST_LOOKUP, TEST_TYPES } from './testLookup.mock';
 
 describe('buildLookup', () => {
@@ -30,6 +31,25 @@ describe('buildPickerOptions', () => {
   it('marks non-spawnable items as shadow bases', () => {
     expect(options.items.find((option) => option.value === 'xyz')).toMatchObject({ muted: true, hint: 'shadow base' });
     expect(options.items.find((option) => option.value === 'hax')).toMatchObject({ muted: false, hint: undefined });
+  });
+
+  it("shows the item's type and searches its types' names and codes, type2 included", () => {
+    const hax = options.items.find((option) => option.value === 'hax');
+    expect(hax?.detail).toBe('hax · Axe');
+    expect(hax?.search).toBe('hand axe hax');
+    const withType2 = buildPickerOptions(
+      { ...TEST_DATA, items: [{ code: 'hax', name: 'Hand Axe', kind: 'weapon', type: 'axe', type2: 'thro', spawnable: true }] },
+      {
+        ...TEST_TYPES,
+        types: [...TEST_TYPES.types, { ...TEST_TYPES.types[1], code: 'thro', name: 'Throwing Weapon', ancestors: ['thro'] }],
+      }
+    );
+    expect(withType2.items[0]?.searchMore).toBe('axe axe weapon weap throwing weapon thro');
+  });
+
+  it('finds items through their type, after the name matches', () => {
+    expect(filterPickerOptions(options.items, 'weapon').matches.map((option) => option.value)).toEqual(['hax', 'xyz']);
+    expect(filterPickerOptions(options.items, 'axe').matches.map((option) => option.value)).toEqual(['hax', 'xyz']);
   });
 
   it('lists type parents by name', () => {

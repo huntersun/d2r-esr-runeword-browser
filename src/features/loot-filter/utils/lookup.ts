@@ -79,6 +79,14 @@ const SHADOW_BASE_HINT = 'shadow base';
 export function buildPickerOptions(data: LootFilterDataBundle, types: TypesBundle): LootFilterPickerOptions {
   const itemName = new Map(data.items.map((item) => [item.code, item.name]));
   const typeName = new Map(types.types.map((type) => [type.code, type.name]));
+  const typeAncestors = new Map(types.types.map((type) => [type.code, type.ancestors]));
+  /** Names and codes of every type the item counts as (`type` and `type2` with their ancestors). */
+  const itemTypeSearch = (item: LootFilterItem): string => {
+    const codes = new Set(
+      [item.type, item.type2].flatMap((code) => (code === undefined || code === '' ? [] : (typeAncestors.get(code) ?? [code])))
+    );
+    return searchText(...[...codes].flatMap((code) => [typeName.get(code), code]));
+  };
   const uniqueOrSet = (kind: 'Unique' | 'Set', entry: LootFilterDataBundle['uniques'][number]): PickerOption => {
     const base = itemName.get(entry.code) ?? entry.code;
     return {
@@ -95,10 +103,11 @@ export function buildPickerOptions(data: LootFilterDataBundle, types: TypesBundl
       key: item.code,
       value: item.code,
       label: item.name === '' ? item.code : item.name,
-      detail: item.code,
+      detail: [item.code, typeName.get(item.type)].filter((part) => part !== undefined && part !== '').join(' · '),
       muted: !item.spawnable,
       hint: item.spawnable ? undefined : SHADOW_BASE_HINT,
       search: searchText(item.name, item.code),
+      searchMore: itemTypeSearch(item),
     })),
     types: types.types.map((type) => ({
       key: type.code,

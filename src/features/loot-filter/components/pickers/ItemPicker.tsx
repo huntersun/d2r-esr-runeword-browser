@@ -25,7 +25,10 @@ export interface ItemPickerProps {
   readonly id?: string;
 }
 
-/** Item codes (weapons, armor, misc) as chips with name + code; search by name or code. */
+/**
+ * Item codes (weapons, armor, misc) as chips with name + code; search by name or code, or by item type (`helm` finds
+ * Demonhead, after the names). "Add all" / "Remove all" acts on every match, skipping shadow bases.
+ */
 export function ItemPicker({ data, values, onChange, id }: ItemPickerProps) {
   return (
     <MultiPicker
@@ -35,8 +38,10 @@ export function ItemPicker({ data, values, onChange, id }: ItemPickerProps) {
       onChange={onChange}
       describe={describeItem(data)}
       addLabel="Add item"
-      searchPlaceholder="Item name or code…"
+      searchPlaceholder="Item name, code or type…"
       custom={codeCustom('item')}
+      bulkNouns={['item', 'items']}
+      mutedNouns={['shadow base', 'shadow bases']}
     />
   );
 }
@@ -60,7 +65,7 @@ export function SingleItemPicker({ data, value, onChange, id, placeholder = 'Pic
       onChange={onChange}
       describe={describeItem(data)}
       placeholder={placeholder}
-      searchPlaceholder="Item name or code…"
+      searchPlaceholder="Item name, code or type…"
       custom={codeCustom('item')}
       className={className}
     />

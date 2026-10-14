@@ -30,6 +30,7 @@ export function ItemTypePicker({ data, values, onChange, id }: ItemTypePickerPro
       addLabel="Add type"
       searchPlaceholder="Type name or code…"
       custom={codeCustom('type')}
+      bulkNouns={['type', 'types']}
     />
   );
 }

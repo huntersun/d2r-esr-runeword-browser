@@ -183,10 +183,22 @@ export function itemTypeOf(form: TestItemForm, lookup: LootFilterLookup): string
   return typed === '' ? (lookup.item(form.code.trim())?.type ?? '') : typed;
 }
 
+/**
+ * The type codes item-type conditions see: the ancestors of the item's type and, while that type is the game data's
+ * own, of its `type2` (the game treats such a base as both types); without the data only the typed type.
+ */
+export function typeAncestorsOf(form: TestItemForm, lookup: LootFilterLookup): readonly string[] {
+  const type = itemTypeOf(form, lookup);
+  if (type === '') return [];
+  const item = lookup.item(form.code.trim());
+  const second = item !== undefined && item.type === type ? item.type2 : undefined;
+  const codes = second === undefined || second === '' ? [type] : [type, second];
+  return [...new Set(codes.flatMap((code) => lookup.itemType(code)?.ancestors ?? [code]))];
+}
+
 /** The evaluator's item. Type ancestors come from the game data; without it only the item's own type is known. */
 export function toTestItem(form: TestItemForm, lookup: LootFilterLookup): TestItem {
-  const type = itemTypeOf(form, lookup);
-  const ancestors = type === '' ? [] : (lookup.itemType(type)?.ancestors ?? [type]);
+  const ancestors = typeAncestorsOf(form, lookup);
   return {
     code: form.code.trim(),
     typeAncestors: ancestors,

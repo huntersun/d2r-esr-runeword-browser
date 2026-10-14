@@ -9,6 +9,7 @@ import type { LootFilterData } from '../../hooks/useLootFilterData';
 import {
   itemTypeOf,
   parseUniqueOrSetValue,
+  typeAncestorsOf,
   uniqueOrSetValue,
   withItem,
   withQuality,
@@ -51,6 +52,7 @@ export function TestItemFields({ data, form, onChange }: TestItemFieldsProps) {
   };
   const type = itemTypeOf(form, lookup);
   const typeInfo = type === '' ? undefined : lookup.itemType(type);
+  const typeAncestors = typeAncestorsOf(form, lookup);
   const uniqueName = form.uniqueOrSet === null ? undefined : lookup.uniqueOrSetName(form.uniqueOrSet.id);
 
   return (
@@ -96,7 +98,7 @@ export function TestItemFields({ data, form, onChange }: TestItemFieldsProps) {
               ? type === ''
                 ? 'Unknown: item-type conditions do not match.'
                 : 'Only this type is known (no parent types).'
-              : `${typeInfo.name === '' ? type : typeInfo.name} · matches ${typeInfo.ancestors.join(', ')}`}
+              : `${typeInfo.name === '' ? type : typeInfo.name} · matches ${typeAncestors.join(', ')}`}
           </span>
         </div>
       </Field>

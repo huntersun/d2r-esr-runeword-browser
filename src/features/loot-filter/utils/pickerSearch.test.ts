@@ -1,4 +1,4 @@
-import { filterPickerOptions, groupPickerOptions, searchText, type PickerOption } from './pickerSearch';
+import { bulkPick, filterPickerOptions, groupPickerOptions, searchText, type PickerOption } from './pickerSearch';
 
 const option = (value: string, label: string, group?: string): PickerOption => ({
   key: value,
@@ -34,6 +34,16 @@ describe('filterPickerOptions', () => {
     expect(filterPickerOptions(codes, 'a').matches.map((match) => match.value)).toEqual(['a', 'ab']);
   });
 
+  it('ranks matches through searchMore (an item found by its type) below name and code matches', () => {
+    const helms = [
+      { ...option('usk', 'Demonhead'), searchMore: 'helm helm armor armo' },
+      option('zhb', 'Zakarum Helm'),
+      { ...option('hlm', 'Full Helm'), searchMore: 'helm helm' },
+    ];
+    expect(filterPickerOptions(helms, 'helm').matches.map((match) => match.value)).toEqual(['zhb', 'hlm', 'usk']);
+    expect(filterPickerOptions(helms, 'demon armor').matches.map((match) => match.value)).toEqual(['usk']);
+  });
+
   it('caps the matches and reports the total', () => {
     const result = filterPickerOptions(OPTIONS, '', 2);
     expect(result.matches).toHaveLength(2);
@@ -49,5 +59,44 @@ describe('groupPickerOptions', () => {
       ['Act 2', ['40']],
       ['', ['x']],
     ]);
+  });
+});
+
+describe('bulkPick', () => {
+  const items = [
+    { ...option('hlm', 'Full Helm'), searchMore: 'helm' },
+    { ...option('usk', 'Demonhead'), searchMore: 'helm', muted: true },
+    { ...option('cap', 'Cap'), searchMore: 'helm' },
+    option('hax', 'Hand Axe'),
+  ];
+
+  it('adds every unpicked match beyond the shown ones, skipping muted options', () => {
+    expect(bulkPick(items, 'helm', ['cap'])).toEqual({ action: 'add', values: ['hlm'], skipped: 1 });
+    const many = Array.from({ length: 250 }, (_, index) => option(`c${String(index)}`, `Charm ${String(index)}`));
+    expect(bulkPick(many, 'charm', [])?.values).toHaveLength(250);
+  });
+
+  it('removes the picked matches (muted ones too) once every unmuted match is picked', () => {
+    expect(bulkPick(items, 'helm', ['hlm', 'cap', 'usk', 'hax'])).toEqual({ action: 'remove', values: ['hlm', 'usk', 'cap'], skipped: 0 });
+  });
+
+  it('offers nothing for an empty query or when nothing can be added or removed', () => {
+    expect(bulkPick(items, '  ', [])).toBeNull();
+    expect(bulkPick(items, 'demonhead', [])).toBeNull();
+    expect(bulkPick(items, 'nothing', [])).toBeNull();
+  });
+
+  it('counts a value shared by two options once', () => {
+    expect(bulkPick([option('5', 'Crest'), { ...option('5', 'Ward'), key: 'Set:5' }], '', [])).toBeNull();
+    expect(
+      bulkPick(
+        [
+          { ...option('5', 'Crest'), search: 'x' },
+          { ...option('5', 'Ward'), key: 'Set:5', search: 'x' },
+        ],
+        'x',
+        []
+      )?.values
+    ).toEqual(['5']);
   });
 });
