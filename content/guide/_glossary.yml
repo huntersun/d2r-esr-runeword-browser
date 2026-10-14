@@ -50,10 +50,10 @@
   definition: A material made mainly from spare unique charms; spent on Mapling, All Skill Forging and several high-end recipes.
   note: dstoning-and-mapling
 - term: Mapling
-  definition: Secret Recipe 50, which spends a Maple Leaf and a Sa Rune to lower an item's level requirement penalty so it can be D-stoned again.
+  definition: Secret Recipe 50, which spends a Maple Leaf and a Perfect Gem to lower an item's level requirement penalty so it can be D-stoned again.
   note: dstoning-and-mapling
 - term: Tinkering
-  definition: Cubing gear with organs to add small permanent bonuses, limited by hidden tinkering points on each item.
+  definition: Cubing gear with organs to add small permanent bonuses, limited by the tinkering points shown on each item.
   note: tinkering
 - term: Corruption
   definition: Cubing an item with a Worldstone Shard for a random strong bonus, with a chance to turn the item into a random rare.
@@ -136,3 +136,6 @@
 - term: Class craft
   definition: A cube recipe that turns a magic item, a class's Dragon Stone form, a Perfect Gem and a jewel into crafted gear with that class's skills.
   note: class-crafting
+- term: Evil Urn
+  definition: A breakable urn that can stand in any area with monsters since 3.2.19 (2%, 4% and 6% of rooms in Normal, Nightmare and Hell); breaking it releases a boss pack whose boss has one extra rare affix.
+  note: hell-survival

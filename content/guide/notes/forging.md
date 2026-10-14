@@ -37,7 +37,7 @@ Targets are equipment of any rarity, white and socketed items included, but not 
 
 ### Removing it
 
-Cube the item with three :term[Thawing Potion]s. The Anvil Stones, runes or Maple Leaf come back (the chipped gem does not); an Aura Stone is destroyed, and a Wo Forging cannot be removed at all, because its "Indestructible" bonus cannot be taken away.
+Cube the item with three :term[Thawing Potion]s. The Anvil Stones, runes or Maple Leaf come back (the chipped gem does not); an Aura Stone is destroyed, unless you cube the amulet with two Perfect gem 6 Packs and a Maple Leaf instead, which hands the Aura Stone back (3.2.20 game files). A Wo Forging cannot be removed at all, because its "Indestructible" bonus cannot be taken away.
 
 ::recipes[remove-forging]
 

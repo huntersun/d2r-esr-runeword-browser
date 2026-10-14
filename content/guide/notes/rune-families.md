@@ -26,7 +26,7 @@ sources: [official-cube, esr-txt, esru-wiki]
 Runes have uses beyond runewords:
 
 - Two identical ES or Kanji runes and a chipped gem _forge_ the rune's bonus onto an item; LoD runes cannot be forged ([[forging]]).
-- Many recipes take a specific rune: a Sa Rune for Mapling, Yo and Tsu or Ra and Ru for base upgrades, and so on.
+- Many recipes take a specific rune: Yo and Tsu or Ra and Ru for base upgrades, and so on.
 - Socketed on their own, runes give their bonus like gems do.
 
 Keep them in the stash's material tabs, or in a Rune Stocker and a Decal Stocker if you already have them ([[stockers]]). The [Socketables](page:/socketables) page lists every rune's bonuses per slot, and [[runewords-gemwords]] covers what to build.

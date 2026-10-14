@@ -33,7 +33,7 @@ Map bosses drop higher maps, [Orbs of Anointment](<dropfinder:Orb of Anointment>
 
 ::card[mythical:Frostmourne]
 
-**Pandemonium keys** work as in vanilla: one Key of Terror, Hate and Destruction open a portal to one of three uber areas, whose bosses drop [Diablo's Horn](<dropfinder:Diablo's Horn>), Baal's Eye and Mephisto's Brain; those three open Uber Tristram. Map bosses drop keys too, and a tier 5 boss drops a whole Pandemonium Key Set. Keys convert into each other, and the set unwraps, in the cube:
+**Pandemonium keys** work as in vanilla: one Key of Terror, Hate and Destruction open a portal to one of three uber areas, whose bosses drop [Diablo's Horn](<dropfinder:Diablo's Horn>), Baal's Eye and Mephisto's Brain; those three open Uber Tristram. Map bosses drop keys too; in the 3.2.20 game files a tier 5 boss, the Lich King included, drops one of the three keys at random, where earlier versions dropped the whole Pandemonium Key Set. Keys convert into each other, and the set unwraps, in the cube:
 
 ::recipes[uber-keys]
 

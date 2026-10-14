@@ -7,7 +7,7 @@ aliases: [d-stone, dstone, d-stoning, dstoning, dragon stoning, gem meld, gem me
 knowFirst: [dragon-stones]
 related: [secret-recipes, gems-crystals]
 volatility: high
-mentions: [Dragon Stone, Spider's Silk, Void Shard, Perfect Gem, Ancient Decipherer, Maple Leaf, Sa Rune, Ancient Scroll 50]
+mentions: [Dragon Stone, Spider's Silk, Void Shard, Perfect Gem, Ancient Decipherer, Maple Leaf, Ancient Scroll 50]
 officialDocs:
   - label: Cube Recipes – D-Stoning
     href: 'docs:Eastern Sun Resurrected Cube Recipes.html#dst'
@@ -33,7 +33,7 @@ D-stoning cannot be removed. It works on runewords too: done to the white base b
 
 ### Mapling
 
-:term[Mapling] is Secret Recipe 50: the item, a :term[Maple Leaf] and a Sa Rune lower the level requirement penalty a little, so the fail-safe opens again and you can D-stone more. The loop D-stone → Maple → D-stone is one of the strongest upgrades in ESR, and the most expensive.
+:term[Mapling] is Secret Recipe 50: the item, a :term[Maple Leaf] and a Perfect Gem (a Sa Rune before 3.2.13) lower the level requirement penalty a little, so the fail-safe opens again and you can D-stone more. The loop D-stone → Maple → D-stone is one of the strongest upgrades in ESR, and the most expensive.
 
 ::secret-recipe[50]
 

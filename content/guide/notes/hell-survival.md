@@ -30,6 +30,6 @@ In short: your resistances drop sharply, life and mana leech become much weaker,
 
 ### Know the layout
 
-ESR changes several maps and moves some quest areas; a few vanilla zones are now dangerous special areas. Check the official Maps page when a quest area is not where you expect.
+ESR changes several maps and moves some quest areas; a few vanilla zones are now dangerous special areas. Check the official Maps page when a quest area is not where you expect. Since 3.2.19 an :term[Evil Urn] can stand in any area with monsters (2%, 4% and 6% of rooms in Normal, Nightmare and Hell); breaking one releases a boss pack whose boss carries one extra rare affix.
 
 Once Hell Baal is down, continue with [[endgame-roadmap]].

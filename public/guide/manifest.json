@@ -1,23 +1,23 @@
 {
   "schema": 1,
-  "esrVersion": "3.2.12",
-  "esrTag": "3.2.12",
-  "esrCommit": "8c2bb1c1a50fe35e96ce8804120613bb3ae74d1b",
-  "generatedAt": "2026-10-11T20:32:01.492Z",
+  "esrVersion": "3.2.20",
+  "esrTag": "3.2.20",
+  "esrCommit": "64e83b2615e3cf9ade06949927018c4270a4cb89",
+  "generatedAt": "2026-10-14T11:58:15.475Z",
   "files": {
     "guide": {
-      "hash": "29ebfbb202691f34535df092a4909a773c2ca9d6169d9b25e34e7d4269ee10c3",
-      "bytes": 186579
+      "hash": "953fea00ef1627d467e2791d606b66465fae1f6f0529b42779284b57ad38bf98",
+      "bytes": 188413
     }
   },
   "counts": {
     "notes": 31,
     "drafts": 31,
-    "words": 6521,
+    "words": 6676,
     "dataBlocks": 53,
     "spineSteps": 5,
     "questions": 6,
-    "glossary": 46,
+    "glossary": 47,
     "sourceRefs": 6
   },
   "warnings": []
