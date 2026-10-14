@@ -453,7 +453,7 @@ describe('expandPlaceholders', () => {
 });
 
 describe("Sully's QoL filter", () => {
-  const source = readFileSync(resolve(process.cwd(), 'public/loot-filters/sullys-qol.json'), 'utf8');
+  const source = readFileSync(resolve(process.cwd(), 'public/loot-filters/esr-default-filter.json'), 'utf8');
   // Strip the `//` comment lines (leading and between rules) and parse the rest; no `//` appears inside strings.
   const json = source
     .split('\n')

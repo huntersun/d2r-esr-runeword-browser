@@ -86,7 +86,7 @@ describe('serializeLootFilter', () => {
   });
 
   it('lays Sully’s filter out like the source, apart from key order and wrapped stat lists', () => {
-    const source = readFileSync(resolve(__dirname, '../../../../public/loot-filters/sullys-qol.json'), 'utf-8');
+    const source = readFileSync(resolve(__dirname, '../../../../public/loot-filters/esr-default-filter.json'), 'utf-8');
     const text = serializeLootFilter(parseLootFilter(source).filter);
     const oneLineRules = (s: string) => s.split('\n').filter((line) => line.startsWith('    {"')).length;
     expect(text.startsWith("// Sully's QoL Filter")).toBe(true);

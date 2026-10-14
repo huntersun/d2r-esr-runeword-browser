@@ -29,7 +29,7 @@ function readJson(path: string): unknown {
 const bundle = readJson('public/game-data/lootfilter.json') as LootFilterDataBundle;
 const types = readJson('public/game-data/types.json') as TypesBundle;
 const lookup = buildLookup(bundle, types);
-const sully = parseLootFilter(readFileSync(resolve(process.cwd(), 'public/loot-filters/sullys-qol.json'), 'utf8')).filter;
+const sully = parseLootFilter(readFileSync(resolve(process.cwd(), 'public/loot-filters/esr-default-filter.json'), 'utf8')).filter;
 
 function preset(id: string): TestPreset {
   const found = TEST_PRESETS.find((candidate) => candidate.id === id);
@@ -49,6 +49,13 @@ describe('toTestItem', () => {
     expect(item.code).toBe('r83');
     expect(item.name).toBe('Zod Rune');
     expect(item.typeAncestors).toEqual(expect.arrayContaining(['rune', 'misc']));
+  });
+
+  it("adds the ancestors of the base's type2 (a hand axe is also a one-handed swing weapon)", () => {
+    const axe = withItem(form(), 'hax', lookup);
+    expect(toTestItem(axe, lookup).typeAncestors).toEqual(['axe', 'mele', 'weap', '1hsw']);
+    // A typed type other than the base's own leaves type2 out.
+    expect(toTestItem({ ...axe, type: 'club' }, lookup).typeAncestors).not.toContain('1hsw');
   });
 
   it('falls back to the typed type alone without game data', () => {
