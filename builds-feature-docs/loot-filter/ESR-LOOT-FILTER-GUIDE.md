@@ -1,6 +1,6 @@
 # ESR Loot Filter Guide (reference copy)
 
-> Markdown transcription of the mod author's PDF guide of 2026-10-11, kept next to it as `ESR-Loot-Filter-Guide.pdf`. The PDF is authoritative where they differ.
+> Markdown transcription of the mod author's PDF guide, the copy shipped with ESR 3.2.20 (its date line still reads Oct 11, 2026), kept next to it as `ESR-Loot-Filter-Guide.pdf`. The PDF is authoritative where they differ.
 
 Oct 11, 2026 · @Bogdan
 
@@ -115,7 +115,7 @@ Any text can be one string or one string per language, and `{name}` is always th
 
 - **Per language:** `{ "enUS": "Rune", "deDE": "Rune" }`. A missing language falls back to enUS. Languages: enUS, deDE, esES, frFR, itIT, koKR, plPL, ruRU, zhCN, zhTW, esMX, jaJP, ptBR.
 - **Game strings:** `{string:KEY}` shows a key from the game's string files in the player's language, e.g. `{string:r01}` for El Rune.
-- **Colors:** `ÿc` plus one character (see Color codes). In JSON `ÿc` works too.
+- **Colors:** `ÿc` plus one character (see Color codes). In JSON `\u00ffc` works too.
 - D2RLAN tags like `{red}` are not supported.
 
 ## Chat notifications
@@ -179,12 +179,13 @@ A `droplight` puts the droplight effect, a beam of light with a sparkle, on the 
 "droplight": { "color": [255, 128, 0] }
 ```
 
-| Key   | Value                                                                                                    |
-| ----- | -------------------------------------------------------------------------------------------------------- |
-| color | Optional tint `[r, g, b]`, 0 to 255. Leave it out, as in `"droplight": {}`, for the effect's own colors. |
+| Key   | Value                                                                                                               |
+| ----- | ------------------------------------------------------------------------------------------------------------------- |
+| color | Optional `[r, g, b]`, 0 to 255: the beam's color. Leave it out, as in `"droplight": {}`, for the game's white beam. |
 
 - **HD only:** the droplight is an HD effect; legacy graphics show nothing.
 - **The mod's part:** the plugin attaches the effect as the overlay.txt row named by `droplight_overlay` in its TOML (default `droplight`). Without that row droplights stay off and the plugin log says so.
+- **Colors:** the plugin recolors a copy of the game's beam, `fx_horadric_light.particles`, which the mod ships at the path `droplight_beam` names. Without that file a colored droplight keeps the white beam and the plugin log says so. `droplight_brightness` in the plugin's TOML (1 to 100, default 50) sets how bright colored beams are, as a share of the game's white beam; near full brightness the beam's core clips and the color washes out.
 
 ## Quality colors
 
@@ -256,3 +257,61 @@ Every error and warning goes to the D2RLoader plugin log with the rule number an
 - `debug_log = true` in the plugin's TOML logs one line per item decision (shown, hidden and by which rule), every chat line printed, every icon sprite loaded and every droplight added.
 - **Missing files:** a sound or icon the filter names but its folder lacks is logged; that rule keeps working without it.
 - **Droplights off:** the log names the reason, such as overlay.txt having no row named in `droplight_overlay`.
+
+## How to use filters for other mods
+
+The plugin is not tied to ESR. It works for whichever mod the game runs: it finds that mod's folders itself and resolves every name in a filter against that mod's own files. Another mod can ship it with filters of its own.
+
+### What players install
+
+- **D2RLoader and the plugin:** `d2rl-celestialrayone-loot-filter.dll` goes in `d2rloader\plugins\` and its settings file, `celestialrayone.loot-filter.toml`, in `d2rloader\config\`. Both folders sit either in the game folder (the plugin then runs for every mod) or in `<game>\mods\<mod>\` (only for that mod). The plugin writes its log to `d2rloader\logs\celestialrayone.loot-filter.log`.
+- **The D2RLoader version the plugin is built for:** on another version, the plugin checks the game's code before each feature and switches off the ones that do not match. The log names them; everything else keeps working.
+- **HD graphics** for minimap icons and droplights. Labels, chat lines, sounds and quality colors work in both modes.
+
+### Where the mod's files go
+
+- **Filters the mod ships:** `<game>\mods\<mod>\LootFilters\`, one `.json` file per filter. `<mod>` is the mod's folder name, the one the game is started with (`-mod <mod>`).
+- **Beside them:** a `sounds` folder for the filters' sound files and an `icons` folder for their minimap icon sprites.
+- **Players' own filters:** `<Saved Games>\Diablo II Resurrected\mods\<mod>\LootFilters\`, or the folder `user_folder` in the plugin's TOML names. The plugin keeps `selection.json` there.
+
+### Picking the filter
+
+- **Without a launcher:** set `default_filter` in the plugin's TOML to one of the mod's filter files, extension included, for example `default_filter = "my-filter.json"`. It is used until a player picks another one.
+- **Levels:** players bind the keys under Options > Controls > Loot Filter; there are no default keys. Next Filter Level steps through the filter's levels, and Show Hidden Items shows hidden labels until it is pressed again. The plugin saves the level in `selection.json` itself.
+- **With a launcher of the mod's own:** write `selection.json` in the players' filters folder. The plugin notices the change and applies it at once, even in game.
+
+```json
+{
+  "formatVersion": 1,
+  "activeFilter": "shipped:my-filter.json",
+  "levels": { "shipped:my-filter.json": 2 },
+  "playSounds": true
+}
+```
+
+| Key          | Value                                                                                                                                       |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| activeFilter | `shipped:<file>` for a filter in the mod's folder, `user:<file>` for one in the players' folder, or `none` for no filter.                   |
+| levels       | The level each filter is at, by the same id: one of the `id` numbers of its `filterLevels`. A filter left out starts at its `defaultLevel`. |
+| playSounds   | `false` silences every filter sound.                                                                                                        |
+
+- **Console:** `lootfilter` shows the active filter, its level and its problems; `lootfilter reload` reads the selection and the filter again.
+
+### Writing filters for the mod
+
+- **Every name comes from the mod:** item codes from its weapons.txt, armor.txt and misc.txt, item types from its itemtypes.txt (parent types included), stats from itemstatcost.txt by name or id, sounds by their sounds.txt name, areas by their levels.txt Id, and unique or set items by their row in uniqueitems.txt or setitems.txt. ESR's filters use ESR's items, so they do not fit another mod as they are.
+- **Names the mod lacks** are reported in the plugin log with the rule's number and line. A rule with an error is switched off; the rest of the filter keeps working.
+- **Color codes:** `ÿcN` to `ÿcV` follow ESR's `color-codes-2x-letters` patch. A mod without that patch has the stock 3.3 letters, listed under Color codes.
+- **Everything else in this guide applies as written:** conditions, actions, texts and translations, chat notifications, sounds, minimap icons and quality colors.
+
+### Droplights in another mod
+
+- **overlay.txt row:** add one row named `droplight`, or the name `droplight_overlay` in the plugin's TOML sets. The plugin only uses the row's number and its legacy graphics are never drawn in HD, so a renamed copy of an existing looping overlay row, such as an aura's, is enough. Without the row, droplights stay off and the log says so.
+- **Colored beams:** copy the game's own `data/hd/vfx/particles/overlays/object/horadric_light/fx_horadric_light.particles`, extracted from the game's storage with a CASC tool, into the mod at the same path inside its data folder (`<game>\mods\<mod>\<mod>.mpq\data\…`). The plugin makes a recolored copy of it for each color a filter uses. The file is the game's own, unchanged, so the game's horadric light looks the same. Without it, colored droplights keep the white beam.
+- **Settings:** `droplight_beam` in the TOML changes where the plugin looks for that file, and `droplight_brightness` (1 to 100, default 50) sets how bright colored beams are.
+
+### Checking it works
+
+- **In game:** the `lootfilter` console command lists which features are on, the active filter, its rule counts, its level and its problems.
+- **The plugin log** has every error and warning with the rule number and line, and the reason when a feature is off.
+- `debug_log = true` in the TOML also logs every item decision, chat line, icon sprite and droplight.

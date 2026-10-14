@@ -11,7 +11,7 @@ answers), §5 and §5.1 (owner decisions).
 | Path                | Screen                  | Notes                                                                                           |
 | ------------------- | ----------------------- | ----------------------------------------------------------------------------------------------- |
 | `/loot-filters`     | LootFilterLayout        | Frame for both pages: an "Under development" notice (like the guide's "Experimental" one)       |
-| `/loot-filters`     | LootFilterLibraryScreen | The library: New filter, Upload, Start from Sully's QoL; one card per filter                    |
+| `/loot-filters`     | LootFilterLibraryScreen | The library: New filter, Upload, Start from the ESR default filter; one card per filter         |
 | `/loot-filters/:id` | LootFilterEditorScreen  | The editor; `?tab=rules\|styles\|settings\|json\|test` (default `rules`); unknown id: not found |
 
 Both routes skip the HTM "Loading data..." gate (`STATIC_BUNDLE_ROUTE_PREFIXES` in `AppLayout.tsx`, see
@@ -24,6 +24,17 @@ Download a filter, then in the ESR launcher open the **Loot Filter** tab and cho
 `<Saved Games>\Diablo II Resurrected\mods\<mod>\LootFilters\`; sound files go in a `sounds` folder and minimap icons in
 an `icons` folder next to the filter. In game, the Loot Filter section in Controls holds the level key; the console
 command `lootfilter` shows the plugin's state and problems, `lootfilter reload` reloads.
+
+Asset rules: a `sound` ending in `.wav`/`.mp3`/`.flac` is a file in `sounds\` (any other string is a sounds.txt name, a
+number its row); `icon.iconName` `goldstar` is the file `icons\goldstar.sprite`. The launcher's Import copies only the
+JSON, so a filter that uses sound or icon files does not play or draw them until the files sit next to it. The mod ships
+the bundled ones (the nine mp3s in `public/loot-filters/sounds/`, `goldstar.sprite` and `goldstar.lowend.sprite`) beside
+its own `esr-default-filter.json`; **Download .zip with sounds and icons** puts the filter and the bundled files it
+references into one archive to unzip into `LootFilters\` (see Library screen).
+
+Troubleshooting (also in the library how-to): if a sound or icon does not work, check the `sounds`/`icons` folders next
+to the filter; if chat lines do not print, run `lootfilter` in the game console and read
+`d2rloader\logs\celestialrayone.loot-filter.log` (set `debug_log = true` in the plugin's TOML to log every chat line).
 
 ## Storage model
 
@@ -57,8 +68,16 @@ command `lootfilter` shows the plugin's state and problems, `lootfilter reload` 
 - Ids and timestamps come from `prepare` callbacks, so every reducer is a pure function of (state, payload).
 - Selectors: `selectLibraryEntries`, `selectLibraryEntry(state, id)`, `selectEditor`, `selectEditorFilter`,
   `selectDiagnostics(state, reference?)` (re-reads the model's shape diagnostics through `readLootFilter(toPlainJson(filter))` plus `validateLootFilter`; the stored parse diagnostics are used only when the text is not valid JSON).
-  The validator's reference holds Sets, so it stays out of Redux: `useLootFilterReference()` loads the `lootfilter` and
+  The validator's reference holds Sets and Maps, so it stays out of Redux: `useLootFilterReference()` loads the `lootfilter` and
   `types` game-data bundles and passes the reference to the selector (module-level cache keeps its identity stable).
+  Besides the known codes, types, stats, areas, sounds and unique/set ids it has `itemCodeTypes` (code → the union of
+  the ancestors of its `type` and `type2`) and `typeAncestors` (type → ancestors, itself included).
+- "Never matches" warnings (`engine/validate.ts`, per rule): no listed item code (of those the bundle knows) is of a
+  listed item type; every item code, unique/set id or area is also in its except list; every listed item type falls
+  under an excepted type, or every known listed code is of one; `uniqueOrSetIds` with a `quality` (one, list or range)
+  that allows neither set nor unique; a hiding rule (own `hide` or its style's) with no condition but a `location`
+  that includes onGround, when rules follow it ("Hides every ground item; the N rules after it never run for ground
+  items"). Unknown codes and types are skipped, so without game data only the except-list checks run.
 
 `lootFilterSaga` (registered by `src/features/loot-filter/index.ts` when the route chunk first loads):
 
@@ -72,7 +91,8 @@ chunk (about 6.5 KB gzip); a documented exception, see [SAGAS.md](../technical/S
 
 ## Library screen
 
-Title, a short how-to (launcher import, `sounds`/`icons` folders), and:
+Title, a short how-to (launcher import, `sounds`/`icons` folders, the zip download, the troubleshooting line from
+"Using a filter in the game"), and:
 
 - **New filter**: a name dialog ("It also becomes the filter's title (Settings tab), which the launcher shows."), then
   opens the editor on a blank filter (`formatVersion: 1`, `title` = name, one level
@@ -80,11 +100,22 @@ Title, a short how-to (launcher import, `sounds`/`icons` folders), and:
 - **Upload**: a `.json` file read as UTF-8. A JSON syntax error shows a toast with the line and column and imports
   nothing; a file with diagnostics (unknown keys, wrong shapes) is imported and the editor lists them. The entry name is
   the file's `title`, else the file name. A successful upload opens the editor, like New filter and the template.
-- **Start from Sully's QoL**: fetches `public/loot-filters/sullys-qol.json` and opens it as a `template` entry. Credit
-  line: "Sully's QoL filter, converted by the ESR author, bundled with permission".
+- **Start from the ESR default filter**: fetches `public/loot-filters/esr-default-filter.json` (a copy of the mod's
+  `LootFilters/esr-default-filter.json`, title "ESR default filter"; its rules and styles are Sully's QoL filter as
+  converted by the ESR author) and opens it as a `template` entry named "ESR default filter". Credit line: "Sully's QoL
+  filter, converted by the ESR author, bundled with permission".
 - One card per entry (newest first): name, title/author and rule count (a quick JSON read of the text, cached), last
-  update, and Open, Download (`<slug of name>.json`), Duplicate, Rename, Delete (with a confirm dialog). Empty state
-  when the library is empty.
+  update, and Open, Download, Duplicate, Rename, Delete (with a confirm dialog). Empty state when the library is empty.
+- **Download** (`components/FilterDownloadMenu.tsx`, shared with the editor header): a plain button saving
+  `<slug of name>.json` when the filter references no bundled sound or icon (or is not valid JSON); otherwise a menu with
+  **Download .json** and **Download .zip with sounds and icons**, plus the hint "Unzip into your LootFilters folder" and,
+  when the filter references files the app does not bundle, their paths ("add them yourself"; the first four, then
+  "and N more"). The zip (`<slug>.zip`) holds `<slug>.json` (the same text the plain download saves), `sounds/*.mp3` and
+  `icons/*.sprite` for the referenced bundled files (`goldstar` brings `goldstar.lowend.sprite` along). The referenced
+  files come from `utils/referencedAssets.ts` (rules and styles; `sound` values ending in `.wav`/`.mp3`/`.flac`, every
+  `icon.iconName`; matched case-insensitively against `utils/bundledAssets.ts`); the archive from `utils/zip.ts`, a
+  dependency-free stored-only ZIP writer (UTF-8 names, CRC-32). A failed fetch shows a toast "Could not download the
+  sounds and icons" and saves nothing.
 
 ## Editor screen
 
@@ -94,7 +125,8 @@ problems chip ("N errors / M warnings", also announced to screen readers through
 (`scrollToProblems`); `JsonTab` scrolls to the problems list in an effect once it has rendered (the tab switch runs in a
 transition, so scrolling from the click handler could miss the element) and resets the counter. Download saves the
 stored `text` (comments and formatting as uploaded) unless edits are not yet written back (`editor.dirty`), then the
-serialized model. When the stored text is not valid JSON, every tab but JSON shows a "cannot be read" card; Apply in the
+serialized model; it is the library's Download menu (see Library screen), so a filter that uses bundled sounds or icons
+also offers the zip, with the files the current model references. When the stored text is not valid JSON, every tab but JSON shows a "cannot be read" card; Apply in the
 JSON tab recovers the filter.
 
 The tabs are a `role="tablist"` of buttons that set `?tab=`; each tab unmounts when another is shown, so the state that
@@ -132,7 +164,10 @@ Mythical`: items/types/uniques by name when the bundles are in, codes otherwise,
   that float over the row on hover/focus with a mouse and are always shown on touch and on the selected row. The
   selected row is scrolled into view when the selection changes elsewhere (the JSON tab's "Rule N" link).
 - **Editor** (`RuleEditor`, remounted per rule): "Rule N", the `comment` field, the rule's diagnostics (paths relative to
-  the rule), then the conditions in sections (Which items, Item properties, Stats, Where and when) and an Actions card
+  the rule), a collapsed "How rules combine (AND, OR, hide)" note (`HowRulesCombine`: conditions AND, list values OR,
+  codes and types both checked, top to bottom with hide stopping and no "show", exceptions written as negated
+  conditions in the hide rule, `hideIfOtherConditionsFail` the other way round; a "Test tab" link sets `?tab=test`),
+  then the conditions in sections (Which items, Item properties, Stats, Where and when) and an Actions card
   with `ActionsEditor owner="rule"`. Every change dispatches `patchRule`; an emptied list removes its key. A condition
   whose file value had the wrong shape (kept in `passthrough`) gets a note; every passthrough key is listed read-only in
   a collapsed "Advanced / passthrough" block.
@@ -147,8 +182,18 @@ Mythical`: items/types/uniques by name when the bundles are in, codes otherwise,
   `utils/pickerSearch.ts`: every term in name or code/id, exact and prefix matches first, at most 200 shown with "type
   to narrow"; Enter picks the highlighted option; the "Add code …" entry for typed values comes last) and the wrappers
   `ItemPicker`, `SingleItemPicker`, `ItemTypePicker`, `StatPicker`, `AreaPicker`, `UniqueOrSetPicker`. Non-spawnable
-  items are greyed with "shadow base". Uniques and sets share the id space (a unique and a set item can have the same
-  row), so a chip names both. Without the bundles the pickers still take typed codes and ids.
+  items are greyed with "shadow base". Item options show their type (`hax · Axe`) and also match the names and codes of
+  every type the base counts as (`type` and `type2` with their ancestors, the option's `searchMore`), ranked after the
+  name and code matches, so `helm` lists the helms named Helm first, then Demonhead and the rest. In `MultiPicker` the
+  "Add …" button comes before the chips (the popover stays put as chips are added), a pick keeps the search, clicks on
+  the picker's own chips do not close the list, and the popover has a fixed height (it does not flip as the matches
+  change); the search, the highlighted option and the scroll position survive closing and reopening (the search text is
+  selected on open, so typing replaces it). While searching, the item and type pickers offer "Add all N items" /
+  "Remove all N items" for every match, not only the 200 shown (`bulkPick`): adding skips shadow bases ("M shadow bases
+  skipped"), removing applies once every other match is picked, and above 50 values the button asks for a second click
+  ("Add N items? Click again"). `SinglePicker` closes on a pick and starts with an empty search. Uniques and sets share
+  the id space (a unique and a set item can have the same row), so a chip names both. Without the bundles the pickers
+  still take typed codes and ids.
 - **Data**: `useLootFilterData()` → `{ status, data, types, lookup, options }`; `lookup` (`utils/lookup.ts`) has `item`,
   `itemName`, `itemType`, `typeName`, `statName`, `statId`, `areaName`, `uniqueOrSetName` (all `undefined` for unknown
   keys or missing data); the lookup and option lists are built once per loaded bundle pair (module cache).
@@ -166,17 +211,22 @@ removes the key); `passthrough` is never patched. Sections:
   collapsed read-only list of the style's actions (`StyleSummary`; its `comment` is shown but not counted). A rule's
   `comment` belongs to the rule editor; a style's is a one-line field under **Notes** ("A note for yourself; the plugin
   ignores it.").
-- **Visibility**: `hide`, `hideIfOtherConditionsFail` (checkboxes; unchecked removes the key), `chatMessageWhenHidden`.
+- **Visibility**: `hide` (hint: no later rule runs, and no rule can show it again), `hideIfOtherConditionsFail`
+  (checkboxes; unchecked removes the key), `chatMessageWhenHidden`.
 - **Name**: `replaceName`, `namePrefix`, `nameSuffix`. **Chat**: `chatMessage`, `notify` (the hint shows the filter's
   effective drop line).
 - **Label** (`LabelSection`): `labelBackground` (colour + alpha, default alpha 242), `labelBorder` (colour + alpha, width; "Add border" /
   remove).
 - **Sound**: combobox over the 9 bundled files and the sounds.txt names (digits typed free become a row number), play
   button for bundled files (an `Audio` at `soundVolume ?? filter.soundVolume ?? 100`), "preview a local file" input
-  (object URL, revoked on change/unmount), `soundVolume` (blank = filter default).
-- **Minimap icon**: on/off, `iconName` (suggests `goldstar`), `iconSize` (4–256, blank = file size), tint (alpha
-  optional), sprite preview.
-- **Droplight**: on/off (`{}`), tint or "the effect's own colours".
+  (object URL, revoked on change/unmount), `soundVolume` (blank = filter default). The hint says where sounds come
+  from: a file in the `sounds` folder next to the filter (the bundled ones from Sully's QoL) or a game sound by its
+  sounds.txt name or row, which needs no file (sounds.txt is a table in the mod's game data); such a sound has no
+  preview ("a game sound plays from the game's files").
+- **Minimap icon**: on/off (turning it on gives `{ iconName: 'goldstar', iconSize: 50 }`, as the mod's own filter
+  uses; the sprite's own size is 200 px), `iconName` (suggests `goldstar`), `iconSize` (4–256, blank = file size), tint
+  (alpha optional), sprite preview.
+- **Droplight**: on/off (`{}`), a beam colour or "the game's white beam".
 
 Text fields (`ColorTextField`) take raw `ÿc` codes and have two insert menus: colour codes (swatch grid of `COLOR_CODES`)
 and the placeholders of the field's context (`names` for names, `chat` for chat lines, `dropFormat` and
@@ -212,7 +262,8 @@ tab switches; it is not saved.
 - **Context**: difficulty, player level (sent as player stat 12), area (with an "in town" hint for 1/40/75/103/109),
   filter level (the filter's levels, default marked) and more player stat rows.
 - **Conversion** (`utils/testItemForm.ts`): `toTestItem(form, lookup)` (type ancestors from the `types` bundle via the
-  lookup; without it only the typed type), `toTestContext(form, filter, lookup)` (stat ids by name from the lookup), `applyPreset`, `withItem`, `withUniqueOrSet`. The unique/set picker uses the option keys
+  lookup, `typeAncestorsOf`: the union of the item type's ancestors and, while the type is the base's own, its `type2`'s;
+  without the data only the typed type), `toTestContext(form, filter, lookup)` (stat ids by name from the lookup), `applyPreset`, `withItem`, `withUniqueOrSet`. The unique/set picker uses the option keys
   (`Unique:12`, `Set:12`) as values because the two tables share ids.
 - **Result**: the ground label (`LabelPreview` with the rules' background and border; text before the first colour
   code in the game's quality colour) or "Hidden: no ground label" with a link to the hiding rule; chat lines (each a
@@ -261,3 +312,14 @@ research doc and the Test tab's note link here.
 - The serializer does not keep comments between rules (only the `//` lines before the object).
 - `uniqueOrSetIds` are 0-based row numbers of uniqueitems.txt / setitems.txt (equal to `*ID` in ESR 3.2.12).
 - A numeric `sound` is a 0-based data row of sounds.txt (`*Index` is unreliable: it repeats for the Leoric taunt rows).
+- An item with a `type2` counts as both types for item-type conditions (the Test tab and the never-matches warnings use
+  the union of both types' ancestors).
+
+### Troubleshooting in game
+
+- **Chat lines do not print:** run `lootfilter` in the console; its output lists the hooks, "drop alerts" among them.
+  Then read `d2rloader\logs\celestialrayone.loot-filter.log`: a feature the plugin switched off after its D2RLoader
+  version check is named there. `debug_log = true` in `celestialrayone.loot-filter.toml` logs every chat line printed
+  (and every item decision).
+- A `notify` / `chatMessage` line prints when the item drops or comes into view.
+- A sound or icon the filter names but its folder lacks is logged; the rule keeps working without it.
