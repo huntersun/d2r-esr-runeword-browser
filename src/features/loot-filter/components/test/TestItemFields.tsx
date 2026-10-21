@@ -38,6 +38,9 @@ const FLAGS = [
 
 const ID = 'loot-filter-test';
 
+/** Select value of "no base tier" (an item without a normal/exceptional/elite family). */
+const NO_TIER = 'none';
+
 interface TestItemFieldsProps {
   readonly data: LootFilterData;
   readonly form: TestItemForm;
@@ -125,9 +128,9 @@ export function TestItemFields({ data, form, onChange }: TestItemFieldsProps) {
         </Field>
         <Field id={`${ID}-tier`} label="Base tier" dense>
           <Select
-            value={String(form.baseTier)}
+            value={form.baseTier === null ? NO_TIER : String(form.baseTier)}
             onValueChange={(value) => {
-              update({ baseTier: Number(value) });
+              update({ baseTier: value === NO_TIER ? null : Number(value) });
             }}
           >
             <SelectTrigger id={`${ID}-tier`} size="sm" className="w-full">
@@ -139,6 +142,7 @@ export function TestItemFields({ data, form, onChange }: TestItemFieldsProps) {
                   {tier}
                 </SelectItem>
               ))}
+              <SelectItem value={NO_TIER}>none (rings, charms, jewels, mythical…)</SelectItem>
             </SelectContent>
           </Select>
         </Field>

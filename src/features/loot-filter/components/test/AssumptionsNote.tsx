@@ -15,6 +15,7 @@ const ASSUMPTIONS: readonly string[] = [
   '{stat:ID} without a param shows the first entry of that stat; ID may also be a stat name.',
   '{ethereal} becomes "Ethereal" for ethereal items and nothing otherwise.',
   '"Hide unmatched items" hides an item on the ground that no rule applied to.',
+  'Items without a normal/exceptional/elite family (rings, amulets, charms, jewels, arrows, mythical bases) match no base-tier condition.',
 ];
 
 /** A collapsed list of what the test assumes and should be checked in game. */

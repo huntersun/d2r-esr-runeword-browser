@@ -254,9 +254,13 @@ tab switches; it is not saved.
 
 - **Presets**: Zod rune on the ground (`r83`), Unique bow, 2 sockets (`m01`, unique), Gold pile 1500 (`gld` with
   stat 14 = 1500, the stat Sully's gold rules check), Rare ring (`rin`), and Reset. A preset replaces the item fields
-  and keeps the context; names and types fall back to built-in values without the game data.
-- **Item**: item picker (fills the name and the item type from the bundle), name (`{name}`, editable), item type
-  (typed when the data is missing; the hint lists the ancestors type conditions match), quality, base tier, location,
+  and keeps the context; names and types fall back to built-in values without the game data. The base tier comes from
+  the game data (none for the mythical bow and the ring).
+- **Item**: item picker (fills the name, the item type and the base tier from the bundle), name (`{name}`, editable),
+  item type (typed when the data is missing; the hint lists the ancestors type conditions match), quality, base tier
+  (normal / exceptional / elite from the picked item's `tier` in `lootfilter.json`, or "none" for an item without a
+  tier family: rings, amulets, charms, jewels, arrows, mythical bases, unknown codes; it can be changed, and picking
+  another item resets it), location,
   item level, sockets, max sockets, identified / ethereal / runeword / fully socketed, a unique or set item (picking one
   switches to its base and name, and sets the quality to unique or set unless the user chose a quality) and item stat
   rows (stat, optional param, value; incomplete rows are ignored).
@@ -315,6 +319,10 @@ research doc and the Test tab's note link here.
 - A numeric `sound` is a 0-based data row of sounds.txt (`*Index` is unreliable: it repeats for the Leoric taunt rows).
 - An item with a `type2` counts as both types for item-type conditions (the Test tab and the never-matches warnings use
   the union of both types' ancestors).
+- An item without a normal/exceptional/elite family (rings, amulets, charms, jewels, arrows/bolts, ESR mythical bases;
+  its `normcode`, `ubercode` and `ultracode` are its own code) matches no `baseTier` condition, and `{baseTier}` is
+  empty for it. A reported in-game test only shows that a ring is neither normal nor exceptional for the plugin. Verify
+  with `debug_log = true`: the plugin's log line prints `tier %d` for each item.
 
 ### Troubleshooting in game
 

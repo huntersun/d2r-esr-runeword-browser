@@ -88,6 +88,40 @@ describe('conditions', () => {
     expect(applies({ difficulty: { min: 1 } })).toBe(true);
   });
 
+  describe('base tier of items without a tier family', () => {
+    // A reported rule: hide normal and exceptional bases of every quality.
+    const hideLowTiers: LootFilterRule = {
+      quality: ['inferior', 'normal', 'superior', 'magic', 'rare', 'unique', 'crafted', 'tempered'],
+      baseTier: ['normal', 'exceptional'],
+      hide: true,
+    };
+    const run = (item: TestItem) => evaluateFilter(makeFilter([hideLowTiers]), item, makeContext());
+
+    it('skips an elite item instead of hiding it', () => {
+      const result = run(makeItem({ code: 'uap', typeAncestors: ['helm', 'armo'], quality: 6, baseTier: 2 }));
+      expect(result.hidden).toBe(false);
+      expect(result.trace).toEqual([{ index: 0, outcome: 'skipped', failed: ['baseTier'], actions: {} }]);
+    });
+
+    it('skips a ring, which has no base tier', () => {
+      const result = run(makeItem({ code: 'rin', typeAncestors: ['ring', 'misc'], quality: 6, baseTier: null }));
+      expect(result.hidden).toBe(false);
+      expect(result.trace[0]?.outcome).toBe('skipped');
+    });
+
+    it('matches no base tier, not even elite or a range, for a null tier', () => {
+      const ring = makeItem({ baseTier: null });
+      expect(applies({ baseTier: 'elite' }, ring)).toBe(false);
+      expect(applies({ baseTier: { min: 0 } }, ring)).toBe(false);
+      expect(failedKeys({ baseTier: 'normal' }, ring)).toEqual(['baseTier']);
+      expect(applies({}, ring)).toBe(true);
+    });
+
+    it('expands {baseTier} to an empty string for a null tier', () => {
+      expect(expandPlaceholders('[{baseTier}]', makeItem({ baseTier: null }), makeContext(), makeFilter([]))).toBe('[]');
+    });
+  });
+
   it('fails a named range bound it cannot resolve', () => {
     expect(failedKeys({ quality: { min: 'legendary' as 'unique' } }, makeItem({ quality: 7 }))).toEqual(['quality']);
   });

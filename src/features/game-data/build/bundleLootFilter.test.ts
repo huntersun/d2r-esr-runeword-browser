@@ -89,3 +89,58 @@ describe('buildLootFilterBundle', () => {
     expect(warnings).toContain('lootfilter: unique 2 (Lost) has unknown base code "xxx"');
   });
 });
+
+describe('buildLootFilterBundle tiers', () => {
+  const TIER_COLUMNS = [...ITEM_COLUMNS, 'normcode', 'ubercode', 'ultracode'];
+  const empty = rowTable([['Stat']]);
+  const { bundle: tiered } = buildLootFilterBundle(
+    {
+      weapons: table([
+        TIER_COLUMNS,
+        ['Hand Axe', 'hax', 'hax', 'axe', '', '1', 'hax', '9ha', '7ha'],
+        ['Hatchet', '9ha', '9ha', 'axe', '', '1', 'hax', '9ha', '7ha'],
+        ['Arrows', 'aqv', 'aqv', 'bowq', '', '1', 'aqv', 'aqv', 'aqv'],
+        ['Mythical Bow', 'm01', 'm01', 'bow', '', '1', 'm01', 'm01', 'm01'],
+      ]),
+      armor: table([
+        TIER_COLUMNS,
+        ['Cap', 'cap', 'cap', 'helm', '', '1', 'cap', 'xap', 'uap'],
+        ['Shako', 'uap', 'uap', 'helm', '', '1', 'cap', 'xap', 'uap'],
+        ['Odd', 'odd', 'odd', 'helm', '', '1', 'cap', 'xap', 'uap'],
+        ['Half', 'hlf', 'hlf', 'helm', '', '1', 'hlf', 'hlf', 'zzz'],
+      ]),
+      misc: table([TIER_COLUMNS, ['Ring', 'rin', 'rin', 'ring', '', '1', 'rin', 'rin', 'rin']]),
+      itemstatcost: empty,
+      levels: table([['Name', 'Id', 'Act', 'LevelName']]),
+      sounds: rowTable([['Sound']]),
+      uniqueitems: rowTable([['index', 'code']]),
+      setitems: rowTable([['index', 'item']]),
+    },
+    new Map()
+  );
+  const tierOf = (code: string) => tiered.items.find((item) => item.code === code)?.tier;
+
+  it('sets the tier of weapons and armor from their position in a three-code family', () => {
+    expect(tierOf('hax')).toBe('normal');
+    expect(tierOf('9ha')).toBe('exceptional');
+    expect(tierOf('cap')).toBe('normal');
+    expect(tierOf('uap')).toBe('elite');
+    expect(tiered.items.find((item) => item.code === 'uap')).toEqual({
+      code: 'uap',
+      name: 'Shako',
+      kind: 'armor',
+      type: 'helm',
+      tier: 'elite',
+      spawnable: true,
+    });
+  });
+
+  it('leaves the tier out for self-referential, malformed and misc families', () => {
+    expect(tierOf('aqv')).toBeUndefined();
+    expect(tierOf('m01')).toBeUndefined();
+    expect(tierOf('odd')).toBeUndefined();
+    expect(tierOf('hlf')).toBeUndefined();
+    expect(tierOf('rin')).toBeUndefined();
+    expect(tiered.items.find((item) => item.code === 'rin')).not.toHaveProperty('tier');
+  });
+});

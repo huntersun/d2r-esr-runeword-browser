@@ -1,6 +1,8 @@
 import type { LootFilterDataBundle, LootFilterItem, LootFilterUniqueOrSet } from '../engine/schema.ts';
 import type { BuildResult } from './bundleTypes.ts';
 import { resolveName } from './itemNames.ts';
+import { optStr } from './model.ts';
+import { distinctFamilyTier } from './tiers.ts';
 import type { TsvTable } from './tsv.ts';
 
 /**
@@ -36,12 +38,16 @@ function readItemRows(tables: LootFilterTables, warnings: string[], strings: Rea
       seen.add(code);
       const name = row.str('name');
       const type2 = row.str('type2');
+      // misc.txt has no tier families; neither do weapons/armor rows whose family points at themselves
+      const tier =
+        kind === 'misc' ? undefined : distinctFamilyTier(code, optStr(row, 'normcode'), optStr(row, 'ubercode'), optStr(row, 'ultracode'));
       items.push({
         code,
         name: resolveName(strings, row.str('namestr'), name),
         kind,
         type: row.str('type'),
         ...(type2 === '' ? {} : { type2 }),
+        ...(tier === undefined ? {} : { tier }),
         spawnable: row.num('spawnable') === 1,
       });
     }

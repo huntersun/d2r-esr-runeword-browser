@@ -142,6 +142,11 @@ and validator (`src/features/loot-filter/engine/reference.ts` turns it plus `typ
 - `items`: every `weapons.txt`, `armor.txt` and `misc.txt` row with a `code`, spawnable or not (uniques sit on
   non-spawnable "shadow" bases and the plugin sees those codes on the ground); first row per code wins. Name =
   `namestr` through the string table, else the `name` column; `type` = the `type` column (an `itemtypes.txt` code).
+  `tier` (`normal` / `exceptional` / `elite`) is the item's position in its `normcode`/`ubercode`/`ultracode` family,
+  set only for weapons/armor rows whose three family codes differ (shared with `bases.json` through `build/tiers.ts`).
+  It is omitted for `misc.txt` rows and for rows without a tier family, whose three family columns hold the item's own
+  code (arrows/bolts, quest items, ESR mythical bases; ESR 3.2.24: 76 weapons, 6 armors). The loot-filter Test tab fills
+  its base tier from it; an item without a tier matches no `baseTier` condition.
 - `stats`: every `itemstatcost.txt` row, `id` = 0-based row number (equal to the `*ID` comment column in ESR 3.2.12),
   `name` = `Stat`.
 - `areas`: every `levels.txt` row with an `Id` (the `Expansion` marker has none); name = `LevelName` through the string

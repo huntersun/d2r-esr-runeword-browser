@@ -18,6 +18,9 @@
  * - `{stat:ID}` without PARAM shows the first entry of that stat; ID may also be an itemstatcost name.
  * - `{ethereal}` expands to `Ethereal` for ethereal items and to an empty string otherwise.
  * - `hideUnmatchedItems` hides an on-ground item no rule applied to (`hiddenBy` stays null).
+ * - An item without a normal/exceptional/elite family (rings, amulets, charms, jewels, arrows, ESR mythical bases;
+ *   `baseTier: null`) matches no `baseTier` condition, and `{baseTier}` expands to an empty string for it. The plugin's
+ *   tier for such items is unknown (its `debug_log` line prints `tier %d` per item).
  */
 
 import type {
@@ -55,8 +58,8 @@ export interface TestItem {
   readonly typeAncestors: readonly string[];
   /** 1 (inferior) to 9 (tempered). */
   readonly quality: number;
-  /** 0 (normal) to 2 (elite). */
-  readonly baseTier: number;
+  /** 0 (normal) to 2 (elite); null for items without a tier family (rings, charms, jewels, mythical bases…). */
+  readonly baseTier: number | null;
   readonly itemLevel: number;
   readonly sockets: number;
   readonly maxSockets: number;
@@ -220,7 +223,8 @@ function failedConditions(rule: LootFilterRule, item: TestItem, context: TestCon
   check('itemTypes', rule.itemTypes, hasType);
   check('excludeItemTypes', rule.excludeItemTypes, (types) => !hasType(types));
   check('quality', rule.quality, (quality) => matchesNamed(quality, item.quality, QUALITIES, 1));
-  check('baseTier', rule.baseTier, (tier) => matchesNamed(tier, item.baseTier, BASE_TIERS, 0));
+  const { baseTier } = item;
+  check('baseTier', rule.baseTier, (tier) => baseTier !== null && matchesNamed(tier, baseTier, BASE_TIERS, 0));
   check('itemLevel', rule.itemLevel, (level) => matchesNumber(level, item.itemLevel));
   check('sockets', rule.sockets, (sockets) => matchesNumber(sockets, item.sockets));
   check('maxSockets', rule.maxSockets, (sockets) => matchesNumber(sockets, item.maxSockets));
@@ -280,7 +284,7 @@ export function expandPlaceholders(text: string, item: TestItem, context: TestCo
       case 'quality':
         return qualityName(item.quality) ?? String(item.quality);
       case 'baseTier':
-        return BASE_TIERS[item.baseTier] ?? String(item.baseTier);
+        return item.baseTier === null ? '' : (BASE_TIERS[item.baseTier] ?? String(item.baseTier));
       case 'itemLevel':
         return String(item.itemLevel);
       case 'sockets':

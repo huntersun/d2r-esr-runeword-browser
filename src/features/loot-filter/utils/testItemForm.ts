@@ -4,7 +4,7 @@
  */
 import type { LootFilterDataBundle } from '@/features/game-data/engine/schema';
 import type { ItemStatEntry, TestContext, TestItem } from '../engine/evaluate';
-import type { ItemLocation, LootFilter } from '../engine/types';
+import { BASE_TIERS, type ItemLocation, type LootFilter } from '../engine/types';
 import type { LootFilterLookup } from './lookup';
 
 /** levels.txt ids of the five towns (Rogue Encampment, Lut Gholein, Kurast Docks, Pandemonium Fortress, Harrogath). */
@@ -46,8 +46,11 @@ export interface TestItemForm {
   readonly quality: number;
   /** The user picked a quality, so picking a unique or set item no longer changes it. */
   readonly qualityTouched: boolean;
-  /** 0 (normal) to 2 (elite). */
-  readonly baseTier: number;
+  /**
+   * 0 (normal) to 2 (elite); null for an item without a tier family (rings, charms, jewels, mythical bases…). Filled
+   * from the game data when an item is picked; the user may change it afterwards.
+   */
+  readonly baseTier: number | null;
   readonly itemLevel: number | undefined;
   readonly sockets: number | undefined;
   readonly maxSockets: number | undefined;
@@ -86,7 +89,7 @@ function defaultItemFields(): ItemFields {
     type: '',
     quality: 2,
     qualityTouched: false,
-    baseTier: 0,
+    baseTier: null,
     itemLevel: 1,
     sockets: 0,
     maxSockets: 0,
@@ -105,7 +108,13 @@ export function defaultTestItem(): TestItemForm {
   return { ...defaultItemFields(), difficulty: 0, area: 1, filterLevel: null, playerLevel: 1, playerStats: [] };
 }
 
-/** The picked item code with its name and type from the game data (the code itself when it is unknown). */
+/** The game data's base tier of a code (0 normal to 2 elite); null for an unknown code or one without a tier family. */
+export function baseTierOf(code: string, lookup: LootFilterLookup): number | null {
+  const tier = lookup.item(code)?.tier;
+  return tier === undefined ? null : BASE_TIERS.indexOf(tier);
+}
+
+/** The picked item code with its name, type and base tier from the game data (the code itself when it is unknown). */
 export function withItem(form: TestItemForm, code: string, lookup: LootFilterLookup): TestItemForm {
   const item = lookup.item(code);
   return {
@@ -113,6 +122,7 @@ export function withItem(form: TestItemForm, code: string, lookup: LootFilterLoo
     code,
     name: item === undefined || item.name === '' ? code : item.name,
     type: item?.type ?? (form.code === code ? form.type : ''),
+    baseTier: baseTierOf(code, lookup),
   };
 }
 
@@ -269,7 +279,10 @@ export const TEST_PRESETS: readonly TestPreset[] = [
   { id: 'rare-ring', label: 'Rare ring', item: { code: 'rin', name: 'Ring', type: 'ring', quality: 6, itemLevel: 85 } },
 ];
 
-/** Replaces the item fields with the preset's (the context fields stay); a known code takes the game data's name and type. */
+/**
+ * Replaces the item fields with the preset's (the context fields stay); a known code takes the game data's name, type and
+ * base tier.
+ */
 export function applyPreset(form: TestItemForm, preset: TestPreset, lookup: LootFilterLookup): TestItemForm {
   const known = lookup.item(preset.item.code);
   return {
@@ -278,6 +291,7 @@ export function applyPreset(form: TestItemForm, preset: TestPreset, lookup: Loot
     ...preset.item,
     name: preset.keepName === true || known === undefined || known.name === '' ? preset.item.name : known.name,
     type: known?.type ?? preset.item.type,
+    baseTier: known === undefined ? (preset.item.baseTier ?? null) : baseTierOf(preset.item.code, lookup),
     qualityTouched: false,
     stats: (preset.stats ?? []).map(([stat, value]) => newStatRow(stat, value)),
   };

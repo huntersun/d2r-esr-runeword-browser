@@ -2,6 +2,7 @@ import { ancestorsOf, resolveClass } from '../engine/itemTypes.ts';
 import type { BaseItem, BasesBundle, ClassCode, ItemTypeInfo, TypesBundle } from '../engine/schema.ts';
 import type { BuildResult } from './bundleTypes.ts';
 import type { ItemRow } from './model.ts';
+import { familyPosition } from './tiers.ts';
 
 /**
  * misc.txt rows are only included when their type ancestors contain one of these itemtypes codes
@@ -24,14 +25,11 @@ function pair(min: number, max: number): [number, number] | null {
 
 function tierOf(row: ItemRow, warnings: string[]): BaseItem['tier'] {
   const { code, normcode, ubercode, ultracode } = row;
-  if (normcode === code && ubercode === code && ultracode === code) {
-    // Mythical bases point all three family columns at themselves; so do items without a tier family
-    // (rings, charms, jewels, arrows), which are told apart by qlvl.
-    return row.level >= MYTHICAL_MIN_QLVL ? 'mythical' : 'normal';
-  }
-  if (code === normcode) return 'normal';
-  if (code === ubercode) return 'exceptional';
-  if (code === ultracode) return 'elite';
+  const position = familyPosition(code, normcode, ubercode, ultracode);
+  // Mythical bases point all three family columns at themselves; so do items without a tier family
+  // (rings, charms, jewels, arrows), which are told apart by qlvl.
+  if (position === 'self') return row.level >= MYTHICAL_MIN_QLVL ? 'mythical' : 'normal';
+  if (position !== null) return position;
   warnings.push(`bases: ${code} (${row.name}) is not in its own tier family [${normcode}, ${ubercode}, ${ultracode}]; treated as normal`);
   return 'normal';
 }

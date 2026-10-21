@@ -188,6 +188,12 @@ export interface LootFilterItem {
   type: string;
   /** itemtypes.txt code of the `type2` column, when the row has one (the game treats the item as both types) */
   type2?: string;
+  /**
+   * Position in the weapons/armor tier family (`normcode`/`ubercode`/`ultracode`); only set when the three family codes
+   * differ. Omitted for misc rows and for items without a tier family (rings, amulets, charms, jewels, arrows, ESR
+   * mythical bases, quest rows), whose three family columns all hold the item's own code.
+   */
+  tier?: 'normal' | 'exceptional' | 'elite';
   /** `spawnable` = 1; non-spawnable rows are kept (uniques sit on non-spawnable "shadow" bases) */
   spawnable: boolean;
 }

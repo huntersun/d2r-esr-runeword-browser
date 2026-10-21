@@ -3,7 +3,7 @@
   "esrVersion": "3.2.24",
   "esrTag": "3.2.24",
   "esrCommit": "b0622767314f9bf65f9c3a2cdeacded0b2e04a7e",
-  "generatedAt": "2026-10-21T20:37:40.454Z",
+  "generatedAt": "2026-10-21T21:05:08.416Z",
   "files": {
     "types": {
       "hash": "cab8a44704bcb77dd1d552147ce4b2e16d2d30517780f10d4d1b55de7c1e294d",
@@ -26,8 +26,8 @@
       "bytes": 305793
     },
     "lootfilter": {
-      "hash": "7333671e8f2d4f75de061f5f838b2733f862c4013a36698db1e627daec85e329",
-      "bytes": 713649
+      "hash": "6b8a8f2636d0829bad86ee860d82d137eae851026848ffb89a222d0ff2fe3e34",
+      "bytes": 731046
     }
   },
   "counts": {

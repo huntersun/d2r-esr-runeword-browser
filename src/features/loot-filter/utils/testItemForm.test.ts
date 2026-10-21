@@ -86,6 +86,38 @@ describe('toTestItem', () => {
   });
 });
 
+describe('base tier', () => {
+  it('takes the base tier of every picked item from the game data', () => {
+    expect(withItem(form(), 'cap', lookup).baseTier).toBe(0);
+    expect(withItem(form(), 'xap', lookup).baseTier).toBe(1);
+    expect(withItem(form(), 'yap', lookup).baseTier).toBe(2);
+  });
+
+  it('has no base tier for items without a tier family or unknown codes', () => {
+    expect(withItem(form({ baseTier: 2 }), 'rin', lookup).baseTier).toBeNull();
+    expect(withItem(form({ baseTier: 2 }), 'm01', lookup).baseTier).toBeNull();
+    expect(withItem(form({ baseTier: 1 }), 'nope', lookup).baseTier).toBeNull();
+    expect(withItem(form({ baseTier: 1 }), 'cap', EMPTY_LOOKUP).baseTier).toBeNull();
+  });
+
+  it('resets a changed base tier when another item is picked', () => {
+    const changed = { ...withItem(form(), 'cap', lookup), baseTier: 2 };
+    expect(withItem(changed, 'xap', lookup).baseTier).toBe(1);
+  });
+
+  it("gives a unique its base's tier", () => {
+    expect(withUniqueOrSet(form({ baseTier: 0 }), { id: 1072, kind: 'unique' }, bundle, lookup).baseTier).toBeNull();
+    const shako = bundle.uniques.find((entry) => entry.code === 'uap');
+    if (!shako) throw new Error('no unique on uap');
+    expect(withUniqueOrSet(form(), { id: shako.id, kind: 'unique' }, bundle, lookup).baseTier).toBe(2);
+  });
+
+  it('starts without a base tier', () => {
+    expect(defaultTestItem().baseTier).toBeNull();
+    expect(toTestItem(form(), lookup).baseTier).toBeNull();
+  });
+});
+
 describe('unique or set picks', () => {
   it('round-trips picker values', () => {
     expect(parseUniqueOrSetValue('Unique:12')).toEqual({ id: 12, kind: 'unique' });
@@ -150,9 +182,16 @@ describe('presets', () => {
     expect(toTestItem(gold, lookup).stats).toEqual([{ stat: 14, value: 1500 }]);
 
     const bow = applyPreset(start, preset('unique-bow'), lookup);
-    expect(bow).toMatchObject({ code: 'm01', quality: 7, sockets: 2, type: 'bow' });
+    expect(bow).toMatchObject({ code: 'm01', quality: 7, sockets: 2, type: 'bow', baseTier: null });
 
-    expect(applyPreset(start, preset('rare-ring'), lookup)).toMatchObject({ code: 'rin', quality: 6, name: 'Ring' });
+    expect(applyPreset(start, preset('rare-ring'), lookup)).toMatchObject({ code: 'rin', quality: 6, name: 'Ring', baseTier: null });
+  });
+
+  it("take the game data's base tier, replacing the form's", () => {
+    const elite = form({ baseTier: 2 });
+    expect(applyPreset(elite, preset('rare-ring'), lookup).baseTier).toBeNull();
+    expect(applyPreset(elite, preset('zod'), lookup).baseTier).toBeNull();
+    expect(applyPreset(elite, preset('zod'), EMPTY_LOOKUP).baseTier).toBeNull();
   });
 
   it('work without the game data', () => {
