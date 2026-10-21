@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { ChevronsUpDown, Minus, Plus, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -51,6 +51,8 @@ export interface MultiPickerProps {
   readonly bulkNouns?: PickerNouns;
   /** What the muted options are (skipped by "Add all"), e.g. `['shadow base', 'shadow bases']`. */
   readonly mutedNouns?: PickerNouns;
+  /** More buttons right after the add button (before the chips). */
+  readonly actions?: ReactNode;
 }
 
 /**
@@ -70,6 +72,7 @@ export function MultiPicker({
   custom,
   bulkNouns,
   mutedNouns = ['muted option', 'muted options'],
+  actions,
 }: MultiPickerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -180,6 +183,7 @@ export function MultiPicker({
           )}
         </PopoverContent>
       </Popover>
+      {actions}
       {shownValues.map((value, index) => {
         const { label, detail, muted, title } = describe(value);
         return (
