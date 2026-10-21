@@ -1,6 +1,8 @@
 /**
- * The bundled starting point: the ESR default filter, which the mod ships as `LootFilters/esr-default-filter.json`
- * (Sully's QoL filter as converted by the ESR author, bundled with permission).
+ * The bundled starting point: the ESR default filter that the mod shipped as `LootFilters/esr-default-filter.json` up to
+ * ESR 3.2.21 (Sully's QoL filter as converted by the ESR author, bundled with permission). ESR 3.2.22 removed that file;
+ * the launcher now pulls Sully's filter live from github.com/Thisisnotsully/QoL-Filter (`LootFilters/sources.json`).
+ * The copy here stays as the editor's starting point.
  */
 export const TEMPLATE_NAME = 'ESR default filter';
 export const TEMPLATE_CREDIT = "Sully's QoL filter, converted by the ESR author, bundled with permission";

@@ -27,9 +27,10 @@ command `lootfilter` shows the plugin's state and problems, `lootfilter reload` 
 
 Asset rules: a `sound` ending in `.wav`/`.mp3`/`.flac` is a file in `sounds\` (any other string is a sounds.txt name, a
 number its row); `icon.iconName` `goldstar` is the file `icons\goldstar.sprite`. The launcher's Import copies only the
-JSON, so a filter that uses sound or icon files does not play or draw them until the files sit next to it. The mod ships
+JSON, so a filter that uses sound or icon files does not play or draw them until the files sit next to it. The mod shipped
 the bundled ones (the nine mp3s in `public/loot-filters/sounds/`, `goldstar.sprite` and `goldstar.lowend.sprite`) beside
-its own `esr-default-filter.json`; **Download .zip with sounds and icons** puts the filter and the bundled files it
+its own `esr-default-filter.json` up to ESR 3.2.21; 3.2.22 removed them and the launcher now pulls curated filters live
+from their creators' GitHub repositories (`LootFilters/sources.json`), so players only get such files with a live filter; **Download .zip with sounds and icons** puts the filter and the bundled files it
 references into one archive to unzip into `LootFilters\` (see Library screen).
 
 Troubleshooting (also in the library how-to): if a sound or icon does not work, check the `sounds`/`icons` folders next
@@ -100,8 +101,8 @@ Title, a short how-to (launcher import, `sounds`/`icons` folders, the zip downlo
 - **Upload**: a `.json` file read as UTF-8. A JSON syntax error shows a toast with the line and column and imports
   nothing; a file with diagnostics (unknown keys, wrong shapes) is imported and the editor lists them. The entry name is
   the file's `title`, else the file name. A successful upload opens the editor, like New filter and the template.
-- **Start from the ESR default filter**: fetches `public/loot-filters/esr-default-filter.json` (a copy of the mod's
-  `LootFilters/esr-default-filter.json`, title "ESR default filter"; its rules and styles are Sully's QoL filter as
+- **Start from the ESR default filter**: fetches `public/loot-filters/esr-default-filter.json` (a copy of the
+  `LootFilters/esr-default-filter.json` the mod shipped up to ESR 3.2.21, title "ESR default filter"; its rules and styles are Sully's QoL filter as
   converted by the ESR author) and opens it as a `template` entry named "ESR default filter". Credit line: "Sully's QoL
   filter, converted by the ESR author, bundled with permission".
 - One card per entry (newest first): name, title/author and rule count (a quick JSON read of the text, cached), last
