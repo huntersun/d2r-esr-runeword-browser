@@ -1,5 +1,5 @@
 import type { LootFilterData } from '../../hooks/useLootFilterData';
-import { BaseBrowserDialog } from './BaseBrowserDialog';
+import { ItemBrowserDialog } from './ItemBrowserDialog';
 import { codeCustom } from './customOptions';
 import { MultiPicker, SinglePicker, type DescribeValue } from './MultiPicker';
 
@@ -28,8 +28,8 @@ export interface ItemPickerProps {
 
 /**
  * Item codes (weapons, armor, misc) as chips with name + code; search by name or code, or by item type (`helm` finds
- * Demonhead, after the names). "Add all" / "Remove all" acts on every match, skipping shadow bases. "Browse bases…" opens
- * the bases by type and tier with checkboxes.
+ * Demonhead, after the names). "Add all" / "Remove all" acts on every match, skipping shadow bases. "Browse items…" opens
+ * the bases by type and tier and the misc items by group, with checkboxes.
  */
 export function ItemPicker({ data, values, onChange, id }: ItemPickerProps) {
   return (
@@ -44,7 +44,7 @@ export function ItemPicker({ data, values, onChange, id }: ItemPickerProps) {
       custom={codeCustom('item')}
       bulkNouns={['item', 'items']}
       mutedNouns={['shadow base', 'shadow bases']}
-      actions={<BaseBrowserDialog values={values} onChange={onChange} />}
+      actions={<ItemBrowserDialog values={values} onChange={onChange} />}
     />
   );
 }

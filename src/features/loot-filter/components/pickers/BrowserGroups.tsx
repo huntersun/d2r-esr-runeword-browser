@@ -180,7 +180,8 @@ function ColumnGrid({ type, selected, onToggle }: SelectionProps & { readonly ty
         </div>
       )}
       {type.extras.length > 0 && (
-        <div className="space-y-2">
+        // Without a heading, a little space sets the extras apart from the grid rows.
+        <div className={cn('space-y-2', type.extrasColumn === null && type.rows.length > 0 && 'pt-3')}>
           {type.extrasColumn !== null && (
             <TriCheckbox
               state={triState(extrasCodes, selected)}
