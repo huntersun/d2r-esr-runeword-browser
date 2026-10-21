@@ -194,12 +194,40 @@ Mythical`: items/types/uniques by name when the bundles are in, codes otherwise,
   skipped"), removing applies once every other match is picked, and above 50 values the button asks for a second click
   ("Add N items? Click again"). `SinglePicker` closes on a pick and starts with an empty search. Uniques and sets share
   the id space (a unique and a set item can have the same row), so a chip names both. Without the bundles the pickers
-  still take typed codes and ids.
+  still take typed codes and ids. `ItemPicker` (item codes and except item codes, not the Test tab's `SingleItemPicker`)
+  also has a "Browse bases…" button after "Add item" that opens the base browser below.
 - **Data**: `useLootFilterData()` → `{ status, data, types, lookup, options }`; `lookup` (`utils/lookup.ts`) has `item`,
   `itemName`, `itemType`, `typeName`, `statName`, `statId`, `areaName`, `uniqueOrSetName` (all `undefined` for unknown
   keys or missing data); the lookup and option lists are built once per loaded bundle pair (module cache). An item
   option's type search leaves out the `merc` type: ESR names that mercenary-equipment umbrella type "Helm" and makes it
   a parent of gloves, boots, belts and more, so `helm` would list them all.
+
+### Base browser (`components/pickers/BaseBrowserDialog.tsx`, `utils/baseBrowser.ts`)
+
+A wide dialog (`sm:max-w-5xl`, at most 85vh, the body scrolls) for ticking bases by type and tier, asked for by a
+filter author ("all axes, then untick one"; "Cap - War Hat - Hood on one line").
+
+- **Data**: `bases.json` + `types.json`, loaded when the dialog opens (`useGameData`; loading and error states as on the
+  Game Data pages). `buildBaseBrowserModel` runs once per bundle pair (module cache, `getBaseBrowserModel`). Only the
+  spawnable bases are listed: shadow bases of uniques and misc items (runes, gems, potions…) are not, the dialog's
+  hint points to "Add item" for those.
+- **Structure**: the type groups of `buildTypeGroups` (Weapons, Class weapons, Armor, Class armor, Accessories, Class
+  accessories; collapsible, with a tri-state checkbox and "selected/total"), then one block per type (tri-state
+  checkbox, name, code, count). A type with exceptional or elite bases is a grid Normal | Exceptional | Elite (each
+  column header a tri-state checkbox for that column) with one row per family (`family` codes), ordered by the
+  lowest member's qlvl; its mythical bases follow under their own "Mythical" checkbox. A base that is not its family's
+  member for its tier (ESR's duplicates such as `q86`, `qdf`) gets a row of its own; a family spanning two types (the
+  claws, `h2h1` / `h2h2`) sits under its lowest member's type. Types without exceptional or elite bases (accessories,
+  quivers, throwing potions) are a plain list. A cell: checkbox, name, code, one stat line (damage or defense, block,
+  speed for weapons, required level/str/dex, max sockets as `N os` with the per-ilvl caps in the tooltip, qlvl). Below
+  `md` the columns stack and each cell shows its tier badge.
+- **Toolbar**: a search box (every whitespace term must match a family's names, codes or type name; empty types and
+  groups hide), "N selected" and tri-state toggles for Normal / Exceptional / Elite / Mythical. Every bulk checkbox acts
+  on the rows shown, so while searching only on the matches.
+- **Apply**: the dialog edits a draft (the picker's values that the browser lists); Cancel, Escape or the close button
+  drop it, and focus returns to the button. Apply keeps every value the browser does not list (misc codes, shadow
+  bases, typed codes) in place, removes the browser's codes the draft no longer has and appends the new ones in display
+  order (`applyBrowserSelection`); nothing is dispatched when the values do not change.
 
 ## Actions editor (`components/actions/`)
 
