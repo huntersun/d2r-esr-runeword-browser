@@ -21,8 +21,14 @@ export interface TreasureClassIndex {
   monstersFor(ref: string): DropMonster[];
 }
 
-/** Endgame-map TC families. "Endgame Maps Tier N Campaign" (the maps themselves dropping in the campaign) is not one. */
-const MAP_TC = /^(EGM |Endgame Map )/;
+/**
+ * Endgame-map TC families. "Endgame Maps Tier N Campaign" (the maps themselves dropping in the campaign) is not one.
+ * "Uber Loot Map Boss" is the root TC of the extra-loot dummy monster the engine spawns beside a map boss (monstats
+ * `primordialsoulstoneloot`, MonStatsEx extrabossloot); since ESR 3.2.22 its Hell desecrated TCs lead to the Primordial
+ * Soulstone, and without this entry that dummy would turn a maps-only drop into "Drops (random)". It has no row in
+ * treasureclassex.txt, so the map test below also looks at the TC names the monster columns reference.
+ */
+const MAP_TC = /^(EGM |Endgame Map |Uber Loot Map Boss)/;
 
 /** treasureclassex.txt has `Item1` … `Item10` */
 const TC_ITEM_COLUMNS = 10;
@@ -98,7 +104,7 @@ export function createTreasureClassIndex(
     return seen;
   };
 
-  for (const tc of ancestors([...names].filter((name) => MAP_TC.test(name)))) {
+  for (const tc of ancestors([...new Set([...names, ...roots.keys()])].filter((name) => MAP_TC.test(name)))) {
     for (const key of roots.get(tc) ?? []) {
       const monster = monsters.get(key);
       if (monster !== undefined) monster.map = true;
