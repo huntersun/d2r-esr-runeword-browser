@@ -1,16 +1,15 @@
 import type { BaseItem, BasesBundle, ItemTypeInfo, TypesBundle } from '@/features/game-data/engine/schema';
+import { buildBaseBrowserModel, getBaseBrowserModel } from './baseBrowser';
 import {
   allCodes,
   applyBrowserSelection,
-  buildBaseBrowserModel,
-  filterBaseBrowser,
-  getBaseBrowserModel,
+  filterBrowser,
   initialBrowserSelection,
   toggleCodes,
   triState,
   typeCodes,
   type BrowserType,
-} from './baseBrowser';
+} from './browserModel';
 
 const type = (code: string, name: string, cls: ItemTypeInfo['cls'] = null): ItemTypeInfo => ({
   code,
@@ -108,8 +107,7 @@ function findType(code: string): BrowserType {
   return found;
 }
 
-const rowNames = (browserType: BrowserType) =>
-  browserType.rows.map((row) => [row.cells.normal?.name ?? null, row.cells.exceptional?.name ?? null, row.cells.elite?.name ?? null]);
+const rowNames = (browserType: BrowserType) => browserType.rows.map((row) => row.cells.map((cell) => cell?.name ?? null));
 
 describe('buildBaseBrowserModel', () => {
   it('groups types like the type picker', () => {
@@ -123,12 +121,14 @@ describe('buildBaseBrowserModel', () => {
 
   it('puts each family in one row, by the normal member’s quality level, with the mythical bases apart', () => {
     const helm = findType('helm');
-    expect(helm.layout).toBe('tiers');
+    expect(helm.layout).toBe('grid');
+    expect(helm.columns.map((column) => column.label)).toEqual(['Normal', 'Exceptional', 'Elite']);
     expect(rowNames(helm)).toEqual([
       ['Cap', 'War Hat', 'Hood'],
       ['Skull Cap', 'Sallet', 'Hydraskull'],
     ]);
-    expect(helm.mythical.map((b) => b.code)).toEqual(['m01']);
+    expect(helm.extras.map((b) => b.code)).toEqual(['m01']);
+    expect(helm.extrasColumn?.key).toBe('mythical');
     expect(rowNames(findType('axe'))).toEqual([['Hand Axe', 'Hatchet', null]]);
   });
 
@@ -139,14 +139,14 @@ describe('buildBaseBrowserModel', () => {
   });
 
   it('lists types without exceptional or elite bases', () => {
-    expect(findType('ring')).toMatchObject({ layout: 'list', rows: [], mythical: [] });
+    expect(findType('ring')).toMatchObject({ layout: 'list', rows: [], extras: [] });
     expect(findType('ring').items.map((b) => b.code)).toEqual(['rin', 'mri']);
   });
 
   it('summarises the stats on one line', () => {
     const [axeRow] = findType('axe').rows;
-    expect(axeRow?.cells.normal?.stats).toBe('1H 3–6 · Speed 0 · Lvl 2 · 2 os · qlvl 3');
-    expect(findType('helm').rows[1]?.cells.normal?.stats).toBe('Def 3–5 · Str 15 · 2 os · qlvl 5');
+    expect(axeRow?.cells[0]?.stats).toBe('1H 3–6 · Speed 0 · Lvl 2 · 2 os · qlvl 3');
+    expect(findType('helm').rows[1]?.cells[0]?.stats).toBe('Def 3–5 · Str 15 · 2 os · qlvl 5');
     expect(findType('ring').items[0]?.stats).toBe('qlvl 1');
   });
 
@@ -162,21 +162,21 @@ describe('buildBaseBrowserModel', () => {
   });
 });
 
-describe('filterBaseBrowser', () => {
+describe('filterBrowser', () => {
   it('returns the groups unchanged for a blank query', () => {
-    expect(filterBaseBrowser(MODEL.groups, '  ')).toBe(MODEL.groups);
+    expect(filterBrowser(MODEL.groups, '  ')).toBe(MODEL.groups);
   });
 
   it('keeps whole family rows matching every term in names, codes or the type name', () => {
-    const groups = filterBaseBrowser(MODEL.groups, 'HELM sallet');
+    const groups = filterBrowser(MODEL.groups, 'HELM sallet');
     expect(groups.map((group) => group.label)).toEqual(['Armor']);
     expect(allCodes(groups)).toEqual(['skp', 'xkp', 'ykp']);
-    expect(allCodes(filterBaseBrowser(MODEL.groups, 'yap'))).toEqual(['cap', 'xap', 'yap']);
+    expect(allCodes(filterBrowser(MODEL.groups, 'yap'))).toEqual(['cap', 'xap', 'yap']);
   });
 
   it('filters mythical and list bases one by one and drops empty types', () => {
-    expect(allCodes(filterBaseBrowser(MODEL.groups, 'mythical'))).toEqual(['m01', 'mri']);
-    expect(filterBaseBrowser(MODEL.groups, 'nothing')).toEqual([]);
+    expect(allCodes(filterBrowser(MODEL.groups, 'mythical'))).toEqual(['m01', 'mri']);
+    expect(filterBrowser(MODEL.groups, 'nothing')).toEqual([]);
   });
 });
 

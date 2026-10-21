@@ -1,53 +1,35 @@
+import { BASE_TIER_LABELS } from '@/features/game-data/constants/bases';
 import type { BaseItem, BasesBundle, ItemTypeInfo, TypesBundle } from '@/features/game-data/engine/schema';
 import { formatRange, formatSocketCaps } from '@/features/game-data/utils/format';
 import { buildTypeGroups } from '@/features/game-data/utils/typeGroups';
+import {
+  displayCodes,
+  type BaseTier,
+  type BrowserColumn,
+  type BrowserGroup,
+  type BrowserItem,
+  type BrowserModel,
+  type BrowserType,
+} from './browserModel';
 
-/** The base browser's model: type groups → types → family rows (normal / exceptional / elite) or a plain list. */
+/** The Bases tab of the item browser: type groups → types → family rows (normal / exceptional / elite) or a plain list. */
 
-export type BaseTier = BaseItem['tier'];
 export type TierColumn = Exclude<BaseTier, 'mythical'>;
 
 export const TIER_COLUMNS: readonly TierColumn[] = ['normal', 'exceptional', 'elite'];
 
-export interface BrowserBase {
-  readonly code: string;
-  readonly name: string;
-  readonly tier: BaseTier;
-  /** One line: damage or defense, block, speed, requirements, max sockets, quality level. */
-  readonly stats: string;
-  /** Socket caps per item level band (`formatSocketCaps`), for a tooltip. */
-  readonly sockets: string;
-  /** Lowercased name, code and type name + code. */
-  readonly search: string;
-}
+const tierColumn = (tier: BaseTier): BrowserColumn => ({ key: tier, label: BASE_TIER_LABELS[tier], tier });
 
-/** One family: the normal, exceptional and elite member (null where the family has none in the bundle). */
-export interface BrowserRow {
-  readonly key: string;
-  readonly cells: Readonly<Record<TierColumn, BrowserBase | null>>;
-}
+/** One column per tier; the column key is the tier (`allCodes(groups, 'elite')`). */
+const TIER_COLUMN: Readonly<Record<BaseTier, BrowserColumn>> = {
+  normal: tierColumn('normal'),
+  exceptional: tierColumn('exceptional'),
+  elite: tierColumn('elite'),
+  mythical: tierColumn('mythical'),
+};
 
-export interface BrowserType {
-  readonly code: string;
-  readonly name: string;
-  /** `tiers`: family rows plus the mythical bases; `list`: types without exceptional or elite bases (accessories, quivers…). */
-  readonly layout: 'tiers' | 'list';
-  readonly rows: readonly BrowserRow[];
-  readonly mythical: readonly BrowserBase[];
-  /** The bases of a `list` type, by quality level. */
-  readonly items: readonly BrowserBase[];
-}
-
-export interface BrowserGroup {
-  readonly label: string;
-  readonly types: readonly BrowserType[];
-}
-
-export interface BaseBrowserModel {
-  readonly groups: readonly BrowserGroup[];
-  /** Every base code in display order (group, type, family row, tier). */
-  readonly codes: readonly string[];
-}
+/** The grid columns of a tiered type, in `TIER_COLUMNS` order. */
+export const BASE_COLUMNS: readonly BrowserColumn[] = TIER_COLUMNS.map((tier) => TIER_COLUMN[tier]);
 
 const DEFAULT_THRESHOLDS: ItemTypeInfo['thresholds'] = [25, 40];
 
@@ -68,12 +50,12 @@ function statLine(base: BaseItem): string {
   return parts.join(' · ');
 }
 
-function toBrowserBase(base: BaseItem, typeByCode: ReadonlyMap<string, ItemTypeInfo>): BrowserBase {
+function toBrowserItem(base: BaseItem, typeByCode: ReadonlyMap<string, ItemTypeInfo>): BrowserItem {
   const type = typeByCode.get(base.type);
   return {
     code: base.code,
     name: base.name,
-    tier: base.tier,
+    column: TIER_COLUMN[base.tier],
     stats: statLine(base),
     sockets: formatSocketCaps(base.socketCaps, type?.thresholds ?? DEFAULT_THRESHOLDS),
     search: [base.name, base.code, type?.name ?? '', base.type].join(' ').toLowerCase(),
@@ -93,9 +75,9 @@ function firstCell(row: RowDraft): BaseItem {
   return first;
 }
 
-export function buildBaseBrowserModel(bases: readonly BaseItem[], types: readonly ItemTypeInfo[]): BaseBrowserModel {
+export function buildBaseBrowserModel(bases: readonly BaseItem[], types: readonly ItemTypeInfo[]): BrowserModel {
   const typeByCode = new Map(types.map((type) => [type.code, type]));
-  const toBase = (base: BaseItem) => toBrowserBase(base, typeByCode);
+  const toItem = (base: BaseItem) => toBrowserItem(base, typeByCode);
 
   // Family rows: a base sits in its family's row when it is the family member of its own tier; any other base (a
   // duplicate of a member, a self-referential normal base) gets a row of its own.
@@ -134,123 +116,38 @@ export function buildBaseBrowserModel(bases: readonly BaseItem[], types: readonl
       const mythical = (mythicalByType.get(type.code) ?? []).sort(byQlvl);
       const tiered = typeRows.some((row) => row.cells.exceptional !== null || row.cells.elite !== null);
       if (!tiered) {
-        const items = [...typeRows.map(firstCell), ...mythical].sort(byQlvl).map(toBase);
+        const items = [...typeRows.map(firstCell), ...mythical].sort(byQlvl).map(toItem);
         if (items.length === 0) return [];
-        codes.push(...items.map((item) => item.code));
-        return [{ code: type.code, name: type.name, layout: 'list', rows: [], mythical: [], items }];
+        const listType: BrowserType = { ...emptyType(type.code, type.name), layout: 'list', items };
+        codes.push(...displayCodes(listType));
+        return [listType];
       }
-      const browserRows = typeRows.map(
-        (row): BrowserRow => ({
-          key: row.key,
-          cells: {
-            normal: row.cells.normal && toBase(row.cells.normal),
-            exceptional: row.cells.exceptional && toBase(row.cells.exceptional),
-            elite: row.cells.elite && toBase(row.cells.elite),
-          },
-        })
-      );
-      const browserMythical = mythical.map(toBase);
-      for (const row of browserRows) for (const tier of TIER_COLUMNS) if (row.cells[tier] !== null) codes.push(row.cells[tier].code);
-      codes.push(...browserMythical.map((base) => base.code));
-      return [{ code: type.code, name: type.name, layout: 'tiers', rows: browserRows, mythical: browserMythical, items: [] }];
+      const gridType: BrowserType = {
+        ...emptyType(type.code, type.name),
+        layout: 'grid',
+        columns: BASE_COLUMNS,
+        rows: typeRows.map((row) => ({ key: row.key, cells: TIER_COLUMNS.map((tier) => row.cells[tier] && toItem(row.cells[tier])) })),
+        extras: mythical.map(toItem),
+        extrasColumn: TIER_COLUMN.mythical,
+      };
+      codes.push(...displayCodes(gridType));
+      return [gridType];
     });
     return groupTypes.length === 0 ? [] : [{ label: group.label, types: groupTypes }];
   });
   return { groups, codes };
 }
 
-// One model per loaded bundle pair (the bundles are cached for the page's lifetime).
-let cached: { bases: BasesBundle; types: TypesBundle; model: BaseBrowserModel } | null = null;
+function emptyType(code: string, name: string): BrowserType {
+  return { code, name, layout: 'list', columns: [], rows: [], extras: [], extrasColumn: null, items: [] };
+}
 
-export function getBaseBrowserModel(bases: BasesBundle, types: TypesBundle): BaseBrowserModel {
+// One model per loaded bundle pair (the bundles are cached for the page's lifetime).
+let cached: { bases: BasesBundle; types: TypesBundle; model: BrowserModel } | null = null;
+
+export function getBaseBrowserModel(bases: BasesBundle, types: TypesBundle): BrowserModel {
   if (cached?.bases !== bases || cached.types !== types) {
     cached = { bases, types, model: buildBaseBrowserModel(bases.bases, types.types) };
   }
   return cached.model;
-}
-
-// --- Search ---
-
-function searchTerms(query: string): string[] {
-  return query.toLowerCase().split(/\s+/).filter(Boolean);
-}
-
-const matchesAll = (text: string, terms: readonly string[]) => terms.every((term) => text.includes(term));
-
-/**
- * The groups with only the rows and bases matching every term of `query` (in a family's names, codes or type name);
- * empty types and groups are dropped. An empty query returns the groups unchanged.
- */
-export function filterBaseBrowser(groups: readonly BrowserGroup[], query: string): readonly BrowserGroup[] {
-  const terms = searchTerms(query);
-  if (terms.length === 0) return groups;
-  return groups.flatMap((group): BrowserGroup[] => {
-    const types = group.types.flatMap((type): BrowserType[] => {
-      const rows = type.rows.filter((row) => matchesAll(TIER_COLUMNS.map((tier) => row.cells[tier]?.search ?? '').join(' '), terms));
-      const mythical = type.mythical.filter((base) => matchesAll(base.search, terms));
-      const items = type.items.filter((base) => matchesAll(base.search, terms));
-      if (rows.length + mythical.length + items.length === 0) return [];
-      return [{ ...type, rows, mythical, items }];
-    });
-    return types.length === 0 ? [] : [{ ...group, types }];
-  });
-}
-
-// --- Selection ---
-
-/** The codes of a type's (visible) bases, optionally of one tier only. */
-export function typeCodes(type: BrowserType, tier?: BaseTier): string[] {
-  const codes: string[] = [];
-  for (const row of type.rows) {
-    for (const column of TIER_COLUMNS) {
-      const cell = row.cells[column];
-      if (cell !== null && (tier === undefined || tier === column)) codes.push(cell.code);
-    }
-  }
-  for (const base of [...type.mythical, ...type.items]) if (tier === undefined || base.tier === tier) codes.push(base.code);
-  return codes;
-}
-
-export function groupCodes(group: BrowserGroup, tier?: BaseTier): string[] {
-  return group.types.flatMap((type) => typeCodes(type, tier));
-}
-
-export function allCodes(groups: readonly BrowserGroup[], tier?: BaseTier): string[] {
-  return groups.flatMap((group) => groupCodes(group, tier));
-}
-
-export type TriState = 'all' | 'some' | 'none';
-
-/** Whether all, some or none of `codes` are selected (`none` for no codes). */
-export function triState(codes: readonly string[], selected: ReadonlySet<string>): TriState {
-  const count = codes.filter((code) => selected.has(code)).length;
-  if (count === 0) return 'none';
-  return count === codes.length ? 'all' : 'some';
-}
-
-/** A new set with `codes` added (`on`) or removed. */
-export function toggleCodes(selected: ReadonlySet<string>, codes: readonly string[], on: boolean): Set<string> {
-  const next = new Set(selected);
-  for (const code of codes) {
-    if (on) next.add(code);
-    else next.delete(code);
-  }
-  return next;
-}
-
-/** The draft for `values`: the codes the browser lists. */
-export function initialBrowserSelection(values: readonly string[], knownCodes: readonly string[]): Set<string> {
-  const known = new Set(knownCodes);
-  return new Set(values.filter((value) => known.has(value)));
-}
-
-/**
- * The picker's new values: `values` without the browser's codes the draft dropped (codes the browser does not list
- * are always kept, in place), then the draft's new codes in `knownCodes` order.
- */
-export function applyBrowserSelection(values: readonly string[], knownCodes: readonly string[], draft: ReadonlySet<string>): string[] {
-  const known = new Set(knownCodes);
-  const kept = values.filter((value) => !known.has(value) || draft.has(value));
-  const present = new Set(kept);
-  return [...kept, ...knownCodes.filter((code) => draft.has(code) && !present.has(code))];
 }

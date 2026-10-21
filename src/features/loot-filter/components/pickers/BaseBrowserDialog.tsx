@@ -7,17 +7,17 @@ import { GameDataError } from '@/features/game-data/components/GameDataError';
 import { GameDataLoading } from '@/features/game-data/components/GameDataLoading';
 import { BASE_TIERS } from '@/features/game-data/constants/bases';
 import { useGameData } from '@/features/game-data/hooks/useGameData';
+import { getBaseBrowserModel } from '../../utils/baseBrowser';
 import {
   allCodes,
   applyBrowserSelection,
-  filterBaseBrowser,
-  getBaseBrowserModel,
+  filterBrowser,
   initialBrowserSelection,
   toggleCodes,
   triState,
-  type BaseBrowserModel,
-} from '../../utils/baseBrowser';
-import { BaseGroupSection, TierBadge, TriCheckbox, type ToggleCodes } from './BaseBrowserGroups';
+  type BrowserModel,
+} from '../../utils/browserModel';
+import { BrowserGroupSection, TierBadge, TriCheckbox, type ToggleCodes } from './BaseBrowserGroups';
 
 const BUNDLES = ['bases', 'types'] as const;
 
@@ -29,7 +29,7 @@ interface BaseBrowserProps {
 const sameList = (a: readonly string[], b: readonly string[]) => a.length === b.length && a.every((value, index) => value === b[index]);
 
 interface BrowserFormProps {
-  readonly model: BaseBrowserModel;
+  readonly model: BrowserModel;
   readonly values: readonly string[];
   readonly onApply: (codes: readonly string[]) => void;
   readonly onCancel: () => void;
@@ -39,7 +39,7 @@ function BaseBrowserForm({ model, values, onApply, onCancel }: BrowserFormProps)
   // The draft holds the codes the browser lists; Apply merges it into the values, Cancel drops it.
   const [draft, setDraft] = useState(() => initialBrowserSelection(values, model.codes));
   const [query, setQuery] = useState('');
-  const groups = filterBaseBrowser(model.groups, query);
+  const groups = filterBrowser(model.groups, query);
   const searching = query.trim() !== '';
 
   const toggle: ToggleCodes = (codes, on) => {
@@ -87,7 +87,7 @@ function BaseBrowserForm({ model, values, onApply, onCancel }: BrowserFormProps)
         {groups.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">No bases match “{query.trim()}”.</p>
         ) : (
-          groups.map((group) => <BaseGroupSection key={group.label} group={group} selected={draft} onToggle={toggle} />)
+          groups.map((group) => <BrowserGroupSection key={group.label} group={group} selected={draft} onToggle={toggle} />)
         )}
       </div>
       <DialogFooter className="border-t px-4 py-3 sm:px-6">
