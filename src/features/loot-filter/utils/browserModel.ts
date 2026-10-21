@@ -94,11 +94,6 @@ export function filterBrowser(groups: readonly BrowserGroup[], query: string): r
   });
 }
 
-/** The number of (shown) items in the groups. */
-export function countItems(groups: readonly BrowserGroup[]): number {
-  return allCodes(groups).length;
-}
-
 // --- Selection ---
 
 /** The codes of a type's (shown) items, optionally of one column only (by key). */
