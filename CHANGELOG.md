@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.23.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.22.0...v1.23.0) (2026-10-21)
+
+
+### Features
+
+* **loot-filter:** browse misc items by group and quality in the item pickers ([44ff22d](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/44ff22d62c64209f1b29ed3ad10dd912a796b843))
+
+
+### Documentation
+
+* **loot-filter:** describe the item browser ([3f32c88](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/3f32c88c91ccf6eb2c5b3a3cfe1093404b2330a1))
+
+
+### Refactoring
+
+* **loot-filter:** drop the unused countItems helper ([054b92b](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/054b92bcac976b072edff88b44d9edd08f5fdda7))
+* **loot-filter:** generalise the browser model to named columns ([637b247](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/637b247b87785312bae69a822b6cbc7c664dab10))
+
 ## [1.22.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.21.1...v1.22.0) (2026-10-21)
 
 
