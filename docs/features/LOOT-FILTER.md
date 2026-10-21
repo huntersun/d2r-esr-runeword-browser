@@ -195,39 +195,67 @@ Mythical`: items/types/uniques by name when the bundles are in, codes otherwise,
   ("Add N items? Click again"). `SinglePicker` closes on a pick and starts with an empty search. Uniques and sets share
   the id space (a unique and a set item can have the same row), so a chip names both. Without the bundles the pickers
   still take typed codes and ids. `ItemPicker` (item codes and except item codes, not the Test tab's `SingleItemPicker`)
-  also has a "Browse bases…" button after "Add item" that opens the base browser below.
+  also has a "Browse items…" button after "Add item" that opens the item browser below.
 - **Data**: `useLootFilterData()` → `{ status, data, types, lookup, options }`; `lookup` (`utils/lookup.ts`) has `item`,
   `itemName`, `itemType`, `typeName`, `statName`, `statId`, `areaName`, `uniqueOrSetName` (all `undefined` for unknown
   keys or missing data); the lookup and option lists are built once per loaded bundle pair (module cache). An item
   option's type search leaves out the `merc` type: ESR names that mercenary-equipment umbrella type "Helm" and makes it
   a parent of gloves, boots, belts and more, so `helm` would list them all.
 
-### Base browser (`components/pickers/BaseBrowserDialog.tsx`, `utils/baseBrowser.ts`)
+### Item browser (`components/pickers/ItemBrowserDialog.tsx`, `BrowserGroups.tsx`, `utils/browserModel.ts`, `baseBrowser.ts`, `miscBrowser.ts`)
 
-A wide dialog (`sm:max-w-5xl`, at most 85vh, the body scrolls) for ticking bases by type and tier, asked for by a
-filter author ("all axes, then untick one"; "Cap - War Hat - Hood on one line").
+A wide dialog ("Browse items", `sm:max-w-5xl`, at most 85vh, the body scrolls) for ticking item codes by type, tier
+or quality, asked for by a filter author ("all axes, then untick one"; "Cap - War Hat - Hood on one line"). Two tabs,
+**Bases** and **Misc** (`role="tablist"`; arrow keys, Home and End switch tabs; the dialog opens on Bases). Both tabs
+share one draft, one search box, one "N selected" counter and one Apply / Cancel.
 
-- **Data**: `bases.json` + `types.json`, loaded when the dialog opens (`useGameData`; loading and error states as on the
-  Game Data pages). `buildBaseBrowserModel` runs once per bundle pair (module cache, `getBaseBrowserModel`). Only the
-  spawnable bases are listed: shadow bases of uniques and misc items (runes, gems, potions…) are not, the dialog's
-  hint points to "Add item" for those.
-- **Structure**: the type groups of `buildTypeGroups` (Weapons, Class weapons, Armor, Class armor, Accessories, Class
-  accessories; collapsible, with a tri-state checkbox and "selected/total"), then one block per type (tri-state
-  checkbox, name, code, count). A type with exceptional or elite bases is a grid Normal | Exceptional | Elite (each
-  column header a tri-state checkbox for that column) with one row per family (`family` codes), ordered by the
-  lowest member's qlvl; its mythical bases follow under their own "Mythical" checkbox. A base that is not its family's
-  member for its tier (ESR's duplicates such as `q86`, `qdf`) gets a row of its own; a family spanning two types (the
-  claws, `h2h1` / `h2h2`) sits under its lowest member's type. Types without exceptional or elite bases (accessories,
-  quivers, throwing potions) are a plain list. A cell: checkbox, name, code, one stat line (damage or defense, block,
-  speed for weapons, required level/str/dex, max sockets as `N os` with the per-ilvl caps in the tooltip, qlvl). Below
-  `md` the columns stack and each cell shows its tier badge.
-- **Toolbar**: a search box (every whitespace term must match a family's names, codes or type name; empty types and
-  groups hide), "N selected" and tri-state toggles for Normal / Exceptional / Elite / Mythical. Every bulk checkbox acts
-  on the rows shown, so while searching only on the matches.
-- **Apply**: the dialog edits a draft (the picker's values that the browser lists); Cancel, Escape or the close button
-  drop it, and focus returns to the button. Apply keeps every value the browser does not list (misc codes, shadow
-  bases, typed codes) in place, removes the browser's codes the draft no longer has and appends the new ones in display
-  order (`applyBrowserSelection`); nothing is dispatched when the values do not change.
+- **Data**: `bases.json`, `types.json` and `lootfilter.json`, loaded when the dialog opens (`useGameData`; loading and
+  error states as on the Game Data pages; `lootfilter.json` is the bundle the pickers already load, cached per file).
+  Each tab's model is built once per loaded bundle set (module caches, `getBaseBrowserModel`, `getMiscBrowserModel`).
+  Shadow bases of uniques are not listed; the dialog's hint points to "Add item" for those.
+- **Shared model** (`browserModel.ts`): groups → types; a type is a `grid` (named columns, rows with one cell per
+  column, extras below the rows) or a `list`. A column has a key, a label and, for the base tiers, a tier (rendered as
+  the tier badge; other columns get a plain label badge). Each column header is a tri-state checkbox for that column;
+  group and type headers are tri-state checkboxes with "selected/total". Below `md` the columns stack and each cell
+  shows its column badge.
+- **Bases tab**: every spawnable base, in the type groups of `buildTypeGroups` (Weapons, Class weapons, Armor, Class
+  armor, Accessories, Class accessories; collapsible), one block per type. A type with exceptional or elite bases is a
+  grid Normal | Exceptional | Elite with one row per family (`family` codes), ordered by the lowest member's qlvl; its
+  mythical bases follow under their own "Mythical" checkbox. A base that is not its family's member for its tier
+  (ESR's duplicates such as `q86`, `qdf`) gets a row of its own; a family spanning two types (the claws, `h2h1` /
+  `h2h2`) sits under its lowest member's type. Types without exceptional or elite bases (accessories, quivers, throwing
+  potions) are a plain list. A cell: checkbox, name, code, one stat line (damage or defense, block, speed for weapons,
+  required level/str/dex, max sockets as `N os` with the per-ilvl caps in the tooltip, qlvl). The toolbar adds
+  tri-state toggles for Normal / Exceptional / Elite / Mythical (this tab only).
+- **Misc tab**: every spawnable `kind: 'misc'` item of `lootfilter.json` whose code is not in `bases.json` (rings,
+  amulets, charms and jewels stay on the Bases tab under Accessories), in bundle (misc.txt) order. Cells show name and
+  code only.
+  - _Groups_: the item type's chain up `parents[0]` ends at the topmost type below `misc` (or at a type without
+    parents, such as `ques`, `mmap`); that type is the group, labelled with its types.txt name. The groups `sock`,
+    `cube`, `poti`, `ques`, `mmap` come first in that order (`PREFERRED_MISC_GROUPS`, the only hand-written list), the
+    others follow alphabetically by label.
+  - _Blocks_: one per type right below the group root on that chain (the root itself for its own items), so the seven
+    gem types share one "Gem" block and the rejuvenation potions sit under Healing Potion.
+  - _Containers left out_: an item type whose items (more than one) all share one name is a stack of containers
+    (Rune Stocker, Rerolling Orb, Decal Stocker…); such types are not listed and the tab's hint names them. They stay
+    reachable through "Add item" and the item-type picker.
+  - _Quality families_: the ladder is the set of item types the items use as `type2` (`gem0`…`gem5`), ordered by their
+    first use; each ladder word is the type name minus the words all of them share ("Chipped Gem" → "Chipped"). An
+    item named `<ladder word> X`, where X is the name of another item in the same block, joins family X under that
+    word's column; X itself goes to the column of its `type2`, or without one to the grade whose items carry no prefix
+    (Standard: the crystals' unprefixed members have no `type2`). Families become grid rows (Chipped, Flawed, Standard,
+    Flawless, Blemished, Perfect for the gems; Chipped, Flawed, Standard for the crystals; only the columns in use);
+    the block's other items (the runes below the crystals) follow as a flat list. Grouping by `type` or by code pattern
+    would be wrong: Obsidian is typed like Amethyst and the Perfect codes are irregular.
+- **Search**: every whitespace term must match. A base row matches on its bases' names, codes and type name + code; a
+  misc item on its name, code, type and block names + codes, column label and group label (so "perfect" finds the
+  Perfect gems, "rune" the runes and crystals). A grid row matches as a whole; empty types and groups hide. The search
+  applies to both tabs, the tab labels show the match counts while searching, and the current tab stays. Every bulk
+  checkbox acts on the items shown, so while searching only on the matches.
+- **Apply**: the dialog edits a draft (the picker's values that either tab lists); Cancel, Escape or the close button
+  drop it, and focus returns to the button. Apply keeps every value the browser does not list (shadow bases, container
+  items, typed codes) in place, removes the browser's codes the draft no longer has and appends the new ones in display
+  order, bases first (`applyBrowserSelection`); nothing is dispatched when the values do not change.
 
 ## Actions editor (`components/actions/`)
 
