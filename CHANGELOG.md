@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.22.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.21.1...v1.22.0) (2026-10-21)
+
+
+### Features
+
+* **loot-filter:** browse bases by type and tier in the item pickers ([91088c4](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/91088c4192bb00bba7572ee12703093f8a1928b0))
+
+
+### Bug Fixes
+
+* **game-data:** keep the Primordial Soulstone labelled as an Endgame Map drop ([007b68d](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/007b68d54d262bee5f991ef19335f125d78d5da4))
+* **loot-filter:** keep gloves out of the "helm" item search ([73ba0bc](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/73ba0bcb711c1770c2a9f139ced9b6b7b733c508))
+* **loot-filter:** test items with the base tier of their base ([0f00038](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/0f00038d8370da236954b8eb630e0d06fc907f22))
+
+
+### Documentation
+
+* **guide:** follow the 3.2.21 to 3.2.24 patch notes and docs for ESR 3.2.24 ([4b96fa0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/4b96fa0588b428235d0caa25461c00bfbbe1f6b1))
+* **loot-filter:** describe the base browser ([f9d0bc3](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/f9d0bc36e7e5f6df362e1e0c85e73e772c670e19))
+* **loot-filter:** note that ESR 3.2.22 removed the stock filter from the mod ([c3df58a](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/c3df58abf7d85e050f6edd76ae1caac0faaacf6b))
+
+
+### Chores
+
+* **game-data:** update to ESR 3.2.24 ([5917465](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/5917465125cd1e2204f595cafbc537847892bbe1))
+
 ## [1.21.1](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.21.0...v1.21.1) (2026-10-14)
 
 
