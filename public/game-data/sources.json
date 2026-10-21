@@ -2162,7 +2162,7 @@
     {"name":"The Reliquary of False Light (Tier 5)","code":"z20","item":"misc","labels":[{"kind":"cube","text":"Cube"},{"kind":"maps","text":"Drops in Endgame Maps"}]},
     {"name":"Lucion's Essence","code":"u17","item":"misc","labels":[{"kind":"boss","text":"Drops from Diablo"}]},
     {"name":"Lucion's Relic of Sanctification","code":"u18","item":"misc","labels":[{"kind":"boss","text":"Drops from Lucion"}]},
-    {"name":"Primordial Soulstone","code":"u19","item":"misc","labels":[{"kind":"maps","text":"Drops in Endgame Maps"}]},
+    {"name":"Primordial Soulstone","code":"u19","item":"misc","labels":[{"kind":"drop","text":"Drops (random)"}]},
     {"name":"Astrogha's Petrified Heart","code":"u20","item":"misc","labels":[{"kind":"drop","text":"Drops (random)"}]},
     {"name":"Ore Shards","code":"u21","item":"misc","labels":[{"kind":"cube","text":"Cube"}]},
     {"name":"Weapons Crate","code":"u22","item":"misc","labels":[{"kind":"unknown","text":"Unknown"}]},

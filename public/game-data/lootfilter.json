@@ -2291,7 +2291,24 @@
     {"code":"z99","name":"The Hidden Vault","kind":"misc","type":"mmap","spawnable":true},
     {"code":"mjw","name":"Jewel","kind":"misc","type":"jewl","spawnable":true},
     {"code":"u40","name":"Inarius' Everburning Halo","kind":"misc","type":"cube","spawnable":true},
-    {"code":"rel","name":"Relic of Knowledge","kind":"misc","type":"cube","spawnable":true}
+    {"code":"rel","name":"Relic of Knowledge","kind":"misc","type":"cube","spawnable":true},
+    {"code":"01p","name":"Elixir of Attributes","kind":"misc","type":"upot","spawnable":true},
+    {"code":"02p","name":"Elixir of Skill","kind":"misc","type":"upot","spawnable":true},
+    {"code":"03p","name":"Elixir of Phasing","kind":"misc","type":"upot","spawnable":true},
+    {"code":"04p","name":"Elixir of Shielding","kind":"misc","type":"upot","spawnable":true},
+    {"code":"05p","name":"Elixir of Slaughter","kind":"misc","type":"upot","spawnable":true},
+    {"code":"06p","name":"Elixir of Knowledge","kind":"misc","type":"upot","spawnable":true},
+    {"code":"07p","name":"Elixir of Speed","kind":"misc","type":"upot","spawnable":true},
+    {"code":"08p","name":"Elixir of Luck","kind":"misc","type":"upot","spawnable":true},
+    {"code":"09p","name":"Elixir of Steal","kind":"misc","type":"upot","spawnable":true},
+    {"code":"10p","name":"Elixir of Deadly Crits","kind":"misc","type":"upot","spawnable":true},
+    {"code":"11p","name":"Elixir of Quickness","kind":"misc","type":"upot","spawnable":true},
+    {"code":"12p","name":"Elixir of Absolution","kind":"misc","type":"upot","spawnable":true},
+    {"code":"13p","name":"Elixir of Potency","kind":"misc","type":"upot","spawnable":true},
+    {"code":"14p","name":"Elixir of the Giant","kind":"misc","type":"upot","spawnable":true},
+    {"code":"15p","name":"Elixir of the Feline","kind":"misc","type":"upot","spawnable":true},
+    {"code":"16p","name":"Elixir of the Gorilla","kind":"misc","type":"upot","spawnable":true},
+    {"code":"17p","name":"Elixir of the Raven","kind":"misc","type":"upot","spawnable":true}
   ],
   "stats": [
     {"id":0,"name":"strength"},
@@ -3216,7 +3233,10 @@
     {"id":919,"name":"ascendancy_tier_4_count_new"},
     {"id":920,"name":"frenzy_fpa"},
     {"id":921,"name":"firewhirlwindcontrol"},
-    {"id":922,"name":"moonstormcontrol"}
+    {"id":922,"name":"moonstormcontrol"},
+    {"id":923,"name":"blood_magic"},
+    {"id":924,"name":"tyraelvitlife"},
+    {"id":925,"name":"utilitypotionmultiplier"}
   ],
   "areas": [
     {"id":0,"name":"Null","act":0},

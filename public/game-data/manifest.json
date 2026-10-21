@@ -1,50 +1,50 @@
 {
   "schema": 1,
-  "esrVersion": "3.2.20",
-  "esrTag": "3.2.20",
-  "esrCommit": "64e83b2615e3cf9ade06949927018c4270a4cb89",
-  "generatedAt": "2026-10-14T11:49:29.056Z",
+  "esrVersion": "3.2.24",
+  "esrTag": "3.2.24",
+  "esrCommit": "b0622767314f9bf65f9c3a2cdeacded0b2e04a7e",
+  "generatedAt": "2026-10-21T19:56:34.799Z",
   "files": {
     "types": {
-      "hash": "f81198a0780d3512179dfa4375b3a8a7867ecd8bca9400a293011c359198cee1",
-      "bytes": 44782
+      "hash": "cab8a44704bcb77dd1d552147ce4b2e16d2d30517780f10d4d1b55de7c1e294d",
+      "bytes": 45013
     },
     "bases": {
       "hash": "a760b74b753d110afb044f4c7937a95f8db71dc1e4ff4e36edfb0629b8fae3af",
       "bytes": 298973
     },
     "runewords": {
-      "hash": "676f160c2aa3a0914a2acf5e0339b74d55527ad0ba0b5dbd0b89bbc684065a65",
-      "bytes": 201811
+      "hash": "4571713efa4a215778b8bcfb91ac57981f5b13b78f5c5b5343f5c927fdf9300c",
+      "bytes": 201786
     },
     "affixes": {
-      "hash": "bf2e8cc8dfda28e8cb815b2d649392f4d96f24e18d4f35452872b1be045a075d",
-      "bytes": 819471
+      "hash": "2dcbd5daa6081c21133411f9e8351ea837a6ac11f92838db30ff63559d4aeeb6",
+      "bytes": 824090
     },
     "sources": {
-      "hash": "76c930caea0f9d2a96828c384e71fae56b6a0b29bbb1b9af9ae7095de0c9943d",
-      "bytes": 305793
+      "hash": "825b32d6598a2916284b8a5438f8b5624d9f239814a0306177b89decad59dd61",
+      "bytes": 305786
     },
     "lootfilter": {
-      "hash": "c3737f3718bfdce3afbae3562ca68c341baba9bd1a855b99d16e0f45957e9cd6",
-      "bytes": 711939
+      "hash": "7333671e8f2d4f75de061f5f838b2733f862c4013a36698db1e627daec85e329",
+      "bytes": 713649
     }
   },
   "counts": {
-    "types": 188,
+    "types": 189,
     "classes": 8,
     "bases": 653,
     "weapons": 369,
     "armors": 255,
     "misc": 29,
-    "strings": 14743,
+    "strings": 14784,
     "stringConflicts": 85,
     "duplicateBases": 3,
     "runewords": 391,
     "runewordRows": 449,
-    "affixes": 2532,
-    "affixesPrefix": 886,
-    "affixesSuffix": 1504,
+    "affixes": 2548,
+    "affixesPrefix": 896,
+    "affixesSuffix": 1510,
     "affixesAutomagic": 142,
     "affixesDropped": 111,
     "affixesPlaceholdersDropped": 1,
@@ -53,8 +53,8 @@
     "sourcesMisc": 795,
     "sourcesMerged": 516,
     "sourcesUnknown": 13,
-    "lootFilterItems": 2292,
-    "lootFilterStats": 923,
+    "lootFilterItems": 2309,
+    "lootFilterStats": 926,
     "lootFilterAreas": 215,
     "lootFilterSounds": 12103,
     "lootFilterUniques": 1390,
@@ -66,6 +66,9 @@
     "bases: mam is mythical but its name string is \"Amulet\"; using \"Mythical Amulet\"",
     "bases: mrn is mythical but its name string is \"Ring\"; using \"Mythical Ring\"",
     "bases: mjw is mythical but its name string is \"Jewel\"; using \"Mythical Jewel\"",
-    "bases: dropped cx1 (duplicate of cm1), cx2 (duplicate of cm2), cx3 (duplicate of cm3)"
+    "bases: dropped cx1 (duplicate of cm1), cx2 (duplicate of cm2), cx3 (duplicate of cm3)",
+    "affixes: p910 \"Apprentice's\" references unknown item type \"voib\"",
+    "affixes: p911 \"Death Master's\" references unknown item type \"voib\"",
+    "affixes: p918 \"Death Master's\" references unknown item type \"voib\""
   ]
 }
