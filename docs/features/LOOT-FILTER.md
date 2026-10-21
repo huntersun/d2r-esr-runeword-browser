@@ -197,7 +197,9 @@ Mythical`: items/types/uniques by name when the bundles are in, codes otherwise,
   still take typed codes and ids.
 - **Data**: `useLootFilterData()` → `{ status, data, types, lookup, options }`; `lookup` (`utils/lookup.ts`) has `item`,
   `itemName`, `itemType`, `typeName`, `statName`, `statId`, `areaName`, `uniqueOrSetName` (all `undefined` for unknown
-  keys or missing data); the lookup and option lists are built once per loaded bundle pair (module cache).
+  keys or missing data); the lookup and option lists are built once per loaded bundle pair (module cache). An item
+  option's type search leaves out the `merc` type: ESR names that mercenary-equipment umbrella type "Helm" and makes it
+  a parent of gloves, boots, belts and more, so `helm` would list them all.
 
 ## Actions editor (`components/actions/`)
 

@@ -76,6 +76,12 @@ export const EMPTY_PICKER_OPTIONS: LootFilterPickerOptions = { items: [], types:
 
 const SHADOW_BASE_HINT = 'shadow base';
 
+/**
+ * Ancestor types left out of an item option's type search. ESR's itemtypes.txt names the mercenary-equipment umbrella
+ * type `merc` "Helm" and makes it a parent of gloves, boots, belts and more, so searching "helm" would list them all.
+ */
+const TYPES_NOT_SEARCHED: ReadonlySet<string> = new Set(['merc']);
+
 export function buildPickerOptions(data: LootFilterDataBundle, types: TypesBundle): LootFilterPickerOptions {
   const itemName = new Map(data.items.map((item) => [item.code, item.name]));
   const typeName = new Map(types.types.map((type) => [type.code, type.name]));
@@ -85,7 +91,7 @@ export function buildPickerOptions(data: LootFilterDataBundle, types: TypesBundl
     const codes = new Set(
       [item.type, item.type2].flatMap((code) => (code === undefined || code === '' ? [] : (typeAncestors.get(code) ?? [code])))
     );
-    return searchText(...[...codes].flatMap((code) => [typeName.get(code), code]));
+    return searchText(...[...codes].filter((code) => !TYPES_NOT_SEARCHED.has(code)).flatMap((code) => [typeName.get(code), code]));
   };
   const uniqueOrSet = (kind: 'Unique' | 'Set', entry: LootFilterDataBundle['uniques'][number]): PickerOption => {
     const base = itemName.get(entry.code) ?? entry.code;

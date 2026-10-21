@@ -52,6 +52,29 @@ describe('buildPickerOptions', () => {
     expect(filterPickerOptions(options.items, 'axe').matches.map((option) => option.value)).toEqual(['hax', 'xyz']);
   });
 
+  it('keeps gloves out of a "helm" search: ESR names the merc equipment type Helm', () => {
+    const helmTypes = buildPickerOptions(
+      {
+        ...TEST_DATA,
+        items: [
+          { code: 'cap', name: 'Cap', kind: 'armor', type: 'helm', spawnable: true },
+          { code: 'lgl', name: 'Leather Gloves', kind: 'armor', type: 'glov', spawnable: true },
+        ],
+      },
+      {
+        ...TEST_TYPES,
+        types: [
+          { ...TEST_TYPES.types[1], code: 'merc', name: 'Helm (merc)', parents: [], ancestors: ['merc'] },
+          { ...TEST_TYPES.types[1], code: 'helm', name: 'Helm', parents: ['merc'], ancestors: ['helm', 'merc'] },
+          { ...TEST_TYPES.types[1], code: 'glov', name: 'Gloves', parents: ['merc'], ancestors: ['glov', 'merc'] },
+        ],
+      }
+    );
+    expect(filterPickerOptions(helmTypes.items, 'helm').matches.map((option) => option.value)).toEqual(['cap']);
+    expect(filterPickerOptions(helmTypes.items, 'merc').matches).toEqual([]);
+    expect(filterPickerOptions(helmTypes.items, 'gloves').matches.map((option) => option.value)).toEqual(['lgl']);
+  });
+
   it('lists type parents by name', () => {
     expect(options.types.find((option) => option.value === 'rune')?.detail).toBe('rune · in Miscellaneous');
   });
