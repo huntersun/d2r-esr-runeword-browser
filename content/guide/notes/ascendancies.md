@@ -43,8 +43,8 @@ Each orb drops from one superunique on Hell. The official page only says which a
 
 ### Making and upgrading the stone
 
-Each later tier is a challenge finished in the cube: Nihlathak on Hell, all three Uber Tristram bosses within a minute, [Primordial Soulstones](<dropfinder:Primordial Soulstone>) from map bosses, and a tier 5 map boss ([[maps-keys-ascendancy]]). Tiers can be done in any order.
+Each later tier is a challenge finished in the cube: Nihlathak on Hell, all three Uber Tristram bosses within a minute, [Primordial Soulstones](<dropfinder:Primordial Soulstone>) from map bosses (since 3.2.22 they stop dropping once you have collected ten), and a tier 5 map boss ([[maps-keys-ascendancy]]). Tiers can be done in any order.
 
 ::recipes[ascendancy]
 
-You can wear one stone at a time. It cannot be moved to another character, corrupted or anointed, and after a death you must re-equip it ([[death-and-respec]]). Compare them on the app's [Ascendancies](page:/ascendancies) page.
+You can wear one stone at a time. It cannot be moved to another character, corrupted or anointed. Older official pages said you must re-equip it after a death; the 3.2.24 page no longer does ([[death-and-respec]]). <!-- verify: the docs dropped the re-equip warning between 3.2.20 and 3.2.24 without a patch note; check in game whether the bonuses survive a death --> Compare them on the app's [Ascendancies](page:/ascendancies) page.

@@ -23,8 +23,8 @@ mentions:
 officialDocs:
   - label: Cube Recipes – Uber and Endgame Map recipes
     href: 'docs:Eastern Sun Resurrected Cube Recipes.html#uber'
-  - label: Anointments
-    href: docs:anointments.htm
+  - label: Special crafting outcomes
+    href: docs:special_crafting_outcomes.htm
 sources: [official-cube, official-docs, esr-txt, patchnotes, esru-wiki]
 ---
 

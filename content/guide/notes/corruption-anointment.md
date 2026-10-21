@@ -1,7 +1,7 @@
 ---
 title: Corruption and anointment
 kind: link
-summary: Two random endgame bonuses. Corruption can brick an item, anointment cannot. The official pages list every outcome.
+summary: Two random endgame bonuses. Corruption can brick an item, anointment cannot. The official page lists every outcome.
 tags: [endgame, enhancement]
 aliases: [corrupt, corruption, corrupted, anoint, anointment, anointed, worldstone shard]
 knowFirst: [enhancement-order]
@@ -18,10 +18,8 @@ mentions:
     Vessel of Souls,
   ]
 officialDocs:
-  - label: Corruptions
-    href: docs:corruptions.htm
-  - label: Anointments
-    href: docs:anointments.htm
+  - label: Special crafting outcomes
+    href: docs:special_crafting_outcomes.htm
 sources: [official-docs, official-cube]
 ---
 
