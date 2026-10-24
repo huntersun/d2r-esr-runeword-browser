@@ -34,7 +34,7 @@ export function SlotCell({ label, slot, item, onChange, disabled, diff, note, on
   if (onChange !== undefined) {
     return (
       <div className="flex flex-col gap-2">
-        <EquipmentSlotPicker label={label} value={item} disabled={disabled} onChange={onChange} />
+        <EquipmentSlotPicker label={label} slot={slot} value={item} disabled={disabled} onChange={onChange} />
         {item !== null && <BuildItemCard item={item} slot={slot} />}
         {item !== null && onNoteChange !== undefined && (
           <Textarea

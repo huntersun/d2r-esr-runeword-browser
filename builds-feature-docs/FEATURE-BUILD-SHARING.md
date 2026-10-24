@@ -573,14 +573,14 @@ The shareable page for a single build. The URL itself (`/build/:buildId`) is the
 
 ### Content
 
-- **Header**: Build name, character class, author display name with discriminator (links to `/user/:userId`), created/updated date
-- **Description**: Optional freetext notes/guide from the author
-- **Player Gear**: Equipment grid (see layout below)
-- **Weapon Swap**: Secondary weapon and shield
-- **Mercenary Gear**: Same equipment grid layout
-- **Charms**: List of charm names
-- **Ascendancy**: Ascendancy name with its tier bonuses displayed (from the viewer's local parsed data)
-- **Skills**: Freetext skill allocation description
+- **Header**: Build name, character class, author display name with discriminator (links to `/user/:userId`), created/updated date, like / copy link / export / owner actions
+- **Description**: Optional freetext notes/guide from the author (above the tabs)
+- **Tabs** (shadcn `Tabs`, UI state only, default **Player**):
+  - **Player**: Player Gear grid (see layout below), Weapon Swap (secondary weapon and shield), and beside them on wide screens **Charms** (list of charm names) and **Ascendancy** (name with its tier bonuses from the viewer's local parsed data)
+  - **Skills**: Freetext skill allocation description. Hidden when the build has no skills text.
+  - **Mercenary**: Mercenary Gear, same equipment grid layout. Hidden when the build has no merc gear and no merc notes.
+  - The tab bar itself is hidden when Player is the only tab. The chosen tab is not persisted; if it isn't available for the build being shown, Player is used.
+- Per-slot crafting/corruption notes and the "Stats updated" diff badge stay on each slot card inside the tabs.
 
 ### Equipment Grid Layout
 
@@ -617,7 +617,7 @@ When viewing a build, item stats are displayed using the **current data** from t
 
 ### Mobile Responsive
 
-On small screens (below `md` breakpoint), the equipment grid stacks to a **vertical list** of slot cards. The grid layout is used on tablet and larger screens.
+On small screens (below `md` breakpoint), the equipment grid stacks to a **vertical list** of slot cards. The grid layout is used on tablet and larger screens. The tab bar spans the full width on mobile; on the Player tab, Charms and Ascendancy stack below the gear (they sit in a sticky side column from `lg` up).
 
 ### Interactions
 
@@ -647,6 +647,40 @@ Only groups with matches are shown. Empty groups are hidden.
 **Runeword variant display:** Runewords with multiple variants show their full `allowedItems` list in parentheses to distinguish them:
 - `Grief (Phase Blade, Berserker Axe)` vs `Grief (Sword, Axe)`
 - `Spirit (Sword)` vs `Spirit (Shield)`
+
+**Slot filtering:** Results are limited to items that fit the slot being filled (`itemFitsSlot` in `src/features/builds/utils/slotFit.ts`), so e.g. a helm never shows up in a ring slot. A **Show all items** checkbox at the top of the picker turns the filter off for that picker, and a muted "N for other slots hidden" counter shows when name matches were filtered out. The rules are deliberately generous:
+
+- **Freetext** is always offered.
+- An **unknown** unique category or runeword/gemword item type fits every slot (new ESR categories never become unreachable).
+- A runeword/gemword fits when **any** of its allowed item types fits (excluded item types are ignored); one with no allowed types fits everywhere.
+- **Weapon swap** slots use the weapon/shield rules; **mercenary** slots use the same rules as the player slots. The ascendancy and charms fields are not pickers and are unaffected.
+- One-handed weapon classes also fit the shield slot (Barbarian/Assassin dual wield); two-handed and missile weapons fit the main hand only.
+
+| Slot              | Unique categories / runeword & gemword item types (case-insensitive)                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Helmet            | Helm, Circlet, Pelt, Primal Helm, Spirit Crown, Any Armor                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Armor             | Body Armor, Cloak, Robe, Any Armor                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Weapon / Weapon 2 | Weapon, Melee Weapon, One-Handed Melee Weapon, Two-Handed Melee Weapon, Missile Weapon, Missile, Blunt, Thrown Weapon, Paladin Item; classes Axe, Club, Druid Club, Hammer, Mace, Scepter, Sword, Paladin Sword, Voidblade, Sorceress Mana Blade, Knife, Necromancer Dagger, Throwing Axe, Throwing Knife, Javelin, Amazon Javelin, Barbarian Javs, Shuriken, Hand to Hand (1/2), Knuckle, Wand, Orb, Bow, Amazon Bow, Crossbow, Polearm, Necromancer Polearm, Spear, Amazon Spear, Staff, Assassin 2H Katana |
+| Shield / Shield 2 | Shield, Any Shield, Auric Shields, Voodoo Heads, Grimoire, Bow Quiver, Crossbow Quiver, Paladin Item, Any Armor; plus the one-handed weapon types (Weapon, Melee Weapon, One-Handed Melee Weapon, Blunt, Thrown Weapon and the one-handed classes above, i.e. all weapon classes except Orb, Bow, Amazon Bow, Crossbow, Polearm, Necromancer Polearm, Spear, Amazon Spear, Staff, Assassin 2H Katana, Two-Handed Melee Weapon, Missile Weapon, Missile)                                                       |
+| Gloves            | Gloves, Any Armor                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Boots             | Boots, Any Armor                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Belt              | Belt, Any Armor                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Amulet            | Amulet and any category ending in "Amulet" (LoD Amulet, Sor Amulet, ...)                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Ring 1 / Ring 2   | Ring and any category ending in "Ring" (LoD Ring, Ama Ring, ...)                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| (no slot)         | Charm, Small/Large/Grand/Odd Charm (any category ending in "Charm"), Jewel                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+
+**Mythical uniques** are grouped by section header rather than item type, so they are matched by base item first, then by section:
+
+| Mythical base item / section                                     | Slots                                                     |
+| ---------------------------------------------------------------- | --------------------------------------------------------- |
+| Base item Amulet / Ring                                          | Amulet / Ring 1–2                                         |
+| Base item Jewel or any Charm                                     | none                                                      |
+| Mythical Unique Weapons                                          | Weapon, Shield (and their swap slots)                     |
+| Mythical Unique Armor                                            | Helmet, Armor, Shield, Gloves, Boots, Belt (and Shield 2) |
+| Mythical Unique Jewelry                                          | Amulet, Ring 1–2                                          |
+| Dedicated Drops Mythical Uniques (other bases, e.g. Frostmourne) | all slots                                                 |
+
+`slotFit.test.ts` parses the real fixtures (`test-fixtures/`) and fails, listing the offenders, if any unique category, mythical section or runeword/gemword item type is not in the mapping (or maps to no slot without being a charm/jewel). After an ESR update that adds a category, extend the table in `slotFit.ts` and this section.
 
 ```
         [Helmet: Shako    ]

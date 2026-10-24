@@ -1,18 +1,22 @@
 import { useState } from 'react';
 import { ChevronsUpDown, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import type { ItemRef } from '../buildData';
 import { useEquipmentItems } from '../hooks/useEquipmentItems';
 import { freetextRef, gemwordToRef, itemRefName, mythicalToRef, runewordToRef, uniqueToRef } from '../utils/buildSnapshot';
+import { itemFitsSlot, type PickerSlot } from '../utils/slotFit';
 import { mythicalVariantHints, uniqueVariantHints } from '../utils/variantHints';
 
 const MAX_PER_GROUP = 8;
 
 interface EquipmentSlotPickerProps {
   readonly label: string;
+  /** The slot being filled; results are filtered to items that fit it unless "Show all items" is on. */
+  readonly slot: PickerSlot;
   readonly value: ItemRef | null;
   readonly onChange: (ref: ItemRef | null) => void;
   readonly disabled?: boolean;
@@ -21,21 +25,42 @@ interface EquipmentSlotPickerProps {
 /**
  * Inline autocomplete for one equipment slot. Searches the local item DB
  * (uniques, mythical uniques, runewords, gemwords) grouped by type, with a
- * freetext fallback for items not in the database.
+ * freetext fallback for items not in the database. Results are limited to items
+ * that fit the slot (see utils/slotFit); "Show all items" lifts the limit.
  */
-export function EquipmentSlotPicker({ label, value, onChange, disabled }: EquipmentSlotPickerProps) {
+export function EquipmentSlotPicker({ label, slot, value, onChange, disabled }: EquipmentSlotPickerProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [showAll, setShowAll] = useState(false);
   const items = useEquipmentItems();
 
   const q = query.trim().toLowerCase();
   const showResults = q.length > 0 && items !== undefined;
   const nameMatches = (name: string) => name.toLowerCase().includes(q);
 
-  const uniques = showResults ? items.uniques.filter((i) => nameMatches(i.name)).slice(0, MAX_PER_GROUP) : [];
-  const mythicals = showResults ? items.mythicals.filter((i) => nameMatches(i.name)).slice(0, MAX_PER_GROUP) : [];
-  const runewords = showResults ? items.runewords.filter((i) => nameMatches(i.name)).slice(0, MAX_PER_GROUP) : [];
-  const gemwords = showResults ? items.gemwords.filter((i) => nameMatches(i.name)).slice(0, MAX_PER_GROUP) : [];
+  // Name matches per group, before the slot filter (to count what the filter hides).
+  const uniqueMatches = showResults ? items.uniques.filter((i) => nameMatches(i.name)) : [];
+  const mythicalMatches = showResults ? items.mythicals.filter((i) => nameMatches(i.name)) : [];
+  const runewordMatches = showResults ? items.runewords.filter((i) => nameMatches(i.name)) : [];
+  const gemwordMatches = showResults ? items.gemwords.filter((i) => nameMatches(i.name)) : [];
+
+  const fitUniques = uniqueMatches.filter((i) => showAll || itemFitsSlot(slot, { type: 'unique', category: i.category }));
+  const fitMythicals = mythicalMatches.filter(
+    (i) => showAll || itemFitsSlot(slot, { type: 'mythical', category: i.category, baseItem: i.baseItem })
+  );
+  const fitRunewords = runewordMatches.filter((i) => showAll || itemFitsSlot(slot, { type: 'runeword', allowedItems: i.allowedItems }));
+  const fitGemwords = gemwordMatches.filter((i) => showAll || itemFitsSlot(slot, { type: 'gemword', allowedItems: i.allowedItems }));
+  const hiddenCount =
+    uniqueMatches.length +
+    mythicalMatches.length +
+    runewordMatches.length +
+    gemwordMatches.length -
+    (fitUniques.length + fitMythicals.length + fitRunewords.length + fitGemwords.length);
+
+  const uniques = fitUniques.slice(0, MAX_PER_GROUP);
+  const mythicals = fitMythicals.slice(0, MAX_PER_GROUP);
+  const runewords = fitRunewords.slice(0, MAX_PER_GROUP);
+  const gemwords = fitGemwords.slice(0, MAX_PER_GROUP);
 
   // Names with more than one variant get their allowed items appended to disambiguate.
   const runewordVariantCounts = new Map<string, number>();
@@ -74,6 +99,16 @@ export function EquipmentSlotPicker({ label, value, onChange, disabled }: Equipm
         <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
           <Command shouldFilter={false}>
             <CommandInput placeholder="Search items..." value={query} onValueChange={setQuery} />
+            <label className="flex cursor-pointer items-center gap-2 border-b px-3 py-2 text-xs text-muted-foreground">
+              <Checkbox
+                checked={showAll}
+                onCheckedChange={(checked) => {
+                  setShowAll(checked === true);
+                }}
+              />
+              Show all items
+              {!showAll && hiddenCount > 0 && <span className="ml-auto">{hiddenCount} for other slots hidden</span>}
+            </label>
             <CommandList>
               {value !== null && (
                 <CommandGroup>

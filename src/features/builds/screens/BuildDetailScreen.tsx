@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   DropdownMenu,
@@ -43,6 +44,10 @@ import {
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
+type DetailTab = 'player' | 'skills' | 'mercenary';
+
+const hasText = (value: string | null | undefined): boolean => value !== null && value !== undefined && value.trim().length > 0;
+
 export function BuildDetailScreen() {
   const { buildId } = useParams();
   const dispatch = useDispatch();
@@ -69,6 +74,8 @@ export function BuildDetailScreen() {
   );
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  // UI-only tab choice; falls back to Player when the chosen tab isn't available for this build.
+  const [tab, setTab] = useState<DetailTab>('player');
 
   useEffect(() => {
     if (buildId === undefined) return;
@@ -147,19 +154,26 @@ export function BuildDetailScreen() {
   const hasPlayerGear = Object.keys(compactItems(playerItems)).length > 0;
   const hasSwap = Object.keys(compactItems(swapItems)).length > 0;
   const hasMerc = Object.keys(compactItems(mercItems)).length > 0;
-  const hasAnyGear = hasPlayerGear || hasSwap || hasMerc;
+  const hasMercNotes = Object.values(buildData.mercenaryNotes ?? {}).some(hasText);
   const charms = buildData.charms ?? [];
   const ascendancyName = buildData.ascendancy ?? null;
   const skills = buildData.skills ?? null;
-  const hasSkills = skills !== null && skills.trim().length > 0;
-  const hasSidebar = hasDescription || hasSkills || charms.length > 0 || ascendancyName !== null;
+  const hasSkills = hasText(skills);
+  // Charms + ascendancy sit beside the player gear on wide screens.
+  const hasPlayerAside = charms.length > 0 || ascendancyName !== null;
+  const availableTabs: readonly DetailTab[] = [
+    'player',
+    ...(hasSkills ? (['skills'] as const) : []),
+    ...(hasMerc || hasMercNotes ? (['mercenary'] as const) : []),
+  ];
+  const activeTab: DetailTab = availableTabs.includes(tab) ? tab : 'player';
   const esrLabel = `ESR ${effectiveVersion ?? 'Unknown'}`;
 
   return (
     // When there's a sidebar, break out of the app container so the gear column can grow
     // as wide as the browse pages; capped and centered so it isn't edge-to-edge.
-    <div className={hasSidebar ? 'mx-[calc(50%_-_50vw)] px-4 sm:px-6' : ''}>
-      <div className={hasSidebar ? 'mx-auto w-full max-w-[1920px]' : ''}>
+    <div className={hasPlayerAside ? 'mx-[calc(50%_-_50vw)] px-4 sm:px-6' : ''}>
+      <div className={hasPlayerAside ? 'mx-auto w-full max-w-[1920px]' : ''}>
         <Button asChild variant="ghost" size="sm" className="mb-4 -ml-2">
           <Link to="/builds">
             <ArrowLeft className="size-4" />
@@ -253,76 +267,108 @@ export function BuildDetailScreen() {
           )}
         </Card>
 
-        {/* Gear (main) + textual details (sidebar) */}
-        <div className={hasSidebar ? 'grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]' : 'flex flex-col gap-6'}>
-          <div className="flex flex-col gap-6">
-            <section>
-              <SectionHeader title="Equipment" />
-              {hasAnyGear ? (
-                <div className="flex flex-col gap-6">
-                  {hasPlayerGear && (
-                    <div>
-                      <h3 className="mb-2 text-sm font-semibold text-muted-foreground">Player Gear</h3>
-                      <EquipmentGrid items={playerItems} diffs={diffsReady?.items} notes={buildData.itemNotes} />
-                    </div>
-                  )}
-                  {hasSwap && (
-                    <div>
-                      <h3 className="mb-2 text-sm font-semibold text-muted-foreground">Weapon Swap</h3>
-                      <WeaponSwapGrid items={swapItems} diffs={diffsReady?.weaponSwap} notes={buildData.weaponSwapNotes} />
-                    </div>
-                  )}
-                  {hasMerc && (
-                    <div>
-                      <h3 className="mb-2 text-sm font-semibold text-muted-foreground">Mercenary</h3>
-                      <EquipmentGrid items={mercItems} diffs={diffsReady?.mercenary} notes={buildData.mercenaryNotes} />
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">No gear has been added to this build yet.</p>
-              )}
-            </section>
-          </div>
+        {hasDescription && (
+          <section className="mb-6">
+            <SectionHeader title="Description" />
+            <p className="whitespace-pre-wrap text-sm">{build.description}</p>
+          </section>
+        )}
 
-          {hasSidebar && (
-            <aside className="flex flex-col gap-6 lg:sticky lg:top-4 lg:self-start">
-              {hasDescription && (
-                <section>
-                  <SectionHeader title="Description" />
-                  <p className="whitespace-pre-wrap text-sm">{build.description}</p>
-                </section>
-              )}
-
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => {
+            setTab(value as DetailTab);
+          }}
+          className="gap-4"
+        >
+          {availableTabs.length > 1 && (
+            <TabsList className="w-full sm:w-fit">
+              <TabsTrigger value="player" className="sm:px-4">
+                Player
+              </TabsTrigger>
               {hasSkills && (
-                <section>
-                  <SectionHeader title="Skills" />
-                  <p className="whitespace-pre-wrap text-sm">{skills}</p>
-                </section>
+                <TabsTrigger value="skills" className="sm:px-4">
+                  Skills
+                </TabsTrigger>
               )}
-
-              {charms.length > 0 && (
-                <section>
-                  <SectionHeader title="Charms" />
-                  <div className="flex flex-wrap gap-2">
-                    {charms.map((charm, index) => (
-                      <Badge key={`${String(index)}-${charm}`} variant="secondary">
-                        {charm}
-                      </Badge>
-                    ))}
-                  </div>
-                </section>
+              {(hasMerc || hasMercNotes) && (
+                <TabsTrigger value="mercenary" className="sm:px-4">
+                  Mercenary
+                </TabsTrigger>
               )}
-
-              {ascendancyName !== null && (
-                <section>
-                  <SectionHeader title="Ascendancy" />
-                  <AscendancyDisplay name={ascendancyName} />
-                </section>
-              )}
-            </aside>
+            </TabsList>
           )}
-        </div>
+
+          <TabsContent value="player">
+            <div className={hasPlayerAside ? 'grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]' : 'flex flex-col gap-6'}>
+              <section>
+                <SectionHeader title="Equipment" />
+                {hasPlayerGear || hasSwap ? (
+                  <div className="flex flex-col gap-6">
+                    {hasPlayerGear && (
+                      <div>
+                        <h3 className="mb-2 text-sm font-semibold text-muted-foreground">Player Gear</h3>
+                        <EquipmentGrid items={playerItems} diffs={diffsReady?.items} notes={buildData.itemNotes} />
+                      </div>
+                    )}
+                    {hasSwap && (
+                      <div>
+                        <h3 className="mb-2 text-sm font-semibold text-muted-foreground">Weapon Swap</h3>
+                        <WeaponSwapGrid items={swapItems} diffs={diffsReady?.weaponSwap} notes={buildData.weaponSwapNotes} />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    {hasMerc ? 'No player gear has been added to this build yet.' : 'No gear has been added to this build yet.'}
+                  </p>
+                )}
+              </section>
+
+              {hasPlayerAside && (
+                <aside className="flex flex-col gap-6 lg:sticky lg:top-4 lg:self-start">
+                  {charms.length > 0 && (
+                    <section>
+                      <SectionHeader title="Charms" />
+                      <div className="flex flex-wrap gap-2">
+                        {charms.map((charm, index) => (
+                          <Badge key={`${String(index)}-${charm}`} variant="secondary">
+                            {charm}
+                          </Badge>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {ascendancyName !== null && (
+                    <section>
+                      <SectionHeader title="Ascendancy" />
+                      <AscendancyDisplay name={ascendancyName} />
+                    </section>
+                  )}
+                </aside>
+              )}
+            </div>
+          </TabsContent>
+
+          {hasSkills && (
+            <TabsContent value="skills">
+              <section>
+                <SectionHeader title="Skills" />
+                <p className="whitespace-pre-wrap text-sm">{skills}</p>
+              </section>
+            </TabsContent>
+          )}
+
+          {(hasMerc || hasMercNotes) && (
+            <TabsContent value="mercenary">
+              <section>
+                <SectionHeader title="Mercenary Gear" />
+                <EquipmentGrid items={mercItems} diffs={diffsReady?.mercenary} notes={buildData.mercenaryNotes} />
+              </section>
+            </TabsContent>
+          )}
+        </Tabs>
 
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <DialogContent className="sm:max-w-sm">
