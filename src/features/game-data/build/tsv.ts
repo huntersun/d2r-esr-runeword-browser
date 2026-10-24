@@ -12,11 +12,14 @@ export class TsvRow {
   readonly #cells: readonly string[];
   readonly #index: ReadonlyMap<string, number>;
   readonly #context: string;
+  /** 1-based line number in the file (the header is line 1); 0 when unknown */
+  readonly line: number;
 
-  constructor(cells: readonly string[], index: ReadonlyMap<string, number>, context: string) {
+  constructor(cells: readonly string[], index: ReadonlyMap<string, number>, context: string, line = 0) {
     this.#cells = cells;
     this.#index = index;
     this.#context = context;
+    this.line = line;
   }
 
   has(column: string): boolean {
@@ -85,7 +88,7 @@ export function parseTsv(text: string, fileName = 'table', options: ParseTsvOpti
     if (line.trim() === '') continue;
     const cells = line.split('\t');
     if (options.keepExpansionRows !== true && isExpansionMarker(cells)) continue;
-    rows.push(new TsvRow(cells, index, `${fileName}:${String(lineNo + 1)}`));
+    rows.push(new TsvRow(cells, index, `${fileName}:${String(lineNo + 1)}`, lineNo + 1));
   }
 
   return { columns, rows };

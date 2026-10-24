@@ -2,8 +2,14 @@
  * Readable text for cubemain input/output cells, e.g. `jewl,uni,qty=2` → "2× Unique Jewel",
  * `weap,bas,crf` → "Crafted Weapon (normal tier)", `usetype,uni` → "Unique item of the same type".
  */
-import type { RecipeRow } from '../engine/schema.ts';
-import type { CubeMod, CubeOutput, EsrGuideTables } from './esrGuideSources.ts';
+import type { CubeMod, CubeOutput, CubeTables } from './cubeRows.ts';
+
+/** A merged recipe as the guide's `recipes` blocks show it (structurally the guide schema's RecipeRow) */
+export interface CubeRecipeRow {
+  inputs: string[];
+  output: string;
+  note: string | null;
+}
 
 /** Qualifiers written before the name */
 const ADJECTIVES: Record<string, string> = {
@@ -34,6 +40,11 @@ const NOTES: Record<string, string> = {
   mod: 'keeps its stats',
 };
 
+/** Note of an output with `rem` (the socketed items are removed and come out of the cube too) */
+export const REMOVED_NOTE = 'socketed items come out';
+/** Prefix of the note of an output's `lvl=N` */
+export const ITEM_LEVEL_NOTE = 'item level ';
+
 /** A cubemain input/output cell split into its item token, `qty=` count (default 1) and raw qualifiers. */
 export interface CubeCell {
   token: string;
@@ -62,6 +73,9 @@ function parseSpec(spec: string): ParsedSpec {
     if (key === 'qty') continue;
     // A bare `sock` means "has sockets"; `sock=N` an exact count.
     if (key === 'sock') parsed.notes.push(value === '' ? 'socketed' : value === '1' ? '1 socket' : `${value} sockets`);
+    // Output only: `useitem,rem` hands the item back with its socketables removed; `lvl=N` sets the item level
+    else if (key === 'rem') parsed.notes.push(REMOVED_NOTE);
+    else if (key === 'lvl' && value !== '') parsed.notes.push(`${ITEM_LEVEL_NOTE}${value}`);
     else if (key in ADJECTIVES) parsed.adjectives.push(ADJECTIVES[key] ?? key);
     else if (key in NOTES) parsed.notes.push(NOTES[key] ?? key);
   }
@@ -73,7 +87,7 @@ function withQualifiers(adjectives: string[], name: string, notes: string[]): st
   return notes.length === 0 ? text : `${text} (${notes.join(', ')})`;
 }
 
-export function formatInput(spec: string, esr: Pick<EsrGuideTables, 'nameOf'>): string {
+export function formatInput(spec: string, esr: Pick<CubeTables, 'nameOf'>): string {
   const parsed = parseSpec(spec);
   const name = parsed.token === 'any' ? 'Any item' : esr.nameOf(parsed.token);
   const text = withQualifiers(parsed.adjectives, name, parsed.notes);
@@ -119,7 +133,7 @@ export function isHiddenMod(code: string): boolean {
 }
 
 /** What describing an output reads: display names and the bonus text of its mods */
-export type OutputTables = Pick<EsrGuideTables, 'nameOf' | 'renderMods'>;
+export type OutputTables = Pick<CubeTables, 'nameOf' | 'renderMods' | 'levelName'>;
 
 export interface DescribeOptions {
   /** Render the output's bonus mods (default true); families with one bonus per ingredient hide them */
@@ -145,7 +159,16 @@ export function describeOutput(output: CubeOutput, esr: OutputTables, options: D
     return { name: `${quality} of the same type`, details: notes };
   }
   const name = esr.nameOf(parsed.token);
-  return { name: parsed.qty > 1 ? `${String(parsed.qty)}× ${name}` : name, details: [...parsed.adjectives, ...notes] };
+  // A Red Portal's `lvl=` is the levels.txt id of the map it opens, not an item level
+  const levelName = esr.levelName;
+  const shown = parsed.token === 'Red Portal' && levelName !== undefined ? notes.map((note) => portalNote(note, levelName)) : notes;
+  return { name: parsed.qty > 1 ? `${String(parsed.qty)}× ${name}` : name, details: [...parsed.adjectives, ...shown] };
+}
+
+function portalNote(note: string, levelName: (id: number) => string | null): string {
+  if (!note.startsWith(ITEM_LEVEL_NOTE)) return note;
+  const level = levelName(Number(note.slice(ITEM_LEVEL_NOTE.length)));
+  return level === null ? note : `to ${level}`;
 }
 
 export function formatOutput(output: CubeOutput, esr: OutputTables, options: DescribeOptions = {}): string {
@@ -211,6 +234,20 @@ export function randomPool(ranked: string[]): string {
  *    with that slot's values joined ("Weapon / Ring / …"); anything else stays a separate row.
  */
 export function clusterVariants(variants: readonly RecipeVariant[], pool: (ranked: string[]) => string = randomPool): RecipeVariant[] {
+  return clusterVariantsCounted(variants, pool).map(({ variant }) => variant);
+}
+
+/** A merged row and the number of variants (txt rows) merged into it */
+export interface CountedVariant {
+  variant: RecipeVariant;
+  count: number;
+}
+
+/** clusterVariants, counting the variants each merged row stands for */
+export function clusterVariantsCounted(
+  variants: readonly RecipeVariant[],
+  pool: (ranked: string[]) => string = randomPool
+): CountedVariant[] {
   const pools = new Map<string, { inputs: string[]; outputs: string[] }>();
   for (const variant of variants) {
     const key = JSON.stringify(variant.inputs);
@@ -219,7 +256,7 @@ export function clusterVariants(variants: readonly RecipeVariant[], pool: (ranke
     pools.set(key, entry);
   }
 
-  const clusters: { base: string[]; output: string; slot: number | null; values: string[] }[] = [];
+  const clusters: { base: string[]; output: string; slot: number | null; values: string[]; count: number }[] = [];
   for (const { inputs, outputs } of pools.values()) {
     const output = pool(byFrequency(outputs));
     const cluster = clusters.find((candidate) => {
@@ -228,18 +265,22 @@ export function clusterVariants(variants: readonly RecipeVariant[], pool: (ranke
       return candidate.slot === null ? diffs.length === 1 : diffs.length === 0;
     });
     if (cluster === undefined) {
-      clusters.push({ base: inputs, output, slot: null, values: [] });
+      clusters.push({ base: inputs, output, slot: null, values: [], count: outputs.length });
       continue;
     }
+    cluster.count += outputs.length;
     if (cluster.slot === null) {
       cluster.slot = inputs.findIndex((input, i) => input !== cluster.base[i]);
       cluster.values.push(cluster.base[cluster.slot] ?? '');
     }
     cluster.values.push(inputs[cluster.slot] ?? '');
   }
-  return clusters.map(({ base, output, slot, values }) => ({
-    inputs: slot === null ? base : base.map((input, i) => (i === slot ? joinOptions(values) : input)),
-    output,
+  return clusters.map(({ base, output, slot, values, count }) => ({
+    variant: {
+      inputs: slot === null ? base : base.map((input, i) => (i === slot ? joinOptions(values) : input)),
+      output,
+    },
+    count,
   }));
 }
 
@@ -255,12 +296,21 @@ export function clusterWithBonus(
   plain: readonly RecipeVariant[],
   pool?: (ranked: string[]) => string
 ): RecipeVariant[] {
-  const rows = clusterVariants(withBonus, pool);
-  return rows.length > MAX_GROUP_ROWS ? clusterVariants(plain, pool) : rows;
+  return clusterWithBonusCounted(withBonus, plain, pool).map(({ variant }) => variant);
+}
+
+/** clusterWithBonus, counting the variants each merged row stands for */
+export function clusterWithBonusCounted(
+  withBonus: readonly RecipeVariant[],
+  plain: readonly RecipeVariant[],
+  pool?: (ranked: string[]) => string
+): CountedVariant[] {
+  const rows = clusterVariantsCounted(withBonus, pool);
+  return rows.length > MAX_GROUP_ROWS ? clusterVariantsCounted(plain, pool) : rows;
 }
 
 /** The first MAX_GROUP_ROWS rows with notes from `note(index)`; the last shown row says how many were left out. */
-export function capGroup(variants: readonly RecipeVariant[], note: (index: number) => string | null): RecipeRow[] {
+export function capGroup(variants: readonly RecipeVariant[], note: (index: number) => string | null): CubeRecipeRow[] {
   const shown = variants.slice(0, MAX_GROUP_ROWS);
   const more = variants.length - shown.length;
   return shown.map((variant, i) => {

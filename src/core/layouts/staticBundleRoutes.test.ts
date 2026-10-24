@@ -13,7 +13,7 @@ describe('isStaticBundlePath', () => {
     }
   );
 
-  it.each(['/guide', '/guide/map', '/guide/start-here', '/loot-filters', '/loot-filters/abc', '/game-data/enhance'])(
+  it.each(['/guide', '/guide/map', '/guide/start-here', '/loot-filters', '/loot-filters/abc', '/game-data/enhance', '/game-data/cube'])(
     'matches the prefix route %s',
     (pathname) => {
       expect(isStaticBundlePath(pathname)).toBe(true);

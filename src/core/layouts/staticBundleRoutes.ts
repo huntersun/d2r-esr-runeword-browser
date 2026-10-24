@@ -7,7 +7,7 @@
 const STATIC_BUNDLE_EXACT_ROUTES: readonly string[] = ['/'];
 
 /** Matched with their child paths. */
-const STATIC_BUNDLE_ROUTE_PREFIXES: readonly string[] = ['/guide', '/loot-filters', '/game-data/enhance'];
+const STATIC_BUNDLE_ROUTE_PREFIXES: readonly string[] = ['/guide', '/loot-filters', '/game-data/enhance', '/game-data/cube'];
 
 export function isStaticBundlePath(pathname: string): boolean {
   if (STATIC_BUNDLE_EXACT_ROUTES.includes(pathname)) return true;

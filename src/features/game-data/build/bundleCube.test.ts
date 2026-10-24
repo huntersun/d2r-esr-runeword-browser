@@ -1,0 +1,265 @@
+import { describe, expect, it } from 'vitest';
+import { buildCubeBundle, RAW_ROW_LIMIT, type CubeContext } from './bundleCube.ts';
+import { fallbackFamilyId, fallbackPrefix } from './cube/cubeCatalog.ts';
+import { buildCubeTables, type CubeMod } from './cube/cubeRows.ts';
+
+function tsv(rows: string[][]): string {
+  return rows.map((row) => row.join('\t')).join('\r\n');
+}
+
+const HEADER = [
+  'description',
+  'enabled',
+  'min diff',
+  'op',
+  'param',
+  'value',
+  'class',
+  'numinputs',
+  'input 1',
+  'input 2',
+  'input 3',
+  'output',
+  'mod 1',
+  'mod 1 min',
+  'mod 1 max',
+  'output b',
+  '*eol',
+];
+
+interface RowOptions {
+  enabled?: boolean;
+  minDiff?: number;
+  condition?: [number, number, number];
+  cls?: string;
+  mod?: [string, number];
+  outputB?: string;
+}
+
+function row(description: string, inputs: string[], output: string, options: RowOptions = {}): string[] {
+  const [op = 0, param = 0, value = 0] = options.condition ?? [];
+  const [first = '', second = '', third = ''] = inputs;
+  const [mod = '', amount = 0] = options.mod ?? [];
+  return [
+    description,
+    options.enabled === false ? '0' : '1',
+    String(options.minDiff ?? 0),
+    options.condition === undefined ? '' : String(op),
+    String(param),
+    String(value),
+    options.cls ?? '',
+    String(inputs.length),
+    first,
+    second,
+    third,
+    output,
+    mod,
+    mod === '' ? '' : String(amount),
+    mod === '' ? '' : String(amount),
+    options.outputB ?? '',
+    '0',
+  ];
+}
+
+const MISC = tsv([
+  ['name', 'code', 'namestr', 'type'],
+  ['Perfect Amethyst', 'gpv', 'gpv', 'gem5'],
+  ['Perfect Ruby', 'gpr', 'gpr', 'gem5'],
+  ['Key', 'key', 'key', 'key'],
+  ['Thawing Potion', 'wms', 'wms', 'potn'],
+  ['Kill Ledger', 'kl0', 'kl0', 'misc'],
+  ['Anvil Stone', 'qqq', 'qqq', 'misc'],
+  ['Multi Stocker', 'ms0', 'ms0', 'stk'],
+  ['Gem Can', 'kv0', 'kv0', 'can9'],
+  ['Map', 'map', 'map', 'misc'],
+  ['Weapons Crate', 'u22', 'u22', 'misc'],
+  ['Socket Donut', 'sdn', 'sdn', 'misc'],
+]);
+const ARMOR = tsv([
+  ['name', 'code', 'namestr', 'type'],
+  ['Quilted Armor', 'qui', 'qui', 'tors'],
+]);
+const WEAPONS = tsv([
+  ['name', 'code', 'namestr', 'type'],
+  ['Short Sword', 'ssd', 'ssd', 'swor'],
+  ['Long Bow', 'lbw', 'lbw', 'bow'],
+]);
+const ITEMTYPES = tsv([
+  ['ItemType', 'Code'],
+  ['Weapon', 'weap'],
+  ['Armor', 'tors'],
+  ['Perfect Gem', 'gem5'],
+  ['Charm', 'char'],
+  ['Gem Can 8', 'can9'],
+]);
+const STRINGS = JSON.stringify(
+  [
+    ['gpv', 'Perfect Amethyst'],
+    ['gpr', 'Perfect Ruby'],
+    ['key', 'Key'],
+    ['wms', 'Thawing Potion'],
+    ['kl0', 'Kill Ledger'],
+    ['qqq', 'Anvil Stone'],
+    ['ms0', 'Multi Stocker'],
+    ['kv0', 'Gem Can'],
+    ['qui', 'Quilted Armor'],
+    ['ssd', 'Short Sword'],
+    ['lbw', 'Long Bow'],
+    ['Red Portal', 'Red Portal'],
+  ].map(([Key, enUS]) => ({ Key, enUS }))
+);
+
+/** Stub bonus text: "code +N" */
+function stubRenderMods(mods: readonly CubeMod[]): string[] {
+  return mods.map((mod) => `${mod.mod} +${String(mod.max)}`);
+}
+
+/** itemstatcost rows by id: 92 item_levelreq, 508 kill_check, 470 some hidden marker */
+const STAT_NAMES = new Map([
+  [92, 'item_levelreq'],
+  [470, 'item_corrupted_dummy'],
+  [508, 'kill_check'],
+]);
+
+function build(rows: string[][]) {
+  const tables = buildCubeTables(
+    {
+      tables: { cubemain: tsv([HEADER, ...rows]), misc: MISC, armor: ARMOR, weapons: WEAPONS, itemtypes: ITEMTYPES },
+      strings: [{ name: 'item-names.json', text: STRINGS }],
+    },
+    stubRenderMods
+  );
+  const ctx: CubeContext = {
+    tables: { ...tables, levelName: (id) => (id === 147 ? 'Cellar of Pain' : null) },
+    typeCodes: new Set(['weap', 'tors', 'gem5', 'char', 'can9']),
+    statNames: STAT_NAMES,
+  };
+  return buildCubeBundle(ctx);
+}
+
+describe('buildCubeBundle', () => {
+  it('hides enhance rows, traps, void outputs, OLD rows, stockers and dummy rolls, but keeps the Anvil Stone stocker row', () => {
+    const { bundle } = build([
+      row('Unique Corruption - Weapon 1', ['"weap,uni"'], 'useitem', { condition: [18, 470, 1] }),
+      row('Add Corruption Dummy Stat - Unique Weapon', ['"weap,uni"', 'wss'], 'useitem'),
+      row('Anointment - Weapon 3 (of Abyss)', ['weap'], 'useitem'),
+      row('Vessel of Souls Tier 1 - str', ['Vessel of Souls', 'gpv'], 'useitem'),
+      row('Kill Ledger Trap', ['kl0'], 'useitem'),
+      row('Blocker', ['kl0', 'key'], 'void'),
+      row('Coupon Output OLD (Delete later)', ['key'], 'gpv'),
+      row('Multi Stocker Input Ruby', ['ms0', 'gpr'], 'useitem'),
+      row('Moon Rune', ['kv0', 'gpr'], 'useitem'),
+      row('Add Something Dummy Stat', ['key'], 'useitem'),
+      row('Multi Stocker 3 Perfect Gems +1 Anvil Stone', ['ms0', 'gpr'], 'qqq'),
+      row('Disabled', ['key'], 'gpv', { enabled: false }),
+    ]);
+    expect(bundle.hidden).toEqual({ enhance: 4, traps: 2, old: 1, stockers: 2, dummy: 1 });
+    expect(bundle.families.map((family) => [family.id, family.rowCount])).toEqual([['anvil-stone', 1]]);
+  });
+
+  it('assigns rows to the guide families first, then the cube families, then a fallback by description prefix', () => {
+    const { bundle, fallback } = build([
+      // Matches both the guide's unique-charm-upgrades and the cube-only unique-reroll pattern
+      row('Unique Reroll ES Charm Exc', ['"char,uni"', 'gpv'], 'usetype,uni'),
+      row('Unique Reroll ES Weapon Exc', ['Axe of the Elements', 'gpv'], 'Axe of the Elements'),
+      row('Unique Reroll ES Weapon Exc', ['Hacker', 'gpv'], 'Hacker'),
+      row('Weapons Crate', ['u22'], 'lbw,nor', { outputB: 'ssd,nor' }),
+      row('Weapons Crate', ['u22'], 'ssd,nor'),
+      row('Something New: 3 Keys', ['"key,qty=3"'], 'gpv'),
+    ]);
+    expect(bundle.families.map((family) => family.id)).toEqual([
+      'unique-charm-upgrades',
+      'unique-reroll',
+      'other:weapons-crate',
+      'other:something-new',
+    ]);
+    expect(fallback).toEqual([
+      { id: 'other:weapons-crate', rows: 2 },
+      { id: 'other:something-new', rows: 1 },
+    ]);
+    // The rerolls of named uniques merge into one row; their names stay searchable on small families' recipes
+    const reroll = bundle.rows.filter((entry) => entry.family === 'unique-reroll');
+    expect(reroll).toEqual([
+      expect.objectContaining({
+        inputs: ['Axe of the Elements / Hacker', 'Perfect Amethyst'],
+        output: 'The same item, rerolled',
+        variants: 2,
+      }),
+    ]);
+    expect(bundle.recipes.filter((recipe) => recipe.family === 'unique-reroll').map((recipe) => recipe.inputs[0]?.kind)).toEqual([
+      'unique',
+      'unique',
+    ]);
+  });
+
+  it('normalises fallback prefixes', () => {
+    expect(fallbackPrefix('Negative MF Charm: SC + Decipherer')).toBe('Negative MF Charm');
+    expect(fallbackPrefix("Anya's Gift (nor) 1st")).toBe("Anya's Gift");
+    expect(fallbackPrefix('Introductory Book Cycle 3')).toBe('Introductory Book Cycle #');
+    expect(fallbackFamilyId("Anya's Gift D-Stone")).toBe('other:anya-s-gift-d-stone');
+    expect(fallbackFamilyId('Introductory Book Cycle #')).toBe('other:introductory-book-cycle-n');
+  });
+
+  it('parses the cells of small families: kinds, quantities, qualifiers, rem, lvl= and bonuses', () => {
+    const { bundle } = build([
+      row('Unsocket Weap', ['"weap,sock"', 'key'], 'useitem,rem'),
+      row('Tier 1 Map Cellar of Pain', ['map'], 'Red Portal,lvl=147,qty=1', { minDiff: 2 }),
+      row('Mystery Box: 2 Gems', ['"gem5,qty=2"', 'any'], 'useitem', { mod: ['hp', 5] }),
+    ]);
+    const recipe = (description: string) => bundle.recipes.find((entry) => entry.description === description);
+    const [unsocket, portal, box] = [recipe('Unsocket Weap'), recipe('Tier 1 Map Cellar of Pain'), recipe('Mystery Box: 2 Gems')];
+    // The id is the cubemain line (the header is line 1); families are listed by section (maps before sockets)
+    expect(unsocket?.id).toBe(2);
+    expect(bundle.recipes.map((entry) => entry.id)).toEqual([3, 2, 4]);
+    expect(unsocket?.inputs).toEqual([
+      { text: 'Weapon (socketed)', code: 'weap', qty: 1, quals: ['sock'], kind: 'type' },
+      { text: 'Key', code: 'key', qty: 1, quals: [], kind: 'item' },
+    ]);
+    expect(unsocket?.outputs).toEqual([{ text: 'The same item', code: null, bonus: [], details: ['socketed items come out'] }]);
+    expect(portal?.outputs).toEqual([{ text: 'Red Portal', code: 'Red Portal', bonus: [], details: ['to Cellar of Pain'] }]);
+    expect(portal?.conditions).toEqual(['Hell only']);
+    expect(box?.inputs.map((input) => [input.text, input.qty, input.kind])).toEqual([
+      ['2× Perfect Gem', 2, 'type'],
+      ['Any item', 1, 'any'],
+    ]);
+    expect(box?.outputs[0]?.bonus).toEqual(['hp +5']);
+  });
+
+  it('renders only the readable conditions: class, difficulty, boss kills and no added level requirement', () => {
+    const { bundle } = build([
+      row('Kill Ledger Rathma', ['kl0', 'gpv'], 'useitem', { condition: [6, 508, 99] }),
+      row('Berserker Ascend to Tier 5 Rathma', ['key', 'map'], 'useitem', { condition: [6, 508, 99], cls: 'bar' }),
+      row('Berserker Ascend to Tier 5 Who', ['key', 'gpr'], 'useitem', { condition: [6, 508, 7], minDiff: 1 }),
+      row('[SECRET31] Gloves: Set Belt + Elixir', ['key', 'gpr', 'gpv'], 'useitem', { condition: [18, 92, 0] }),
+      row('[SECRET32] Hidden marker', ['key', 'gpv'], 'useitem', { condition: [16, 470, 0] }),
+    ]);
+    const byLine = [...bundle.recipes].sort((a, b) => a.id - b.id);
+    expect(byLine.map((recipe) => recipe.conditions)).toEqual([
+      ['Needs a recorded Rathma kill'],
+      ['Barbarian only', 'Needs a recorded Rathma kill'],
+      ['Nightmare or Hell', 'Needs a recorded boss kill (#7)'],
+      ['Only items without an added level requirement'],
+      [],
+    ]);
+    expect(bundle.groups.filter((group) => group.family === 'secret').map((group) => group.label)).toEqual([
+      'Secret Recipe 31',
+      'Secret Recipe 32',
+    ]);
+  });
+
+  it(`keeps raw rows only for families with at most ${String(RAW_ROW_LIMIT)} rows and orders families by section`, () => {
+    const big = Array.from({ length: RAW_ROW_LIMIT + 1 }, (_, i) =>
+      row(`Unique Reroll ES Armor Eli`, [`Unique ${String(i)}`, 'gpv'], `Unique ${String(i)}`)
+    );
+    const { bundle } = build([row('Tyrael Might Aura str to dex', ["Tyrael's Might", 'gpv'], 'useitem'), ...big]);
+    expect(bundle.families.map((family) => [family.id, family.section, family.raw, family.order])).toEqual([
+      ['unique-reroll', 'uni', false, 0],
+      ['tyrael-boon', 'tyrael', true, 1],
+    ]);
+    expect(bundle.recipes.map((recipe) => recipe.family)).toEqual(['tyrael-boon']);
+    const group = bundle.groups.find((entry) => entry.family === 'unique-reroll');
+    expect(group?.rowCount).toBe(RAW_ROW_LIMIT + 1);
+    expect(group?.names).toHaveLength(RAW_ROW_LIMIT + 1);
+    expect(bundle.sections.map((section) => section.id)).toEqual(['uni', 'tyrael']);
+  });
+});

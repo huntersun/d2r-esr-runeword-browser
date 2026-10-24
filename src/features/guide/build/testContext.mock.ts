@@ -1,7 +1,8 @@
 /** Tiny inline fixtures for the guide build tests (a few txt rows, strings and game-data entries). */
 import type { GlossaryEntry } from '../engine/schema.ts';
 import { createGuideContext, type DocsIndex, type GameDataInputs, type GuideContext } from './context.ts';
-import { buildEsrGuideTables, type CubeMod, type EsrGuideTables } from './esrGuideSources.ts';
+import type { CubeMod } from '../../game-data/build/cube/cubeRows.ts';
+import { buildEsrGuideTables, type EsrGuideTables } from './esrGuideSources.ts';
 
 /** Tab-separated rows with CRLF line ends, like the txt files. */
 export function tsv(rows: string[][]): string {

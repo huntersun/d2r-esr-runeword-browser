@@ -3,8 +3,16 @@
  * number (the txt repeats a recipe per base type, quality or socket count).
  */
 import type { RecipeRow } from '../../engine/schema.ts';
-import { capGroup, clusterWithBonus, distinct, formatInput, formatOutput, type RecipeVariant } from '../cubeText.ts';
+import {
+  capGroup,
+  clusterWithBonus,
+  distinct,
+  formatInput,
+  formatOutput,
+  type RecipeVariant,
+} from '../../../game-data/build/cube/cubeText.ts';
 import type { EsrGuideTables } from '../esrGuideSources.ts';
+import { withCubeLink } from './recipes.ts';
 import { requireEsr, type DirectiveResolver } from './types.ts';
 
 const SECRET = /^\[SECRET(\d+)\]\s*(.*)$/;
@@ -50,7 +58,7 @@ export const resolveSecretRecipes: DirectiveResolver = (arg, ctx) => {
   if ('error' in esr) return esr;
   const recipes = collectSecretRecipes(esr);
   if (recipes.size === 0) return { error: '::secret-recipes found no [SECRETnn] rows in cubemain.txt' };
-  return { kind: 'recipes', caption: `Secret recipes ${RETURNED}`, rows: [...recipes.values()].flat() };
+  return withCubeLink({ kind: 'recipes', caption: `Secret recipes ${RETURNED}`, rows: [...recipes.values()].flat() }, 'secret', esr);
 };
 
 export const resolveSecretRecipe: DirectiveResolver = (arg, ctx) => {

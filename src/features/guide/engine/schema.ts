@@ -157,6 +157,8 @@ export interface RecipesBlock {
   kind: 'recipes';
   caption: string;
   rows: RecipeRow[];
+  /** The family on the Cube Recipes page (`/game-data/cube?family=…`, "All N recipes"); absent when it has no rows there */
+  link?: { label: string; href: string };
 }
 
 /** Blocks produced by directives; the browser renders them generically. */

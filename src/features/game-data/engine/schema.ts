@@ -5,7 +5,7 @@
 export const GAME_DATA_SCHEMA = 1;
 
 export type ClassCode = 'ama' | 'sor' | 'nec' | 'pal' | 'bar' | 'dru' | 'ass' | 'war';
-export type GameDataFile = 'types' | 'bases' | 'runewords' | 'affixes' | 'sources' | 'lootfilter' | 'enhance';
+export type GameDataFile = 'types' | 'bases' | 'runewords' | 'affixes' | 'sources' | 'lootfilter' | 'enhance' | 'cube';
 
 export interface GameDataManifest {
   schema: number;
@@ -392,4 +392,114 @@ export interface EnhanceBundle {
   vesselTiers: VesselTier[];
   vesselRecipes: VesselRecipe[];
   vesselTransforms: VesselTransform[];
+}
+
+// --- cube.json ----------------------------------------------------------------------------------------------------
+
+/** A group of families: a section of the official Cube Recipes page or another official page */
+export interface CubeSection {
+  id: string;
+  label: string;
+  /** Official docs page (file name on the ESR site), null when none covers it */
+  doc: string | null;
+  /** Anchor on that page */
+  anchor: string | null;
+}
+
+export interface CubeFamilyInfo {
+  /** Guide family id, a cube-only family id, or `other:<prefix>` for the fallback grouping */
+  id: string;
+  label: string;
+  section: string;
+  /** Display order (sections first, then definition order) */
+  order: number;
+  /** cubemain rows in the family */
+  rowCount: number;
+  /** True when `recipes` holds every row of the family (small families); false: only the merged `rows` */
+  raw: boolean;
+}
+
+/** Recipes of one family that merge into the same rows (one recipe shape) */
+export interface CubeGroup {
+  /** Index in `groups` */
+  id: number;
+  family: string;
+  /** The recipe shape: the first row's description with its numbers as `#` (a dev label), or "Secret Recipe N" */
+  label: string;
+  rowCount: number;
+  /** Conditions every row of the group has ("Amazon only", "Hell only") */
+  conditions: string[];
+  /**
+   * Unique and set item names the group's rows take or give, when the family has no `recipes` (the merged rows list
+   * only a few of them), for the search; omitted otherwise
+   */
+  names?: string[];
+}
+
+/** A merged recipe row (the guide's `::recipes` text, uncapped) and how many cubemain rows it stands for */
+export interface CubeMergedRow {
+  family: string;
+  group: number;
+  inputs: string[];
+  output: string;
+  variants: number;
+}
+
+export type CubeInputKind = 'item' | 'type' | 'unique' | 'any';
+
+export interface CubeRecipeInput {
+  text: string;
+  /** Item code, item type code, unique/set name or `any` */
+  code: string;
+  qty: number;
+  /** Qualifiers of the cell (`uni`, `nru`, `sock=2`, …) without `qty=` */
+  quals: string[];
+  kind: CubeInputKind;
+}
+
+export interface CubeRecipeOutput {
+  text: string;
+  /** Item code or unique/set name; null for `useitem` / `usetype` / `cloneitem` */
+  code: string | null;
+  /** Rendered bonus mods ("+5 to Life"), markers left out */
+  bonus: string[];
+  /** Qualities and notes ("Unique", "3 sockets", "socketed items come out", "item level 99", "to Cellar of Pain") */
+  details: string[];
+}
+
+/** One cubemain row */
+export interface CubeRecipe {
+  /** Line number in cubemain.txt */
+  id: number;
+  family: string;
+  group: number;
+  /** The txt description (a dev label) */
+  description: string;
+  inputs: CubeRecipeInput[];
+  outputs: CubeRecipeOutput[];
+  /** Readable conditions: class only, minimum difficulty, a boss kill, no added level requirement */
+  conditions: string[];
+}
+
+/** Enabled cubemain rows not listed, by reason */
+export interface CubeHiddenCounts {
+  /** Corruption, anointment and Vessel of Souls tier rows (the Enhance page) */
+  enhance: number;
+  /** `void` outputs and "Trap" blockers */
+  traps: number;
+  /** "OLD (Delete later)" rows */
+  old: number;
+  /** Stocker and can bookkeeping */
+  stockers: number;
+  /** "Add … Dummy Stat" roll rows no family lists */
+  dummy: number;
+}
+
+export interface CubeBundle {
+  sections: CubeSection[];
+  families: CubeFamilyInfo[];
+  groups: CubeGroup[];
+  rows: CubeMergedRow[];
+  recipes: CubeRecipe[];
+  hidden: CubeHiddenCounts;
 }

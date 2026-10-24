@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { createHash } from 'crypto';
 import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
+import { EXTRA_FAMILIES } from './build/cube/cubeCatalog.ts';
+import { CUBE_FAMILIES } from './build/cube/cubeFamilies.ts';
 import { readEsrSources } from './build/esrSources.ts';
 import { generateBundles } from './build/generateBundles.ts';
 import { serializeBundle } from './build/writeBundle.ts';
@@ -10,6 +12,7 @@ import {
   type AffixesBundle,
   type BaseItem,
   type BasesBundle,
+  type CubeBundle,
   type EnhanceBundle,
   type GameDataManifest,
   type LootFilterDataBundle,
@@ -33,6 +36,7 @@ const affixesText = readText('affixes');
 const sourcesText = readText('sources');
 const lootfilterText = readText('lootfilter');
 const enhanceText = readText('enhance');
+const cubeText = readText('cube');
 const { types } = JSON.parse(typesText) as TypesBundle;
 const { bases, automods: baseAutomods = [] } = JSON.parse(basesText) as BasesBundle;
 const { runewords } = JSON.parse(runewordsText) as TxtRunewordsBundle;
@@ -40,6 +44,7 @@ const { affixes } = JSON.parse(affixesText) as AffixesBundle;
 const { items: sourceItems } = JSON.parse(sourcesText) as SourcesBundle;
 const lootfilter = JSON.parse(lootfilterText) as LootFilterDataBundle;
 const enhance = JSON.parse(enhanceText) as EnhanceBundle;
+const cube = JSON.parse(cubeText) as CubeBundle;
 
 describe('committed game-data bundles', () => {
   it('match the app schema', () => {
@@ -55,6 +60,7 @@ describe('committed game-data bundles', () => {
       ['sources', sourcesText],
       ['lootfilter', lootfilterText],
       ['enhance', enhanceText],
+      ['cube', cubeText],
     ] as const) {
       expect(manifest.files[name]?.hash).toBe(createHash('sha256').update(text, 'utf8').digest('hex'));
       expect(manifest.files[name]?.bytes).toBe(Buffer.byteLength(text, 'utf8'));
@@ -286,6 +292,36 @@ describe('committed game-data bundles', () => {
     expect(enhance.vesselTransforms.every((transform) => transform.keepsMods && transform.output.name.startsWith('Mythical '))).toBe(true);
   });
 
+  it('list every cube family with rows, few fallback rows and the enhance rows hidden', () => {
+    const counts = new Map(cube.families.map((family) => [family.id, family.rowCount]));
+    // Every guide and cube-only family keeps at least one row after the hidden rows and the earlier families
+    for (const family of [...CUBE_FAMILIES, ...EXTRA_FAMILIES]) expect(counts.get(family.id) ?? 0, family.id).toBeGreaterThan(0);
+    // ESR 3.2.24: 41 rows in 9 fallback families; a release that adds new recipe shapes shows up here
+    const fallback = cube.families.filter((family) => family.id.startsWith('other:'));
+    expect(fallback.reduce((sum, family) => sum + family.rowCount, 0)).toBeLessThanOrEqual(60);
+    expect(fallback.length).toBeLessThanOrEqual(12);
+    // Each anointment outcome, Vessel recipe and corruption outcome is at least one hidden enhance row
+    const enhanceRows = enhance.anointmentOutcomes.length + enhance.vesselRecipes.length + enhance.corruptionOutcomes.length;
+    expect(cube.hidden.enhance).toBeGreaterThanOrEqual(enhanceRows);
+    expect(cube.hidden.enhance).toBeLessThan(enhanceRows * 3);
+    expect(manifest.counts.cubeHiddenEnhance).toBe(cube.hidden.enhance);
+    // Every merged row and raw recipe points at its family and group; raw recipes only for small families
+    const groups = new Map(cube.groups.map((group) => [group.id, group]));
+    const raw = new Set(cube.families.filter((family) => family.raw).map((family) => family.id));
+    expect(cube.rows.every((row) => groups.get(row.group)?.family === row.family)).toBe(true);
+    expect(cube.recipes.every((recipe) => groups.get(recipe.group)?.family === recipe.family && raw.has(recipe.family))).toBe(true);
+    for (const family of cube.families) {
+      const merged = cube.rows.filter((row) => row.family === family.id).reduce((sum, row) => sum + row.variants, 0);
+      expect(merged, family.id).toBe(family.rowCount);
+      if (family.raw)
+        expect(
+          cube.recipes.filter((recipe) => recipe.family === family.id),
+          family.id
+        ).toHaveLength(family.rowCount);
+    }
+    expect(cube.sections.map((section) => section.id)).toEqual([...new Set(cube.families.map((family) => family.section))]);
+  });
+
   it('resolve the merc/helm name collision and class-only bases', () => {
     expect(types.find((type) => type.code === 'merc')?.name).toBe('Helm (merc)');
     expect(types.find((type) => type.code === 'helm')?.name).toBe('Helm');
@@ -331,6 +367,7 @@ describe.skipIf(!existsSync(ESR_DIR))('game data generated from the ESR clone', 
     expect(serializeBundle(generated.sources)).toBe(sourcesText);
     expect(serializeBundle(generated.lootfilter)).toBe(lootfilterText);
     expect(serializeBundle(generated.enhance)).toBe(enhanceText);
+    expect(serializeBundle(generated.cube)).toBe(cubeText);
   });
 
   it('numbers uniques, sets, stats and sounds like the *ID / *Index comment columns where those are consistent', () => {

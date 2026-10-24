@@ -1,6 +1,7 @@
 import type {
   AffixesBundle,
   BasesBundle,
+  CubeBundle,
   EnhanceBundle,
   LootFilterDataBundle,
   SourcesBundle,
@@ -9,7 +10,9 @@ import type {
 } from '../engine/schema.ts';
 import { buildAffixesBundle } from './bundleAffixes.ts';
 import { attachAutomods, buildBasesBundle, readStaffMods } from './bundleBases.ts';
+import { buildCubeBundle, itemTypeCodes } from './bundleCube.ts';
 import { buildEnhanceBundle } from './bundleEnhance.ts';
+import { buildCubeNames, modRendererFor, readCube, readCubeItem } from './cube/cubeRows.ts';
 import { buildLootFilterBundle } from './bundleLootFilter.ts';
 import { buildRunewordsBundle } from './bundleRunewords.ts';
 import { buildSourcesBundle } from './bundleSources.ts';
@@ -32,6 +35,7 @@ export interface GeneratedBundles {
   sources: SourcesBundle;
   lootfilter: LootFilterDataBundle;
   enhance: EnhanceBundle;
+  cube: CubeBundle;
   counts: Record<string, number>;
   /** Build warnings stored in the manifest */
   warnings: string[];
@@ -107,6 +111,30 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
   const { corruptionSlots, corruptionOutcomes, anointmentOutcomes, vesselRecipes, vesselTransforms } = enhance.bundle;
   const countPool = (pool: string) => anointmentOutcomes.filter((outcome) => outcome.pool === pool).length;
 
+  const itemtypes = table('itemtypes');
+  const cubeItems = [
+    ...table('misc').rows.map((row) => readCubeItem(row, 'misc', strings)),
+    ...table('armor').rows.map((row) => readCubeItem(row, 'armor', strings)),
+    ...table('weapons').rows.map((row) => readCubeItem(row, 'weapon', strings)),
+  ];
+  const levelNames = new Map(
+    table('levels')
+      .rows.filter((row) => row.str('Id') !== '')
+      .map((row) => [row.num('Id'), resolveName(strings, row.str('LevelName'), row.str('Name'))])
+  );
+  const cube = buildCubeBundle({
+    tables: {
+      cube: readCube(table('cubemain')),
+      items: cubeItems,
+      ...buildCubeNames(cubeItems, itemtypes, strings),
+      renderMods: modRendererFor(() => renderer),
+      levelName: (id) => levelNames.get(id) ?? null,
+    },
+    typeCodes: itemTypeCodes(itemtypes),
+    statNames: new Map(rowTable('itemstatcost').rows.map((row, id) => [id, row.str('Stat')])),
+  });
+  const cubeFallbackRows = cube.fallback.reduce((sum, family) => sum + family.rows, 0);
+
   const countKind = (kind: string) => bases.bundle.bases.filter((base) => base.kind === kind).length;
   return {
     types: types.bundle,
@@ -116,6 +144,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
     sources: sourceItems.bundle,
     lootfilter: lootfilter.bundle,
     enhance: enhance.bundle,
+    cube: cube.bundle,
     counts: {
       types: types.bundle.types.length,
       classes: types.bundle.classes.length,
@@ -155,6 +184,17 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       enhanceVesselAnointments: countPool('vessel'),
       enhanceVesselRecipes: vesselRecipes.length,
       enhanceVesselTransforms: vesselTransforms.length,
+      cubeRecipes: cube.bundle.families.reduce((sum, family) => sum + family.rowCount, 0),
+      cubeFamilies: cube.bundle.families.length,
+      cubeFallbackFamilies: cube.fallback.length,
+      cubeFallbackRows,
+      cubeMergedRows: cube.bundle.rows.length,
+      cubeRawRecipes: cube.bundle.recipes.length,
+      cubeHiddenEnhance: cube.bundle.hidden.enhance,
+      cubeHiddenTraps: cube.bundle.hidden.traps,
+      cubeHiddenOld: cube.bundle.hidden.old,
+      cubeHiddenStockers: cube.bundle.hidden.stockers,
+      cubeHiddenDummy: cube.bundle.hidden.dummy,
     },
     warnings: [
       ...types.warnings,
@@ -165,6 +205,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       ...sourceItems.warnings,
       ...lootfilter.warnings,
       ...enhance.warnings,
+      ...cube.warnings,
     ],
     stringWarnings: [...stringWarnings],
   };

@@ -118,6 +118,13 @@ export function GuideDataBlock({ block }: GuideDataBlockProps) {
               </li>
             ))}
           </ul>
+          {block.link !== undefined && (
+            <p className="mt-1.5 text-right text-xs">
+              <Link to={block.link.href} className={LINK_CLASS}>
+                {block.link.label} on the Cube Recipes page
+              </Link>
+            </p>
+          )}
         </figure>
       );
     case 'card':

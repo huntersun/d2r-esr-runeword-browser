@@ -6,14 +6,18 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ESR_EXCEL_DIR, readModVersion, readStringFiles } from '../../game-data/build/esrSources.ts';
 import {
-  STAT_TABLES,
-  createStatRenderer,
-  readStatTables,
-  type StatRenderer,
-  type StatTableName,
-} from '../../game-data/build/stats/statRenderer.ts';
+  buildCubeNames,
+  cubeModRenderer,
+  numberOf,
+  readCube,
+  readCubeItem,
+  type CubeItem,
+  type CubeTables,
+  type ModRenderer,
+} from '../../game-data/build/cube/cubeRows.ts';
+import { STAT_TABLES, type StatTableName } from '../../game-data/build/stats/statRenderer.ts';
 import { buildStringTable, type StringsFile } from '../../game-data/build/strings.ts';
-import { parseTsv, type TsvRow, type TsvTable } from '../../game-data/build/tsv.ts';
+import { parseTsv, type TsvTable } from '../../game-data/build/tsv.ts';
 
 const GUIDE_TABLES = ['cubemain', 'misc', 'armor', 'weapons', 'itemtypes', 'difficultylevels'] as const;
 export type GuideTableName = (typeof GUIDE_TABLES)[number];
@@ -26,59 +30,13 @@ export interface EsrGuideSources {
   strings: StringsFile[];
 }
 
-export interface CubeMod {
-  mod: string;
-  /** `mod N param` (a skill, aura or tab for skill mods; a stat layer); empty when unset */
-  param: string;
-  min: number;
-  max: number;
-}
-
-/**
- * Display lines of cube output mods, rendered like the affix text of the game-data bundles ("+5 to Life"); a mod the
- * renderer cannot read (unknown property or stat) is left out instead of showing its raw code.
- */
-export type ModRenderer = (mods: readonly CubeMod[]) => string[];
-
-export interface CubeOutput {
-  /** Raw output cell without quotes, e.g. `usetype,uni` or `Kill Ledger` */
-  spec: string;
-  mods: CubeMod[];
-}
-
-/** The row's `op` / `param` / `value` condition, e.g. the Kill Ledger's kill count (stat 163 at least 500) */
-export interface CubeCondition {
-  op: number;
-  /** Stat id */
-  param: number;
-  value: number;
-}
-
-export interface CubeRow {
-  description: string;
-  cls: string;
-  /** Raw input cells without quotes, e.g. `gem5,qty=2` */
-  inputs: string[];
-  outputs: CubeOutput[];
-  /** Null when the row has no `op` */
-  condition: CubeCondition | null;
-}
-
 export interface VendorOffer {
   npc: string;
   /** Only sold as a magic item */
   magicOnly: boolean;
 }
 
-export interface EsrItem {
-  kind: 'misc' | 'armor' | 'weapon';
-  code: string;
-  /** Display name (string table) */
-  name: string;
-  /** `name` column; ESR shortens some display names (Thawing Potion → "*Thaw") */
-  internalName: string;
-  /** `type` column (item type code) */
-  type: string;
+export interface EsrItem extends CubeItem {
   vendors: VendorOffer[];
 }
 
@@ -89,21 +47,11 @@ export interface DifficultyRow {
   monsterSkillBonus: number;
 }
 
-export interface EsrGuideTables {
-  /** Enabled cubemain rows */
-  cube: CubeRow[];
+export interface EsrGuideTables extends CubeTables {
   items: EsrItem[];
   /** Vendor column prefixes, e.g. `Gheed` */
   npcs: string[];
   difficulties: DifficultyRow[];
-  /** Display name of an item code, item type code, unique/set name or string key; falls back to the token */
-  nameOf: (token: string) => string;
-  /** True when the token is a known item code, item type code or string key */
-  isKnown: (token: string) => boolean;
-  /** Lower-cased item names (display, internal and the name line of multi-line names) and item type names */
-  names: ReadonlySet<string>;
-  /** Bonus text of cube output mods (the game-data stat renderer) */
-  renderMods: ModRenderer;
 }
 
 export function readEsrGuideSources(esrDir: string): EsrGuideSources {
@@ -130,110 +78,20 @@ function anchorsOf(html: string): Set<string> {
   return new Set([...html.matchAll(/\b(?:id|name)\s*=\s*["']([^"']*)["']/gi)].map((match) => match[1]));
 }
 
-/**
- * Display text of a string table entry. Multi-line item names keep the name on the last line and a subtitle above it
- * (e.g. "(Buckler, Pelta Lunata)\nAncient Coupon" → "Ancient Coupon (Buckler, Pelta Lunata)").
- */
-function displayString(text: string): string {
-  const lines = text
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line !== '');
-  const name = lines.pop() ?? '';
-  return lines.length === 0 ? name : `${name} ${lines.join(' ')}`;
-}
-
-function unquote(cell: string): string {
-  return cell.replace(/^"|"$/g, '').trim();
-}
-
-function numberOf(row: TsvRow, column: string): number {
-  if (!row.has(column)) return 0;
-  const value = Number(row.str(column));
-  return Number.isNaN(value) ? 0 : value;
-}
-
-function readMods(row: TsvRow, prefix: string): CubeMod[] {
-  const mods: CubeMod[] = [];
-  for (let i = 1; i <= 5; i++) {
-    const column = `${prefix}mod ${String(i)}`;
-    if (!row.has(column)) continue;
-    const mod = row.str(column);
-    if (mod === '') continue;
-    const param = row.has(`${column} param`) ? row.str(`${column} param`) : '';
-    mods.push({ mod, param, min: numberOf(row, `${column} min`), max: numberOf(row, `${column} max`) });
-  }
-  return mods;
-}
-
-function readCondition(row: TsvRow): CubeCondition | null {
-  const op = numberOf(row, 'op');
-  if (op === 0) return null;
-  return { op, param: numberOf(row, 'param'), value: numberOf(row, 'value') };
-}
-
-function readCube(table: TsvTable): CubeRow[] {
-  const rows: CubeRow[] = [];
-  for (const row of table.rows) {
-    if (numberOf(row, 'enabled') !== 1) continue;
-    const outputs: CubeOutput[] = [];
-    for (const [column, prefix] of [
-      ['output', ''],
-      ['output b', 'b '],
-      ['output c', 'c '],
-    ] as const) {
-      const spec = row.has(column) ? unquote(row.str(column)) : '';
-      if (spec !== '') outputs.push({ spec, mods: readMods(row, prefix) });
-    }
-    rows.push({
-      description: row.str('description'),
-      cls: row.has('class') ? row.str('class') : '',
-      inputs: [1, 2, 3, 4, 5, 6, 7]
-        .map((i) => (row.has(`input ${String(i)}`) ? unquote(row.str(`input ${String(i)}`)) : ''))
-        .filter((cell) => cell !== ''),
-      outputs,
-      condition: readCondition(row),
-    });
-  }
-  return rows;
-}
-
 function vendorNpcs(table: TsvTable): string[] {
   return table.columns.filter((column) => /^[A-Z][a-z]+Min$/.test(column) && column !== 'TMogMin').map((column) => column.slice(0, -3));
 }
 
 function readItems(table: TsvTable, kind: EsrItem['kind'], npcs: readonly string[], strings: ReadonlyMap<string, string>): EsrItem[] {
   return table.rows.map((row) => {
-    const namestr = row.has('namestr') ? row.str('namestr') : '';
-    const string = strings.get(namestr);
     const vendors: VendorOffer[] = [];
     for (const npc of npcs) {
       const max = numberOf(row, `${npc}Max`);
       const magicMax = numberOf(row, `${npc}MagicMax`);
       if (max > 0 || magicMax > 0) vendors.push({ npc, magicOnly: max <= 0 });
     }
-    const internalName = row.str('name');
-    return {
-      kind,
-      code: row.str('code'),
-      name: string === undefined ? internalName : displayString(string),
-      internalName,
-      type: row.has('type') ? row.str('type') : '',
-      vendors,
-    };
+    return { ...readCubeItem(row, kind, strings), vendors };
   });
-}
-
-/** The stat renderer, built on first use (the guide only renders a few hundred cube rows) */
-function statModRenderer(statTables: Record<StatTableName, string>, strings: ReadonlyMap<string, string>): ModRenderer {
-  let renderer: StatRenderer | null = null;
-  return (mods) => {
-    const current = (renderer ??= createStatRenderer(readStatTables(statTables), strings));
-    const inputs = mods.map((mod) => ({ code: mod.mod, param: mod.param === '' ? null : mod.param, min: mod.min, max: mod.max }));
-    // Rendered together (the renderer merges damage pairs and stat groups), without the mods it warns about
-    const readable = inputs.filter((input) => current.renderMods([input]).warnings.length === 0);
-    return readable.length === 0 ? [] : current.renderMods(readable).lines;
-  };
 }
 
 /**
@@ -252,27 +110,6 @@ export function buildEsrGuideTables(
     ...readItems(parseTsv(sources.tables.armor, 'armor.txt'), 'armor', npcs, strings),
     ...readItems(parseTsv(sources.tables.weapons, 'weapons.txt'), 'weapon', npcs, strings),
   ];
-  const itemNames = new Map<string, string>();
-  // ESR abbreviates potion and scroll display names for the belt ("*Thaw", "+TP"); recipes read better with the full name.
-  for (const item of items)
-    if (!itemNames.has(item.code)) itemNames.set(item.code, /^[*+]/.test(item.name) ? item.internalName : item.name);
-  // An item type whose items all share one display name reads as that name: itemtypes.txt calls the Multi Stocker's
-  // type "Gem Can 8". Otherwise the itemtypes.txt name ("Perfect Gem", "Any Armor").
-  const typeItemNames = new Map<string, Set<string>>();
-  for (const item of items) {
-    if (item.type === '') continue;
-    const names = typeItemNames.get(item.type) ?? new Set<string>();
-    names.add(itemNames.get(item.code) ?? item.name);
-    typeItemNames.set(item.type, names);
-  }
-  const typeNames = new Map<string, string>();
-  for (const row of parseTsv(sources.tables.itemtypes, 'itemtypes.txt').rows) {
-    const code = row.str('Code');
-    if (code === '' || typeNames.has(code)) continue;
-    const names = [...(typeItemNames.get(code) ?? [])];
-    const only = names.length === 1 ? names.at(0) : undefined;
-    typeNames.set(code, only ?? row.str('ItemType'));
-  }
   const difficulties = parseTsv(sources.tables.difficultylevels, 'difficultylevels.txt').rows.map((row) => ({
     name: row.str('Name'),
     resistPenalty: numberOf(row, 'ResistPenalty'),
@@ -280,25 +117,12 @@ export function buildEsrGuideTables(
     monsterSkillBonus: numberOf(row, 'MonsterSkillBonus'),
   }));
 
-  const stringOf = (token: string): string | undefined => {
-    const text = strings.get(token);
-    return text === undefined ? undefined : displayString(text);
-  };
   return {
     cube: readCube(parseTsv(sources.tables.cubemain, 'cubemain.txt')),
     items,
     npcs,
     difficulties,
-    nameOf: (token) => itemNames.get(token) ?? typeNames.get(token) ?? stringOf(token) ?? token,
-    isKnown: (token) => itemNames.has(token) || typeNames.has(token) || strings.has(token),
-    names: new Set(
-      [
-        ...items.flatMap((item) => [item.name, item.internalName, (strings.get(item.code) ?? '').split('\n').pop() ?? '']),
-        ...typeNames.values(),
-      ]
-        .map((name) => name.trim().toLowerCase())
-        .filter((name) => name !== '')
-    ),
-    renderMods: renderMods ?? (sources.statTables === undefined ? () => [] : statModRenderer(sources.statTables, strings)),
+    ...buildCubeNames(items, parseTsv(sources.tables.itemtypes, 'itemtypes.txt'), strings),
+    renderMods: cubeModRenderer(sources.statTables, strings, renderMods),
   };
 }

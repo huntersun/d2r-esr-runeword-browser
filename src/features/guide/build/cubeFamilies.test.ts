@@ -1,7 +1,15 @@
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { CUBE_FAMILIES, collectFamily, familyBlock, familyRows, findCubeFamily, MAX_FAMILY_ROWS, type CubeFamily } from './cubeFamilies.ts';
+import {
+  CUBE_FAMILIES,
+  collectFamily,
+  familyBlock,
+  familyRows,
+  findCubeFamily,
+  MAX_FAMILY_ROWS,
+  type CubeFamily,
+} from '../../game-data/build/cube/cubeFamilies.ts';
 import { createStatRenderer, readStatTables } from '../../game-data/build/stats/statRenderer.ts';
 import { buildStringTable } from '../../game-data/build/strings.ts';
 import {
@@ -13,8 +21,9 @@ import {
   MAX_GROUP_ROWS,
   MAX_POOL_OPTIONS,
   randomPool,
-} from './cubeText.ts';
-import { buildEsrGuideTables, readEsrGuideSources, type CubeOutput, type EsrGuideTables } from './esrGuideSources.ts';
+} from '../../game-data/build/cube/cubeText.ts';
+import type { CubeOutput } from '../../game-data/build/cube/cubeRows.ts';
+import { buildEsrGuideTables, readEsrGuideSources, type EsrGuideTables } from './esrGuideSources.ts';
 import { LEAF_DIRECTIVES } from './directives/index.ts';
 import { markdownToBlocks } from './markdown.ts';
 import { ARMOR, DIFFICULTYLEVELS, fixtureContext, STRINGS, stubRenderMods, tsv, WEAPONS } from './testContext.mock.ts';
@@ -781,11 +790,13 @@ describe('::recipes', () => {
   const resolve = LEAF_DIRECTIVES.recipes;
   const ctx = fixtureContext({ esr: esr() });
 
-  it('resolves a family to a recipes block captioned with its label', () => {
+  it('resolves a family to a recipes block captioned with its label, linked to the family on the Cube Recipes page', () => {
+    const rows = collectFamily(family('dstone-cycle'), esr());
     expect(resolve('dstone-cycle', ctx)).toEqual({
       kind: 'recipes',
       caption: family('dstone-cycle').label,
-      rows: collectFamily(family('dstone-cycle'), esr()),
+      rows,
+      link: { label: `All ${String(rows.length)} recipes`, href: '/game-data/cube?family=dstone-cycle' },
     });
   });
 

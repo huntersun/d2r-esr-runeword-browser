@@ -1,29 +1,37 @@
 /**
- * Curated groups of beginner-relevant cube recipes for `::recipes[family-id]`, matched against the `description`
- * column of cubemain.txt (enabled rows only). Families that collapse merge the mechanical variants of a recipe (one
+ * Curated groups of beginner-relevant cube recipes for the guide's `::recipes[family-id]` (and the first families of
+ * the cube bundle, see bundleCube.ts), matched against the `description` column of cubemain.txt (enabled rows only). Families that collapse merge the mechanical variants of a recipe (one
  * row per base type, quality, class or socket count) into one row; the others list each distinct recipe once.
  *
  * Every family must match at least one row: `::recipes` fails the build otherwise, and a test checks the table
  * against the ESR clone, so a renamed recipe shows up instead of silently emptying a block.
  */
-import type { RecipeRow, RecipesBlock } from '../engine/schema.ts';
 import {
   bonusLines,
   capGroup,
-  clusterVariants,
-  clusterWithBonus,
+  clusterVariantsCounted,
+  clusterWithBonusCounted,
   countValues,
   formatInput,
   formatOutput,
   joinOptions,
   parseCubeCell,
+  type CountedVariant,
+  type CubeRecipeRow,
   type OutputTables,
   type RecipeVariant,
 } from './cubeText.ts';
-import type { CubeRow, EsrGuideTables } from './esrGuideSources.ts';
+import type { CubeRow, CubeTables } from './cubeRows.ts';
+
+/** A family as a guide `recipes` block (structurally the guide schema's RecipesBlock) */
+export interface CubeFamilyBlock {
+  kind: 'recipes';
+  caption: string;
+  rows: CubeRecipeRow[];
+}
 
 /** What families read: the cube rows, display names and the item list (internal names, e.g. a coupon's tier) */
-export type FamilyTables = Pick<EsrGuideTables, 'cube' | 'nameOf' | 'items' | 'renderMods'>;
+export type FamilyTables = Pick<CubeTables, 'cube' | 'nameOf' | 'items' | 'renderMods'>;
 
 export interface CubeFamily {
   id: string;
@@ -309,7 +317,7 @@ function runeRuns(numbers: readonly number[], esr: FamilyTables): string {
 }
 
 /** Rune forging: one row per rune becomes "2× the same rune (I Rune to Wo Rune, …)" per slot. */
-function genericRuneForging(recipe: RecipeVariant, row: CubeRow, esr: FamilyTables): RecipeVariant {
+export function genericRuneForging(recipe: RecipeVariant, row: CubeRow, esr: FamilyTables): RecipeVariant {
   const inputs = row.inputs.map((spec, i) => {
     const cell = parseCubeCell(spec);
     if (runeNumber(cell.token) === null) return recipe.inputs[i] ?? '';
@@ -1059,7 +1067,7 @@ export function findCubeFamily(id: string): CubeFamily | undefined {
   return CUBE_FAMILIES.find((family) => family.id === id);
 }
 
-export function familyRows(family: CubeFamily, esr: Pick<EsrGuideTables, 'cube'>): CubeRow[] {
+export function familyRows(family: CubeFamily, esr: Pick<CubeTables, 'cube'>): CubeRow[] {
   return esr.cube.filter((row) => family.match.test(row.description) && (family.filter?.(row) ?? true));
 }
 
@@ -1070,15 +1078,28 @@ function rowOutput(row: CubeRow, esr: OutputTables, bonus: boolean): string {
   return [...countValues(texts)].map(([text, count]) => (count > 1 ? `${String(count)}× ${text}` : text)).join(' + ');
 }
 
+/** One collapse group of a family: its txt rows and their merged rows (uncapped), with the variants each stands for */
+export interface FamilyGroup {
+  /** The collapse key ('' for a family without `collapse`) */
+  key: string;
+  rows: CubeRow[];
+  merged: CountedVariant[];
+}
+
 /**
- * The family's rows in file order (of each group's first row), merged as configured, before the row cap. Notes stay
- * empty (the txt descriptions are dev labels) except for "… and N more" on a capped group. A collapsed group whose
- * bonuses would split it past MAX_GROUP_ROWS is shown without them (clusterWithBonus).
+ * The family's collapse groups in file order (of each group's first row), merged as configured. `rows` defaults to
+ * every row the family matches (familyRows); the cube bundle passes the rows assigned to the family.
  */
-export function collectFamily(family: CubeFamily, esr: FamilyTables): RecipeRow[] {
-  const groups = new Map<string, { withBonus: RecipeVariant[]; plain: RecipeVariant[] }>();
+export function groupFamily(
+  family: CubeFamily,
+  esr: FamilyTables,
+  rows: readonly CubeRow[] = familyRows(family, esr),
+  /** `full`: always merge with the output bonuses (the uncapped cube reference); default: clusterWithBonus */
+  bonuses: 'fit' | 'full' = 'fit'
+): FamilyGroup[] {
+  const groups = new Map<string, { rows: CubeRow[]; withBonus: RecipeVariant[]; plain: RecipeVariant[] }>();
   const bonus = family.outputBonus !== 'hide';
-  for (const row of familyRows(family, esr)) {
+  for (const row of rows) {
     const inputs = row.inputs.map((input) => formatInput(input, esr));
     const variant = (output: string) => {
       const text = { inputs, output };
@@ -1088,19 +1109,37 @@ export function collectFamily(family: CubeFamily, esr: FamilyTables): RecipeRow[
     const collapse = family.collapse;
     const key =
       collapse === undefined ? '' : `${String(withBonus.inputs.length)}\u0000${collapse === true ? row.description : collapse(row, esr)}`;
-    const group = groups.get(key) ?? { withBonus: [], plain: [] };
+    const group = groups.get(key) ?? { rows: [], withBonus: [], plain: [] };
+    group.rows.push(row);
     group.withBonus.push(withBonus);
     group.plain.push(bonus ? variant(rowOutput(row, esr, false)) : withBonus);
     groups.set(key, group);
   }
-  return [...groups.values()].flatMap(({ withBonus, plain }) => {
-    if (family.collapse === undefined) return clusterVariants(withBonus, family.pool).map((row) => ({ ...row, note: null }));
-    return capGroup(clusterWithBonus(withBonus, plain, family.pool), () => null);
+  return [...groups].map(([key, group]) => ({
+    key,
+    rows: group.rows,
+    merged:
+      family.collapse === undefined || bonuses === 'full'
+        ? clusterVariantsCounted(group.withBonus, family.pool)
+        : clusterWithBonusCounted(group.withBonus, group.plain, family.pool),
+  }));
+}
+
+/**
+ * The family's rows in file order (of each group's first row), merged as configured, before the row cap. Notes stay
+ * empty (the txt descriptions are dev labels) except for "… and N more" on a capped group. A collapsed group whose
+ * bonuses would split it past MAX_GROUP_ROWS is shown without them (clusterWithBonus).
+ */
+export function collectFamily(family: CubeFamily, esr: FamilyTables): CubeRecipeRow[] {
+  return groupFamily(family, esr).flatMap(({ merged }) => {
+    const variants = merged.map(({ variant }) => variant);
+    if (family.collapse === undefined) return variants.map((row) => ({ ...row, note: null }));
+    return capGroup(variants, () => null);
   });
 }
 
 /** The `recipes` block of a family: at most `maxRows` (default MAX_FAMILY_ROWS) rows, the caption counting the rest. */
-export function familyBlock(family: CubeFamily, esr: FamilyTables): RecipesBlock {
+export function familyBlock(family: CubeFamily, esr: FamilyTables): CubeFamilyBlock {
   const rows = collectFamily(family, esr);
   const maxRows = family.maxRows ?? MAX_FAMILY_ROWS;
   const more = rows.length - maxRows;

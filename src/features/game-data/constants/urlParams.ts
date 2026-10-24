@@ -26,4 +26,6 @@ export const GAME_DATA_URL_PARAM_KEYS = {
   // Enhance (TIER above is reused for the Vessel tier)
   TAB: 'tab',
   SLOT: 'slot',
+  // Cube recipes
+  FAMILY: 'family',
 } as const;

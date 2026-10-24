@@ -1,6 +1,6 @@
 /** `::recipe-output[Adventurer's Pack]`: the outputs of the cubemain rows whose description equals the argument. */
 import type { ItemsBlockItem } from '../../engine/schema.ts';
-import { describeOutput } from '../cubeText.ts';
+import { describeOutput } from '../../../game-data/build/cube/cubeText.ts';
 import { requireEsr, type DirectiveResolver } from './types.ts';
 
 export const resolveRecipeOutput: DirectiveResolver = (arg, ctx) => {

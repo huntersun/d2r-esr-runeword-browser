@@ -65,6 +65,7 @@ function main(): void {
     sources: serializeBundle(generated.sources),
     lootfilter: serializeBundle(generated.lootfilter),
     enhance: serializeBundle(generated.enhance),
+    cube: serializeBundle(generated.cube),
   };
   const manifest = buildManifest({
     esrVersion: sources.esrVersion,

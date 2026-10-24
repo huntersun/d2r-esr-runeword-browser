@@ -53,14 +53,16 @@ interface EnhanceSearchProps {
   readonly onChange: (value: string) => void;
   readonly onClear: () => void;
   readonly placeholder: string;
+  /** Text before the exact-phrase hint (default "Search the bonus text;") */
+  readonly hint?: string;
 }
 
-export function EnhanceSearch({ value, onChange, onClear, placeholder }: EnhanceSearchProps) {
+export function EnhanceSearch({ value, onChange, onClear, placeholder, hint = 'Search the bonus text;' }: EnhanceSearchProps) {
   return (
     <div className="w-full max-w-md space-y-1">
       <div className="flex items-center gap-1">
         <p className="text-xs text-muted-foreground">
-          Search the bonus text; <code className="rounded bg-muted px-1">"exact phrases"</code>
+          {hint} <code className="rounded bg-muted px-1">"exact phrases"</code>
         </p>
         <SearchHelpButton />
       </div>

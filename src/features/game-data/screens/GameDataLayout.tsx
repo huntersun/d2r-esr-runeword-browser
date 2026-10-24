@@ -9,6 +9,7 @@ const SUB_PAGES = [
   { to: 'affixes', label: 'Affixes' },
   { to: 'types', label: 'Item Types' },
   { to: 'enhance', label: 'Enhance' },
+  { to: 'cube', label: 'Cube' },
 ] as const;
 
 export function GameDataLayout() {

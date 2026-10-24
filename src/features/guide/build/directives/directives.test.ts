@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fixtureContext, fixtureEsr } from '../testContext.mock.ts';
-import { formatInput } from '../cubeText.ts';
+import { formatInput } from '../../../game-data/build/cube/cubeText.ts';
 import { isLeafDirective, LEAF_DIRECTIVES, resolveTerm } from './index.ts';
 import { collectSecretRecipes } from './secretRecipes.ts';
 

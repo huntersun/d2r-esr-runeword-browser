@@ -3,7 +3,7 @@
   "esrVersion": "3.2.24",
   "esrTag": "3.2.24",
   "esrCommit": "b0622767314f9bf65f9c3a2cdeacded0b2e04a7e",
-  "generatedAt": "2026-10-24T20:59:25.153Z",
+  "generatedAt": "2026-10-24T22:12:04.190Z",
   "files": {
     "types": {
       "hash": "cab8a44704bcb77dd1d552147ce4b2e16d2d30517780f10d4d1b55de7c1e294d",
@@ -32,6 +32,10 @@
     "enhance": {
       "hash": "cfc51920fb2bf6bfee53e3c96d4fd70b78414a529448b17d1ec9d81aba1bda6e",
       "bytes": 365523
+    },
+    "cube": {
+      "hash": "efa57a59287732ba1f26e058a9103defdfbd2243f82f2e35d6db7ef06cb09597",
+      "bytes": 529407
     }
   },
   "counts": {
@@ -72,7 +76,18 @@
     "enhanceCharmAnointments": 30,
     "enhanceVesselAnointments": 178,
     "enhanceVesselRecipes": 380,
-    "enhanceVesselTransforms": 29
+    "enhanceVesselTransforms": 29,
+    "cubeRecipes": 9121,
+    "cubeFamilies": 62,
+    "cubeFallbackFamilies": 9,
+    "cubeFallbackRows": 41,
+    "cubeMergedRows": 1364,
+    "cubeRawRecipes": 441,
+    "cubeHiddenEnhance": 4007,
+    "cubeHiddenTraps": 401,
+    "cubeHiddenOld": 80,
+    "cubeHiddenStockers": 4167,
+    "cubeHiddenDummy": 0
   },
   "warnings": [
     "bases: q86 (Scissors Suwayyah) is not in its own tier family [skr, 9qr, 7qr]; treated as normal",

@@ -46,6 +46,7 @@ export const APP_PAGES: readonly string[] = [
   '/game-data/affixes',
   '/game-data/types',
   '/game-data/enhance',
+  '/game-data/cube',
   '/guide',
 ];
 
