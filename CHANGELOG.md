@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.24.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.23.1...v1.24.0) (2026-10-24)
+
+
+### Features
+
+* **builds:** filter the slot picker by slot and tab the detail page ([49900d4](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/49900d499106e28b557cc79692db3839dc3efe0d))
+* **filters:** acquisition chips on uniques, max level on mythicals, any-rune mode ([3d09274](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/3d0927492ec2d96077e8ce80ece25889f6a75168))
+* **guide:** add entry cards and an official reference strip to the spine ([1e3ef96](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/1e3ef9660731b19d949c4a1eab53d2bf0b114105))
+* **nav:** group the header into Recipes, Items and Tools menus ([e459a7c](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/e459a7cc7be9651035c6af420492e77bd0355c47))
+
 ## [1.23.1](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.23.0...v1.23.1) (2026-10-24)
 
 
