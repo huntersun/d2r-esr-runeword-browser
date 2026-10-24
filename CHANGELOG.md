@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.26.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.25.0...v1.26.0) (2026-10-24)
+
+
+### Features
+
+* **home:** add a home page and move the runewords browser to /runewords ([b0cf5f7](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/b0cf5f75d95e945d1404674765c8755006256683))
+
 ## [1.25.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.24.0...v1.25.0) (2026-10-24)
 
 
