@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.23.1](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.23.0...v1.23.1) (2026-10-24)
+
+
+### Bug Fixes
+
+* **router:** wait for the builds saga before mounting builds screens ([ab54706](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/ab54706528218fd5be1830be289791226701e92e))
+
+
+### Documentation
+
+* **privacy:** disclose Cloudflare Web Analytics and scope the policy to this deployment ([99f8757](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/99f8757dd5c74f16d1bce03176ca37d92f2219e2))
+* refresh the route tables and generate the sitemap from the guide build ([e9537f8](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/e9537f85b4a9fae0ca2a95e60e6f6c6cb9ad727e))
+* **research:** analyse the d2r.dpdns.org fork and what to adopt from it ([0264e6e](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/0264e6e5ccc41d9e2e69c64d629146c08e990424))
+
 ## [1.23.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.22.0...v1.23.0) (2026-10-21)
 
 
