@@ -15,6 +15,7 @@ per-phase implementation notes live in `builds-feature-docs/FEATURE-GAME-DATA.md
 | `/game-data/affixes`   | Affixes    | done                 |
 | `/game-data/enhance`   | Enhance    | done                 |
 | `/game-data/cube`      | Cube       | done                 |
+| `/game-data/materials` | Materials  | done                 |
 
 The game-file data is a second data system next to the HTM pipeline: it is never stored in IndexedDB and never parsed
 in the browser. Uniques, sets, gemwords and the runeword list stay on the HTM pipeline.
@@ -36,6 +37,7 @@ lazily (`src/features/game-data/engine/browser/loadGameData.ts`).
 | `lootfilter.json` | loot-filter editor reference data: every item code, stats, areas, sounds, uniques and sets with their ids (see "Loot filter data") |
 | `enhance.json`    | corruption, anointment and Vessel of Souls outcomes from cubemain.txt (see "Enhance")                                              |
 | `cube.json`       | every other player-facing cubemain.txt recipe, grouped into families by official section (see "Cube recipes")                      |
+| `materials.json`  | every misc item worth looking up, with its sources, the cube families using / making it and its Enhance roles (see "Materials")    |
 
 Arrays are written one element per line so diffs stay readable. Bundle URLs carry the manifest hash (`?v=<sha256>`);
 the manifest itself is always revalidated. The shape is defined in `src/features/game-data/engine/schema.ts`
@@ -51,6 +53,7 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 | `lootfilter.json` | 686 KB / 98 KB                                                                 |
 | `enhance.json`    | ESR 3.2.24: 357 KB / 32 KB                                                     |
 | `cube.json`       | ESR 3.2.24: 517 KB / 55 KB                                                     |
+| `materials.json`  | ESR 3.2.24: 165 KB / 11 KB                                                     |
 
 ### Bases and types
 
@@ -136,7 +139,8 @@ applies). The same name across kinds stays separate (Worldstone Shard set item v
 with `{item=…}`). Names come from the string tables; multi-line names are read bottom-up ("Ancient Coupon (Buckler,
 Pelta Lunata)"). `diabloclone` is shown as "Diablo Clone" (its name string is plain "Diablo"). Counts: `counts.sourcesUnique`,
 `sourcesSet`, `sourcesMisc`, `sourcesMerged` (rows folded into an earlier entry), `sourcesUnknown` (ESR 3.2.12:
-1107 / 270 / 795 / 516 / 13).
+1107 / 270 / 795 / 516 / 13). `buildSourcesBundle` also returns `miscLabels(code)`: the misc label rules for any one
+code, unmerged and including the `NOISE_TYPES` rows; the materials bundle uses it for the rows sources.json leaves out.
 
 Shown on cards: the Unique Items, Mythical Uniques and Socketables cards show a "Source: …" line
 (`components/ItemSourceLine.tsx`). Each screen calls `useItemSources()` once (loads `['sources']`, builds a
@@ -286,6 +290,53 @@ base → A unique item of that base".
 without an added level requirement" (`item_levelreq` = 0, op 18). Counts (`cube*` in the manifest): recipes, families,
 fallback families / rows, merged rows, raw recipes and each hidden reason.
 
+### Materials
+
+`materials.json` (`MaterialsBundle`, built by `build/bundleMaterials.ts` after the sources, enhance and cube bundles)
+answers "what is this item, how do I get it, what is it used in" for the misc items. Inputs: misc.txt, `types.json`
+ancestry, the bases, the enabled cubemain rows (all of them for the inclusion, the listed rows per family from
+`assignCubeRows` for the uses), sources.json, `buildSourcesBundle(…).miscLabels` and enhance.json.
+
+- **Items**: misc.txt rows (first row per code) that are spawnable or appear in an enabled cubemain input or output,
+  by code or through a material item type (below). Excluded, counted in the manifest (`materialsExcluded*`, ESR
+  3.2.24): bases (bases.json codes, and rows with the name and type of a base such as the drop-only `cx1`-`cx3`
+  charms; 37), gold (1), rows neither spawnable nor in any cube row (111), quest rows (`quest` set or the `ques` group)
+  that no listed recipe uses (15) and the Fake Note / Magic Eraser rows no listed recipe uses (8).
+- **Group / block**: the item type's chain up `parents[0]` to the topmost type below `misc` is the group, the type
+  right below it the block (the loot filter misc browser's rule, `src/features/loot-filter/utils/miscBrowser.ts`).
+  Groups are ordered like the browser (`sock`, `cube`, `poti`, `ques`, `mmap`, then by label); common groups get a
+  plural heading (Socket Fillers, Body Parts (Organs), Ancient Scrolls, Coupons and Decals …). `grade` is the gem
+  ladder grade (the `type2` type name minus the word all grades share: Chipped … Perfect).
+- **Collapsing** (`variants` = the rows folded in; `materialsCollapsed`, 654): container types (a type whose rows all
+  share one name: Rune Stocker ×47, Gem Can, Crystal Can, Rerolling Orb, Multi Stocker, Decal Stocker) become one row
+  each in a last "Stockers and cans" group; same-named rows of a block merge (Introductory Book ×9, the 50
+  unidentified Ancient Scrolls, Can Opener, Awakened Weapon Mastery Token …); the coupon types `cpn1`/`cpn2`/`cpn3`
+  become one row per tier ("Ancient Coupons (normal tier)", rings and amulets included) and the decals one "Ancient
+  Decal" row, while the Wild Card stays. A merged row takes the first row's code, the lowest levels and the union of
+  sources, uses and roles.
+- **usedIn / madeBy** (`{ family, recipes }`): the listed cube.json families (hidden stocker, trap and enhance rows do
+  not count) whose rows take / give the item, with the number of those rows (a merged row counts each cubemain row
+  once). A cell matches by item code, or through an item type that covers no base: `rune`, `gem5`, `scrl`, `body`
+  match their items, while `any`, `misc` and the equipment, ring, amulet, charm and jewel types never do. An output
+  that is also one of the row's inputs (rerolls, the returned Ancient Scroll) does not make the item. Sorted curated
+  families first (fallback `other:*` last), then by recipes, then cube.json order. `families` lists the labels of the
+  referenced families.
+- **sources**: sources.json by code, else by name (misc entries only), else `miscLabels(code)` (the same cube /
+  named-drop / vendor rules for the potions, scrolls, tomes and keys sources.json leaves out, e.g. Thawing Potion →
+  six "Buy:" labels). A `cube` label is dropped when no listed family makes the item (it then comes from taking the
+  item out of a stocker). 38 rows end up `Unknown` (unreleased elixirs, Khalim's parts, the cans …).
+- **enhance**: `Corruption reagent` (`corruption.reagent`), `Anointment reagent` (`anointment.reagent`), `Unique charm
+anointment` (the charm reagents, slot `charm`) and `Vessel of Souls material` (every Vessel recipe and transform
+  material).
+- **Guide notes** are not in the bundle: the guide build reads the game-data bundles, so game-data reading guide.json
+  would be a cycle (`game-data:update` regenerates game data first). The page joins guide.json's `itemNotes` and
+  `familyNotes` in the browser (GUIDE.md "Bundle shape"). For the same reason cube.json families carry no guide notes.
+
+Counts: `materialsItems` 395, `materialsGroups` 16, `materialsUsedInCube` 364, `materialsMadeByCube` 296,
+`materialsUnknownSource` 38 (ESR 3.2.24; 177 socket fillers, 53 cube materials, 52 Ancient Scrolls, 37 potions, 21
+maps, 17 quest items, 14 organs, 5 coupon rows, 6 containers and a few small groups). Adding the file did not bump
+`GAME_DATA_SCHEMA`.
+
 ## Regenerating
 
 Recommended: one command after an ESR release.
@@ -390,9 +441,10 @@ The script warns when the clone has uncommitted changes, because the output woul
 | `/game-data/types`     | `ItemTypesScreen` | Item type tree and socket-cap table                               |
 | `/game-data/enhance`   | `EnhanceScreen`   | Corruption, anointment and Vessel of Souls outcomes               |
 | `/game-data/cube`      | `CubeScreen`      | Every cube recipe, grouped by family                              |
+| `/game-data/materials` | `MaterialsScreen` | Misc items: sources, cube families, Enhance roles, guide notes    |
 
 One header entry ("Game Data", `end: false`). All screens are lazy-loaded from `@/features/game-data` (the route
-code-splitting guard test covers it). The six child routes are in `public/sitemap.xml`.
+code-splitting guard test covers it). The child routes are in `public/sitemap.xml`.
 
 **Version banner** (`components/GameDataVersionBanner.tsx`): "Game files: ESR {esrVersion} (tag {esrTag} @ {commit7},
 generated {YYYY-MM-DD})" from `loadManifest()`. When Dexie `metadata.esrVersion` (the HTM docs version) exists and differs,
@@ -655,6 +707,29 @@ URL state (read on every render, `utils/cube.ts`):
 The guide's `::recipes[family]` and `::secret-recipes` blocks link to `/game-data/cube?family=<id>` ("All N recipes on
 the Cube Recipes page", N = the family's rows in cube.json).
 
+### Materials page
+
+`/game-data/materials` (`screens/MaterialsScreen.tsx`) loads only `materials.json` (a static-bundle route like Enhance
+and Cube) plus the guide bundle (`useGuide`); the page works without the guide, only the Guide lines are then missing.
+Items menu entry "Materials", layout tab "Materials".
+
+- Group pills (All + each group with its row count) above the list; with `?name=` an exact-name chip replaces them.
+- One section per group, a small heading per block when the group has several, and one compact row per item
+  (`components/MaterialRow.tsx`): name, code (muted), "N variants" for merged rows, levels ("lvl 11 · req 11"); **How
+  to get**: one "Cube: <family> N" chip per madeBy family (→ `/game-data/cube?family=`), then the other source labels;
+  **Used in**: amber Enhance chips (→ `/game-data/enhance?tab=…&slot=…`) and family chips with recipe counts (the first
+  6, then "+N more"); **Guide**: the notes of `itemNotes[code]` plus the notes of the first madeBy family
+  (`familyNotes`), linking to `/guide/<slug>`.
+- Empty state: "No item matches." with a button that clears the search, group and name.
+
+URL state (read on every render, written with `replace`; `utils/materials.ts`):
+
+| Param    | Meaning                                                                                                                                                                          |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `search` | AND terms (quoted phrases): a group whose label matches stays whole, else a block whose label matches, else items by name, code, grade, sources, family labels and Enhance roles |
+| `group`  | group code (`sock`, `cube`, `body` …; unknown codes show all)                                                                                                                    |
+| `name`   | exact-name focus (`normaliseItemName`), ignores the other filters; the chip's × clears it                                                                                        |
+
 ## Runeword matching
 
 `engine/matchRunewords.ts` maps each HTM runeword (`name::variant`) to a txt key. Names are normalised on both sides
@@ -766,7 +841,8 @@ src/features/game-data/
   engine/browser/loadGameData.ts         browser-only loader (fetch, import.meta.env)
   build/       build only: tsv.ts, strings.ts, model.ts, esrSources.ts, bundleTypes.ts, bundleBases.ts,
                bundleRunewords.ts, bundleAffixes.ts, bundleSources.ts (+ treasureClasses.ts, pluginUniques.ts,
-               itemNames.ts), bundleLootFilter.ts, bundleEnhance.ts, bundleCube.ts, generateBundles.ts, writeBundle.ts
+               itemNames.ts), bundleLootFilter.ts, bundleEnhance.ts, bundleCube.ts, bundleMaterials.ts, generateBundles.ts,
+               writeBundle.ts
   build/cube/  cubemain rows and texts shared with the guide: cubeRows.ts, cubeText.ts, cubeFamilies.ts, cubeCatalog.ts
   build/stats/ stat renderer (see "Stat renderer")
 ```
@@ -839,12 +915,23 @@ components/CubeFamilySection.tsx       one family: groups, merged rows, raw rows
 utils/cube.ts                          URL state, tree, search rule, docs URLs (+ test)
 ```
 
+UI files (Materials):
+
+```
+screens/MaterialsScreen.tsx            loader, group pills, exact-name chip, search, sections, Copy Link
+components/MaterialRow.tsx             one item: how to get, used in, guide notes
+utils/materials.ts                     URL state, tree, search rule, cube / enhance links, guide join (+ test)
+```
+
 ## Tests
 
 - Build: `build/tsv.test.ts`, `build/strings.test.ts`, `build/bundleEnhance.test.ts` (two-step dummy pattern, dedupe
   across qualities with variants, rates, chance lines, subtype bricks, repeatable note, anointment labels and rules,
   Vessel op=15/op=18 dedupe, tiers from gates, cap join, trap/disabled-row exclusion, transforms), `build/bundleCube.test.ts`
   (hide rules, family precedence, fallback grouping, raw vs merged rows, rem / lvl=, readable conditions),
+  `build/bundleMaterials.test.ts` (inclusion and exclusion rules, container / same-name / coupon collapsing, uses via
+  item types but not `any` or base types, returned inputs, source joins and the dropped stocker Cube label, enhance
+  roles),
   `build/cube/cubeText.test.ts` (rem, lvl=, counted merging), `build/bundleBases.test.ts` (staffmods, range, smite/kick,
   automod eligibility and attachment on inline TSV), `build/bundleRunewords.test.ts`, `build/bundleAffixes.test.ts`,
   `build/bundleSources.test.ts` (each label rule on inline TSV; with the ESR clone, the verified examples Pelta Lunata,
@@ -854,10 +941,12 @@ utils/cube.ts                          URL state, tree, search rule, docs URLs (
   `engine/bestBase.test.ts`, `engine/affixEligibility.test.ts`, `engine/browser/loadGameData.test.ts`
 - UI: `store/gameDataSlice.test.ts`, `store/bestBaseState.test.ts`, `utils/filterBases.test.ts`,
   `utils/typeTree.test.ts`, `utils/bestBaseResults.test.ts`, `utils/filterAffixes.test.ts`, `store/affixFilters.test.ts`,
-  `utils/baseAutomods.test.ts`, `utils/enhance.test.ts`, `utils/cube.test.ts`
+  `utils/baseAutomods.test.ts`, `utils/enhance.test.ts`, `utils/cube.test.ts`, `utils/materials.test.ts`
 - `bundleIntegrity.test.ts`: reads the committed JSON (counts, hashes, schema, type references, affix text, the enhance
   counts and rates listed under "Enhance", the cube families, fallback limits and hidden enhance rows listed under "Cube
-  recipes"). When the
+  recipes", and for materials.json: every used-in / made-by family exists in cube.json with at most its row count,
+  every Enhance role is a real reagent, no base code, row-count range, spot checks of a rune, gem, organ, Dragon Stone
+  and the coupon tiers). When the
   ESR clone is present it also regenerates the bundles in memory, checks they equal the committed files, and compares
   base names with the clone's `docs/weapons.htm` / `docs/armors.htm` (≥ 95 % overlap; misses are printed).
 - `runewordMatching.integration.test.ts`: skips without `test-fixtures/runewords.htm`, `runewords.json` or `types.json`;

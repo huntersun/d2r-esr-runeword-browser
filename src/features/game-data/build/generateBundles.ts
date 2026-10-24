@@ -4,13 +4,15 @@ import type {
   CubeBundle,
   EnhanceBundle,
   LootFilterDataBundle,
+  MaterialsBundle,
   SourcesBundle,
   TxtRunewordsBundle,
   TypesBundle,
 } from '../engine/schema.ts';
 import { buildAffixesBundle } from './bundleAffixes.ts';
 import { attachAutomods, buildBasesBundle, readStaffMods } from './bundleBases.ts';
-import { buildCubeBundle, itemTypeCodes } from './bundleCube.ts';
+import { assignCubeRows, buildCubeBundle, itemTypeCodes } from './bundleCube.ts';
+import { buildMaterialsBundle } from './bundleMaterials.ts';
 import { buildEnhanceBundle } from './bundleEnhance.ts';
 import { buildCubeNames, modRendererFor, readCube, readCubeItem } from './cube/cubeRows.ts';
 import { buildLootFilterBundle } from './bundleLootFilter.ts';
@@ -36,6 +38,7 @@ export interface GeneratedBundles {
   lootfilter: LootFilterDataBundle;
   enhance: EnhanceBundle;
   cube: CubeBundle;
+  materials: MaterialsBundle;
   counts: Record<string, number>;
   /** Build warnings stored in the manifest */
   warnings: string[];
@@ -122,18 +125,33 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       .rows.filter((row) => row.str('Id') !== '')
       .map((row) => [row.num('Id'), resolveName(strings, row.str('LevelName'), row.str('Name'))])
   );
+  const cubeTables = {
+    cube: readCube(table('cubemain')),
+    items: cubeItems,
+    ...buildCubeNames(cubeItems, itemtypes, strings),
+    renderMods: modRendererFor(() => renderer),
+    levelName: (id: number) => levelNames.get(id) ?? null,
+  };
   const cube = buildCubeBundle({
-    tables: {
-      cube: readCube(table('cubemain')),
-      items: cubeItems,
-      ...buildCubeNames(cubeItems, itemtypes, strings),
-      renderMods: modRendererFor(() => renderer),
-      levelName: (id) => levelNames.get(id) ?? null,
-    },
+    tables: cubeTables,
     typeCodes: itemTypeCodes(itemtypes),
     statNames: new Map(rowTable('itemstatcost').rows.map((row, id) => [id, row.str('Stat')])),
   });
   const cubeFallbackRows = cube.fallback.reduce((sum, family) => sum + family.rows, 0);
+
+  const materials = buildMaterialsBundle({
+    misc: table('misc'),
+    types: types.bundle.types,
+    bases: basesBundle.bases,
+    nameOf: cubeTables.nameOf,
+    cubeRows: cubeTables.cube,
+    familyRows: new Map([...assignCubeRows(cubeTables).assigned].map(([id, { rows }]) => [id, rows])),
+    families: cube.bundle.families,
+    sources: sourceItems.bundle,
+    miscLabels: sourceItems.miscLabels,
+    enhance: enhance.bundle,
+  });
+  const countMaterials = (pick: (item: MaterialsBundle['items'][number]) => boolean) => materials.bundle.items.filter(pick).length;
 
   const countKind = (kind: string) => bases.bundle.bases.filter((base) => base.kind === kind).length;
   return {
@@ -145,6 +163,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
     lootfilter: lootfilter.bundle,
     enhance: enhance.bundle,
     cube: cube.bundle,
+    materials: materials.bundle,
     counts: {
       types: types.bundle.types.length,
       classes: types.bundle.classes.length,
@@ -195,6 +214,17 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       cubeHiddenOld: cube.bundle.hidden.old,
       cubeHiddenStockers: cube.bundle.hidden.stockers,
       cubeHiddenDummy: cube.bundle.hidden.dummy,
+      materialsItems: materials.bundle.items.length,
+      materialsGroups: materials.bundle.groups.length,
+      materialsCollapsed: materials.collapsed,
+      materialsUsedInCube: countMaterials((item) => item.usedIn.length > 0),
+      materialsMadeByCube: countMaterials((item) => item.madeBy.length > 0),
+      materialsUnknownSource: countMaterials((item) => item.sources.some((source) => source.kind === 'unknown')),
+      materialsExcludedBases: materials.excluded.bases,
+      materialsExcludedGold: materials.excluded.gold,
+      materialsExcludedUnlisted: materials.excluded.unlisted,
+      materialsExcludedQuest: materials.excluded.quest,
+      materialsExcludedUnused: materials.excluded.unused,
     },
     warnings: [
       ...types.warnings,
@@ -206,6 +236,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       ...lootfilter.warnings,
       ...enhance.warnings,
       ...cube.warnings,
+      ...materials.warnings,
     ],
     stringWarnings: [...stringWarnings],
   };

@@ -128,6 +128,11 @@ const GameDataCubeScreen = lazy(async () => {
   return { default: module.CubeScreen };
 });
 
+const GameDataMaterialsScreen = lazy(async () => {
+  const module = await import('@/features/game-data');
+  return { default: module.MaterialsScreen };
+});
+
 const LootFilterLayout = lazy(async () => {
   const module = await import('@/features/loot-filter');
   return { default: module.LootFilterLayout };
@@ -194,6 +199,7 @@ export const router = createBrowserRouter(
             { path: 'types', element: routeElement(GameDataItemTypesScreen) },
             { path: 'enhance', element: routeElement(GameDataEnhanceScreen) },
             { path: 'cube', element: routeElement(GameDataCubeScreen) },
+            { path: 'materials', element: routeElement(GameDataMaterialsScreen) },
           ],
         },
         {

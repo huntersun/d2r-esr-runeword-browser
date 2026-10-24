@@ -20,12 +20,20 @@ import { cardKeyArg, isLeafDirective, LEAF_DIRECTIVES, resolveTerm } from './dir
 import { resolveLink } from './links.ts';
 import { splitWikilinks } from './wikilinks.ts';
 
+/** A resolved data block with its directive (name + argument) and staleness key (see directiveKey) */
+export interface NoteDataBlock {
+  key: string;
+  directive: string;
+  arg: string | null;
+  block: DataBlock;
+}
+
 export interface MarkdownResult {
   blocks: GuideBlock[];
   /** Slugs of `[[slug]]` links, in order of appearance (with duplicates) */
   noteLinks: string[];
   /** Resolved data blocks in order of appearance, keyed by their directive source (see directiveKey) */
-  dataBlocks: { key: string; block: DataBlock }[];
+  dataBlocks: NoteDataBlock[];
   errors: string[];
   warnings: string[];
 }
@@ -213,7 +221,7 @@ function convertLeafDirective(node: LeafDirective, state: State): GuideBlock[] {
   }
   // A card's key ignores spacing, so `::card[ rw : Enigma ]` and `::card[rw:Enigma]` record the same block.
   const keyArg = node.name === 'card' && arg !== null ? cardKeyArg(arg) : arg;
-  state.result.dataBlocks.push({ key: directiveKey(node.name, keyArg, attributes), block });
+  state.result.dataBlocks.push({ key: directiveKey(node.name, keyArg, attributes), directive: node.name, arg, block });
   return [{ type: 'data', block }];
 }
 

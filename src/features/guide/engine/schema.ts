@@ -101,6 +101,16 @@ export interface GuideBundle {
   spine: GuideSpine;
   glossary: GlossaryEntry[];
   sourceRefs: SourceRef[];
+  /**
+   * Cube family id (cube.json) → slugs of the notes that show it (`::recipes`, `::secret-recipes`, `::secret-recipe`,
+   * `::recipe-output`). Always written by the generator; optional so hand-built test bundles can leave it out.
+   */
+  familyNotes?: Record<string, string[]>;
+  /**
+   * misc.txt item code → slugs of the notes that show the item (`::source` of a misc item, `::card[socketable:…]`, the
+   * misc inputs of `::recipe-output`); every code of a name shared by several rows. Read by the Materials page.
+   */
+  itemNotes?: Record<string, string[]>;
 }
 
 // ---------------------------------------------------------------------------

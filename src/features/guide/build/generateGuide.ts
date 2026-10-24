@@ -10,6 +10,7 @@ import { createGuideContext, type DocsIndex, type GameDataInputs, type GuideCont
 import type { EsrGuideTables } from './esrGuideSources.ts';
 import type { EsrForGuide } from './readGuideInputs.ts';
 import { buildGraph } from './graph.ts';
+import { buildNoteIndex } from './noteIndex.ts';
 import { countWords } from './markdown.ts';
 import { parseNote, type ParsedNote } from './parseNote.ts';
 import { hashDataBlocks, noteStaleReasons, type PatchNote } from './staleness.ts';
@@ -184,7 +185,11 @@ export function generateGuide(input: GenerateGuideInput): GeneratedGuide {
     sourceRefs: sourceRefs.length,
   };
   const blockHashes = new Map(parsed.map(({ note, dataBlocks }) => [note.slug, hashDataBlocks(dataBlocks)]));
-  return { bundle: { notes, spine, glossary, sourceRefs }, blockHashes, counts, errors, warnings };
+  const { familyNotes, itemNotes } = buildNoteIndex(
+    parsed.map(({ note, dataBlocks }) => ({ slug: note.slug, dataBlocks })),
+    ctx
+  );
+  return { bundle: { notes, spine, glossary, sourceRefs, familyNotes, itemNotes }, blockHashes, counts, errors, warnings };
 }
 
 /** generateGuide with the ESR tables, docs index and patch notes of a read clone (`readEsrForGuide`; null when missing). */

@@ -5,7 +5,7 @@
 export const GAME_DATA_SCHEMA = 1;
 
 export type ClassCode = 'ama' | 'sor' | 'nec' | 'pal' | 'bar' | 'dru' | 'ass' | 'war';
-export type GameDataFile = 'types' | 'bases' | 'runewords' | 'affixes' | 'sources' | 'lootfilter' | 'enhance' | 'cube';
+export type GameDataFile = 'types' | 'bases' | 'runewords' | 'affixes' | 'sources' | 'lootfilter' | 'enhance' | 'cube' | 'materials';
 
 export interface GameDataManifest {
   schema: number;
@@ -502,4 +502,64 @@ export interface CubeBundle {
   rows: CubeMergedRow[];
   recipes: CubeRecipe[];
   hidden: CubeHiddenCounts;
+}
+
+// --- materials.json -----------------------------------------------------------------------------------------------
+
+/** A misc item group (the item type's topmost ancestor below `misc`) with its blocks (the type right below it) */
+export interface MaterialGroup {
+  code: string;
+  label: string;
+  blocks: { code: string; label: string }[];
+}
+
+/** A cube family that takes or gives an item, and how many of its listed cube.json rows do */
+export interface MaterialFamilyUse {
+  family: string;
+  recipes: number;
+}
+
+export type MaterialEnhanceTab = 'corruption' | 'anointment' | 'vessel';
+
+/** The item's role on the Enhance page (corruption reagent, anointment reagent, Vessel of Souls material) */
+export interface MaterialEnhanceRole {
+  tab: MaterialEnhanceTab;
+  /** Anointment pool (`charm` for the unique charm reagents); omitted for the tab's default view */
+  slot?: string;
+  label: string;
+}
+
+export interface MaterialItem {
+  /** Item code (the first variant's for a collapsed row) */
+  code: string;
+  name: string;
+  group: string;
+  block: string;
+  /** Quality grade of a gem ladder (`type2` type name without the shared word: "Chipped", "Perfect") */
+  grade?: string;
+  level: number;
+  levelreq: number;
+  stackable: boolean;
+  spawnable: boolean;
+  /** Where it comes from (sources.json by code, else by name; computed for potions, scrolls, keys and tomes) */
+  sources: SourceLabel[];
+  /** Families that take the item (directly by code or through its misc item type); curated families first, then most recipes */
+  usedIn: MaterialFamilyUse[];
+  /** Families that give the item (rerolls and returned inputs left out); curated families first, then most recipes */
+  madeBy: MaterialFamilyUse[];
+  enhance?: MaterialEnhanceRole[];
+  /** Number of misc.txt rows collapsed into this one (containers, same-named rows, coupon tiers) */
+  variants?: number;
+}
+
+/**
+ * materials.json: every misc item worth looking up (runes, gems, organs, Dragon Stones, coupons, potions …) with where
+ * it comes from and which cube families and Enhance recipes use it. Guide notes are joined in the browser from
+ * guide.json (`itemNotes`, `familyNotes`), since the guide build reads the game data.
+ */
+export interface MaterialsBundle {
+  groups: MaterialGroup[];
+  /** Labels of the cube families the items refer to, in cube.json display order */
+  families: { id: string; label: string }[];
+  items: MaterialItem[];
 }

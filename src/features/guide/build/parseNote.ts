@@ -2,11 +2,11 @@
  * One `notes/<slug>.md` file → a GuideNote (graph fields still empty: backlinks, next, spineStep are computed by
  * graph.ts once every note is parsed) plus what the generator validates across notes.
  */
-import type { DataBlock, GuideNote, NoteKind, OfficialDocLink, Volatility } from '../engine/schema.ts';
+import type { GuideNote, NoteKind, OfficialDocLink, Volatility } from '../engine/schema.ts';
 import type { GuideContext } from './context.ts';
 import { FieldReader, isObject, parseYaml } from './fields.ts';
 import { resolveDocsLink } from './links.ts';
-import { countWords, markdownToBlocks } from './markdown.ts';
+import { countWords, markdownToBlocks, type NoteDataBlock } from './markdown.ts';
 
 const SUMMARY_MAX = 140;
 const KNOW_FIRST_MAX = 3;
@@ -40,7 +40,7 @@ export interface ParsedNote {
   nextOverride: string | null;
   mentions: string[];
   /** Resolved data blocks keyed by directive source, in order (staleness hashes) */
-  dataBlocks: { key: string; block: DataBlock }[];
+  dataBlocks: NoteDataBlock[];
   errors: string[];
   warnings: string[];
 }

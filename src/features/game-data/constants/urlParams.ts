@@ -28,4 +28,6 @@ export const GAME_DATA_URL_PARAM_KEYS = {
   SLOT: 'slot',
   // Cube recipes
   FAMILY: 'family',
+  // Materials
+  GROUP: 'group',
 } as const;

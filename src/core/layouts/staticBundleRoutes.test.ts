@@ -13,12 +13,18 @@ describe('isStaticBundlePath', () => {
     }
   );
 
-  it.each(['/guide', '/guide/map', '/guide/start-here', '/loot-filters', '/loot-filters/abc', '/game-data/enhance', '/game-data/cube'])(
-    'matches the prefix route %s',
-    (pathname) => {
-      expect(isStaticBundlePath(pathname)).toBe(true);
-    }
-  );
+  it.each([
+    '/guide',
+    '/guide/map',
+    '/guide/start-here',
+    '/loot-filters',
+    '/loot-filters/abc',
+    '/game-data/enhance',
+    '/game-data/cube',
+    '/game-data/materials',
+  ])('matches the prefix route %s', (pathname) => {
+    expect(isStaticBundlePath(pathname)).toBe(true);
+  });
 
   it('does not match a path that only shares the prefix text', () => {
     expect(isStaticBundlePath('/guides')).toBe(false);

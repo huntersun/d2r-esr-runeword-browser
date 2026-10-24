@@ -154,7 +154,7 @@ Link targets with spaces must be wrapped in angle brackets or use `%20`: `[x](<r
 remaining in the output) is a build error, as is formatting inside a `[[slug|label]]` label. Inside a GFM table cell
 write the label pipe escaped, `[[slug\|label]]`: the generator would escape a bare pipe for the build, but Prettier
 formats the notes too and splits the cell at a bare pipe. `page:` only accepts the app's routes (`/` (the home page),
-`/runewords`, `/gemwords`, `/socketables`, `/uniques`, `/mythicals`, `/ascendancies`, `/game-data/{bases,best-base,affixes,types,enhance}`,
+`/runewords`, `/gemwords`, `/socketables`, `/uniques`, `/mythicals`, `/ascendancies`, `/game-data/{bases,best-base,affixes,types,enhance,cube,materials}`,
 `/guide`; a query string is allowed).
 
 Leaf directives (`::name[arg]`) must stand alone on a line. Directive arguments are resolved at build time against the
@@ -263,6 +263,7 @@ src/features/guide/
   build/parseNote.ts            frontmatter (fields.ts: YAML validators; content.ts: spine, glossary, sources)
   build/markdown.ts             body → GuideBlock[] (links.ts: link schemes; wikilinks.ts: [[slug]])
   build/graph.ts                backlinks, next, spine step, orphans
+  build/noteIndex.ts            familyNotes / itemNotes (which notes show a cube family or a misc item)
   build/directives/             one resolver per leaf directive (index.ts: LEAF_DIRECTIVES)
   build/esrGuideSources.ts      the ESR tables the directives read (vendors, difficulties; cube rows, names and renderMods
                                 from the game-data cube code below)
@@ -288,10 +289,25 @@ Shared (`engine/` + `build/`) code uses relative `.ts` imports, no `@/`, and no 
 
 ## Bundle shape
 
-See `src/features/guide/engine/schema.ts`. One file, `guide.json`: `{ notes, spine, glossary, sourceRefs }`. Each note
+See `src/features/guide/engine/schema.ts`. One file, `guide.json`: `{ notes, spine, glossary, sourceRefs, familyNotes,
+itemNotes }`. Each note
 carries its resolved body as a small typed tree (`GuideBlock[]`), its computed `backlinks`, `next`, `spineStep` and
 `words`, and `staleReasons` (see Staleness). Links in the body are already resolved: `{ type: 'link', kind: 'note' | 'app' | 'external', href }` where
 `href` is a slug, an app path (without the base URL) or an absolute URL.
+
+**Notes index** (`build/noteIndex.ts`, from the resolved data blocks; keys and slugs sorted):
+
+- `familyNotes`: cube family id → slugs. `::recipes[id]` gives that family, `::secret-recipes` / `::secret-recipe[N]`
+  give `secret`, `::recipe-output[description]` gives the family of its cubemain rows (`assignCubeRows`).
+- `itemNotes`: misc item code → slugs. `::source[Name]` of a misc item (a `{item=unique|set}` source is skipped),
+  `::card[socketable:Name]` and the misc inputs of `::recipe-output` rows. A name maps to every misc code with that
+  display name (sources.json and the clone's misc.txt names), so collapsed rows (stockers, coupons) find their notes.
+  Unique, mythical, runeword and gemword cards are not indexed.
+
+The Materials page (`/game-data/materials`, GAME-DATA.md "Materials") joins both in the browser: an item shows the
+notes of its code plus those of the family that makes most of it. The game-data build cannot read them (it runs before
+the guide build, and the guide reads the game data). Both fields are optional in `GuideBundle` (hand-built test
+bundles leave them out); adding them kept `GUIDE_SCHEMA` at 1.
 
 ## Staleness
 
@@ -362,7 +378,7 @@ hashes do not change.
 
 Logic only (no component tests), colocated `*.test.ts`:
 
-- build: YAML field validation (`fields`), spine/glossary/sources parsing (`content`), frontmatter (`parseNote`),
+- build: YAML field validation (`fields`), the notes index (`noteIndex`), spine/glossary/sources parsing (`content`), frontmatter (`parseNote`),
   markdown → GuideBlock conversion (`markdown`), link resolution (`links`), backlinks, next and orphans (`graph`),
   directive resolvers against a trimmed excel fixture (`directives/directives`, secret recipe bonuses and the fallback
   without them), cube families, variant merging and output bonuses (`cubeFamilies`: hidden markers, the counted random

@@ -3,7 +3,7 @@
   "esrVersion": "3.2.24",
   "esrTag": "3.2.24",
   "esrCommit": "b0622767314f9bf65f9c3a2cdeacded0b2e04a7e",
-  "generatedAt": "2026-10-24T22:12:04.190Z",
+  "generatedAt": "2026-10-24T22:37:46.696Z",
   "files": {
     "types": {
       "hash": "cab8a44704bcb77dd1d552147ce4b2e16d2d30517780f10d4d1b55de7c1e294d",
@@ -36,6 +36,10 @@
     "cube": {
       "hash": "efa57a59287732ba1f26e058a9103defdfbd2243f82f2e35d6db7ef06cb09597",
       "bytes": 529407
+    },
+    "materials": {
+      "hash": "f2bd9a4ab80fb419677b4cc1042e04b4d7769ad851b22f14fce1b6fe9d2657b9",
+      "bytes": 169104
     }
   },
   "counts": {
@@ -87,7 +91,18 @@
     "cubeHiddenTraps": 401,
     "cubeHiddenOld": 80,
     "cubeHiddenStockers": 4167,
-    "cubeHiddenDummy": 0
+    "cubeHiddenDummy": 0,
+    "materialsItems": 395,
+    "materialsGroups": 16,
+    "materialsCollapsed": 654,
+    "materialsUsedInCube": 364,
+    "materialsMadeByCube": 296,
+    "materialsUnknownSource": 38,
+    "materialsExcludedBases": 37,
+    "materialsExcludedGold": 1,
+    "materialsExcludedUnlisted": 111,
+    "materialsExcludedQuest": 15,
+    "materialsExcludedUnused": 8
   },
   "warnings": [
     "bases: q86 (Scissors Suwayyah) is not in its own tier family [skr, 9qr, 7qr]; treated as normal",

@@ -29,6 +29,7 @@ const tables: SourceTables = {
     ['Hammer', 'hh2', 'hh2', 'dstn', '1', '', '', '', '', ''],
     ['Donut', 'sdo', 'sdo', 'cube', '1', '', '', '', '0', '1'],
     ['Healing Potion', 'hp1', 'hp1', 'hpot', '1', '', '', '', '', ''],
+    ['Mana Potion', 'mp1', 'mp1', 'mpot', '1', '', '', '', '', '2'],
     ['Unused', 'zzz', 'zzz', 'misc', '1', '', '', '', '', ''],
     ['Big Ruby', 'grb', 'grb', 'gemr', '1', '', '', '', '', ''],
   ]),
@@ -105,7 +106,7 @@ monsters = [704, 705, 709]
 unique = "Torch"
 `;
 
-const { bundle } = buildSourcesBundle(tables, strings, PLUGIN);
+const { bundle, miscLabels } = buildSourcesBundle(tables, strings, PLUGIN);
 const texts = (name: string) => bundle.items.find((item: ItemSource) => item.name === name)?.labels.map((label) => label.text);
 
 describe('buildSourcesBundle', () => {
@@ -177,6 +178,12 @@ describe('buildSourcesBundle', () => {
       'grb',
     ]);
     expect(texts('Ancient Coupon (Buckler, Pelta Lunata)')).toEqual(['Unknown']);
+  });
+
+  it('computes the labels of any misc code for the materials bundle, potions included', () => {
+    expect(miscLabels('mp1').map((entry) => entry.text)).toEqual(['Buy: Gheed']);
+    expect(miscLabels('sdo').map((entry) => entry.text)).toEqual(['Cube', 'Buy: Gheed']);
+    expect(miscLabels('hp1').map((entry) => entry.text)).toEqual(['Unknown']);
   });
 });
 

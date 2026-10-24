@@ -61,12 +61,18 @@ export const NAV_ENTRIES: readonly NavEntry[] = [
     kind: 'group',
     key: 'items',
     label: 'Items',
-    description: 'Uniques, mythicals, ascendancies and every base item',
+    description: 'Uniques, mythicals, ascendancies, every base item and every material',
     items: [
       { key: 'uniques', to: '/uniques', label: 'Uniques', description: 'Unique items by category and coupon' },
       { key: 'mythicals', to: '/mythicals', label: 'Mythicals', description: 'Mythical unique items' },
       { key: 'ascendancies', to: '/ascendancies', label: 'Ascendancies', description: 'Ascendancies and their tier bonuses' },
       { key: 'bases', to: '/game-data/bases', label: 'Bases', description: 'Base items from the game files' },
+      {
+        key: 'materials',
+        to: '/game-data/materials',
+        label: 'Materials',
+        description: 'Runes, gems, organs, coupons and every other misc item',
+      },
     ],
   },
   {

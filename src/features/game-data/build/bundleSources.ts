@@ -166,6 +166,16 @@ function inGamble({ bases, gamble }: SourceContext, baseCode: string): boolean {
   );
 }
 
+/** Deduped (kind + text) labels in KIND_ORDER; `Unknown` only when nothing else applies */
+export function orderLabels(found: readonly SourceLabel[]): SourceLabel[] {
+  const labels: SourceLabel[] = [];
+  for (const entry of found) {
+    if (entry.kind !== 'unknown' && !labels.some((known) => known.kind === entry.kind && known.text === entry.text)) labels.push(entry);
+  }
+  labels.sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind));
+  return labels.length > 0 ? labels : [label('unknown', 'Unknown')];
+}
+
 /**
  * One entry per (item kind, name): rows sharing both (ES + Ancient Coupon LoD versions of a unique, 47 "Rune Stocker"
  * misc variants, …) merge into the first one's code with the union of their labels, in KIND_ORDER.
@@ -177,12 +187,7 @@ class SourceCollector {
 
   add(name: string, code: string, item: ItemSource['item'], found: SourceLabel[]): void {
     const existing = this.#byName.get(`${item}:${name}`);
-    const labels: SourceLabel[] = [];
-    for (const entry of [...(existing?.labels ?? []), ...found]) {
-      if (entry.kind !== 'unknown' && !labels.some((known) => known.kind === entry.kind && known.text === entry.text)) labels.push(entry);
-    }
-    labels.sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind));
-    const finalLabels = labels.length > 0 ? labels : [label('unknown', 'Unknown')];
+    const finalLabels = orderLabels([...(existing?.labels ?? []), ...found]);
     if (existing !== undefined) {
       existing.labels = finalLabels;
       this.merged++;
@@ -194,11 +199,22 @@ class SourceCollector {
   }
 }
 
+export interface SourcesBuildResult {
+  bundle: SourcesBundle;
+  warnings: string[];
+  merged: number;
+  /**
+   * The labels of one misc code by the same rules (cube, named drops, vendors), for any misc row including the ones
+   * the bundle leaves out (potions, scrolls, tomes, keys); not merged by name. Used by the materials bundle.
+   */
+  miscLabels: (code: string) => SourceLabel[];
+}
+
 export function buildSourcesBundle(
   tables: SourceTables,
   strings: ReadonlyMap<string, string>,
   pluginToml: string | null
-): { bundle: SourcesBundle; warnings: string[]; merged: number } {
+): SourcesBuildResult {
   const warnings: string[] = [];
 
   // Ancient Coupons ("Coupon nor Armor 1", …); the Wild Card is a coupon-shaped joker also used for gem recipes
@@ -240,18 +256,18 @@ export function buildSourcesBundle(
     ]);
   }
 
+  const miscFound = (code: string) => [
+    ...cubeLabels(ctx, code),
+    ...namedDropLabels(ctx.drops.monstersFor(code)),
+    ...vendorLabels(ctx, code),
+  ];
   for (const row of tables.misc.rows) {
     const code = row.str('code');
     if (code === '' || NOISE_TYPES.has(row.str('type'))) continue;
-    const monsters = ctx.drops.monstersFor(code);
-    const vendors = vendorLabels(ctx, code);
-    if (!ctx.cube.inputs.has(code) && !ctx.cube.made.has(code) && vendors.length === 0 && monsters.length === 0) continue;
-    sources.add(resolveName(strings, row.str('namestr'), row.str('name')), code, 'misc', [
-      ...cubeLabels(ctx, code),
-      ...namedDropLabels(monsters),
-      ...vendors,
-    ]);
+    const found = miscFound(code);
+    if (!ctx.cube.inputs.has(code) && found.length === 0) continue;
+    sources.add(resolveName(strings, row.str('namestr'), row.str('name')), code, 'misc', found);
   }
 
-  return { bundle: { items: sources.items }, warnings, merged: sources.merged };
+  return { bundle: { items: sources.items }, warnings, merged: sources.merged, miscLabels: (code) => orderLabels(miscFound(code)) };
 }

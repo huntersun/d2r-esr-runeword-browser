@@ -16,6 +16,7 @@ import {
   type EnhanceBundle,
   type GameDataManifest,
   type LootFilterDataBundle,
+  type MaterialsBundle,
   type SourcesBundle,
   type TxtRunewordsBundle,
   type TypesBundle,
@@ -37,6 +38,7 @@ const sourcesText = readText('sources');
 const lootfilterText = readText('lootfilter');
 const enhanceText = readText('enhance');
 const cubeText = readText('cube');
+const materialsText = readText('materials');
 const { types } = JSON.parse(typesText) as TypesBundle;
 const { bases, automods: baseAutomods = [] } = JSON.parse(basesText) as BasesBundle;
 const { runewords } = JSON.parse(runewordsText) as TxtRunewordsBundle;
@@ -45,6 +47,7 @@ const { items: sourceItems } = JSON.parse(sourcesText) as SourcesBundle;
 const lootfilter = JSON.parse(lootfilterText) as LootFilterDataBundle;
 const enhance = JSON.parse(enhanceText) as EnhanceBundle;
 const cube = JSON.parse(cubeText) as CubeBundle;
+const materials = JSON.parse(materialsText) as MaterialsBundle;
 
 describe('committed game-data bundles', () => {
   it('match the app schema', () => {
@@ -61,6 +64,7 @@ describe('committed game-data bundles', () => {
       ['lootfilter', lootfilterText],
       ['enhance', enhanceText],
       ['cube', cubeText],
+      ['materials', materialsText],
     ] as const) {
       expect(manifest.files[name]?.hash).toBe(createHash('sha256').update(text, 'utf8').digest('hex'));
       expect(manifest.files[name]?.bytes).toBe(Buffer.byteLength(text, 'utf8'));
@@ -322,6 +326,51 @@ describe('committed game-data bundles', () => {
     expect(cube.sections.map((section) => section.id)).toEqual([...new Set(cube.families.map((family) => family.section))]);
   });
 
+  it('list the materials with known families, enhance roles and groups, without equipment bases', () => {
+    const families = new Set(cube.families.map((family) => family.id));
+    const listed = new Set(materials.families.map((family) => family.id));
+    const groups = new Map(materials.groups.map((group) => [group.code, new Set(group.blocks.map((block) => block.code))]));
+    const baseCodes = new Set(bases.map((base) => base.code));
+    const reagents = new Set([
+      enhance.corruption.reagent.code,
+      enhance.anointment.reagent.code,
+      ...enhance.anointment.charmReagents.map((reagent) => reagent.code),
+      ...enhance.vesselRecipes.flatMap((recipe) => recipe.materials.map((material) => material.code)),
+      ...enhance.vesselTransforms.flatMap((transform) => transform.materials.map((material) => material.code)),
+    ]);
+    // ESR 3.2.24: 395 rows (1,049 misc rows before collapsing) in 16 groups
+    expect(materials.items.length).toBeGreaterThan(300);
+    expect(materials.items.length).toBeLessThan(600);
+    expect(materials.groups.length).toBeGreaterThanOrEqual(10);
+    expect(manifest.counts.materialsItems).toBe(materials.items.length);
+    expect(new Set(materials.items.map((item) => item.code)).size).toBe(materials.items.length);
+    for (const item of materials.items) {
+      expect(baseCodes.has(item.code), item.code).toBe(false);
+      expect(groups.get(item.group)?.has(item.block), `${item.code} ${item.group}/${item.block}`).toBe(true);
+      expect(item.sources.length, item.code).toBeGreaterThan(0);
+      for (const use of [...item.usedIn, ...item.madeBy]) {
+        expect(families.has(use.family), `${item.code} → ${use.family}`).toBe(true);
+        expect(listed.has(use.family), `${item.code} → ${use.family}`).toBe(true);
+        expect(use.recipes, `${item.code} → ${use.family}`).toBeGreaterThan(0);
+        expect(use.recipes).toBeLessThanOrEqual(cube.families.find((family) => family.id === use.family)?.rowCount ?? 0);
+      }
+      for (const role of item.enhance ?? []) expect(reagents.has(item.code), `${item.code} ${role.label}`).toBe(true);
+    }
+    // Every enhance reagent that is a misc item shows up with its role
+    const roles = new Set(materials.items.filter((item) => item.enhance !== undefined).map((item) => item.code));
+    expect(roles.has(enhance.corruption.reagent.code)).toBe(true);
+    expect(roles.has(enhance.anointment.reagent.code)).toBe(true);
+    // Spot checks: a rune, a gem, an organ, a Dragon Stone, the coupon tiers
+    const byCode = new Map(materials.items.map((item) => [item.code, item]));
+    expect(byCode.get('r01')?.usedIn.map((use) => use.family)).toContain('rune-forging');
+    expect(byCode.get('gvb')?.madeBy.map((use) => use.family)).toContain('gem-upgrade');
+    expect(byCode.get('hrt')?.enhance?.map((role) => role.tab)).toContain('vessel');
+    expect(byCode.get('ppp')?.madeBy.map((use) => use.family)).toContain('dstone-cycle');
+    const coupons = materials.items.filter((item) => item.group === 'coup');
+    expect(coupons.length).toBeLessThanOrEqual(6);
+    expect(coupons.reduce((sum, item) => sum + (item.variants ?? 1), 0)).toBeGreaterThan(300);
+  });
+
   it('resolve the merc/helm name collision and class-only bases', () => {
     expect(types.find((type) => type.code === 'merc')?.name).toBe('Helm (merc)');
     expect(types.find((type) => type.code === 'helm')?.name).toBe('Helm');
@@ -368,6 +417,7 @@ describe.skipIf(!existsSync(ESR_DIR))('game data generated from the ESR clone', 
     expect(serializeBundle(generated.lootfilter)).toBe(lootfilterText);
     expect(serializeBundle(generated.enhance)).toBe(enhanceText);
     expect(serializeBundle(generated.cube)).toBe(cubeText);
+    expect(serializeBundle(generated.materials)).toBe(materialsText);
   });
 
   it('numbers uniques, sets, stats and sounds like the *ID / *Index comment columns where those are consistent', () => {
