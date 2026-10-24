@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** June 2026
+**Last updated:** 2026-10-24
 
 This privacy policy explains what data I collect, why I collect it, and how you can control it. I've kept it short and written in plain language because I believe you shouldn't need a lawyer to understand how your data is handled.
 
@@ -9,6 +9,12 @@ This privacy policy explains what data I collect, why I collect it, and how you 
 This app is a free, open-source community tool for a Diablo 2 Resurrected mod. The source code is publicly available on GitHub under the MIT license. I'm a single individual developer based in Hungary (EU) — there is no company or team behind it.
 
 For any privacy-related questions or requests, contact me at: **mirages_armful_2l@icloud.com**
+
+## What This Policy Covers
+
+This policy covers only the app deployed at [istvan-panczel.github.io/d2r-esr-runeword-browser](https://istvan-panczel.github.io/d2r-esr-runeword-browser/) and the Supabase project I operate for it.
+
+Because the project is MIT-licensed, other people can run their own copies (forks) of the app, with their own backends. This policy does not cover those copies, even if they link to this document. If you use a copy hosted somewhere else, its operator is responsible for your data there: send questions and deletion requests about it to that operator, not to me. I have no access to their databases and cannot change or delete data stored there.
 
 ## What Data I Collect
 
@@ -25,23 +31,28 @@ For any privacy-related questions or requests, contact me at: **mirages_armful_2
 - **Favourites:** Which items (runewords, uniques, etc.) you have marked as favourites.
 - **Timestamp of your privacy policy acceptance.**
 
+### Anonymous traffic statistics
+
+I use [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/) to see how many people visit the app. It applies to every visitor, whether or not you have an account. It does not use cookies, does not store anything in your browser's localStorage, and does not fingerprint your device. It counts page views and records the referring site, country, browser and device type. I only see aggregated dashboards (for example "N page views from Germany this week"). I cannot see individual visitors, and these statistics are not linked to your account. Cloudflare's own handling of this data is described in [Cloudflare's privacy policy](https://www.cloudflare.com/privacypolicy/).
+
 ### What I do NOT collect
 
-- I do not use analytics or tracking tools.
+- I do not use any analytics or tracking tools other than the cookie-less Cloudflare Web Analytics described above. There is no cross-site tracking.
 - I do not serve advertisements.
-- I do not collect your IP address, device information, or location data for my own purposes.
+- I do not collect your IP address, precise location, or individual device information for my own purposes. Cloudflare Web Analytics only gives me aggregated country, browser and device-type counts.
 - I do not use cookies for tracking. The app only uses session tokens necessary for authentication.
 
 ## Why I Collect This Data
 
-All data I collect serves one purpose: to let you save your builds, share them with the community, and browse/like other players' builds. There is no secondary use.
+Account data serves one purpose: to let you save your builds, share them with the community, and browse/like other players' builds. The anonymous traffic statistics only tell me how much the app is used and which pages are popular. There is no other use.
 
-| Data              | Purpose                                       |
-| ----------------- | --------------------------------------------- |
-| Email / Discord ID | To authenticate your account                 |
-| Display name       | To show who created a build                  |
-| Build data         | To save and share your builds                |
-| Likes              | To rank popular builds in the community      |
+| Data               | Purpose                                       |
+| ------------------ | --------------------------------------------- |
+| Email / Discord ID | To authenticate your account                  |
+| Display name       | To show who created a build                   |
+| Build data         | To save and share your builds                 |
+| Likes              | To rank popular builds in the community       |
+| Traffic statistics | To see how much the app is used, in aggregate |
 
 ## What Is Publicly Visible
 
@@ -59,10 +70,11 @@ Supabase acts as a data processor on my behalf. Their privacy practices are docu
 
 I use the following third-party services that may process your data:
 
-| Service   | Purpose                        | Data shared                             |
-| --------- | ------------------------------ | --------------------------------------- |
-| Supabase  | Database, auth, API hosting    | All account and build data              |
-| Discord   | OAuth sign-in (if chosen)      | Discord user ID, username, avatar       |
+| Service    | Purpose                                      | Data shared                                                         |
+| ---------- | -------------------------------------------- | ------------------------------------------------------------------- |
+| Supabase   | Database, auth, API hosting                  | All account and build data                                          |
+| Discord    | OAuth sign-in (if chosen)                    | Discord user ID, username, avatar                                   |
+| Cloudflare | Anonymous traffic statistics (Web Analytics) | Page views, referrer, country, browser and device type (no cookies) |
 
 I do not share your data with anyone else. I do not sell your data. I never will.
 
