@@ -24,6 +24,11 @@ export type LinkScheme = (typeof LINK_SCHEMES)[number];
 /** The official ESR site; `docs:` links resolve against it. */
 export const OFFICIAL_SITE = 'https://easternsunresurrected.com/';
 
+/** URL of an official docs page (`docs:<file>#<anchor>`): the file name and anchor are percent-encoded (they may hold spaces). */
+export function officialDocsUrl(file: string, anchor = ''): string {
+  return `${OFFICIAL_SITE}${encodeURIComponent(file)}${anchor === '' ? '' : `#${encodeURIComponent(anchor)}`}`;
+}
+
 /**
  * The official Drop Finder: the target of `dropfinder:` links and of the link under every "Where it comes from" block.
  * Never a deep link: its `#i=…` hash is a positional index into its data file that changes with every ESR release.

@@ -4,7 +4,7 @@
  * official Drop Finder page.
  */
 import { normaliseItemName } from '../../../core/utils/itemName.ts';
-import { DROP_FINDER_URL, NAME_FOCUS_PAGES, OFFICIAL_SITE } from '../engine/linkSchemes.ts';
+import { DROP_FINDER_URL, NAME_FOCUS_PAGES, officialDocsUrl } from '../engine/linkSchemes.ts';
 import type { LinkKind } from '../engine/schema.ts';
 import type { BuildError, GuideContext } from './context.ts';
 
@@ -33,7 +33,7 @@ function exactName(path: string, name: string): string {
 }
 
 /** App routes a `page:` link may point at (path only; a query string is allowed). */
-const APP_PAGES: readonly string[] = [
+export const APP_PAGES: readonly string[] = [
   '/',
   '/gemwords',
   '/socketables',
@@ -53,7 +53,7 @@ export function resolveDocsLink(target: string, ctx: Pick<GuideContext, 'docs'>)
   const file = hashAt === -1 ? target : target.slice(0, hashAt);
   const anchor = hashAt === -1 ? '' : target.slice(hashAt + 1);
   if (file === '') return { error: `docs: link "${target}" has no file name` };
-  const href = `${OFFICIAL_SITE}${encodeURIComponent(file)}${anchor === '' ? '' : `#${encodeURIComponent(anchor)}`}`;
+  const href = officialDocsUrl(file, anchor);
   let warning: string | undefined;
   if (ctx.docs !== null) {
     const anchors = ctx.docs.get(file);

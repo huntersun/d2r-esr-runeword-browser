@@ -7,7 +7,9 @@ import { findNote, noteTitle } from '../engine/notes';
 import type { GuideSpineStep } from '../engine/schema';
 import { FreshnessMarker } from '../components/FreshnessBadge';
 import { GuideGate } from '../components/GuideGate';
+import { GuideOfficialReference } from '../components/GuideOfficialReference';
 import { GuideSearch } from '../components/GuideSearch';
+import { GuideStartCards } from '../components/GuideStartCards';
 import { SectionLabel } from '../components/SectionLabel';
 import { FOCUS_RING, GUIDE_PROSE_FONT } from '../components/styles';
 import { VisitedMark } from '../components/VisitedMark';
@@ -118,6 +120,8 @@ function Spine({ guide }: SpineProps) {
         </Link>
       </div>
 
+      <GuideStartCards bundle={guide.bundle} />
+
       <GuideSearch notes={notes} />
 
       <section aria-labelledby="guide-path-heading">
@@ -164,6 +168,8 @@ function Spine({ guide }: SpineProps) {
         </section>
       )}
 
+      <GuideOfficialReference />
+
       {visitedCount > 0 && (
         <p className="text-right text-xs text-muted-foreground">
           {visitedCount} {visitedCount === 1 ? 'note' : 'notes'} read ·{' '}
@@ -182,7 +188,7 @@ function Spine({ guide }: SpineProps) {
   );
 }
 
-/** `/guide`: the "Start here" journey spine. */
+/** `/guide`: entry cards, the "Start here" journey spine, "I found something" and the official reference strip. */
 export function GuideSpineScreen() {
   return <GuideGate>{(guide) => <Spine guide={guide} />}</GuideGate>;
 }
