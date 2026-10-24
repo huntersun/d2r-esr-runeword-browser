@@ -1,15 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { FILTER_URL_PARAM_KEYS, MAX_REQ_LEVEL_RANGE, decodeCategoryListParam, parseBoundedIntParam } from '@/core/utils/filterUrlParams';
+import { FILTER_URL_PARAM_KEYS } from '@/core/utils/filterUrlParams';
 import { parseExactNameParam } from '@/core/utils/exactName';
 import { useExactNameFromUrl, type ExactNameFromUrl } from '@/core/hooks/useExactNameFromUrl';
-import { setSearchText, setExactName, setMaxReqLevel, setSelectedCategories, setIncludeCouponItems } from '../store';
-
-export const HTM_URL_PARAM_KEYS = {
-  CATS: 'cats',
-  COUPON: 'coupon',
-} as const;
+import { setSearchText, setExactName, setMaxReqLevel, setSelectedCategories, setAcquisition } from '../store';
+import { hasHtmFilterParams, parseHtmUrlParams } from '../utils/urlParams';
 
 /**
  * Initializes HTM unique items filter state from URL query parameters (one-time on mount).
@@ -26,13 +22,8 @@ export function useUrlInitialize(): ExactNameFromUrl {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    const urlSearch = searchParams.get(FILTER_URL_PARAM_KEYS.SEARCH);
-    const urlMaxLvl = searchParams.get(FILTER_URL_PARAM_KEYS.MAXLVL);
-    const urlCats = searchParams.get(HTM_URL_PARAM_KEYS.CATS);
-    const urlCoupon = searchParams.get(HTM_URL_PARAM_KEYS.COUPON);
     const exactName = parseExactNameParam(searchParams.get(FILTER_URL_PARAM_KEYS.NAME));
-
-    const hasUrlParams = urlSearch !== null || urlMaxLvl !== null || urlCats !== null || urlCoupon !== null;
+    const hasUrlParams = hasHtmFilterParams(searchParams);
 
     // `name` itself is applied by useExactNameFromUrl; only the URL cleaning happens here (it needs the other params)
     if (exactName !== null && !hasUrlParams) {
@@ -40,22 +31,23 @@ export function useUrlInitialize(): ExactNameFromUrl {
     }
 
     if (hasUrlParams) {
-      if (urlSearch !== null) {
-        dispatch(setSearchText(urlSearch));
+      const filters = parseHtmUrlParams(searchParams);
+
+      if (filters.searchText !== null) {
+        dispatch(setSearchText(filters.searchText));
       }
 
-      const maxReqLevel = parseBoundedIntParam(urlMaxLvl, MAX_REQ_LEVEL_RANGE);
-      if (maxReqLevel !== null) {
-        dispatch(setMaxReqLevel(maxReqLevel));
+      if (filters.maxReqLevel !== null) {
+        dispatch(setMaxReqLevel(filters.maxReqLevel));
       }
 
-      const categories = decodeCategoryListParam(urlCats);
-      if (categories !== null) {
-        dispatch(setSelectedCategories(categories));
+      if (filters.categories !== null) {
+        dispatch(setSelectedCategories(filters.categories));
       }
 
-      if (urlCoupon === '0') {
-        dispatch(setIncludeCouponItems(false));
+      // `acq`, or the legacy `coupon=0` (→ "No coupon")
+      if (filters.acquisition !== null) {
+        dispatch(setAcquisition(filters.acquisition));
       }
 
       // Clean the URL after initialization

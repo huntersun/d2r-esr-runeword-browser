@@ -2,6 +2,7 @@ import type { Runeword, EsrRune, LodRune, KanjiRune, Gem, SocketableBonuses } fr
 import { getRelevantCategories, getItemCategory } from '@/core/utils/itemCategoryMapping';
 import { hasColumnDifferences } from '@/core/utils/columnAffixes';
 import { socketRangeOverlaps, type SocketRange } from '@/core/utils/socketRange';
+import type { SocketableMatchMode } from '@/core/utils/filterUrlParams';
 
 export type RuneBonusMap = Map<string, SocketableBonuses>;
 export type GemBonusMap = Map<string, SocketableBonuses>;
@@ -150,18 +151,28 @@ export function buildRuneCategoryMap(
 
 /**
  * Check if a runeword matches the rune filter.
- * A runeword matches if ALL its runes are selected in at least one category.
+ * - `all` (strict, default): every rune of the runeword is selected in at least one of its categories
+ *   (hidden if ANY of its runes is unchecked everywhere), i.e. it can be made from the selected runes.
+ * - `any`: at least one rune of the runeword is selected ("which words use Ber?").
+ * Runewords without runes are never hidden by the rune filter.
  */
-export function matchesRunes(runeword: Runeword, selectedRunes: Record<string, boolean>, runeCategoryMap: RuneCategoryMap): boolean {
+export function matchesRunes(
+  runeword: Runeword,
+  selectedRunes: Record<string, boolean>,
+  runeCategoryMap: RuneCategoryMap,
+  mode: SocketableMatchMode = 'all'
+): boolean {
   // If no runes are initialized yet, show all
   if (Object.keys(selectedRunes).length === 0) return true;
+  if (runeword.runes.length === 0) return true;
 
-  // Hide runeword if ANY of its runes are unchecked in ALL of their categories
-  return runeword.runes.every((rune) => {
+  // Rune matches if it's selected in at least one of its categories
+  const isSelected = (rune: string) => {
     const categories = runeCategoryMap.get(rune) ?? [];
-    // Rune matches if it's selected in at least one of its categories
     return categories.some((category) => selectedRunes[`${category}:${rune}`]);
-  });
+  };
+
+  return mode === 'any' ? runeword.runes.some(isSelected) : runeword.runes.every(isSelected);
 }
 
 /**

@@ -10,13 +10,16 @@ import { useItemFavorites } from '@/features/favorites';
 import type { HtmUniqueItem } from '@/core/db';
 import { useSelector } from 'react-redux';
 import { ExactNameChip } from '@/core/components/ExactNameChip';
-import { selectExactName } from '../store';
+import { selectAcquisition, selectExactName } from '../store';
+import { ACQUISITION_OPTIONS } from '../utils/acquisition';
 import { useItemSources } from '@/features/game-data/hooks/useItemSources';
 
 export function HtmUniqueItemsScreen() {
   const { nameFromUrl, clearExactName } = useUrlInitialize();
   const items = useFilteredHtmUniqueItems();
   const exactName = useSelector(selectExactName);
+  const acquisition = useSelector(selectAcquisition);
+  const acquisitionLabel = ACQUISITION_OPTIONS.find((option) => option.value === acquisition)?.label;
   const sourceIndex = useItemSources();
   const favorites = useItemFavorites<HtmUniqueItem>({
     getId: buildHtmUniqueItemFavoriteId,
@@ -58,7 +61,9 @@ export function HtmUniqueItemsScreen() {
         <p className="text-muted-foreground py-8 text-center">
           {favorites.showFavoritesOnly && favorites.isAuthenticated
             ? 'No favorite unique items to show. Star some items or turn off "Favorites only".'
-            : 'No unique items found. Try adjusting your filters.'}
+            : acquisition !== 'all' && acquisitionLabel !== undefined
+              ? `No unique items found with Acquisition "${acquisitionLabel}". Try "All" or adjust the other filters.`
+              : 'No unique items found. Try adjusting your filters.'}
         </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

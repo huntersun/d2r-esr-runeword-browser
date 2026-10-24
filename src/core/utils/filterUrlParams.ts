@@ -15,6 +15,8 @@ export const FILTER_URL_PARAM_KEYS = {
   TIERPTS: 'tierpts',
   GEMS: 'gems',
   NAME: 'name',
+  /** Rune filter match mode: `any` = contains at least one selected rune; omitted = strict (all runes selected) */
+  RUNEMODE: 'runemode',
 } as const;
 
 export { SOCKET_COUNT_RANGE } from '@/core/utils/socketRange';
@@ -119,4 +121,20 @@ export function decodeCategoryListParam(paramValue: string | null): string[] | n
   if (paramValue === null) return null;
   const categories = paramValue.split(',').filter(Boolean);
   return categories.length > 0 ? categories : null;
+}
+
+/**
+ * Socketable checkbox match mode: `all` (strict, the default: every socketable of the recipe must be
+ * selected) or `any` (the recipe contains at least one selected socketable).
+ */
+export type SocketableMatchMode = 'all' | 'any';
+
+/** Adds a match-mode param (`<key>=any`); omitted for the strict default. */
+export function appendMatchModeParam(params: URLSearchParams, key: string, mode: SocketableMatchMode): void {
+  if (mode === 'any') params.set(key, 'any');
+}
+
+/** Parses a match-mode param: `any` → 'any', anything else (or absent) → null (keep the default). */
+export function parseMatchModeParam(value: string | null): SocketableMatchMode | null {
+  return value === 'any' ? 'any' : null;
 }

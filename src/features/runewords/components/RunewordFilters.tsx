@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { RecipeCommonFilters } from '@/core/components/RecipeCommonFilters';
 import { RuneCheckboxGroup } from './RuneCheckboxGroup';
 import { TierPointsFilter } from './TierPointsFilter';
+import { RuneMatchModeToggle } from './RuneMatchModeToggle';
 import { useShareUrl } from '../hooks/useShareUrl';
 import { useAvailableItemTypes } from '../hooks/useAvailableItemTypes';
 import {
@@ -58,7 +59,7 @@ export function RunewordFilters() {
 
       {/* Rune Filter with All/None toggles */}
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="font-medium text-sm">Runes:</span>
           <Button variant="outline" size="sm" onClick={() => dispatch(selectAllRunes())} disabled={allRunesSelected}>
             All
@@ -66,6 +67,7 @@ export function RunewordFilters() {
           <Button variant="outline" size="sm" onClick={() => dispatch(deselectAllRunes())} disabled={noRunesSelected}>
             None
           </Button>
+          <RuneMatchModeToggle />
         </div>
         <RuneCheckboxGroup />
       </div>

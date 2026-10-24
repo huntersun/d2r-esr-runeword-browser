@@ -7,8 +7,6 @@ import {
   deselectAllCategories,
   selectSelectedCategoriesRaw,
   selectIsAllCategoriesSelected,
-  selectIncludeCouponItems,
-  setIncludeCouponItems,
 } from '../store';
 import { useCategoryFilters, getAllCategoriesFromGroups } from '../hooks';
 import type { HtmFilterGroup } from '../types';
@@ -98,7 +96,6 @@ export function HtmCategoryFilter() {
   const filterGroups = useCategoryFilters();
   const isAllSelected = useSelector(selectIsAllCategoriesSelected);
   const selectedCategories = useSelector(selectSelectedCategoriesRaw);
-  const includeCouponItems = useSelector(selectIncludeCouponItems);
 
   if (!filterGroups) {
     return <div className="text-sm text-muted-foreground">Loading filters...</div>;
@@ -117,15 +114,6 @@ export function HtmCategoryFilter() {
         <Button variant="outline" size="sm" onClick={() => dispatch(deselectAllCategories())} disabled={noneSelected}>
           None
         </Button>
-        <label className="flex items-center gap-1.5 cursor-pointer ml-2">
-          <Checkbox
-            checked={includeCouponItems}
-            onCheckedChange={(checked) => {
-              dispatch(setIncludeCouponItems(checked === true));
-            }}
-          />
-          <span className="text-sm text-purple-600 dark:text-purple-400">Include Coupon Items</span>
-        </label>
       </div>
       <div className="space-y-4">
         {filterGroups.map((group) => (

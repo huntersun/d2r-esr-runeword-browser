@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux';
-import { FILTER_URL_PARAM_KEYS, appendCategoryListParam, buildShareUrl, appendExactNameParam } from '@/core/utils/filterUrlParams';
-import { selectSearchText, selectExactName, selectMaxReqLevel, selectSelectedCategoriesRaw, selectIncludeCouponItems } from '../store';
-import { HTM_URL_PARAM_KEYS } from './useUrlInitialize';
+import { buildShareUrl } from '@/core/utils/filterUrlParams';
+import { selectSearchText, selectExactName, selectMaxReqLevel, selectSelectedCategoriesRaw, selectAcquisition } from '../store';
+import { buildHtmShareParams } from '../utils/urlParams';
 
 /**
  * Returns a function that generates a shareable URL with current filter state.
@@ -11,28 +11,8 @@ export function useShareUrl(): () => string {
   const searchText = useSelector(selectSearchText);
   const maxReqLevel = useSelector(selectMaxReqLevel);
   const selectedCategories = useSelector(selectSelectedCategoriesRaw);
-  const includeCouponItems = useSelector(selectIncludeCouponItems);
+  const acquisition = useSelector(selectAcquisition);
   const exactName = useSelector(selectExactName);
 
-  return () => {
-    const params = new URLSearchParams();
-
-    if (searchText) {
-      params.set(FILTER_URL_PARAM_KEYS.SEARCH, searchText);
-    }
-
-    if (maxReqLevel !== null) {
-      params.set(FILTER_URL_PARAM_KEYS.MAXLVL, String(maxReqLevel));
-    }
-
-    appendCategoryListParam(params, HTM_URL_PARAM_KEYS.CATS, selectedCategories);
-
-    if (!includeCouponItems) {
-      params.set(HTM_URL_PARAM_KEYS.COUPON, '0');
-    }
-
-    appendExactNameParam(params, exactName);
-
-    return buildShareUrl('uniques', params);
-  };
+  return () => buildShareUrl('uniques', buildHtmShareParams({ searchText, maxReqLevel, selectedCategories, acquisition, exactName }));
 }

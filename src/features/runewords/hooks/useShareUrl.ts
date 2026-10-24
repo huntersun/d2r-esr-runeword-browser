@@ -5,6 +5,7 @@ import {
   appendSelectionParam,
   buildShareUrl,
   appendExactNameParam,
+  appendMatchModeParam,
 } from '@/core/utils/filterUrlParams';
 import {
   selectSearchText,
@@ -12,6 +13,7 @@ import {
   selectMaxReqLevel,
   selectSelectedItemTypes,
   selectSelectedRunes,
+  selectRuneMatchMode,
   selectMaxTierPoints,
   selectExactName,
 } from '../store/runewordsSlice';
@@ -26,6 +28,7 @@ export function useShareUrl(): () => string {
   const maxReqLevel = useSelector(selectMaxReqLevel);
   const selectedItemTypes = useSelector(selectSelectedItemTypes);
   const selectedRunes = useSelector(selectSelectedRunes);
+  const runeMatchMode = useSelector(selectRuneMatchMode);
   const maxTierPoints = useSelector(selectMaxTierPoints);
   const exactName = useSelector(selectExactName);
 
@@ -33,6 +36,7 @@ export function useShareUrl(): () => string {
     const params = new URLSearchParams();
     appendCommonFilterParams(params, { searchText, socketRange, maxReqLevel, selectedItemTypes });
     appendSelectionParam(params, FILTER_URL_PARAM_KEYS.RUNES, selectedRunes);
+    appendMatchModeParam(params, FILTER_URL_PARAM_KEYS.RUNEMODE, runeMatchMode);
     appendExactNameParam(params, exactName);
 
     // Tier points: serialize non-null entries as "esrRunes:1=64,lodRunes:2=128"

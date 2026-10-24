@@ -48,7 +48,16 @@ The primary feature - browse and filter all Eastern Sun Resurrected runewords.
 - **Group toggle** (`toggleRuneGroup`): select/deselect all runes in a tier
 - **Global "All" toggle**: select/deselect all runes
 - All runes checked by default
-- **Logic**: Runeword hidden if ANY of its runes are unchecked (strict)
+- **Logic** (default, strict): runeword hidden if ANY of its runes are unchecked, i.e. it shows words you can make
+  from the checked runes
+- **"Any of these runes"** checkbox next to All/None (with a help popover): shows runewords that contain AT LEAST ONE
+  checked rune. "Which words use Ber?" = None, check Ber, tick "Any of these runes". With every rune checked (the
+  default) both modes show everything. A rune counts as checked when it is checked in any of its categories (Ko is in
+  ESR and LoD). Entries without runes are never hidden by the rune filter.
+- `matchesRunes(runeword, selectedRunes, runeCategoryMap, mode)` with `mode: 'all' | 'any'` (`SocketableMatchMode`)
+- URL: `runemode=any` (omitted when strict), via `appendMatchModeParam` / `parseMatchModeParam` in `filterUrlParams.ts`
+- Gemwords have their own `GemCheckboxGroup` and filter helpers and do not have this mode yet; the shared helpers
+  are ready for a `gems` equivalent
 
 ### Tier Points Filter
 
@@ -118,11 +127,12 @@ interface RunewordsState {
   readonly maxReqLevel: number | null;
   readonly selectedItemTypes: Record<string, boolean>;
   readonly selectedRunes: Record<string, boolean>; // "category:runeName" → checked
+  readonly runeMatchMode: 'all' | 'any'; // 'all' = strict (default)
   readonly maxTierPoints: Record<string, number | null>;
 }
 ```
 
-**Actions:** `setSearchText`, `setSocketRange`, `setMaxReqLevel`, `toggleItemType`, `setAllItemTypes`, `selectAllItemTypes`, `deselectAllItemTypes`, `toggleRune`, `setAllRunes`, `selectAllRunes`, `deselectAllRunes`, `toggleRuneGroup`, `toggleItemTypeGroup`, `setMaxTierPoints`, `clearAllTierPoints`
+**Actions:** `setSearchText`, `setSocketRange`, `setMaxReqLevel`, `toggleItemType`, `setAllItemTypes`, `selectAllItemTypes`, `deselectAllItemTypes`, `toggleRune`, `setAllRunes`, `selectAllRunes`, `deselectAllRunes`, `toggleRuneGroup`, `setRuneMatchMode`, `toggleItemTypeGroup`, `setMaxTierPoints`, `clearAllTierPoints`
 
 ## Hooks
 

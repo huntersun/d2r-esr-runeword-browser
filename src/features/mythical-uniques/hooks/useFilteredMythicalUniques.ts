@@ -2,7 +2,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useSelector } from 'react-redux';
 import { db } from '@/core/db';
 import type { MythicalUnique } from '@/core/db';
-import { selectSearchText, selectExactName, selectSelectedCategories } from '../store';
+import { selectSearchText, selectExactName, selectMaxReqLevel, selectSelectedCategories } from '../store';
+import { matchesMaxReqLevel } from '../utils/filtering';
 import { applyExactNameFocus } from '@/core/utils/exactName';
 import { parseSearchTerms } from '@/core/utils/searchTerms';
 import { matchesCategory } from '@/core/store/categorySelection';
@@ -13,6 +14,7 @@ import { matchesCategory } from '@/core/store/categorySelection';
  */
 export function useFilteredMythicalUniques(): readonly MythicalUnique[] | undefined {
   const searchText = useSelector(selectSearchText);
+  const maxReqLevel = useSelector(selectMaxReqLevel);
   const selectedCategories = useSelector(selectSelectedCategories);
   const exactName = useSelector(selectExactName);
 
@@ -25,7 +27,10 @@ export function useFilteredMythicalUniques(): readonly MythicalUnique[] | undefi
   const searchTerms = parseSearchTerms(searchText);
 
   const filtered = applyExactNameFocus(allItems, exactName, (list) =>
-    list.filter((item) => matchesCategory(item.category, selectedCategories)).filter((item) => matchesSearch(item, searchTerms))
+    list
+      .filter((item) => matchesMaxReqLevel(item, maxReqLevel))
+      .filter((item) => matchesCategory(item.category, selectedCategories))
+      .filter((item) => matchesSearch(item, searchTerms))
   );
 
   // Sort by name alphabetically

@@ -7,6 +7,7 @@ import {
   decodeSelectionParam,
   parseBoundedIntParam,
   parseSocketRangeParam,
+  parseMatchModeParam,
 } from '@/core/utils/filterUrlParams';
 import { parseExactNameParam } from '@/core/utils/exactName';
 import { useExactNameFromUrl, type ExactNameFromUrl } from '@/core/hooks/useExactNameFromUrl';
@@ -20,6 +21,7 @@ import {
   setAllRunes,
   setAllItemTypes,
   setMaxTierPoints,
+  setRuneMatchMode,
 } from '../store/runewordsSlice';
 
 /**
@@ -64,10 +66,17 @@ export function useUrlInitialize(): ExactNameFromUrl {
     const urlItems = searchParams.get(FILTER_URL_PARAM_KEYS.ITEMS);
     const urlRunes = searchParams.get(FILTER_URL_PARAM_KEYS.RUNES);
     const urlTierPts = searchParams.get(FILTER_URL_PARAM_KEYS.TIERPTS);
+    const urlRuneMode = searchParams.get(FILTER_URL_PARAM_KEYS.RUNEMODE);
     const exactName = parseExactNameParam(searchParams.get(FILTER_URL_PARAM_KEYS.NAME));
 
     const hasUrlParams =
-      urlSearch !== null || urlSockets !== null || urlMaxLvl !== null || urlItems !== null || urlRunes !== null || urlTierPts !== null;
+      urlSearch !== null ||
+      urlSockets !== null ||
+      urlMaxLvl !== null ||
+      urlItems !== null ||
+      urlRunes !== null ||
+      urlTierPts !== null ||
+      urlRuneMode !== null;
 
     // `name` itself is applied by useExactNameFromUrl; only the URL cleaning happens here (it needs the other params)
     if (exactName !== null && !hasUrlParams) {
@@ -93,6 +102,11 @@ export function useUrlInitialize(): ExactNameFromUrl {
       // Item types / runes: if param exists, only those are selected; otherwise all selected
       dispatch(setAllItemTypes(decodeSelectionParam(itemTypes, urlItems)));
       dispatch(setAllRunes(decodeSelectionParam(allRuneKeys, urlRunes)));
+
+      const runeMatchMode = parseMatchModeParam(urlRuneMode);
+      if (runeMatchMode !== null) {
+        dispatch(setRuneMatchMode(runeMatchMode));
+      }
 
       // Tier points: parse "esrRunes:1=64,lodRunes:2=128" format
       if (urlTierPts) {

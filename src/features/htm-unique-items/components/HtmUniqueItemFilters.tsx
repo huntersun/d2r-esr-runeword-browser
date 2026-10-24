@@ -6,11 +6,12 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { SearchHelpButton } from '@/components/SearchHelpButton';
 import { HtmCategoryFilter } from './HtmCategoryFilter';
+import { AcquisitionFilter } from './AcquisitionFilter';
+import { MaxReqLevelInput } from './MaxReqLevelInput';
 import { useShareUrl } from '../hooks/useShareUrl';
 import { setSearchText, setMaxReqLevel, selectSearchText, selectMaxReqLevel } from '../store';
 
 const SEARCH_DEBOUNCE_MS = 300;
-const INPUT_DEBOUNCE_MS = 300;
 
 export function HtmUniqueItemFilters() {
   const dispatch = useDispatch();
@@ -24,34 +25,12 @@ export function HtmUniqueItemFilters() {
     SEARCH_DEBOUNCE_MS
   );
 
-  const [localMaxReqLevel, setLocalMaxReqLevel, commitMaxReqLevel] = useDebouncedFilterValue(
-    maxReqLevel,
-    (value) => dispatch(setMaxReqLevel(value)),
-    INPUT_DEBOUNCE_MS
-  );
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalSearchText(e.target.value);
   };
 
   const handleClearSearch = () => {
     commitSearchText('');
-  };
-
-  const handleMaxReqLevelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === '') {
-      setLocalMaxReqLevel(null);
-    } else {
-      const num = parseInt(value, 10);
-      if (num >= 1 && num <= 999) {
-        setLocalMaxReqLevel(num);
-      }
-    }
-  };
-
-  const handleClearMaxReqLevel = () => {
-    commitMaxReqLevel(null);
   };
 
   return (
@@ -92,36 +71,14 @@ export function HtmUniqueItemFilters() {
         </div>
 
         {/* Max Required Level */}
-        <div className="w-32 space-y-1">
-          <p className="text-xs text-muted-foreground">Max required level.</p>
-          <Label htmlFor="htm-unique-maxReqLevel" className="sr-only">
-            Max Req Level
-          </Label>
-          <InputGroup>
-            <InputGroupInput
-              id="htm-unique-maxReqLevel"
-              type="number"
-              min={1}
-              max={999}
-              placeholder="Max Req Lvl"
-              value={localMaxReqLevel ?? ''}
-              onChange={handleMaxReqLevelChange}
-              autoComplete="off"
-              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
-            {localMaxReqLevel !== null && (
-              <InputGroupAddon align="inline-end">
-                <InputGroupButton variant="ghost" size="icon-xs" onClick={handleClearMaxReqLevel} aria-label="Clear max req level">
-                  <X className="size-4" />
-                </InputGroupButton>
-              </InputGroupAddon>
-            )}
-          </InputGroup>
-        </div>
+        <MaxReqLevelInput id="htm-unique-maxReqLevel" value={maxReqLevel} onChange={(value) => dispatch(setMaxReqLevel(value))} />
 
         {/* Copy Link button */}
         <CopyLinkButton getShareUrl={getShareUrl} />
       </div>
+
+      {/* Acquisition chips */}
+      <AcquisitionFilter />
 
       {/* Category Filter */}
       <HtmCategoryFilter />

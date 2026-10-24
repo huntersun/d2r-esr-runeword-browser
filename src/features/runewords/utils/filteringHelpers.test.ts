@@ -299,6 +299,42 @@ describe('matchesRunes', () => {
   });
 });
 
+describe('matchesRunes (any mode)', () => {
+  const runeCategoryMap: RuneCategoryMap = new Map([
+    ['El Rune', ['lodRunes']],
+    ['Ber Rune', ['lodRunes']],
+    ['Ko Rune', ['esrRunes', 'lodRunes']],
+  ]);
+  const onlyBer = { 'lodRunes:El Rune': false, 'lodRunes:Ber Rune': true, 'esrRunes:Ko Rune': false, 'lodRunes:Ko Rune': false };
+
+  it('shows runewords containing at least one selected rune', () => {
+    const runeword = createRuneword({ runes: ['El Rune', 'Ber Rune'] });
+    expect(matchesRunes(runeword, onlyBer, runeCategoryMap, 'any')).toBe(true);
+    // strict mode hides the same word (El is unchecked)
+    expect(matchesRunes(runeword, onlyBer, runeCategoryMap, 'all')).toBe(false);
+    expect(matchesRunes(runeword, onlyBer, runeCategoryMap)).toBe(false);
+  });
+
+  it('hides runewords with none of the selected runes', () => {
+    expect(matchesRunes(createRuneword({ runes: ['El Rune', 'Ko Rune'] }), onlyBer, runeCategoryMap, 'any')).toBe(false);
+  });
+
+  it('counts a rune selected in any of its categories', () => {
+    const runeword = createRuneword({ runes: ['El Rune', 'Ko Rune'] });
+    expect(matchesRunes(runeword, { ...onlyBer, 'esrRunes:Ko Rune': true }, runeCategoryMap, 'any')).toBe(true);
+  });
+
+  it('shows everything while uninitialized and never hides rune-less entries', () => {
+    expect(matchesRunes(createRuneword({ runes: ['El Rune'] }), {}, runeCategoryMap, 'any')).toBe(true);
+    expect(matchesRunes(createRuneword({ runes: [] }), onlyBer, runeCategoryMap, 'any')).toBe(true);
+  });
+
+  it('shows everything when all runes are selected (the default)', () => {
+    const all = { 'lodRunes:El Rune': true, 'lodRunes:Ber Rune': true, 'esrRunes:Ko Rune': true, 'lodRunes:Ko Rune': true };
+    expect(matchesRunes(createRuneword({ runes: ['El Rune', 'Ko Rune'] }), all, runeCategoryMap, 'any')).toBe(true);
+  });
+});
+
 describe('buildRuneBonusMap', () => {
   it('should map ESR rune to its bonuses', () => {
     const bonuses: SocketableBonuses = {

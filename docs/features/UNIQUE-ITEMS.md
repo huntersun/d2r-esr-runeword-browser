@@ -91,7 +91,8 @@ interface HtmFilterGroup {
 
 ### Max Required Level
 
-- Number input to cap the required level of shown items
+- Number input to cap the required level of shown items (`MaxReqLevelInput`, shared with Mythical Uniques)
+- URL: `maxlvl=<1-999>`
 
 ### Category Filters
 
@@ -100,10 +101,28 @@ interface HtmFilterGroup {
 - "All" / "None" buttons for selecting/deselecting all categories
 - `__none__` sentinel value represents "no categories selected"
 
-### Ancient Coupon Toggle
+### Acquisition Chips
 
-- `includeCouponItems` (default: true)
-- When disabled, hides items marked as `isAncientCoupon: true`
+Single-select chip group `Acquisition: All | Coupon only | Gambleable | Drop only | No coupon` (with a help popover). It
+replaced the exclude-only "Include Coupon Items" checkbox. The logic is in `utils/acquisition.ts`
+(`matchesAcquisition`) and reads two parsed fields:
+
+| Chip        | Shows                                                                         | ESR 3.2.24 count |
+| ----------- | ----------------------------------------------------------------------------- | ---------------- |
+| All         | everything                                                                    | 1065             |
+| Coupon only | `isAncientCoupon` ("Ancient Coupon Unique": cubed from a coupon, never drops) | 383              |
+| Gambleable  | `gambleItem` is a real base, i.e. not empty and not `N/A`                     | 658              |
+| Drop only   | neither of the two (the "Gamble Item: N/A" uniques)                           | 24               |
+| No coupon   | `!isAncientCoupon`, the old checkbox switched off (Gambleable + Drop only)    | 682              |
+
+- Every non-coupon unique on the HTM pages has a "Gamble Item:" line; 24 of them say `N/A`. Treating any non-empty
+  line as gambleable would leave "Drop only" empty, so `N/A` (also `none`, `-`, empty) counts as not gambleable.
+- Coupon and gambleable are tested independently: an item that were both would show under both chips (none is today).
+  "Drop only" is the complement, so every item is reachable from Coupon only, Gambleable or Drop only.
+- "No coupon" is kept so the old `coupon=0` links still have an exact equivalent.
+- When the list is empty and a chip other than All is active, the empty state names the chip.
+- URL: `acq=coupon|gamble|drop|nocoupon` (omitted for All). The legacy `coupon=0` is still read and maps to
+  `nocoupon` (`acq` wins when both are present). Copy Link only writes `acq`.
 
 ## Redux State
 
@@ -112,7 +131,7 @@ interface HtmUniqueItemsState {
   readonly searchText: string;
   readonly maxReqLevel: number | null;
   readonly selectedCategories: readonly string[]; // Empty = all selected
-  readonly includeCouponItems: boolean;
+  readonly acquisition: AcquisitionFilter; // 'all' | 'coupon' | 'gamble' | 'drop' | 'nocoupon'
 }
 ```
 
@@ -122,7 +141,17 @@ interface HtmUniqueItemsState {
 - `['__none__']` = no categories selected (show nothing)
 - `['Bow', 'Sword', 'Ring']` = only show items in these categories
 
-**Actions:** `setSearchText`, `setMaxReqLevel`, `toggleCategory`, `toggleGroup`, `selectAllCategories`, `deselectAllCategories`, `setIncludeCouponItems`
+**Actions:** `setSearchText`, `setMaxReqLevel`, `toggleCategory`, `toggleGroup`, `selectAllCategories`, `deselectAllCategories`, `setAcquisition`
+
+## Mythical Uniques Filters
+
+The Mythical Uniques screen (`src/features/mythical-uniques`) has a search box, the same **Max Req Lvl** input as Unique
+Items (`MaxReqLevelInput`, same `maxlvl` URL key, same 1-999 range and debounce) and category checkboxes (`cats`).
+
+- `matchesMaxReqLevel` (`utils/filtering.ts`) keeps items at or below the cap.
+- Every mythical currently has a "Required Level" (40 at 90, one jewel at 60). An item without one is parsed as
+  `reqLevel: 0` and is always visible, so a missing value never hides it.
+- URL encode/decode is in `utils/urlParams.ts` (`buildMythicalShareParams` / `parseMythicalUrlParams`).
 
 ## Ancient Coupon Detection
 
@@ -168,9 +197,11 @@ Generate shareable URLs with current filter state and initialize filters from UR
 ```
 src/features/htm-unique-items/
 ├── components/
+│   ├── AcquisitionFilter.tsx        # Acquisition chips + help popover
 │   ├── HtmCategoryFilter.tsx        # Grouped checkbox filter UI
 │   ├── HtmUniqueItemCard.tsx        # Item display card
-│   └── HtmUniqueItemFilters.tsx     # All filter controls
+│   ├── HtmUniqueItemFilters.tsx     # All filter controls
+│   └── MaxReqLevelInput.tsx         # Max Req Lvl input (also used by Mythical Uniques)
 ├── constants/
 │   └── htmCategoryGroups.ts         # Category → group mapping
 ├── hooks/
@@ -185,5 +216,9 @@ src/features/htm-unique-items/
 │   └── htmUniqueItemsSlice.ts       # Redux state and actions
 ├── types/
 │   └── index.ts                     # HtmFilterGroup interface
+├── utils/
+│   ├── acquisition.ts               # Acquisition chip logic (matchesAcquisition)
+│   ├── htmUniqueItemFavorites.ts    # Favourite ids
+│   └── urlParams.ts                 # Share URL build/parse (acq, legacy coupon)
 └── index.ts
 ```

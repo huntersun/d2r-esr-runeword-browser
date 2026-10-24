@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux';
-import { FILTER_URL_PARAM_KEYS, appendCategoryListParam, buildShareUrl, appendExactNameParam } from '@/core/utils/filterUrlParams';
-import { selectSearchText, selectExactName, selectSelectedCategoriesRaw } from '../store';
-import { MYTHICAL_URL_PARAM_KEYS } from './useUrlInitialize';
+import { buildShareUrl } from '@/core/utils/filterUrlParams';
+import { selectSearchText, selectExactName, selectMaxReqLevel, selectSelectedCategoriesRaw } from '../store';
+import { buildMythicalShareParams } from '../utils/urlParams';
 
 /**
  * Returns a function that generates a shareable URL with current filter state.
@@ -9,16 +9,9 @@ import { MYTHICAL_URL_PARAM_KEYS } from './useUrlInitialize';
  */
 export function useShareUrl(): () => string {
   const searchText = useSelector(selectSearchText);
+  const maxReqLevel = useSelector(selectMaxReqLevel);
   const selectedCategories = useSelector(selectSelectedCategoriesRaw);
   const exactName = useSelector(selectExactName);
 
-  return () => {
-    const params = new URLSearchParams();
-    if (searchText) {
-      params.set(FILTER_URL_PARAM_KEYS.SEARCH, searchText);
-    }
-    appendCategoryListParam(params, MYTHICAL_URL_PARAM_KEYS.CATS, selectedCategories);
-    appendExactNameParam(params, exactName);
-    return buildShareUrl('mythicals', params);
-  };
+  return () => buildShareUrl('mythicals', buildMythicalShareParams({ searchText, maxReqLevel, selectedCategories, exactName }));
 }

@@ -9,15 +9,18 @@ import { Button } from '@/components/ui/button';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { SearchHelpButton } from '@/components/SearchHelpButton';
 import { db } from '@/core/db';
+import { MaxReqLevelInput } from '@/features/htm-unique-items/components/MaxReqLevelInput';
 import { useShareUrl } from '../hooks/useShareUrl';
 import { NO_CATEGORIES_MARKER } from '@/core/constants/categoryFilter';
 import { matchesCategory } from '@/core/store/categorySelection';
 import {
   setSearchText,
+  setMaxReqLevel,
   toggleCategory,
   selectAllCategories,
   deselectAllCategories,
   selectSearchText,
+  selectMaxReqLevel,
   selectSelectedCategories,
   selectIsAllCategoriesSelected,
 } from '../store';
@@ -27,6 +30,7 @@ const SEARCH_DEBOUNCE_MS = 300;
 export function MythicalUniqueFilters() {
   const dispatch = useDispatch();
   const searchText = useSelector(selectSearchText);
+  const maxReqLevel = useSelector(selectMaxReqLevel);
   const selectedCategories = useSelector(selectSelectedCategories);
   const isAllSelected = useSelector(selectIsAllCategoriesSelected);
   const getShareUrl = useShareUrl();
@@ -95,6 +99,9 @@ export function MythicalUniqueFilters() {
             )}
           </InputGroup>
         </div>
+
+        {/* Max Required Level */}
+        <MaxReqLevelInput id="mythical-maxReqLevel" value={maxReqLevel} onChange={(value) => dispatch(setMaxReqLevel(value))} />
 
         {/* Copy Link button */}
         <CopyLinkButton getShareUrl={getShareUrl} />

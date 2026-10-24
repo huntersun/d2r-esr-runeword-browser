@@ -3,6 +3,7 @@ import { createSelector } from 'reselect';
 import type { SocketRange } from '@/core/utils/socketRange';
 import { createItemTypeFilterSelectors, itemTypeFilterInitialState, itemTypeFilterReducers } from '@/core/store/itemTypeFilter';
 import type { RootState } from '@/core/store/store';
+import type { SocketableMatchMode } from '@/core/utils/filterUrlParams';
 
 interface RunewordsState {
   readonly searchText: string;
@@ -11,12 +12,15 @@ interface RunewordsState {
   readonly selectedItemTypes: Record<string, boolean>;
   readonly exactName: string | null;
   readonly selectedRunes: Record<string, boolean>;
+  /** 'all' = strict (every rune selected), 'any' = contains at least one selected rune */
+  readonly runeMatchMode: SocketableMatchMode;
   readonly maxTierPoints: Record<string, number | null>;
 }
 
 const initialState: RunewordsState = {
   ...itemTypeFilterInitialState,
   selectedRunes: {},
+  runeMatchMode: 'all',
   maxTierPoints: {},
 };
 
@@ -50,6 +54,9 @@ const runewordsSlice = createSlice({
         state.selectedRunes[key] = selected;
       }
     },
+    setRuneMatchMode(state, action: PayloadAction<SocketableMatchMode>) {
+      state.runeMatchMode = action.payload;
+    },
     setMaxTierPoints(state, action: PayloadAction<{ tierKey: string; value: number | null }>) {
       state.maxTierPoints[action.payload.tierKey] = action.payload.value;
     },
@@ -73,6 +80,7 @@ export const {
   selectAllRunes,
   deselectAllRunes,
   toggleRuneGroup,
+  setRuneMatchMode,
   toggleItemTypeGroup,
   setMaxTierPoints,
   clearAllTierPoints,
@@ -89,3 +97,5 @@ export const { selectSearchText, selectSocketRange, selectMaxReqLevel, selectSel
 export const selectSelectedRunes = createSelector([selectRunewordsState], (runewords) => runewords.selectedRunes);
 
 export const selectMaxTierPoints = createSelector([selectRunewordsState], (runewords) => runewords.maxTierPoints);
+
+export const selectRuneMatchMode = createSelector([selectRunewordsState], (runewords) => runewords.runeMatchMode);

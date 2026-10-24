@@ -3,6 +3,7 @@ import { createSelector } from 'reselect';
 import type { RootState } from '@/core/store/store';
 import { NO_CATEGORIES_MARKER } from '@/core/constants/categoryFilter';
 import { createCategorySelectionSelectors, setCategoriesInSelection, toggleCategoryInSelection } from '@/core/store/categorySelection';
+import type { AcquisitionFilter } from '../utils/acquisition';
 
 /**
  * State for HTM unique items feature
@@ -13,7 +14,8 @@ interface HtmUniqueItemsState {
   readonly searchText: string;
   readonly maxReqLevel: number | null;
   readonly selectedCategories: readonly string[];
-  readonly includeCouponItems: boolean;
+  /** Acquisition chip (All / Coupon only / Gambleable / Drop only / No coupon) */
+  readonly acquisition: AcquisitionFilter;
   /** Exact-name focus from the `name` URL param; set only by URL init, never by the search box */
   readonly exactName: string | null;
 }
@@ -22,7 +24,7 @@ const initialState: HtmUniqueItemsState = {
   searchText: '',
   maxReqLevel: null,
   selectedCategories: [], // Empty = all selected
-  includeCouponItems: true,
+  acquisition: 'all',
   exactName: null,
 };
 
@@ -69,8 +71,8 @@ const htmUniqueItemsSlice = createSlice({
     setSelectedCategories(state, action: PayloadAction<readonly string[]>) {
       state.selectedCategories = [...action.payload];
     },
-    setIncludeCouponItems(state, action: PayloadAction<boolean>) {
-      state.includeCouponItems = action.payload;
+    setAcquisition(state, action: PayloadAction<AcquisitionFilter>) {
+      state.acquisition = action.payload;
     },
   },
 });
@@ -84,7 +86,7 @@ export const {
   selectAllCategories,
   deselectAllCategories,
   setSelectedCategories,
-  setIncludeCouponItems,
+  setAcquisition,
 } = htmUniqueItemsSlice.actions;
 export default htmUniqueItemsSlice.reducer;
 
@@ -101,4 +103,4 @@ export const selectSelectedCategoriesRaw = createSelector([selectHtmUniqueItemsS
 
 export const { selectSelectedCategories, selectIsAllCategoriesSelected } = createCategorySelectionSelectors(selectSelectedCategoriesRaw);
 
-export const selectIncludeCouponItems = createSelector([selectHtmUniqueItemsState], (s) => s.includeCouponItems);
+export const selectAcquisition = createSelector([selectHtmUniqueItemsState], (s) => s.acquisition);

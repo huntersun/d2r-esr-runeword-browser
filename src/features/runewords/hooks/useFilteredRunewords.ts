@@ -9,6 +9,7 @@ import {
   selectMaxReqLevel,
   selectSelectedItemTypes,
   selectSelectedRunes,
+  selectRuneMatchMode,
   selectMaxTierPoints,
   selectExactName,
 } from '../store/runewordsSlice';
@@ -34,6 +35,7 @@ export function useFilteredRunewords(lookup: SocketableLookup | undefined): read
   const maxReqLevel = useSelector(selectMaxReqLevel);
   const selectedItemTypes = useSelector(selectSelectedItemTypes);
   const selectedRunes = useSelector(selectSelectedRunes);
+  const runeMatchMode = useSelector(selectRuneMatchMode);
   const maxTierPoints = useSelector(selectMaxTierPoints);
   const exactName = useSelector(selectExactName);
 
@@ -58,7 +60,7 @@ export function useFilteredRunewords(lookup: SocketableLookup | undefined): read
       if (!matchesSockets(runeword, socketRange)) return false;
       if (!matchesMaxReqLevel(runeword, maxReqLevel)) return false;
       if (!matchesItemTypes(runeword, selectedItemTypes)) return false;
-      if (!matchesRunes(runeword, selectedRunes, runeCategoryMap)) return false;
+      if (!matchesRunes(runeword, selectedRunes, runeCategoryMap, runeMatchMode)) return false;
       if (!matchesTierPoints(runeword, maxTierPoints)) return false;
       return true;
     })

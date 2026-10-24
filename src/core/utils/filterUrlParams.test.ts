@@ -6,11 +6,13 @@ import {
   SOCKET_COUNT_RANGE,
   appendCategoryListParam,
   appendCommonFilterParams,
+  appendMatchModeParam,
   appendSelectionParam,
   buildShareUrl,
   decodeCategoryListParam,
   decodeSelectionParam,
   parseBoundedIntParam,
+  parseMatchModeParam,
   parseSocketRangeParam,
 } from './filterUrlParams';
 
@@ -157,5 +159,26 @@ describe('buildShareUrl', () => {
   it('omits the query string when there are no params, and the route for the index', () => {
     expect(buildShareUrl('mythicals', new URLSearchParams())).toBe(`${base}mythicals`);
     expect(buildShareUrl('', new URLSearchParams())).toBe(base);
+  });
+});
+
+describe('match mode params', () => {
+  it('omits the param for strict mode and writes `any`', () => {
+    const strict = new URLSearchParams();
+    appendMatchModeParam(strict, FILTER_URL_PARAM_KEYS.RUNEMODE, 'all');
+    expect(strict.toString()).toBe('');
+
+    const any = new URLSearchParams();
+    appendMatchModeParam(any, FILTER_URL_PARAM_KEYS.RUNEMODE, 'any');
+    expect(any.toString()).toBe('runemode=any');
+  });
+
+  it('round-trips through parseMatchModeParam; unknown or absent values keep the default', () => {
+    const params = new URLSearchParams();
+    appendMatchModeParam(params, FILTER_URL_PARAM_KEYS.RUNEMODE, 'any');
+    expect(parseMatchModeParam(new URLSearchParams(params.toString()).get(FILTER_URL_PARAM_KEYS.RUNEMODE))).toBe('any');
+    expect(parseMatchModeParam(null)).toBeNull();
+    expect(parseMatchModeParam('all')).toBeNull();
+    expect(parseMatchModeParam('ANY')).toBeNull();
   });
 });
