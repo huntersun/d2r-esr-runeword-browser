@@ -225,7 +225,7 @@ changes (use next to `npm run dev`; a small Vite plugin reloads the page when `p
 `npm run game-data:update` also regenerates and checks the guide. Flags: `--esr <dir>` (ESR clone), `--content <dir>`
 (default `content/guide`), `--sources <file>` (default `public/game-data/sources.json`), `--out <dir>` (default
 `public/guide`); the last three let you try the pipeline on scratch content, a draft sources bundle or a scratch output
-folder. Sub-commands `verify` and `report`: see [Staleness](#staleness).
+folder. Sub-commands `verify` and `report`: see [Staleness](#staleness). The same run also writes `public/sitemap.xml` (static routes plus one URL per note, `scripts/lib/sitemap.ts`), and `guide:check` fails when it is stale.
 
 Build errors (exit 1): invalid frontmatter, unknown `[[slug]]`, `knowFirst`/`related`/`next`/`sources` ids, unknown
 `rw:`/`unique:`/`mythical:`/`socketable:`/`dropfinder:`/`base:`/`type:` targets, unknown `:term`, unresolvable directive arguments, unsupported markdown nodes, a note

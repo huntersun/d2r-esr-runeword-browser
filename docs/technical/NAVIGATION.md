@@ -4,31 +4,48 @@ Documentation for routing, layout, and navigation patterns.
 
 ## Routes
 
-| Path                    | Screen                  | Description                                                                                         |
-| ----------------------- | ----------------------- | --------------------------------------------------------------------------------------------------- |
-| `/`                     | RunewordsScreen         | Home page - browse and filter runewords, `?name=<Name>` focus                                       |
-| `/guide`                | GuideLayout             | Guide frame: a small "Experimental" notice above every guide page, then the child route             |
-| `/guide` (index)        | GuideSpineScreen        | New-player guide: "Start here" journey spine, note search, "I found something" row                  |
-| `/guide/:slug`          | GuideNoteScreen         | One guide note; unknown slug shows a "Note not found" block linking back to `/guide`                |
-| `/gemwords`             | GemwordsScreen          | Gem-based socket recipes with filters, `?name=<Name>` focus                                         |
-| `/socketables`          | SocketablesScreen       | All socketables with category filters & search, `?name=<Name>` focus                                |
-| `/uniques`              | HtmUniqueItemsScreen    | Unique items with category & coupon filters, `?name=<Name>` focus                                   |
-| `/mythicals`            | MythicalUniquesScreen   | Mythical unique items, `?name=<Name>` focus                                                         |
-| `/ascendancies`         | AscendanciesScreen      | Ascendancies with their tier bonuses                                                                |
-| `/game-data`            | GameDataLayout          | Game-file data section; index redirects to `bases`                                                  |
-| `/game-data/bases`      | BasesScreen             | Base items browser (txt game files)                                                                 |
-| `/game-data/best-base`  | BestBaseScreen          | Best base finder for a runeword and a persisted character                                           |
-| `/game-data/affixes`    | AffixesScreen           | Affix browser + "what can roll" on a base                                                           |
-| `/game-data/types`      | ItemTypesScreen         | Item type tree + socket caps, `?type=<code>` focus                                                  |
-| `/loot-filters`         | LootFilterLayout        | Loot filter frame: an "Under development" notice above every loot-filter page, then the child route |
-| `/loot-filters` (index) | LootFilterLibraryScreen | Loot filter library: new, upload, ESR default filter template, download (.json or .zip)             |
-| `/loot-filters/:id`     | LootFilterEditorScreen  | Loot filter editor, `?tab=rules\|styles\|settings\|json\|test`; unknown id shows "Filter not found" |
-| `/builds`               | BuildsScreen            | Shared builds list (Supabase only)                                                                  |
-| `/builds/new`           | CreateBuildScreen       | Create a build (sign-in required)                                                                   |
-| `/builds/:buildId/edit` | EditBuildScreen         | Edit an own build                                                                                   |
-| `/build/:buildId`       | BuildDetailScreen       | Build detail page                                                                                   |
-| `/user/:userId`         | UserProfileScreen       | A user's public builds                                                                              |
-| `*`                     | NotFoundScreen          | Catch-all for unknown URLs, with a link back home                                                   |
+All routes are children of `AppLayout` in `src/core/router/index.tsx`; every screen and layout is lazy (see
+[Router Setup](#router-setup)). Three sections are nested layouts with child routes: `/guide`, `/game-data` and
+`/loot-filters` (see [Nested sections](#nested-sections)).
+
+| Path                    | Screen                  | Description                                                                                         | Query params                                                                                           |
+| ----------------------- | ----------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `/`                     | RunewordsScreen         | Home page - browse and filter runewords                                                             | `search`, `sockets`, `maxlvl`, `items`, `runes`, `tierpts`, `name`                                     |
+| `/guide`                | GuideLayout             | Guide frame: a small "Experimental" notice above every guide page, then the child route             |                                                                                                        |
+| `/guide` (index)        | GuideSpineScreen        | New-player guide: "Start here" journey spine, note search, "I found something" row                  |                                                                                                        |
+| `/guide/map`            | GuideMapScreen          | All notes: link graph (large screens) and a list grouped by spine step                              |                                                                                                        |
+| `/guide/:slug`          | GuideNoteScreen         | One guide note; unknown slug shows a "Note not found" block linking back to `/guide`                |                                                                                                        |
+| `/gemwords`             | GemwordsScreen          | Gem-based socket recipes with filters                                                               | `search`, `sockets`, `maxlvl`, `items`, `gems`, `name`                                                 |
+| `/socketables`          | SocketablesScreen       | All socketables with category filters & search                                                      | `search`, `categories`, `onlyHighest`, `name`                                                          |
+| `/uniques`              | HtmUniqueItemsScreen    | Unique items with category & coupon filters                                                         | `search`, `maxlvl`, `cats`, `coupon`, `name`                                                           |
+| `/mythicals`            | MythicalUniquesScreen   | Mythical unique items                                                                               | `search`, `cats`, `name`                                                                               |
+| `/ascendancies`         | AscendanciesScreen      | Ascendancies with their tier bonuses                                                                | `search`                                                                                               |
+| `/game-data`            | GameDataLayout          | Game-file data section; index redirects to `bases`                                                  |                                                                                                        |
+| `/game-data/bases`      | BasesScreen             | Base items browser (txt game files)                                                                 | `search`, `sockets` (minimum), `maxlvl`, `kind`, `tier`, `type`, `cls`, `sort` (`-<key>` = descending) |
+| `/game-data/best-base`  | BestBaseScreen          | Best base finder for a runeword and a persisted character                                           | `rw`, `v`, `cls`, `lvl`, `str`, `dex`                                                                  |
+| `/game-data/affixes`    | AffixesScreen           | Affix browser + "what can roll" on a base                                                           | `search`, `aff`, `rare`, `minlvl`, `maxlvl`, `cls`, `type`, `base`, `ilvl`, `q`, `auto`, `sort`        |
+| `/game-data/types`      | ItemTypesScreen         | Item type tree + socket caps                                                                        | `type` (focused node)                                                                                  |
+| `/loot-filters`         | LootFilterLayout        | Loot filter frame: an "Under development" notice above every loot-filter page, then the child route |                                                                                                        |
+| `/loot-filters` (index) | LootFilterLibraryScreen | Loot filter library: new, upload, ESR default filter template, download (.json or .zip)             |                                                                                                        |
+| `/loot-filters/:id`     | LootFilterEditorScreen  | Loot filter editor; unknown id shows "Filter not found"                                             | `tab=rules\|styles\|settings\|json\|test`                                                              |
+| `/builds`               | BuildsScreen            | Shared builds list (Supabase only)                                                                  |                                                                                                        |
+| `/builds/new`           | CreateBuildScreen       | Create a build (sign-in required)                                                                   |                                                                                                        |
+| `/builds/:buildId/edit` | EditBuildScreen         | Edit an own build                                                                                   |                                                                                                        |
+| `/build/:buildId`       | BuildDetailScreen       | Build detail page                                                                                   |                                                                                                        |
+| `/user/:userId`         | UserProfileScreen       | A user's public builds                                                                              |                                                                                                        |
+| `*`                     | NotFoundScreen          | Catch-all for unknown URLs, with a link back home                                                   |                                                                                                        |
+
+`map` is a static segment, so the router ranks `/guide/map` above `/guide/:slug` (a note with the slug `map` would
+be shadowed). `/guide/:slug` slugs are the file names in `content/guide/notes/`.
+
+**Query params.** The shared keys are `FILTER_URL_PARAM_KEYS` in `src/core/utils/filterUrlParams.ts` (`search`, `sockets`,
+`maxlvl`, `items`, `runes`, `tierpts`, `gems`, `name`); `sockets` takes an exact count or a range (`4`, `2-4`, `-4`, `4-`). The
+feature-specific keys live next to each feature's `useUrlInitialize` hook, and `GAME_DATA_URL_PARAM_KEYS` in
+`src/features/game-data/constants/urlParams.ts`. The filter screens (runewords, gemwords, socketables, uniques, mythicals,
+ascendancies, bases, best base, affixes) read their params once on mount, put them into Redux and remove them from the URL;
+Copy Link rebuilds a URL from the current state (non-default values only). Item Types (`type`) and the loot filter editor
+(`tab`) read their param on every render and keep it in the URL. The builds screens keep their search, class and sort in
+Redux only.
 
 **`?name=<Name>` focus** (runewords, gemwords, socketables, uniques, mythicals): shows only the items whose name equals `<Name>`
 (`normaliseItemName` in `src/core/utils/itemName.ts`: case, whitespace, quotes/apostrophes and dashes unified; all variants of a
@@ -70,10 +87,16 @@ the fatal-error screen, so a failed first sync does not hide them. The prefixes 
 - **Navigation Links**: Runewords, Guide, Gemwords, Socketables, Uniques, Mythicals, Ascendancies, Game Data, Loot Filters, Builds (only when Supabase is configured), plus external ESR Documentation / Changelog links; items that don't fit collapse into a "More" menu (priority-plus, see `Header.tsx`)
 - **Settings Button**: Cog icon in top-right corner
 
-### Sub-tab layouts
+### Nested sections
 
-`/game-data` is the only nested section. It has a single header entry (`{ key: 'game-data', to: '/game-data', end: false }`,
-so it stays active on every sub-page) and a lazy `GameDataLayout` that renders:
+`/guide`, `/game-data` and `/loot-filters` are nested routes: each has one header entry (`end: false`, so it stays active on
+every child page) and a lazy layout that renders a frame above an `<Outlet />`:
+
+- `GuideLayout`: the "Experimental" `DevNotice`, then the spine (index), the map (`map`) or a note (`:slug`);
+- `LootFilterLayout`: the "Under development" `DevNotice`, then the library (index) or the editor (`:id`);
+- `GameDataLayout`: a title, the game-file version line and sub-tabs (below); its index redirects to `bases`.
+
+`GameDataLayout` renders:
 
 ```
 Game Data
@@ -84,7 +107,8 @@ Game files: ESR 3.2.10 (tag 3.2.10 @ 10b540e, generated 2026-10-09)
 <Outlet />                                        <- child route screen
 ```
 
-Each child route is its own lazy screen wrapped in `<Suspense>` (all from `@/features/game-data`, so they share one chunk).
+Each child route is its own lazy screen wrapped in `<Suspense>` (each section's screens come from one feature module
+(`@/features/guide`, `@/features/game-data`, `@/features/loot-filter`), so they share its chunk).
 The version line comes from `public/game-data/manifest.json`; the docs version from Dexie `metadata.esrVersion`. The note
 never says which version is newer (HTM and git-tag version strings do not compare).
 
@@ -172,6 +196,15 @@ export const router = createBrowserRouter(
       errorElement: <RouteErrorScreen />,
       children: [
         { index: true, element: routeElement(RunewordsScreen) },
+        {
+          path: 'guide',
+          element: routeElement(GuideLayout),
+          children: [
+            { index: true, element: routeElement(GuideSpineScreen) },
+            { path: 'map', element: routeElement(GuideMapScreen) },
+            { path: ':slug', element: routeElement(GuideNoteScreen) },
+          ],
+        },
         { path: 'gemwords', element: routeElement(GemwordsScreen) },
         { path: 'socketables', element: routeElement(SocketablesScreen) },
         {
@@ -183,7 +216,8 @@ export const router = createBrowserRouter(
             // ... best-base, affixes, types
           ],
         },
-        // ... uniques, mythicals, ascendancies, builds, builds/new,
+        // ... uniques, mythicals, ascendancies (before game-data),
+        //     loot-filters (layout: index + ':id'), builds, builds/new,
         //     builds/:buildId/edit, build/:buildId, user/:userId
         { path: '*', element: <NotFoundScreen /> },
       ],
@@ -196,6 +230,10 @@ export const router = createBrowserRouter(
 ```
 
 Uses `createBrowserRouter` (not hash-based) with `basename` set from Vite's `BASE_URL` for GitHub Pages compatibility.
+
+**Builds routes** load through `loadAfter(() => import('@/features/builds'), startBuilds)` (`src/core/router/loadAfter.ts`):
+the screen module resolves only once the builds saga is running, because the screens dispatch their fetches in mount
+effects and an action dispatched before the saga listens is lost.
 
 **Code splitting**: Every route screen is lazy-loaded with `React.lazy()` + `<Suspense>` so each screen lands in its own chunk instead of the entry bundle. The guard test `src/core/router/routeCodeSplitting.test.ts` fails if a screen is ever statically imported into the router again.
 

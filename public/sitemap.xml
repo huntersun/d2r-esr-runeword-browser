@@ -11,6 +11,166 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/map</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/ascendancies</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/avoid-disasters</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/class-crafting</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/corruption-anointment</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/coupons</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/cube-basics</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/death-and-respec</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/dragon-stones</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/dstoning-and-mapling</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/endgame-roadmap</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/enhancement-order</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/forging</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/gems-crystals</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/glossary</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/hell-survival</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/kill-ledger</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/loot-triage</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/maps-keys-ascendancy</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/mercenaries-oskills</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/noobs-charm</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/rune-families</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/runewords-gemwords</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/secret-recipes</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/socketing</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/start-here</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/starter-pack</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/stockers</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/tinkering</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/unique-charms</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/vessel-of-souls</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/guide/weapon-mastery</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/gemwords</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -36,6 +196,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/builds</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/game-data/bases</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -52,6 +217,11 @@
   </url>
   <url>
     <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/game-data/types</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/loot-filters</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

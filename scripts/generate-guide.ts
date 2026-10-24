@@ -9,6 +9,8 @@
  * --check regenerates in memory and exits 1 when the committed files are stale.
  * --watch regenerates whenever content/guide changes (run next to `npm run dev`; the page reloads on its own).
  * --out writes (or checks) somewhere other than public/guide (scratch runs).
+ * Every run also writes (or checks) sitemap.xml next to the output folder (public/sitemap.xml): static routes + one URL
+ * per note (scripts/lib/sitemap.ts).
  * verify sets `verified:` in each note's frontmatter to the ESR version the guide build uses (the clone's; the game-data
  * manifest's without a clone; a warning when they differ) and records the note's
  * data-block hashes in content/guide/.verify-lock.json. It does not regenerate public/guide (run guide:generate).
@@ -16,7 +18,7 @@
  * All build errors are printed at once, then the script exits 1 (in --watch mode it keeps watching).
  */
 import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import type { GuideManifest } from '../src/features/guide/engine/schema.ts';
 import { generateGuideWithEsr, type GeneratedGuide } from '../src/features/guide/build/generateGuide.ts';
@@ -32,6 +34,7 @@ import { formatGuideReport } from '../src/features/guide/build/report.ts';
 import { LOCK_FILE, parseVerifyLock, serializeVerifyLock, setVerifiedInFrontmatter } from '../src/features/guide/build/verifyLock.ts';
 import { buildGuideManifest, serializeBundle } from '../src/features/guide/build/writeGuide.ts';
 import { git, REPO_ROOT, resolveEsrDir } from './lib/esrClone.ts';
+import { buildSitemap } from './lib/sitemap.ts';
 
 const GAME_DATA_DIR = join(REPO_ROOT, 'public', 'game-data');
 const WATCH_DEBOUNCE_MS = 150;
@@ -124,15 +127,16 @@ function run(options: Options): boolean {
     previous: readPreviousManifest(options.outputDir),
     now: new Date(),
   });
-  const outputs: Record<string, string> = { guide, manifest: serializeBundle(manifest) };
+  const outputs: Record<string, string> = {
+    [join(options.outputDir, 'guide.json')]: guide,
+    [join(options.outputDir, 'manifest.json')]: serializeBundle(manifest),
+    [join(dirname(options.outputDir), 'sitemap.xml')]: buildSitemap(generated.bundle.notes.map((note) => note.slug)),
+  };
 
   if (options.check) {
-    const stale = Object.entries(outputs).filter(([name, text]) => {
-      const path = join(options.outputDir, `${name}.json`);
-      return !existsSync(path) || readFileSync(path, 'utf8') !== text;
-    });
+    const stale = Object.entries(outputs).filter(([path, text]) => !existsSync(path) || readFileSync(path, 'utf8') !== text);
     if (stale.length > 0) {
-      console.error(`\nStale guide: ${stale.map(([name]) => `${name}.json`).join(', ')}. Run npm run guide:generate.`);
+      console.error(`\nStale guide: ${stale.map(([path]) => displayPath(path)).join(', ')}. Run npm run guide:generate.`);
       return false;
     }
     console.log('\nGuide is up to date.');
@@ -141,8 +145,7 @@ function run(options: Options): boolean {
 
   mkdirSync(options.outputDir, { recursive: true });
   console.log('\nWritten:');
-  for (const [name, text] of Object.entries(outputs)) {
-    const path = join(options.outputDir, `${name}.json`);
+  for (const [path, text] of Object.entries(outputs)) {
     const shown = displayPath(path);
     if (existsSync(path) && readFileSync(path, 'utf8') === text) {
       console.log(`  ${shown} (unchanged)`);

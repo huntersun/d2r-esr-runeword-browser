@@ -46,6 +46,9 @@ src/
 │   ├── htm-unique-items/       # Unique item browsing and filtering
 │   ├── mythical-uniques/       # Mythical unique items
 │   ├── ascendancies/           # Ascendancies and their tier bonuses
+│   ├── game-data/              # Pages built on the static txt game-file bundles (bases, best base, affixes, item types)
+│   ├── guide/                  # New-player guide (static bundle compiled from content/guide/)
+│   ├── loot-filter/            # Loot filter library and editor
 │   ├── auth/                   # Supabase sign-in (optional backend)
 │   ├── builds/                 # Shared builds (optional backend)
 │   ├── favorites/              # Recipe favourites synced to Supabase
@@ -134,7 +137,7 @@ The Game Data pages (`/game-data/*`) read static JSON bundles generated at build
 ESR clone (excel/*.txt, strings/*.json)
    │  npm run game-data:generate  (scripts/generate-game-data.ts, Node type stripping)
    ▼
-public/game-data/{manifest,types,bases,runewords,affixes}.json   committed, pinned to an ESR git tag
+public/game-data/{manifest,types,bases,runewords,affixes,sources,lootfilter}.json   committed, pinned to an ESR git tag
    │  fetch(…?v=<sha256>) with a module-level promise cache (engine/browser/loadGameData.ts)
    ▼
 useGameData(files) → pages (bundles stay out of Redux and IndexedDB)

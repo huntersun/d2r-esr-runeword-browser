@@ -62,7 +62,7 @@ The app uses a single HTM-based data system. All data is fetched from the ESR do
 | Feature               | Route                                                                                 | Description                                                                                                                                                                                                                           |
 | --------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Runewords             | `/`                                                                                   | ~386 runewords with filters for runes, sockets, item types, tier points, req level                                                                                                                                                    |
-| Guide                 | `/guide`, `/guide/:slug`                                                              | New-player guide: small linked notes on a journey spine, note search, freshness badges, data blocks generated from the game files; renders before the HTM data sync finishes ([GUIDE.md](./features/GUIDE.md), `src/features/guide/`) |
+| Guide                 | `/guide`, `/guide/map`, `/guide/:slug`                                                | New-player guide: small linked notes on a journey spine, note search, freshness badges, data blocks generated from the game files; renders before the HTM data sync finishes ([GUIDE.md](./features/GUIDE.md), `src/features/guide/`) |
 | Gemwords              | `/gemwords`                                                                           | ~590 gem-based socket recipes with filters for gems, sockets, item types, req level                                                                                                                                                   |
 | Socketables           | `/socketables`                                                                        | ~177 socketable items across 5 categories                                                                                                                                                                                             |
 | Unique Items          | `/uniques`                                                                            | Unique weapons, armors, and other items with category filters                                                                                                                                                                         |
@@ -72,6 +72,7 @@ The app uses a single HTM-based data system. All data is fetched from the ESR do
 | Game Data: Best Base  | `/game-data/best-base`                                                                | Best base finder for a runeword and a persisted character (class/level/Str/Dex), ranked per item type; `?rw=&v=` from the runeword cards, `cls`/`lvl`/`str`/`dex` override the character                                              |
 | Game Data: Affixes    | `/game-data/affixes`                                                                  | Affix browser + "what can roll" on a base (`?base=<code>&ilvl=<n>`)                                                                                                                                                                   |
 | Game Data: Item Types | `/game-data/types`                                                                    | Item type (Equiv) tree with socket caps; `?type=<code>` focuses a node                                                                                                                                                                |
+| Loot Filters          | `/loot-filters`, `/loot-filters/:id`                                                  | Loot filter editor for ESR's loot filter plugin: library, rule builder, styles, JSON and test tabs, download for the launcher; renders before the HTM data sync finishes ([LOOT-FILTER.md](./features/LOOT-FILTER.md))                |
 | Builds                | `/builds`, `/builds/new`, `/builds/:buildId/edit`, `/build/:buildId`, `/user/:userId` | Shared builds; needs the optional Supabase backend (`src/features/builds/`, `src/features/auth/`)                                                                                                                                     |
 | Not found             | `*`                                                                                   | Catch-all 404 screen                                                                                                                                                                                                                  |
 
@@ -81,13 +82,18 @@ Favourites for runewords, gemwords, and unique items (sign-in required, synced t
 
 A second, build-time data source: `npm run game-data:generate` converts the ESR repo's txt game tables (from a local
 clone at `../Eastern_Sun_Resurrected`) into JSON committed under `public/game-data/` (`manifest.json`, `types.json`,
-`bases.json`). The browser fetches these lazily; they never go through the HTM parsers or IndexedDB. The game-file
-version (ESR git tag, e.g. `3.2.10`) is independent of the HTM changelog version. See [Game Data](./features/GAME-DATA.md).
+`bases.json`, `runewords.json`, `affixes.json`, `sources.json`, `lootfilter.json`). The browser fetches these lazily;
+they never go through the HTM parsers or IndexedDB. The game-file version (ESR git tag, e.g. `3.2.10`) is independent of
+the HTM changelog version. See [Game Data](./features/GAME-DATA.md).
 
 After an ESR release, run `npm run game-data:update`: it clones or pulls the ESR repo, regenerates the bundles, refreshes
 the test fixtures, runs the game-data tests and the staleness check, and prints a summary. Flags and the manual fallback
 are in [Game Data → Regenerating](./features/GAME-DATA.md#regenerating). The `/esr-update` Claude Code skill
 (`.claude/skills/esr-update/SKILL.md`) runs the whole update with review and asks before committing.
+
+The guide is a third static source: `npm run guide:generate` compiles `content/guide/` into `public/guide/` and also
+rewrites `public/sitemap.xml` (static routes + one URL per note, `scripts/lib/sitemap.ts`); `npm run guide:check` fails
+when either is stale. See [Guide](./features/GUIDE.md).
 
 ---
 
