@@ -4,6 +4,8 @@ import { AppLayout } from '@/core/layouts/AppLayout';
 import { RouteErrorScreen } from './RouteErrorScreen';
 import { NotFoundScreen } from './NotFoundScreen';
 import { Spinner } from '@/components/ui/spinner';
+import { startBuilds } from '@/core/startup';
+import { loadAfter } from './loadAfter';
 
 const RunewordsScreen = lazy(async () => {
   const module = await import('@/features/runewords');
@@ -55,28 +57,33 @@ const AscendanciesScreen = lazy(async () => {
   return { default: module.AscendanciesScreen };
 });
 
+// The builds screens dispatch fetch requests in mount effects, so they must not mount before the builds saga listens
+// (an action dispatched earlier is silently lost and the page stays on skeletons). `startBuilds` is idempotent and
+// resolves at once when Supabase is not configured, where the screens show their "not configured" state instead.
+const loadBuildsFeature = () => loadAfter(() => import('@/features/builds'), startBuilds);
+
 const BuildsScreen = lazy(async () => {
-  const module = await import('@/features/builds');
+  const module = await loadBuildsFeature();
   return { default: module.BuildsScreen };
 });
 
 const CreateBuildScreen = lazy(async () => {
-  const module = await import('@/features/builds');
+  const module = await loadBuildsFeature();
   return { default: module.CreateBuildScreen };
 });
 
 const EditBuildScreen = lazy(async () => {
-  const module = await import('@/features/builds');
+  const module = await loadBuildsFeature();
   return { default: module.EditBuildScreen };
 });
 
 const BuildDetailScreen = lazy(async () => {
-  const module = await import('@/features/builds');
+  const module = await loadBuildsFeature();
   return { default: module.BuildDetailScreen };
 });
 
 const UserProfileScreen = lazy(async () => {
-  const module = await import('@/features/builds');
+  const module = await loadBuildsFeature();
   return { default: module.UserProfileScreen };
 });
 
