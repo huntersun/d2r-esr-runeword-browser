@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.25.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.24.0...v1.25.0) (2026-10-24)
+
+
+### Features
+
+* **game-data:** add the Enhance page with corruption, anointment and Vessel outcomes ([5523adc](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/5523adc489b5a6d2e9e58f1b40ebfbd7f47a13ec))
+* **game-data:** show automod lines, staffmods, range and durability on base cards ([2fce8ab](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/2fce8abd05d00b5e85b5f41266436c6d4f5206d6))
+
 ## [1.24.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.23.1...v1.24.0) (2026-10-24)
 
 
