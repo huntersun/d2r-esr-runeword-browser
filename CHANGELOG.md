@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.27.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.26.0...v1.27.0) (2026-10-24)
+
+
+### Features
+
+* **game-data:** add the Cube Recipes reference page ([fd6bdc1](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/fd6bdc1ad8a39f27c3bd98053803ec4cfe33e0f6))
+* **game-data:** add the Materials index page ([1ffe7fd](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/1ffe7fd4b035ed1c2c1edaff36e14b132516211f))
+
 ## [1.26.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.25.0...v1.26.0) (2026-10-24)
 
 
