@@ -6,6 +6,12 @@ import { NotFoundScreen } from './NotFoundScreen';
 import { Spinner } from '@/components/ui/spinner';
 import { startBuilds } from '@/core/startup';
 import { loadAfter } from './loadAfter';
+import { HomeRoute } from './HomeRoute';
+
+const HomeScreen = lazy(async () => {
+  const module = await import('@/features/home');
+  return { default: module.HomeScreen };
+});
 
 const RunewordsScreen = lazy(async () => {
   const module = await import('@/features/runewords');
@@ -154,7 +160,9 @@ export const router = createBrowserRouter(
       element: <AppLayout />,
       errorElement: <RouteErrorScreen />,
       children: [
-        { index: true, element: routeElement(RunewordsScreen) },
+        // Bare `/` is the home page; `/?…` (old runewords links) redirects to `/runewords?…`.
+        { index: true, element: <HomeRoute>{routeElement(HomeScreen)}</HomeRoute> },
+        { path: 'runewords', element: routeElement(RunewordsScreen) },
         {
           path: 'guide',
           element: routeElement(GuideLayout),

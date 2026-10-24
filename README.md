@@ -6,6 +6,7 @@ Browse and search [Eastern Sun Resurrected](https://github.com/CelestialRayOne/E
 
 ## Features
 
+- **Home** — one search box across runewords, gemwords, uniques, mythicals and bases, plus a map of everything below
 - **Runewords** — search by name or affixes; filter by runes, socket count, item type, required level, and max tier points
 - **Gemwords** — the same filtering for gem-based recipes
 - **Socketables** — gems, ESR/LoD/Kanji runes, and crystals with all their bonuses

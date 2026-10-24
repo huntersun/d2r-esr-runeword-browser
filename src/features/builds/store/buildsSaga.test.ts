@@ -66,6 +66,7 @@ import buildsReducer, {
   fetchBuildsRequested,
   fetchMoreAuthorBuildsRequested,
   fetchMoreBuildsRequested,
+  fetchRecentBuildsRequested,
   setClassFilter,
   setMyBuildsOnly,
   toggleLikeRequested,
@@ -73,7 +74,7 @@ import buildsReducer, {
 } from './buildsSlice';
 import authReducer, { authStateChanged } from '@/features/auth/store/authSlice';
 import { RequestState } from '@/core/types';
-import { BUILDS_PAGE_SIZE } from '../constants';
+import { BUILDS_PAGE_SIZE, RECENT_BUILDS_COUNT } from '../constants';
 
 function makeRow(id: string): BuildWithAuthor {
   return {
@@ -495,5 +496,40 @@ describe('buildsSaga', () => {
     expect(listSelect).not.toContain('build_data');
     expect(listSelect).not.toContain('description');
     expect(detailSelect.startsWith('*')).toBe(true);
+  });
+
+  it('loads the newest builds for the home strip without touching the /builds list or its filters', async () => {
+    mocks.state.listResult = { data: [makeRow('n1'), makeRow('n2'), makeRow('n3')], error: null };
+    const store = setupStore();
+    store.dispatch(setClassFilter('Paladin'));
+    await vi.waitFor(() => {
+      expect(store.getState().builds.listStatus).toBe(RequestState.SUCCESS);
+    });
+    (mocks.builder.eq as Mock).mockClear();
+    const listBefore = store.getState().builds.items;
+
+    store.dispatch(fetchRecentBuildsRequested());
+
+    await vi.waitFor(() => {
+      expect(store.getState().builds.recentStatus).toBe(RequestState.SUCCESS);
+    });
+    const builds = store.getState().builds;
+    expect(builds.recentBuilds.map((b) => b.id)).toEqual(['n1', 'n2', 'n3']);
+    expect(builds.items).toBe(listBefore);
+    expect(builds.classFilter).toBe('Paladin');
+    expect(mocks.builder.limit as Mock).toHaveBeenLastCalledWith(RECENT_BUILDS_COUNT);
+    expect(mocks.builder.eq as Mock).not.toHaveBeenCalled();
+  });
+
+  it('marks the home strip failed on a query error', async () => {
+    mocks.state.listResult = { data: null, error: { message: 'down' } };
+    const store = setupStore();
+
+    store.dispatch(fetchRecentBuildsRequested());
+
+    await vi.waitFor(() => {
+      expect(store.getState().builds.recentStatus).toBe(RequestState.ERROR);
+    });
+    expect(store.getState().builds.error).toBeNull();
   });
 });

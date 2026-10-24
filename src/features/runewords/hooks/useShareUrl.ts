@@ -47,6 +47,6 @@ export function useShareUrl(): () => string {
       params.set(FILTER_URL_PARAM_KEYS.TIERPTS, tierPtsEntries.join(','));
     }
 
-    return buildShareUrl('', params);
+    return buildShareUrl('runewords', params);
   };
 }

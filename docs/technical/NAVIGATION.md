@@ -10,7 +10,8 @@ All routes are children of `AppLayout` in `src/core/router/index.tsx`; every scr
 
 | Path                    | Screen                  | Description                                                                                         | Query params                                                                                           |
 | ----------------------- | ----------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `/`                     | RunewordsScreen         | Home page - browse and filter runewords                                                             | `search`, `sockets`, `maxlvl`, `items`, `runes`, `runemode`, `tierpts`, `name`                         |
+| `/`                     | HomeScreen              | [Home page](#home-page): search, section cards, latest builds, guide pointer                        | any query: redirects to `/runewords` with the same query                                               |
+| `/runewords`            | RunewordsScreen         | Browse and filter runewords (was `/` before the home page)                                          | `search`, `sockets`, `maxlvl`, `items`, `runes`, `runemode`, `tierpts`, `name`                         |
 | `/guide`                | GuideLayout             | Guide frame: a small "Experimental" notice above every guide page, then the child route             |                                                                                                        |
 | `/guide` (index)        | GuideSpineScreen        | New-player guide: "Start here" journey spine, note search, "I found something" row                  |                                                                                                        |
 | `/guide/map`            | GuideMapScreen          | All notes: link graph (large screens) and a list grouped by spine step                              |                                                                                                        |
@@ -57,6 +58,38 @@ the focus brings the previous filters back; the favourites-only toggle still app
 does not change it. A dismissible "Showing: <Name> ×" chip shows it and scrolls into view only right after the deep link.
 Copy Link keeps it. Guide `rw:`/`gw:`/`unique:`/`mythical:`/`socketable:` links use it.
 
+**Old runewords links.** The runewords browser lived at `/` until the home page took that path. `/` with any query
+string (`/?name=Enigma`, `/?search=x&sockets=4`: old Copy Link URLs and guide deep links) redirects (`replace`) to
+`/runewords` with the same query and hash; only a bare `/` renders the home page. The decision is
+`runewordsRedirectTarget` in `src/core/router/homeRedirect.ts` (tested), applied by `HomeRoute` around the index route.
+
+### Home page
+
+`src/features/home/` (`HomeScreen`, lazy). Sections, top to bottom, in a `max-w-5xl` column:
+
+1. **Pitch header** (`HomeHero`): title, one-line pitch, and the data versions: "Game files: ESR …" from the game-data
+   manifest (`useManifest`) and "Docs data: ESR …" from Dexie metadata (`esrVersion`), each left out until it is known.
+2. **Search** (`HomeSearch`): one cmdk input with an inline results list grouped Runewords / Gemwords / Uniques /
+   Mythicals / Bases, max 6 each (`searchHome` / `rankNames` in `utils/homeSearch.ts`: case-insensitive substring over
+   `normaliseItemName`, ranked exact, prefix, word prefix, substring, then alphabetical; duplicates collapse). Nothing
+   loads before the first keystroke; then the Dexie name indexes (only once the startup sync has initialized; before
+   that the list says "Item data is still loading…") and `bases.json` via `loadGameDataFile`. A result opens its page
+   with `?name=<exact name>` (bases: `/game-data/bases?search="<name>"`, the page has no exact-name focus). The first row,
+   selected by default, is "Search runewords for “…”", so Enter without picking a result goes to
+   `/runewords?search=<query>`.
+3. **Section cards** (`HomeSections`): one card per `NAV_ENTRIES` entry (`getHomeSections` in `utils/homeSections.ts`):
+   a group's `description` and its pages as chips; a plain link's `description` and its `homeLinks` chips (Guide: Start
+   here, Note map) or the page itself. Builds only when Supabase is configured. A test checks every nav page appears once.
+4. **Latest builds** (`LatestBuilds`, Supabase only): the 3 newest builds as `BuildCard`s plus "Browse all". The
+   component awaits `startBuilds()` before dispatching `fetchRecentBuildsRequested`, a separate query in the builds saga
+   that writes `recentBuilds` / `recentStatus` only, so the `/builds` list, its filters and paging are untouched. One
+   skeleton row while loading; hidden on error or when there are no builds.
+5. **New to ESR?** (`HomeStartHere`): a button to `/guide` and the guide's `GuideOfficialReference` strip.
+6. **Footer** (`HomeFooter`): app version (`src/assets/version.json`), ESR / GitHub / privacy policy links (URLs from
+   `navConfig.ts`), credits.
+
+The page skips the startup loading gate (exact match on `/`, see below), so it renders before the HTM sync finishes.
+
 ## App Shell Layout
 
 ```
@@ -75,9 +108,11 @@ Copy Link keeps it. Guide `rw:`/`gw:`/`unique:`/`mythical:`/`socketable:` links 
 `AppLayout` shows a full-screen "Loading data..." spinner until the HTM data sync has initialized (and a full-screen
 error with "Try Again" when it failed). Routes that render from static bundles only skip the spinner and render the
 normal shell (Header + Outlet + SettingsDrawer) right away; the sync keeps running in the background. They also skip
-the fatal-error screen, so a failed first sync does not hide them. The prefixes are listed in
-`STATIC_BUNDLE_ROUTE_PREFIXES` in `AppLayout.tsx` (a path matches its prefix exactly or with a `/` after it):
+the fatal-error screen, so a failed first sync does not hide them. They are listed in
+`src/core/layouts/staticBundleRoutes.ts` (`isStaticBundlePath`, tested): `/` is matched exactly (as a prefix it would
+match every path), the others are prefixes (a path matches its prefix exactly or with a `/` after it):
 
+- `/` (exact): the home page; its item-name search and docs version fill in once the sync has run;
 - `/guide`: the guide is a static JSON bundle (`public/guide/`), see [GUIDE.md](../features/GUIDE.md);
 - `/loot-filters`: the editor uses the game-data bundles, `public/loot-filters/` and localStorage, see
   [LOOT-FILTER.md](../features/LOOT-FILTER.md);
@@ -87,21 +122,21 @@ the fatal-error screen, so a failed first sync does not hide them. The prefixes 
 ### Header Components
 
 `src/core/components/Header.tsx` renders from one typed config, `NAV_ENTRIES` in `src/core/navigation/navConfig.ts`
-(groups of `NavItem`s with a label, a one-line description, a path and `end`, plus plain links):
+(groups of `NavItem`s with a label, a one-line description and a path, plus plain links). The home page's section
+cards render from the same config (group `description`, link `homeLinks`):
 
 | Entry     | Kind  | Pages                                                                                                                                                               |
 | --------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Recipes ▾ | group | Runewords (`/`, `end`), Gemwords (`/gemwords`), Socketables (`/socketables`)                                                                                        |
+| Recipes ▾ | group | Runewords (`/runewords`), Gemwords (`/gemwords`), Socketables (`/socketables`)                                                                                      |
 | Items ▾   | group | Uniques (`/uniques`), Mythicals (`/mythicals`), Ascendancies (`/ascendancies`), Bases (`/game-data/bases`)                                                          |
 | Tools ▾   | group | Best Base (`/game-data/best-base`), Affixes (`/game-data/affixes`), Item Types (`/game-data/types`), Enhance (`/game-data/enhance`), Loot Filters (`/loot-filters`) |
 | Guide     | link  | `/guide`                                                                                                                                                            |
 | Builds    | link  | `/builds`, only when Supabase is configured (`requiresSupabase`, filtered by `getNavEntries`)                                                                       |
 
-- **Brand**: "D2R ESR", a link to `/`.
+- **Brand**: "D2R ESR", a link to `/` (the home page).
 - **Desktop (md and up)**: a shadcn `NavigationMenu` (`src/components/ui/navigation-menu.tsx`, `viewport={false}` so
   each dropdown opens under its own trigger). Each group trigger opens a list of label + description links. Active state:
-  an item is active when the path equals its `to` or starts with `to/` (`end` items: exact match only, so Runewords is
-  active only on `/`); a group trigger is highlighted when any of its items is active (`isNavGroupActive`). Active links
+  an item is active when the path equals its `to` or starts with `to/` (no item is active on the home page); a group trigger is highlighted when any of its items is active (`isNavGroupActive`). Active links
   get `aria-current="page"`. Keyboard (Radix): triggers are in the tab order, Enter/Space/ArrowDown opens, arrows and
   Tab move through the items, Escape closes; choosing a link closes the menu.
 - **Right side**: ESR links dropdown (book icon: ESR Documentation, ESR Changelog; md and up), theme toggle, GitHub link,
@@ -230,7 +265,9 @@ export const router = createBrowserRouter(
       element: <AppLayout />,
       errorElement: <RouteErrorScreen />,
       children: [
-        { index: true, element: routeElement(RunewordsScreen) },
+        // Bare `/` is the home page; `/?…` (old runewords links) redirects to `/runewords?…`.
+        { index: true, element: <HomeRoute>{routeElement(HomeScreen)}</HomeRoute> },
+        { path: 'runewords', element: routeElement(RunewordsScreen) },
         {
           path: 'guide',
           element: routeElement(GuideLayout),

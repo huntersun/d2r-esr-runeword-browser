@@ -201,7 +201,7 @@ export function Header() {
                     </AccordionTrigger>
                     <AccordionContent className="flex flex-col gap-0.5 pb-2 pl-3">
                       {entry.items.map((item) => (
-                        <NavLink key={item.key} to={item.to} end={item.end} className={mobileNavLinkClass} onClick={closeMobileMenu}>
+                        <NavLink key={item.key} to={item.to} className={mobileNavLinkClass} onClick={closeMobileMenu}>
                           {item.label}
                         </NavLink>
                       ))}
@@ -211,7 +211,6 @@ export function Header() {
                   <NavLink
                     key={entry.item.key}
                     to={entry.item.to}
-                    end={entry.item.end}
                     className={(state) => cn(mobileNavLinkClass(state), 'mt-1 py-3')}
                     onClick={closeMobileMenu}
                   >

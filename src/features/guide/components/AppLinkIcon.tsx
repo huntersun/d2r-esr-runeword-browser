@@ -6,7 +6,7 @@ interface AppLinkIconProps {
   readonly className?: string;
 }
 
-/** Icon for an in-app link by its target section (runewords, the home page, is the fallback). */
+/** Icon for an in-app link by its target section (runewords is the fallback). */
 export function AppLinkIcon({ href, className }: AppLinkIconProps) {
   if (href.startsWith('/game-data')) return <Database className={className} aria-hidden />;
   if (href.startsWith(NAME_FOCUS_PAGES.gw)) return <Gem className={className} aria-hidden />;

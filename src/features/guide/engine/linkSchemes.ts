@@ -37,7 +37,7 @@ export const DROP_FINDER_URL = `${OFFICIAL_SITE}drop-finder.html`;
 
 /** Schemes that focus a list page on one exact name (`?name=`), with that page's path; also the `::card` schemes. */
 export const NAME_FOCUS_PAGES = {
-  rw: '/',
+  rw: '/runewords',
   gw: '/gemwords',
   unique: '/uniques',
   mythical: '/mythicals',

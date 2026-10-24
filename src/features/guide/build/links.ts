@@ -35,6 +35,7 @@ function exactName(path: string, name: string): string {
 /** App routes a `page:` link may point at (path only; a query string is allowed). */
 export const APP_PAGES: readonly string[] = [
   '/',
+  '/runewords',
   '/gemwords',
   '/socketables',
   '/uniques',

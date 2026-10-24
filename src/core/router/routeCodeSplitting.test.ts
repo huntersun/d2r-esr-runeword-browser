@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const routeScreenImports = [
+  '@/features/home',
   '@/features/runewords',
   '@/features/gemwords',
   '@/features/socketables',

@@ -552,7 +552,7 @@ the non-default values. Invalid values fall back to the defaults; unknown type a
 ### Enhance page
 
 `/game-data/enhance` (`screens/EnhanceScreen.tsx`) loads only `enhance.json`, so it is a static-bundle route that skips
-the startup loading gate (`STATIC_BUNDLE_ROUTE_PREFIXES` in `AppLayout.tsx`). Three tabs:
+the startup loading gate (`isStaticBundlePath` in `src/core/layouts/staticBundleRoutes.ts`). Three tabs:
 
 - **Corruption** (`components/EnhanceCorruption.tsx`): slot pills with outcome counts; a header "N outcomes · 75%
   success, 25% brick → Rare item of the same type (Crafted, Superior, Normal and Low Quality keep their quality)"

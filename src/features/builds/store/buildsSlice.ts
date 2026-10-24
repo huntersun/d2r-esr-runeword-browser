@@ -71,6 +71,9 @@ interface BuildsState {
   readonly authorBuildsError: string | null;
   /** Build ids on the author profile list the signed-in viewer has liked. */
   readonly authorLikedBuildIds: readonly string[];
+  // Home page "Latest builds" strip: its own newest-first query, separate from the /builds list and its filters.
+  readonly recentBuilds: readonly BuildListItem[];
+  readonly recentStatus: RequestState;
 }
 
 const initialState: BuildsState = {
@@ -103,6 +106,8 @@ const initialState: BuildsState = {
   authorBuildsCursor: null,
   authorBuildsError: null,
   authorLikedBuildIds: [],
+  recentBuilds: [],
+  recentStatus: RequestState.IDLE,
 };
 
 const buildsSlice = createSlice({
@@ -283,6 +288,18 @@ const buildsSlice = createSlice({
       state.authorBuildsError = action.payload;
       state.authorBuildsLoadingMore = false;
     },
+    // --- Home page "Latest builds" ---
+    fetchRecentBuildsRequested(state) {
+      state.recentStatus = RequestState.LOADING;
+    },
+    fetchRecentBuildsSuccess(state, action: PayloadAction<readonly BuildListItem[]>) {
+      state.recentBuilds = [...action.payload];
+      state.recentStatus = RequestState.SUCCESS;
+    },
+    fetchRecentBuildsFailure(state) {
+      state.recentStatus = RequestState.ERROR;
+    },
+
     clearAuthorProfile(state) {
       state.authorProfile = null;
       state.authorStatus = RequestState.IDLE;
@@ -334,6 +351,9 @@ export const {
   fetchAuthorBuildsSuccess,
   fetchAuthorBuildsFailure,
   clearAuthorProfile,
+  fetchRecentBuildsRequested,
+  fetchRecentBuildsSuccess,
+  fetchRecentBuildsFailure,
 } = buildsSlice.actions;
 
 export default buildsSlice.reducer;
@@ -383,3 +403,6 @@ export const selectLikedBuildIds = createSelector([selectBuildsState], (s) => s.
 export const selectLikedBuildIdSet = createSelector([selectLikedBuildIds], (ids) => new Set(ids));
 export const selectAuthorLikedBuildIds = createSelector([selectBuildsState], (s) => s.authorLikedBuildIds);
 export const selectAuthorLikedBuildIdSet = createSelector([selectAuthorLikedBuildIds], (ids) => new Set(ids));
+
+export const selectRecentBuilds = createSelector([selectBuildsState], (s) => s.recentBuilds);
+export const selectRecentBuildsStatus = createSelector([selectBuildsState], (s) => s.recentStatus);

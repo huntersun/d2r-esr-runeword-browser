@@ -5,6 +5,9 @@ export type CharacterClass = (typeof CHARACTER_CLASSES)[number];
 /** Builds fetched per page (cursor-based infinite scroll). */
 export const BUILDS_PAGE_SIZE = 50;
 
+/** Newest builds shown in the home page's "Latest builds" strip. */
+export const RECENT_BUILDS_COUNT = 3;
+
 // Validation limits (mirror the DB CHECK constraints in migration 001).
 export const BUILD_NAME_MAX_LENGTH = 100;
 export const BUILD_DESCRIPTION_MAX_LENGTH = 2000;

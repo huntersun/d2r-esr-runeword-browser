@@ -4,12 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PRIVACY_POLICY_URL } from '@/core/navigation/navConfig';
 import { acceptConsentRequested, selectAuthIsBusy, selectDisplayName } from '../store';
 import { DISPLAY_NAME_MAX_LENGTH } from '../utils/profile';
-
-// The privacy policy lives at the repo root (PRIVACY_POLICY.md). This links to it on the
-// default branch; the link resolves once the build-sharing branch is merged to master.
-const PRIVACY_POLICY_URL = 'https://github.com/istvan-panczel/d2r-esr-runeword-browser/blob/master/PRIVACY_POLICY.md';
 
 /**
  * Full-page, non-dismissible consent gate shown after first login

@@ -14,7 +14,7 @@ answers), §5 and §5.1 (owner decisions).
 | `/loot-filters`     | LootFilterLibraryScreen | The library: New filter, Upload, Start from the ESR default filter; one card per filter         |
 | `/loot-filters/:id` | LootFilterEditorScreen  | The editor; `?tab=rules\|styles\|settings\|json\|test` (default `rules`); unknown id: not found |
 
-Both routes skip the HTM "Loading data..." gate (`STATIC_BUNDLE_ROUTE_PREFIXES` in `AppLayout.tsx`, see
+Both routes skip the HTM "Loading data..." gate (`isStaticBundlePath` in `src/core/layouts/staticBundleRoutes.ts`, see
 [NAVIGATION.md](../technical/NAVIGATION.md#startup-loading-gate)): they need only the game-data bundles, the assets in
 `public/loot-filters/` and localStorage. Header entry: "Loot Filters", after "Game Data".
 

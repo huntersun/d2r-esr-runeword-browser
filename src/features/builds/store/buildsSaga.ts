@@ -6,7 +6,7 @@ import type { Metadata } from '@/core/db';
 import { requireSupabase } from '@/core/supabase';
 import type { Json, Profile } from '@/core/supabase/types';
 import { authStateChanged, selectAuthUserId, type AuthUser } from '@/features/auth/store/authSlice';
-import { BUILDS_PAGE_SIZE } from '../constants';
+import { BUILDS_PAGE_SIZE, RECENT_BUILDS_COUNT } from '../constants';
 import type { BuildData } from '../buildData';
 import type { BuildListItem, BuildSortMode, BuildWithAuthor } from '../types';
 import { refreshBuildData } from '../utils/refreshBuildData';
@@ -34,6 +34,9 @@ import {
   fetchMoreAuthorBuildsRequested,
   fetchMoreBuildsFailure,
   fetchMoreBuildsRequested,
+  fetchRecentBuildsFailure,
+  fetchRecentBuildsRequested,
+  fetchRecentBuildsSuccess,
   selectAuthorBuildsCursor,
   selectAuthorProfile,
   selectBuildsClassFilter,
@@ -132,6 +135,26 @@ function* handleFetchBuilds(action: PayloadAction) {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to load builds.';
     yield put(append ? fetchMoreBuildsFailure(message) : fetchBuildsFailure(message));
+  }
+}
+
+// Home page strip: the newest builds, ignoring the /builds filters (and leaving that list's state alone). No liked-ids
+// lookup: the strip shows counts only.
+function* handleFetchRecentBuilds() {
+  try {
+    const client = requireSupabase();
+    const query = client
+      .from('builds')
+      .select(BUILD_LIST_SELECT)
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+      .limit(RECENT_BUILDS_COUNT);
+    const { data, error } = (yield call(() => query)) as { data: BuildListItem[] | null; error: { message: string } | null };
+    if (error) throw new Error(error.message);
+    yield put(fetchRecentBuildsSuccess(data ?? []));
+  } catch (error) {
+    console.error('[Builds] Failed to load the latest builds', error);
+    yield put(fetchRecentBuildsFailure());
   }
 }
 
@@ -382,4 +405,5 @@ export function* buildsSaga() {
   yield takeLatest(deleteBuildRequested.type, handleDeleteBuild);
   yield takeLatest([fetchAuthorProfileRequested.type, fetchMoreAuthorBuildsRequested.type], handleAuthorAction);
   yield takeLatest(authStateChanged.type, handleAuthChangedForBuilds);
+  yield takeLatest(fetchRecentBuildsRequested.type, handleFetchRecentBuilds);
 }

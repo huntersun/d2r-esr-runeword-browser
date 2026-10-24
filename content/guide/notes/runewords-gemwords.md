@@ -24,7 +24,7 @@ A card shows the runes, bases and stats, for example the early LoD runeword Stea
 
 ::card[rw:Stealth]
 
-The [Runewords](page:/) and [Gemwords](page:/gemwords) pages here list every recipe with its runes, allowed bases, socket count and level. Some runewords also accept charms as a base, which matters for the Veteran's Odd Charm ([[noobs-charm]]).
+The [Runewords](page:/runewords) and [Gemwords](page:/gemwords) pages here list every recipe with its runes, allowed bases, socket count and level. Some runewords also accept charms as a base, which matters for the Veteran's Odd Charm ([[noobs-charm]]).
 
 ### Practical tips
 

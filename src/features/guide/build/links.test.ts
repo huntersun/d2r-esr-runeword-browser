@@ -6,7 +6,7 @@ describe('resolveLink', () => {
   const ctx = fixtureContext();
 
   it.each([
-    ['rw:Enigma', 'app', '/?name=Enigma'],
+    ['rw:Enigma', 'app', '/runewords?name=Enigma'],
     ['gw:Some%20Gemword', 'app', '/gemwords?name=Some%20Gemword'],
     ['unique:Annihilus', 'app', '/uniques?name=Annihilus'],
     ["unique:Artemis'%20Wrath", 'app', "/uniques?name=Artemis'%20Wrath"],

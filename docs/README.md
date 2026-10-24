@@ -19,7 +19,7 @@ Architecture decisions, coding guidelines, tech stack documentation, and impleme
 ### Feature Documentation
 
 - [Core Data](./features/CORE-DATA.md) - HTM parsing, app startup flow, data refresh strategy
-- [Runewords](./features/RUNEWORDS.md) - Browse and filter runewords (primary feature, home page)
+- [Runewords](./features/RUNEWORDS.md) - Browse and filter runewords (`/runewords`; the home page is described in [Navigation](./technical/NAVIGATION.md#home-page))
 - [Socketables](./features/SOCKETABLES.md) - Unified view of all socketables (gems, runes, crystals) with filters
 - [Unique Items](./features/UNIQUE-ITEMS.md) - Browse and filter unique items parsed from HTM pages
 - [Game Data](./features/GAME-DATA.md) - Static bundles built from the ESR txt game files (Bases, Item Types, Best Base and Affixes pages)
@@ -61,7 +61,8 @@ The app uses a single HTM-based data system. All data is fetched from the ESR do
 
 | Feature               | Route                                                                                 | Description                                                                                                                                                                                                                           |
 | --------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Runewords             | `/`                                                                                   | ~386 runewords with filters for runes, sockets, item types, tier points, req level                                                                                                                                                    |
+| Home                  | `/`                                                                                   | Search across runewords/gemwords/uniques/mythicals/bases, section cards, latest builds; `/?…` redirects to `/runewords?…` ([NAVIGATION.md](./technical/NAVIGATION.md#home-page))                                                      |
+| Runewords             | `/runewords`                                                                          | ~386 runewords with filters for runes, sockets, item types, tier points, req level                                                                                                                                                    |
 | Guide                 | `/guide`, `/guide/map`, `/guide/:slug`                                                | New-player guide: small linked notes on a journey spine, note search, freshness badges, data blocks generated from the game files; renders before the HTM data sync finishes ([GUIDE.md](./features/GUIDE.md), `src/features/guide/`) |
 | Gemwords              | `/gemwords`                                                                           | ~590 gem-based socket recipes with filters for gems, sockets, item types, req level                                                                                                                                                   |
 | Socketables           | `/socketables`                                                                        | ~177 socketable items across 5 categories                                                                                                                                                                                             |

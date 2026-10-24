@@ -4,16 +4,21 @@ import { ExternalLink } from './ExternalLink';
 import { SectionLabel } from './SectionLabel';
 import { FOCUS_RING, GUIDE_PROSE_FONT } from './styles';
 
-/** "Official reference" strip on `/guide`: the official ESR documentation pages (external, new tab). */
-export function GuideOfficialReference() {
+const DEFAULT_DESCRIPTION = 'The full tables live on the official ESR site; the notes above link to the matching section.';
+
+interface GuideOfficialReferenceProps {
+  /** The line under the heading (the home page has no notes "above"). */
+  readonly description?: string;
+}
+
+/** "Official reference" strip on `/guide` and the home page: the official ESR documentation pages (external, new tab). */
+export function GuideOfficialReference({ description = DEFAULT_DESCRIPTION }: GuideOfficialReferenceProps) {
   return (
     <section aria-labelledby="guide-reference-heading">
       <SectionLabel id="guide-reference-heading" className="mb-1">
         Official reference
       </SectionLabel>
-      <p className={cn('mb-2 text-sm text-muted-foreground', GUIDE_PROSE_FONT)}>
-        The full tables live on the official ESR site; the notes above link to the matching section.
-      </p>
+      <p className={cn('mb-2 text-sm text-muted-foreground', GUIDE_PROSE_FONT)}>{description}</p>
       <ul className="grid grid-cols-1 gap-x-4 gap-y-2 rounded-lg border bg-card p-3 sm:grid-cols-2">
         {OFFICIAL_REFERENCES.map((reference) => (
           <li key={reference.file} className="min-w-0">

@@ -28,14 +28,14 @@ describe('collectAppLinks', () => {
     const body: GuideBlock[] = [
       {
         type: 'paragraph',
-        children: [appLink('/?name=Enigma', 'Enigma'), { type: 'link', kind: 'note', href: 'forging', children: [text('n')] }],
+        children: [appLink('/runewords?name=Enigma', 'Enigma'), { type: 'link', kind: 'note', href: 'forging', children: [text('n')] }],
       },
       {
         type: 'list',
         ordered: false,
         items: [[{ type: 'paragraph', children: [{ type: 'emphasis', children: [appLink('/uniques', 'Uniques')] }] }]],
       },
-      { type: 'blockquote', children: [{ type: 'paragraph', children: [appLink('/?name=Enigma', 'again')] }] },
+      { type: 'blockquote', children: [{ type: 'paragraph', children: [appLink('/runewords?name=Enigma', 'again')] }] },
       { type: 'table', header: [[text('h')]], rows: [[[appLink('/game-data/bases', 'Bases')]]] },
       { type: 'heading', depth: 3, children: [appLink('/gemwords', 'Gemwords')] },
       {
@@ -44,7 +44,7 @@ describe('collectAppLinks', () => {
       },
     ];
     expect(collectAppLinks(body)).toEqual([
-      { href: '/?name=Enigma', label: 'Enigma' },
+      { href: '/runewords?name=Enigma', label: 'Enigma' },
       { href: '/uniques', label: 'Uniques' },
       { href: '/game-data/bases', label: 'Bases' },
       { href: '/gemwords', label: 'Gemwords' },

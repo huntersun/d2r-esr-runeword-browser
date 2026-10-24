@@ -36,4 +36,4 @@ The reset is listed with the other charm recipes, which also reroll the magic an
 
 ::recipes[charm-reroll]
 
-A runeword or gemword that allows charms as its base needs exactly as many sockets as it has runes or gems, so pick the socket count to match; the [Runewords](page:/) page shows which ones ([[runewords-gemwords]]). See [[socketing]] for sockets on other items.
+A runeword or gemword that allows charms as its base needs exactly as many sockets as it has runes or gems, so pick the socket count to match; the [Runewords](page:/runewords) page shows which ones ([[runewords-gemwords]]). See [[socketing]] for sockets on other items.

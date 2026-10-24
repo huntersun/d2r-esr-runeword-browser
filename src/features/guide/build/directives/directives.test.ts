@@ -167,7 +167,7 @@ describe('glossary and term', () => {
 
 describe('card', () => {
   it('embeds a card with the name as written and the app link of the same scheme', () => {
-    expect(resolve('card', 'rw:Enigma')).toEqual({ kind: 'card', item: 'runeword', name: 'Enigma', href: '/?name=Enigma' });
+    expect(resolve('card', 'rw:Enigma')).toEqual({ kind: 'card', item: 'runeword', name: 'Enigma', href: '/runewords?name=Enigma' });
     expect(resolve('card', "unique:Artemis' Wrath")).toEqual({
       kind: 'card',
       item: 'unique',

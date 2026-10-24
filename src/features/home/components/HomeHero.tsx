@@ -1,0 +1,29 @@
+import { useManifest } from '@/features/game-data/hooks/useManifest';
+import { useDocsEsrVersion } from '../hooks/useDocsEsrVersion';
+import { HomeSearch } from './HomeSearch';
+
+/** Pitch header: title, one-line pitch, the data versions, and the cross-section search. */
+export function HomeHero() {
+  const manifest = useManifest();
+  const docsVersion = useDocsEsrVersion();
+  const versions = [
+    manifest === null ? null : `Game files: ESR ${manifest.esrVersion}`,
+    docsVersion === undefined ? null : `Docs data: ESR ${docsVersion}`,
+  ].filter((line) => line !== null);
+
+  return (
+    <section aria-labelledby="home-title" className="space-y-4 rounded-xl border bg-card px-4 py-6 sm:px-6 sm:py-8">
+      <div className="space-y-2">
+        <h1 id="home-title" className="text-3xl font-bold tracking-tight sm:text-4xl">
+          D2R ESR Browser
+        </h1>
+        <p className="text-base text-muted-foreground sm:text-lg">
+          Browse Eastern Sun Resurrected data, plan builds and build loot filters.
+        </p>
+        {/* Fixed height so the line appearing after the manifest/sync loads does not shift the search below. */}
+        <p className="min-h-4 text-xs text-muted-foreground">{versions.join(' · ')}</p>
+      </div>
+      <HomeSearch />
+    </section>
+  );
+}

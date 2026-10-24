@@ -16,6 +16,9 @@ import buildsReducer, {
   fetchBuildsSuccess,
   fetchMoreBuildsFailure,
   fetchMoreBuildsRequested,
+  fetchRecentBuildsFailure,
+  fetchRecentBuildsRequested,
+  fetchRecentBuildsSuccess,
   resetCreateStatus,
   resetUpdateStatus,
   selectBuildsHasActiveFilters,
@@ -233,5 +236,25 @@ describe('buildsSlice', () => {
     expect(loaded.authorLikedBuildIds).toEqual(['a']);
 
     expect(buildsReducer(loaded, clearAuthorProfile()).authorLikedBuildIds).toEqual([]);
+  });
+
+  it('keeps the home "Latest builds" state apart from the /builds list', () => {
+    const listed = buildsReducer(
+      initial,
+      fetchBuildsSuccess({ items: [makeBuild('a')], cursor: null, hasMore: false, append: false, likedIds: [] })
+    );
+    const loading = buildsReducer(listed, fetchRecentBuildsRequested());
+    expect(loading.recentStatus).toBe(RequestState.LOADING);
+    expect(loading.listStatus).toBe(RequestState.SUCCESS);
+
+    const loaded = buildsReducer(loading, fetchRecentBuildsSuccess([makeBuild('x'), makeBuild('y')]));
+    expect(loaded.recentBuilds.map((b) => b.id)).toEqual(['x', 'y']);
+    expect(loaded.recentStatus).toBe(RequestState.SUCCESS);
+    expect(loaded.items.map((b) => b.id)).toEqual(['a']);
+
+    const failed = buildsReducer(loaded, fetchRecentBuildsFailure());
+    expect(failed.recentStatus).toBe(RequestState.ERROR);
+    expect(failed.listStatus).toBe(RequestState.SUCCESS);
+    expect(failed.error).toBeNull();
   });
 });
