@@ -37,14 +37,14 @@ Arrays are written one element per line so diffs stay readable. Bundle URLs carr
 the manifest itself is always revalidated. The shape is defined in `src/features/game-data/engine/schema.ts`
 (`GAME_DATA_SCHEMA`); bump it whenever a bundle shape changes incompatibly.
 
-| Bundle            | ESR 3.2.12 size (raw / gzip) |
-| ----------------- | ---------------------------- |
-| `types.json`      | 44 KB / 5 KB                 |
-| `bases.json`      | 292 KB / 26 KB               |
-| `runewords.json`  | 197 KB / 28 KB               |
-| `affixes.json`    | 795 KB / 61 KB               |
-| `sources.json`    | 298 KB / 29 KB               |
-| `lootfilter.json` | 686 KB / 98 KB               |
+| Bundle            | ESR 3.2.12 size (raw / gzip)                                                   |
+| ----------------- | ------------------------------------------------------------------------------ |
+| `types.json`      | 44 KB / 5 KB                                                                   |
+| `bases.json`      | 292 KB / 26 KB (ESR 3.2.24 with automods, staffmods and range: 322 KB / 27 KB) |
+| `runewords.json`  | 197 KB / 28 KB                                                                 |
+| `affixes.json`    | 795 KB / 61 KB                                                                 |
+| `sources.json`    | 298 KB / 29 KB                                                                 |
+| `lootfilter.json` | 686 KB / 98 KB                                                                 |
 
 ### Bases and types
 
@@ -55,6 +55,22 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 - Socket caps: `min(gemsockets, MaxSockets1/2/3)` of the base's own `type`, bands `ilvl ≤ 25` / `≤ 40` / above.
 - Names: `namestr` resolved through the string tables; mythical bases whose string lacks "Mythical" use the `name` column.
 - Exact duplicates (all fields except `code`/`family` equal) are dropped, keeping the first row.
+- Durability: `durability`; `indestructible` = `nodurability == 1`. Weapon damage `mindam`/`maxdam` is `dmg1`; on armor
+  the same columns are smite damage (shields) or kick damage (boots), also stored in `dmg1`.
+- `range`: weapons.txt `rangeadder`, written only when non-zero (armor and misc have no such column).
+- `staffMods`: the itemtypes.txt `StaffMods` class of the base's own `type` row (no Equiv walk; no ESR `type2` has one),
+  written only when set. The game adds bonuses to random skills of that class; the files define no per-skill list, so
+  the bundle and the card only name the class. ESR 3.2.24: 218 bases (staves, wands, scepters, orbs, daggers →
+  Warlock, class weapons and armor, robes, spirit crowns, cloaks, class rings and amulets).
+- Automods: `autoGroup` = `auto prefix`. After the affixes bundle is built, `attachAutomods` writes `automods` = the ids
+  of the kind `a` affixes the base can roll: `group == autoGroup`, an itype among the ancestors and no etype,
+  `freq > 0`, the class lock, and an affix level range that overlaps the base's reachable span
+  `[affixLevel(1, qlvl, magicLvl), affixLevel(99, qlvl, magicLvl)]` (e.g. Sacred Targe never drops below alvl 29).
+  The referenced rows go into the top-level `automods` array (`BaseAutomod`: `id`, `name`, `lvl`, `maxLvl`, `reqLvl`,
+  `text`, sorted by id; `text` is the same rendered text as `affixes.json`). `automods` is omitted when empty, e.g. for
+  ESR's arrow group 313, whose only row is an invisible `noconsume` placeholder. ESR 3.2.24: 86 rows, 616 bases; group
+  320 (455 bases) only adds "Tinkering Points". Counts: `baseAutomods`, `basesWithAutomods`, `basesWithStaffMods`.
+  Adding these optional fields did not bump `GAME_DATA_SCHEMA`.
 - Type names: itemtypes `ItemType` column. When two types share a name, the type without bases of its own gets
   " (code)" appended (`merc` → "Helm (merc)", `helm` stays "Helm"); when all or none of them have bases, all do
   ("Gem Can 1 (can1)" / "Gem Can 1 (can9)").
@@ -321,10 +337,18 @@ accessories; nothing selected means all types. Codes selected via a link that ar
 `mele`) appear as removable chips.
 
 Each base is a Card (grid like the runewords page): name, tier badge, type (and type2) name and code, class-only /
-automod group / indestructible badges, damage 1H / 2H / throw, defense, block, speed (weapons), requirements, str/dex
-damage bonus, socket caps as "N (ilvl ≤ t1) / N (≤ t2) / N" using the thresholds of the base's own type (one number when
-all bands are equal), quality level, and the N/X/E family where other members are clickable and set the search to
-`"<name>"`. The first 100 results render; "Show more" adds 100 at a time (reset when filters change).
+indestructible badges, damage 1H / 2H / throw (armor: "Smite" for shields, "Kick" for boots), defense, block, speed
+(weapons), range (`+rangeadder`, when set), durability (when > 0 and not indestructible), requirements, str/dex damage
+bonus, socket caps as "N (ilvl ≤ t1) / N (≤ t2) / N" using the thresholds of the base's own type (one number when
+all bands are equal), quality level, "Staffmods: + to random <Class> skills" (when `staffMods` is set), and the N/X/E
+family where other members are clickable and set the search to `"<name>"`.
+
+Below the stats, the automods (`utils/baseAutomods.ts` → `baseAutomodView`): a single option shows its lines with
+name, affix level range and required level. Several options read "Automod: one of N, picked by item level" (the game
+picks one row of the group per item, among the rows whose level range fits the affix level, weighted by frequency); each
+option shows its own lines plus name · `lvl a–b` · `req lvl r`, and lines every option has (ESR's "Tinkering Points")
+are pulled out into "Every option also: …". More than 5 options start collapsed in a `<details>`. A base whose group
+has no visible rows keeps the "Automod N" badge instead. The first 100 results render; "Show more" adds 100 at a time (reset when filters change).
 
 #### URL params
 
@@ -597,6 +621,7 @@ src/features/game-data/
   store/baseFiltersUrl.ts          encode/decode/hasBaseFilterParams
   hooks/{useGameData,useBasesUrlState}.ts
   utils/filterBases.ts             + test
+  utils/baseAutomods.ts            automod options + shared lines, smite/kick label for base cards (+ test)
   utils/{typeGroups,typeTree,format}.ts + typeTree.test.ts
   components/{GameDataVersionBanner,GameDataError,GameDataLoading,ComingSoon,BaseFilters,BaseCard}.tsx
   screens/{GameDataLayout,BasesScreen,BestBaseScreen,AffixesScreen,ItemTypesScreen}.tsx
@@ -633,14 +658,16 @@ constants/affixes.ts              kinds, sort keys, labels, level range, page si
 
 ## Tests
 
-- Build: `build/tsv.test.ts`, `build/strings.test.ts`, `build/bundleRunewords.test.ts`, `build/bundleAffixes.test.ts`,
+- Build: `build/tsv.test.ts`, `build/strings.test.ts`, `build/bundleBases.test.ts` (staffmods, range, smite/kick,
+  automod eligibility and attachment on inline TSV), `build/bundleRunewords.test.ts`, `build/bundleAffixes.test.ts`,
   `build/bundleSources.test.ts` (each label rule on inline TSV; with the ESR clone, the verified examples Pelta Lunata,
   Krok's Basher, Mephisto's Will, Frostmourne, Annihilus, Hellfire Torch, Kill Ledger, Orb of Anointment, Forging Hammer),
   `build/stats/*.test.ts` (sprintf, expandProperty, descfunc, renderLines, propertyGroups)
 - Engine: `engine/itemTypes.test.ts`, `engine/sockets.test.ts`, `engine/matchRunewords.test.ts`,
   `engine/bestBase.test.ts`, `engine/affixEligibility.test.ts`, `engine/browser/loadGameData.test.ts`
 - UI: `store/gameDataSlice.test.ts`, `store/bestBaseState.test.ts`, `utils/filterBases.test.ts`,
-  `utils/typeTree.test.ts`, `utils/bestBaseResults.test.ts`, `utils/filterAffixes.test.ts`, `store/affixFilters.test.ts`
+  `utils/typeTree.test.ts`, `utils/bestBaseResults.test.ts`, `utils/filterAffixes.test.ts`, `store/affixFilters.test.ts`,
+  `utils/baseAutomods.test.ts`
 - `bundleIntegrity.test.ts`: reads the committed JSON (counts, hashes, schema, type references, affix text). When the
   ESR clone is present it also regenerates the bundles in memory, checks they equal the committed files, and compares
   base names with the clone's `docs/weapons.htm` / `docs/armors.htm` (≥ 95 % overlap; misses are printed).

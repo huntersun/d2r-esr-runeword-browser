@@ -32,7 +32,7 @@ const affixesText = readText('affixes');
 const sourcesText = readText('sources');
 const lootfilterText = readText('lootfilter');
 const { types } = JSON.parse(typesText) as TypesBundle;
-const { bases } = JSON.parse(basesText) as BasesBundle;
+const { bases, automods: baseAutomods = [] } = JSON.parse(basesText) as BasesBundle;
 const { runewords } = JSON.parse(runewordsText) as TxtRunewordsBundle;
 const { affixes } = JSON.parse(affixesText) as AffixesBundle;
 const { items: sourceItems } = JSON.parse(sourcesText) as SourcesBundle;
@@ -91,6 +91,21 @@ describe('committed game-data bundles', () => {
         if (code !== null) expect(codes, `${base.code} → ${code}`).toContain(code);
       }
     }
+  });
+
+  it('carry automod lines that match affixes.json and staffmods on class items', () => {
+    const automagicText = new Map(affixes.filter((affix) => affix.kind === 'a').map((affix) => [affix.id, affix.text]));
+    const automodIds = new Set(baseAutomods.map((automod) => automod.id));
+    for (const automod of baseAutomods) expect(automod.text, `automod ${String(automod.id)}`).toEqual(automagicText.get(automod.id));
+    for (const base of bases) {
+      for (const id of base.automods ?? []) expect(automodIds, `${base.code} → automod ${String(id)}`).toContain(id);
+      if (base.automods !== undefined) expect(base.autoGroup, base.code).not.toBeNull();
+    }
+    expect(manifest.counts.baseAutomods).toBe(baseAutomods.length);
+    const eagleOrb = bases.find((base) => base.code === 'ob1');
+    expect(eagleOrb?.staffMods).toBe('sor');
+    expect(eagleOrb?.automods?.length).toBeGreaterThan(1);
+    expect(bases.find((base) => base.code === 'hax')?.range).toBeGreaterThan(0);
   });
 
   it('only reference family codes that exist among the bases or are reported as warnings', () => {

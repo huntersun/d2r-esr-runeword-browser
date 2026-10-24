@@ -1,7 +1,17 @@
+import { affixLevel, MAX_LEVEL } from '../engine/affixEligibility.ts';
 import { ancestorsOf, resolveClass } from '../engine/itemTypes.ts';
-import type { BaseItem, BasesBundle, ClassCode, ItemTypeInfo, TypesBundle } from '../engine/schema.ts';
+import {
+  isClassCode,
+  type Affix,
+  type BaseAutomod,
+  type BaseItem,
+  type BasesBundle,
+  type ClassCode,
+  type ItemTypeInfo,
+  type TypesBundle,
+} from '../engine/schema.ts';
 import type { BuildResult } from './bundleTypes.ts';
-import type { ItemRow } from './model.ts';
+import type { ItemRow, ItemTypeRow } from './model.ts';
 import { familyPosition } from './tiers.ts';
 
 /**
@@ -40,10 +50,26 @@ function duplicateKey(base: BaseItem): string {
   return JSON.stringify(rest);
 }
 
+/**
+ * itemtypes.txt `StaffMods` per type code. The game reads the column of the item's own `type` row only (no Equiv walk);
+ * in ESR no `type2` (1hsw / 2hsw) has one.
+ */
+export function readStaffMods(typeRows: readonly ItemTypeRow[]): BuildResult<Map<string, ClassCode>> {
+  const warnings: string[] = [];
+  const staffMods = new Map<string, ClassCode>();
+  for (const row of typeRows) {
+    if (row.staffMods === '') continue;
+    if (isClassCode(row.staffMods)) staffMods.set(row.code, row.staffMods);
+    else warnings.push(`itemtypes: "${row.code}" has unknown StaffMods "${row.staffMods}"; ignored`);
+  }
+  return { bundle: staffMods, warnings };
+}
+
 export function buildBasesBundle(
   items: readonly ItemRow[],
   typesBundle: TypesBundle,
-  strings: ReadonlyMap<string, string>
+  strings: ReadonlyMap<string, string>,
+  staffMods: ReadonlyMap<string, ClassCode> = new Map()
 ): BuildResult<BasesBundle> & { duplicates: number } {
   const warnings: string[] = [];
   const types = new Map<string, ItemTypeInfo>(typesBundle.types.map((t) => [t.code, t]));
@@ -89,6 +115,7 @@ export function buildBasesBundle(
     }
 
     const caps = ownType.sockets;
+    const staffModClass = staffMods.get(row.type);
     const base: BaseItem = {
       code: row.code,
       name,
@@ -108,6 +135,7 @@ export function buildBasesBundle(
       dmg2: pair(row.twoHandMindam, row.twoHandMaxdam),
       throwDmg: pair(row.minmisdam, row.maxmisdam),
       speed: row.speed,
+      ...(row.rangeadder !== 0 && { range: row.rangeadder }),
       strBonus: row.strBonus,
       dexBonus: row.dexBonus,
       def: pair(row.minac, row.maxac),
@@ -116,6 +144,7 @@ export function buildBasesBundle(
       indestructible: row.nodurability === 1,
       magicLvl: row.magicLvl,
       autoGroup: row.autoPrefix === 0 ? null : row.autoPrefix,
+      ...(staffModClass !== undefined && { staffMods: staffModClass }),
       cls: resolveClass(ancestors, classOf),
       inv: [row.invwidth, row.invheight],
     };
@@ -133,4 +162,50 @@ export function buildBasesBundle(
 
   if (dropped.length > 0) warnings.push(`bases: dropped ${dropped.join(', ')}`);
   return { bundle: { bases }, warnings, duplicates: dropped.length };
+}
+
+/** Lowest and highest affix level a base can reach over item levels 1–99 (affixLevel is monotonic in ilvl). */
+function affixLevelSpan(base: Pick<BaseItem, 'qlvl' | 'magicLvl'>): [number, number] {
+  return [affixLevel(1, base.qlvl, base.magicLvl), affixLevel(MAX_LEVEL, base.qlvl, base.magicLvl)];
+}
+
+/** Whether an automagic row can roll on a base at some item level (same rules as `eligibleAffixes`, any ilvl). */
+export function canRollAutomod(affix: Affix, base: Pick<BaseItem, 'qlvl' | 'magicLvl' | 'autoGroup' | 'cls' | 'ancestors'>): boolean {
+  const [minAlvl, maxAlvl] = affixLevelSpan(base);
+  return (
+    affix.kind === 'a' &&
+    affix.group === base.autoGroup &&
+    affix.freq > 0 &&
+    affix.lvl <= maxAlvl &&
+    (affix.maxLvl === 0 || affix.maxLvl >= minAlvl) &&
+    affix.itypes.some((code) => base.ancestors.includes(code)) &&
+    !affix.etypes.some((code) => base.ancestors.includes(code)) &&
+    (base.cls === null || affix.cls === null || affix.cls === base.cls)
+  );
+}
+
+/**
+ * Adds the automagic rows each base can roll (`BaseItem.automods`) and the referenced rows (`BasesBundle.automods`,
+ * sorted by id) from the built affixes. Placeholder rows dropped by the affixes bundle (no visible stat) never appear.
+ */
+export function attachAutomods(bundle: BasesBundle, affixes: readonly Affix[]): BasesBundle {
+  const automagic = affixes.filter((affix) => affix.kind === 'a');
+  const used = new Map<number, BaseAutomod>();
+  const bases = bundle.bases.map((base) => {
+    if (base.autoGroup === null) return base;
+    const rows = automagic.filter((affix) => canRollAutomod(affix, base));
+    if (rows.length === 0) return base;
+    for (const { id, name, lvl, maxLvl, reqLvl, text } of rows) used.set(id, { id, name, lvl, maxLvl, reqLvl, text });
+    // Keep the key next to autoGroup so the JSON reads naturally
+    const { autoGroup, staffMods, cls, inv, ...head } = base;
+    return {
+      ...head,
+      autoGroup,
+      automods: rows.map((affix) => affix.id),
+      ...(staffMods !== undefined && { staffMods }),
+      cls,
+      inv,
+    };
+  });
+  return { bases, automods: [...used.values()].sort((a, b) => a.id - b.id) };
 }

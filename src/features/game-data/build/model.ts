@@ -15,6 +15,8 @@ export interface ItemTypeRow {
   maxSockets: [number, number, number];
   thresholds: [number, number];
   cls: string;
+  /** `StaffMods`: class whose skills the game may add as random +skill bonuses (staves, wands, orbs, class items) */
+  staffMods: string;
   ui: string;
   rwCats: string[];
 }
@@ -45,6 +47,8 @@ export interface ItemRow {
   twoHandMaxdam: number;
   minmisdam: number;
   maxmisdam: number;
+  /** weapons.txt `rangeadder` (0 for armor/misc) */
+  rangeadder: number;
   speed: number;
   strBonus: number;
   dexBonus: number;
@@ -86,6 +90,7 @@ export function readItemTypes(table: TsvTable): ItemTypeRow[] {
     maxSockets: [row.num('MaxSockets1'), row.num('MaxSockets2'), row.num('MaxSockets3')],
     thresholds: [row.num('MaxSocketsLevelThreshold1'), row.num('MaxSocketsLevelThreshold2')],
     cls: row.str('Class'),
+    staffMods: row.str('StaffMods'),
     ui: row.str('UICategory'),
     rwCats: row.list('RunewordCategory', 2),
   }));
@@ -115,6 +120,7 @@ export function readItems(table: TsvTable, kind: ItemKind): ItemRow[] {
     twoHandMaxdam: optNum(row, '2handmaxdam'),
     minmisdam: optNum(row, 'minmisdam'),
     maxmisdam: optNum(row, 'maxmisdam'),
+    rangeadder: optNum(row, 'rangeadder'),
     speed: optNum(row, 'speed'),
     strBonus: optNum(row, 'StrBonus'),
     dexBonus: optNum(row, 'DexBonus'),

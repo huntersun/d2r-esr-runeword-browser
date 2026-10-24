@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
-import type { BaseItem, TypesBundle } from '../engine/schema';
+import type { BaseAutomod, BaseItem, TypesBundle } from '../engine/schema';
 import { BASES_PAGE_SIZE } from '../constants/bases';
 import { BaseCard } from '../components/BaseCard';
 import { BaseFilters } from '../components/BaseFilters';
@@ -20,15 +20,16 @@ export function BasesScreen() {
   const gameData = useGameData(BASES_FILES);
   if (gameData.status === 'loading') return <GameDataLoading />;
   if (gameData.status === 'error') return <GameDataError error={gameData.error} onRetry={gameData.retry} />;
-  return <BasesBrowser typesBundle={gameData.data.types} bases={gameData.data.bases.bases} />;
+  return <BasesBrowser typesBundle={gameData.data.types} bases={gameData.data.bases.bases} automods={gameData.data.bases.automods ?? []} />;
 }
 
 interface BasesBrowserProps {
   readonly typesBundle: TypesBundle;
   readonly bases: readonly BaseItem[];
+  readonly automods: readonly BaseAutomod[];
 }
 
-function BasesBrowser({ typesBundle, bases }: BasesBrowserProps) {
+function BasesBrowser({ typesBundle, bases, automods }: BasesBrowserProps) {
   const dispatch = useDispatch();
   const filters = useSelector(selectBaseFilters);
   const { types, classes } = typesBundle;
@@ -37,6 +38,7 @@ function BasesBrowser({ typesBundle, bases }: BasesBrowserProps) {
   const typeNames = new Map(types.map((type) => [type.code, type.name]));
   const knownTypes = new Set(typeByCode.keys());
   const baseByCode = new Map(bases.map((base) => [base.code, base]));
+  const automodById = new Map(automods.map((automod) => [automod.id, automod]));
   const classNames = new Map<string, string>(classes.map((cls) => [cls.code, cls.name]));
   const typeGroups = buildTypeGroups(bases, types);
   const getShareUrl = useBasesUrlState(knownTypes);
@@ -64,7 +66,14 @@ function BasesBrowser({ typesBundle, bases }: BasesBrowserProps) {
           key={JSON.stringify(filters)}
           bases={filtered}
           renderBase={(base) => (
-            <BaseCard base={base} typeByCode={typeByCode} baseByCode={baseByCode} classNames={classNames} onSearch={handleSearch} />
+            <BaseCard
+              base={base}
+              typeByCode={typeByCode}
+              baseByCode={baseByCode}
+              automodById={automodById}
+              classNames={classNames}
+              onSearch={handleSearch}
+            />
           )}
         />
       )}

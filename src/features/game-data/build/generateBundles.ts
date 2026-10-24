@@ -1,6 +1,6 @@
 import type { AffixesBundle, BasesBundle, LootFilterDataBundle, SourcesBundle, TxtRunewordsBundle, TypesBundle } from '../engine/schema.ts';
 import { buildAffixesBundle } from './bundleAffixes.ts';
-import { buildBasesBundle } from './bundleBases.ts';
+import { attachAutomods, buildBasesBundle, readStaffMods } from './bundleBases.ts';
 import { buildLootFilterBundle } from './bundleLootFilter.ts';
 import { buildRunewordsBundle } from './bundleRunewords.ts';
 import { buildSourcesBundle } from './bundleSources.ts';
@@ -35,7 +35,8 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
   const misc = readItems(table('misc'), 'misc');
   const items = [...readItems(table('weapons'), 'weapon'), ...readItems(table('armor'), 'armor'), ...misc];
   // Bases only need ancestors/sockets/classes; type names are settled afterwards, when the base types are known
-  const bases = buildBasesBundle(items, buildTypesBundle(typeRows, charStats, strings).bundle, strings);
+  const staffMods = readStaffMods(typeRows);
+  const bases = buildBasesBundle(items, buildTypesBundle(typeRows, charStats, strings).bundle, strings, staffMods.bundle);
   const baseTypes = new Set(bases.bundle.bases.flatMap((base) => (base.type2 === null ? [base.type] : [base.type, base.type2])));
   const types = buildTypesBundle(typeRows, charStats, strings, baseTypes);
   const renderer = createStatRenderer(readStatTables(sources.tables), strings);
@@ -47,6 +48,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
     ...readAffixes(table('automagic'), 'a'),
   ];
   const affixes = buildAffixesBundle(affixRows, types.bundle, strings, renderMods);
+  const basesBundle = attachAutomods(bases.bundle, affixes.bundle.affixes);
   const countAffixes = (kind: string) => affixes.bundle.affixes.filter((affix) => affix.kind === kind).length;
 
   const sourceItems = buildSourcesBundle(
@@ -86,7 +88,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
   const countKind = (kind: string) => bases.bundle.bases.filter((base) => base.kind === kind).length;
   return {
     types: types.bundle,
-    bases: bases.bundle,
+    bases: basesBundle,
     runewords: runewords.bundle,
     affixes: affixes.bundle,
     sources: sourceItems.bundle,
@@ -101,6 +103,9 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       strings: strings.size,
       stringConflicts: stringWarnings.length,
       duplicateBases: bases.duplicates,
+      baseAutomods: basesBundle.automods?.length ?? 0,
+      basesWithAutomods: basesBundle.bases.filter((base) => base.automods !== undefined).length,
+      basesWithStaffMods: basesBundle.bases.filter((base) => base.staffMods !== undefined).length,
       runewords: runewords.bundle.runewords.length,
       runewordRows: runewords.bundle.runewords.reduce((sum, runeword) => sum + runeword.rows.length, 0),
       affixes: affixes.bundle.affixes.length,
@@ -123,6 +128,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
     },
     warnings: [
       ...types.warnings,
+      ...staffMods.warnings,
       ...bases.warnings,
       ...runewords.warnings,
       ...affixes.warnings,

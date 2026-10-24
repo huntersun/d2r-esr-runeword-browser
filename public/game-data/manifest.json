@@ -3,15 +3,15 @@
   "esrVersion": "3.2.24",
   "esrTag": "3.2.24",
   "esrCommit": "b0622767314f9bf65f9c3a2cdeacded0b2e04a7e",
-  "generatedAt": "2026-10-21T21:05:08.416Z",
+  "generatedAt": "2026-10-24T20:40:56.836Z",
   "files": {
     "types": {
       "hash": "cab8a44704bcb77dd1d552147ce4b2e16d2d30517780f10d4d1b55de7c1e294d",
       "bytes": 45013
     },
     "bases": {
-      "hash": "a760b74b753d110afb044f4c7937a95f8db71dc1e4ff4e36edfb0629b8fae3af",
-      "bytes": 298973
+      "hash": "91456a03792aeecc4ecc5fd2fafac70acc993265a98a45f1cb3cadd4e9364a74",
+      "bytes": 329778
     },
     "runewords": {
       "hash": "4571713efa4a215778b8bcfb91ac57981f5b13b78f5c5b5343f5c927fdf9300c",
@@ -40,6 +40,9 @@
     "strings": 14784,
     "stringConflicts": 85,
     "duplicateBases": 3,
+    "baseAutomods": 86,
+    "basesWithAutomods": 616,
+    "basesWithStaffMods": 218,
     "runewords": 391,
     "runewordRows": 449,
     "affixes": 2548,

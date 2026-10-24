@@ -48,6 +48,25 @@ export interface ClassInfo {
 
 export interface BasesBundle {
   bases: BaseItem[];
+  /**
+   * The automagic.txt rows some base can roll (`BaseItem.automods` ids), sorted by id. Always written by the generator;
+   * optional only so hand-built test bundles can leave it out.
+   */
+  automods?: BaseAutomod[];
+}
+
+/** One automagic.txt row as shown on base cards (a subset of the affixes.json `Affix` with kind `a`). */
+export interface BaseAutomod {
+  /** 0-based automagic.txt row index (= `Affix.id` of the kind `a` affix) */
+  id: number;
+  /** String-resolved name; '' for ESR's "null" placeholder rows */
+  name: string;
+  lvl: number;
+  /** 0 = no maximum */
+  maxLvl: number;
+  reqLvl: number;
+  /** Rendered stat lines (same text as the Affixes page) */
+  text: string[];
 }
 
 export interface BaseItem {
@@ -72,6 +91,8 @@ export interface BaseItem {
   dmg2: [number, number] | null;
   throwDmg: [number, number] | null;
   speed: number;
+  /** weapons.txt `rangeadder`; omitted when 0 or blank */
+  range?: number;
   strBonus: number;
   dexBonus: number;
   def: [number, number] | null;
@@ -80,6 +101,14 @@ export interface BaseItem {
   indestructible: boolean;
   magicLvl: number;
   autoGroup: number | null;
+  /**
+   * ids of the `BasesBundle.automods` rows this base can roll: `group == autoGroup`, an itype among the ancestors and no
+   * etype, class lock, and an affix level range reachable at some item level. One of them is picked per item. Omitted
+   * when empty (no group, or a group with only invisible placeholder rows).
+   */
+  automods?: number[];
+  /** itemtypes.txt `StaffMods` of the base's own `type` row: random +skill bonuses of this class; omitted when none */
+  staffMods?: ClassCode;
   cls: ClassCode | null;
   inv: [number, number];
 }
