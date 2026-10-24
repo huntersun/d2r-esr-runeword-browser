@@ -8,19 +8,39 @@ Location: `src/components/ui/`
 
 Foundational components installed via shadcn/ui CLI, styled with Tailwind CSS:
 
+- `accordion.tsx` - Collapsible sections / mobile nav groups (Radix UI)
+- `avatar.tsx` - User avatars (Radix UI)
 - `badge.tsx` - Status/category badges
 - `button.tsx` - Buttons with variants
 - `card.tsx` - Card containers
 - `checkbox.tsx` - Checkbox inputs (Radix UI)
+- `command.tsx` - Command palette / searchable lists (cmdk)
 - `dialog.tsx` - Modal dialogs (Radix UI)
+- `dropdown-menu.tsx` - Dropdown menus (Radix UI)
 - `input.tsx` - Text inputs
 - `input-group.tsx` - Input with clear button
 - `label.tsx` - Form labels (Radix UI)
+- `navigation-menu.tsx` - Header group menus (Radix UI; used with `viewport={false}`)
 - `popover.tsx` - Popover overlays (Radix UI)
+- `select.tsx` - Select inputs (Radix UI)
 - `sheet.tsx` - Slide-out panels / mobile menu (Radix UI)
+- `skeleton.tsx` - Loading placeholders
 - `slider.tsx` - Range sliders (Radix UI)
+- `sonner.tsx` - Toasts
 - `spinner.tsx` - Loading spinner
 - `textarea.tsx` - Multi-line text inputs
+
+All Radix primitives come from the unified `radix-ui` package, so a new shadcn component needs no extra dependency.
+
+### App Shell Components
+
+Location: `src/core/components/`
+
+- `Header.tsx` - Top bar: brand, grouped navigation (Recipes / Items / Tools menus, Guide, Builds) rendered from
+  `src/core/navigation/navConfig.ts`, ESR links, theme, GitHub, auth and settings controls; mobile sheet with an accordion.
+  See [NAVIGATION.md](./NAVIGATION.md#header-components).
+- `SettingsDrawer.tsx` - Settings sheet (theme, font, text size, data refresh, versions, credits).
+- `navTabClasses.ts` - `TAB_BASE` / `TAB_INACTIVE` / `TAB_ACTIVE`, shared by the header and page sub-tabs.
 
 ### Shared Components
 

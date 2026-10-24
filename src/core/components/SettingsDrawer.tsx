@@ -19,6 +19,7 @@ import {
 } from '@/features/settings';
 import { initDataLoad, selectIsLoading, selectNetworkWarning, selectIsUsingCachedData } from '@/core/store';
 import appVersion from '@/assets/version.json';
+import { ESR_DOCS_URL, GITHUB_URL } from '@/core/navigation/navConfig';
 
 const TEXT_SIZE_LABELS = ['Small', 'Normal', 'Large', 'Extra Large'] as const;
 const TEXT_SIZE_VALUES: TextSize[] = ['small', 'normal', 'large', 'extralarge'];
@@ -161,6 +162,32 @@ export function SettingsDrawer() {
             <p>ESR Version: {version}</p>
             <p>Last updated: {lastUpdated}</p>
             {isUsingCachedData ? <p className="text-warning">Using cached data</p> : null}
+          </div>
+
+          {/* Credits */}
+          <div className="space-y-1 border-t pt-4 text-xs text-muted-foreground">
+            <p className="font-medium">Credits</p>
+            <p>
+              <a
+                href={ESR_DOCS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline-offset-2 hover:text-foreground hover:underline"
+              >
+                Eastern Sun Resurrected
+              </a>{' '}
+              by Celestialray
+            </p>
+            <p>
+              <a
+                href={GITHUB_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline-offset-2 hover:text-foreground hover:underline"
+              >
+                Source code on GitHub
+              </a>
+            </p>
           </div>
         </div>
       </SheetContent>

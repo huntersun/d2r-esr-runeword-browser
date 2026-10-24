@@ -1,68 +1,39 @@
-import { useLayoutEffect, useRef, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { Settings, Sun, Moon, ExternalLink, Menu, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Settings, Sun, Moon, ExternalLink, Menu, BookOpen } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
 import { openDrawer, selectTheme, setTheme } from '@/features/settings';
 import { AuthControls, selectAuthIsConfigured } from '@/features/auth';
-// Shared nav-link styling (also the page sub-tabs) so the visible items, the overflow trigger, and the hidden
-// measurement row all render at identical widths.
+import {
+  ESR_CHANGELOG_URL,
+  ESR_DOCS_URL,
+  GITHUB_URL,
+  getNavEntries,
+  isNavGroupActive,
+  isNavItemActive,
+  type NavGroup,
+  type NavItem,
+} from '@/core/navigation/navConfig';
+// Shared nav-link styling (also the page sub-tabs), so the group triggers and the plain links look the same.
 import { TAB_ACTIVE, TAB_BASE, TAB_INACTIVE } from './navTabClasses';
 
-const ESR_DOCS_URL = 'https://easternsunresurrected.com/';
-const CHANGELOG_URL = 'https://easternsunresurrected.com/changelogs.html';
-const GITHUB_URL = 'https://github.com/istvan-panczel/d2r-esr-runeword-browser';
-
-interface InternalEntry {
-  readonly key: string;
-  readonly kind: 'internal';
-  readonly to: string;
-  readonly label: string;
-  readonly end: boolean;
-}
-interface ExternalEntry {
-  readonly key: string;
-  readonly kind: 'external';
-  readonly href: string;
-  readonly label: string;
-}
-type NavEntry = InternalEntry | ExternalEntry;
-
-const INTERNAL_PAGES: readonly InternalEntry[] = [
-  { key: 'runewords', kind: 'internal', to: '/', label: 'Runewords', end: true },
-  { key: 'guide', kind: 'internal', to: '/guide', label: 'Guide', end: false },
-  { key: 'gemwords', kind: 'internal', to: '/gemwords', label: 'Gemwords', end: false },
-  { key: 'socketables', kind: 'internal', to: '/socketables', label: 'Socketables', end: false },
-  { key: 'uniques', kind: 'internal', to: '/uniques', label: 'Uniques', end: false },
-  { key: 'mythicals', kind: 'internal', to: '/mythicals', label: 'Mythicals', end: false },
-  { key: 'ascendancies', kind: 'internal', to: '/ascendancies', label: 'Ascendancies', end: false },
-  { key: 'game-data', kind: 'internal', to: '/game-data', label: 'Game Data', end: false },
-  { key: 'loot-filters', kind: 'internal', to: '/loot-filters', label: 'Loot Filters', end: false },
-];
-const BUILDS_ENTRY: InternalEntry = { key: 'builds', kind: 'internal', to: '/builds', label: 'Builds', end: false };
-const EXTERNAL_LINKS: readonly ExternalEntry[] = [
-  { key: 'esr-docs', kind: 'external', href: ESR_DOCS_URL, label: 'ESR Documentation' },
-  { key: 'changelog', kind: 'external', href: CHANGELOG_URL, label: 'Changelog' },
-];
-
-// Flex gap between nav items (gap-1 = 4px) plus a small safety buffer so a measured
-// item never ends up one pixel too wide for its slot.
-const GAP = 4;
-const SAFETY = 8;
-
-function isActivePath(pathname: string, to: string, end: boolean): boolean {
-  if (end) return pathname === to;
-  return pathname === to || pathname.startsWith(`${to}/`);
-}
+const EXTERNAL_LINKS = [
+  { key: 'esr-docs', href: ESR_DOCS_URL, label: 'ESR Documentation' },
+  { key: 'changelog', href: ESR_CHANGELOG_URL, label: 'ESR Changelog' },
+] as const;
 
 /** GitHub icon (lucide Github is deprecated, using simple-icons SVG path) */
 function GitHubIcon({ className }: { readonly className?: string }) {
@@ -73,6 +44,47 @@ function GitHubIcon({ className }: { readonly className?: string }) {
   );
 }
 
+/** One dropdown entry: label plus a one-line description. */
+function GroupItemLink({ item, active }: { readonly item: NavItem; readonly active: boolean }) {
+  return (
+    <li>
+      <NavigationMenuLink asChild active={active}>
+        <Link to={item.to}>
+          <span className="text-sm font-medium leading-none">{item.label}</span>
+          <span className="text-xs leading-snug text-muted-foreground">{item.description}</span>
+        </Link>
+      </NavigationMenuLink>
+    </li>
+  );
+}
+
+function DesktopGroup({ group, pathname }: { readonly group: NavGroup; readonly pathname: string }) {
+  const groupActive = isNavGroupActive(pathname, group);
+  return (
+    <NavigationMenuItem>
+      <NavigationMenuTrigger
+        className={cn(TAB_BASE, 'h-auto bg-transparent px-3', groupActive ? TAB_ACTIVE : TAB_INACTIVE)}
+        data-group-active={groupActive || undefined}
+      >
+        {group.label}
+      </NavigationMenuTrigger>
+      <NavigationMenuContent className="z-50">
+        <ul className="grid w-72 gap-1">
+          {group.items.map((item) => (
+            <GroupItemLink key={item.key} item={item} active={isNavItemActive(pathname, item)} />
+          ))}
+        </ul>
+      </NavigationMenuContent>
+    </NavigationMenuItem>
+  );
+}
+
+const mobileNavLinkClass = ({ isActive }: { isActive: boolean }) =>
+  cn(
+    'block w-full rounded-md px-4 py-2.5 text-left text-base font-medium transition-colors',
+    isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground'
+  );
+
 export function Header() {
   const dispatch = useDispatch();
   const theme = useSelector(selectTheme);
@@ -80,84 +92,16 @@ export function Header() {
   const { pathname } = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Full ordered nav: internal pages, then "Builds" (when the backend is configured), then external links.
-  const entries: NavEntry[] = [...INTERNAL_PAGES, ...(isSupabaseEnabled ? [BUILDS_ENTRY] : []), ...EXTERNAL_LINKS];
-
-  const navRef = useRef<HTMLElement>(null);
-  const measureRef = useRef<HTMLDivElement>(null);
-  const moreRef = useRef<HTMLSpanElement>(null);
-  const [visibleCount, setVisibleCount] = useState(entries.length);
-
-  // Priority-plus measurement: figure out how many leading items fit in the nav region,
-  // and collapse the rest into the "More" menu. Re-runs on resize and when the item set changes.
-  useLayoutEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
-
-    const compute = () => {
-      const measure = measureRef.current;
-      if (!measure) return;
-      const avail = nav.clientWidth;
-      if (avail === 0) return; // hidden (below the md breakpoint) — nothing to compute
-
-      const itemEls = measure.querySelectorAll<HTMLElement>('[data-measure-item]');
-      const widths = Array.from(itemEls, (el) => el.getBoundingClientRect().width);
-      const total = widths.reduce((sum, w) => sum + w, 0) + GAP * Math.max(0, widths.length - 1);
-      if (total <= avail) {
-        setVisibleCount(widths.length);
-        return;
-      }
-
-      const moreWidth = moreRef.current?.getBoundingClientRect().width ?? 72;
-      const budget = avail - moreWidth - GAP - SAFETY;
-      let used = 0;
-      let count = 0;
-      for (let i = 0; i < widths.length; i++) {
-        const next = widths[i] + (i > 0 ? GAP : 0);
-        if (used + next <= budget) {
-          used += next;
-          count += 1;
-        } else {
-          break;
-        }
-      }
-      setVisibleCount(count);
-    };
-
-    compute();
-    // Web fonts can change item widths after the first paint without resizing the nav.
-    void document.fonts.ready.then(compute);
-
-    let observer: ResizeObserver | undefined;
-    if (typeof ResizeObserver !== 'undefined') {
-      observer = new ResizeObserver(compute);
-      observer.observe(nav);
-    }
-    return () => observer?.disconnect();
-  }, [isSupabaseEnabled]);
-
-  const visible = entries.slice(0, visibleCount);
-  const overflow = entries.slice(visibleCount);
-  const internalOverflow = overflow.filter((e): e is InternalEntry => e.kind === 'internal');
-  const externalOverflow = overflow.filter((e): e is ExternalEntry => e.kind === 'external');
-  const overflowHasActive = internalOverflow.some((e) => isActivePath(pathname, e.to, e.end));
+  const entries = getNavEntries(isSupabaseEnabled);
+  const activeGroupKeys = entries.filter((e): e is NavGroup => e.kind === 'group' && isNavGroupActive(pathname, e)).map((g) => g.key);
 
   const handleThemeToggle = () => {
     dispatch(setTheme(theme === 'dark' ? 'light' : 'dark'));
   };
 
-  const handleMobileNavClick = () => {
+  const closeMobileMenu = () => {
     setMobileMenuOpen(false);
   };
-
-  const navLinkClass = ({ isActive }: { isActive: boolean }) => cn(TAB_BASE, isActive ? TAB_ACTIVE : TAB_INACTIVE);
-  const externalLinkClass = cn(TAB_BASE, TAB_INACTIVE, 'inline-flex items-center gap-1');
-
-  const mobileNavLinkClass = ({ isActive }: { isActive: boolean }) =>
-    cn(
-      'block w-full text-left px-4 py-3 text-base font-medium rounded-md transition-colors',
-      isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground'
-    );
 
   return (
     <header className="border-b bg-card">
@@ -173,86 +117,54 @@ export function Header() {
         >
           <Menu className="size-5" />
         </Button>
-        <span className="shrink-0 text-lg font-bold">D2R ESR</span>
+        <Link to="/" className="shrink-0 text-lg font-bold">
+          D2R ESR
+        </Link>
 
-        <nav ref={navRef} className="relative hidden min-w-0 flex-1 items-center gap-1 overflow-hidden md:flex">
-          {visible.map((item) =>
-            item.kind === 'internal' ? (
-              <NavLink key={item.key} to={item.to} className={navLinkClass} end={item.end}>
-                {item.label}
-              </NavLink>
-            ) : (
-              <a key={item.key} href={item.href} target="_blank" rel="noopener noreferrer" className={externalLinkClass}>
-                {item.label}
-                <ExternalLink className="size-3" />
-              </a>
-            )
-          )}
-
-          {overflow.length > 0 && (
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                className={cn(TAB_BASE, overflowHasActive ? TAB_ACTIVE : TAB_INACTIVE, 'inline-flex items-center gap-1 outline-none')}
-                aria-label="More navigation links"
-              >
-                More
-                <ChevronDown className="size-4" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                {internalOverflow.map((item) => (
-                  <DropdownMenuItem key={item.key} asChild>
-                    <NavLink
-                      to={item.to}
-                      end={item.end}
-                      className={({ isActive }) => cn('w-full cursor-pointer', isActive && 'bg-accent text-accent-foreground')}
-                    >
-                      {item.label}
-                    </NavLink>
-                  </DropdownMenuItem>
-                ))}
-                {internalOverflow.length > 0 && externalOverflow.length > 0 && <DropdownMenuSeparator />}
-                {externalOverflow.map((item) => (
-                  <DropdownMenuItem key={item.key} asChild>
-                    <a
-                      href={item.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex w-full cursor-pointer items-center justify-between gap-2"
-                    >
-                      {item.label}
-                      <ExternalLink className="size-3" />
-                    </a>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-
-          {/* Hidden measurement row: always holds every item so we can size the visible set. */}
-          <div ref={measureRef} aria-hidden className="pointer-events-none invisible absolute left-0 top-0 flex items-center gap-1">
-            {entries.map((item) =>
-              item.kind === 'internal' ? (
-                <span key={item.key} data-measure-item className={cn(TAB_BASE, TAB_INACTIVE)}>
-                  {item.label}
-                </span>
-              ) : (
-                <span key={item.key} data-measure-item className={cn(TAB_BASE, TAB_INACTIVE, 'inline-flex items-center gap-1')}>
-                  {item.label}
-                  <ExternalLink className="size-3" />
-                </span>
-              )
-            )}
-            <span ref={moreRef} className={cn(TAB_BASE, TAB_INACTIVE, 'inline-flex items-center gap-1')}>
-              More
-              <ChevronDown className="size-4" />
-            </span>
-          </div>
-        </nav>
+        <NavigationMenu viewport={false} aria-label="Main" className="hidden max-w-none flex-1 justify-start md:flex">
+          <NavigationMenuList className="justify-start">
+            {entries.map((entry) => {
+              if (entry.kind === 'group') return <DesktopGroup key={entry.key} group={entry} pathname={pathname} />;
+              const active = isNavItemActive(pathname, entry.item);
+              return (
+                <NavigationMenuItem key={entry.item.key}>
+                  <NavigationMenuLink asChild active={active}>
+                    <Link to={entry.item.to} className={cn(TAB_BASE, 'block', active ? TAB_ACTIVE : TAB_INACTIVE)}>
+                      {entry.item.label}
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              );
+            })}
+          </NavigationMenuList>
+        </NavigationMenu>
 
         {/* On mobile the nav is hidden, so this spacer right-aligns the controls below the md breakpoint. */}
         <div className="flex-1 md:hidden" aria-hidden />
 
         <div className="flex shrink-0 items-center gap-1">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="hidden md:inline-flex" aria-label="ESR documentation links" title="ESR links">
+                <BookOpen className="size-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              {EXTERNAL_LINKS.map((link) => (
+                <DropdownMenuItem key={link.key} asChild>
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex w-full cursor-pointer items-center justify-between gap-2"
+                  >
+                    {link.label}
+                    <ExternalLink className="size-3" />
+                  </a>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button variant="ghost" size="icon" onClick={handleThemeToggle} aria-label="Toggle theme">
             {theme === 'dark' ? <Sun className="size-5" /> : <Moon className="size-5" />}
           </Button>
@@ -268,33 +180,60 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile navigation menu */}
+      {/* Mobile navigation: the same groups as an accordion (the active route's group starts open). */}
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <SheetContent side="left" className="w-72" aria-describedby={undefined}>
           <SheetHeader>
             <SheetTitle>Navigation</SheetTitle>
           </SheetHeader>
-          <nav className="mt-0 px-4 pb-2 flex flex-col gap-1">
-            {entries.map((item) =>
-              item.kind === 'internal' ? (
-                <NavLink key={item.key} to={item.to} end={item.end} className={mobileNavLinkClass} onClick={handleMobileNavClick}>
-                  {item.label}
-                </NavLink>
-              ) : (
+          <nav aria-label="Main" className="flex flex-col gap-1 overflow-y-auto px-4 pb-4">
+            <Accordion type="multiple" defaultValue={activeGroupKeys}>
+              {entries.map((entry) =>
+                entry.kind === 'group' ? (
+                  <AccordionItem key={entry.key} value={entry.key}>
+                    <AccordionTrigger
+                      className={cn(
+                        'px-4 py-3 text-base hover:no-underline',
+                        activeGroupKeys.includes(entry.key) ? 'text-foreground' : 'text-muted-foreground'
+                      )}
+                    >
+                      {entry.label}
+                    </AccordionTrigger>
+                    <AccordionContent className="flex flex-col gap-0.5 pb-2 pl-3">
+                      {entry.items.map((item) => (
+                        <NavLink key={item.key} to={item.to} end={item.end} className={mobileNavLinkClass} onClick={closeMobileMenu}>
+                          {item.label}
+                        </NavLink>
+                      ))}
+                    </AccordionContent>
+                  </AccordionItem>
+                ) : (
+                  <NavLink
+                    key={entry.item.key}
+                    to={entry.item.to}
+                    end={entry.item.end}
+                    className={(state) => cn(mobileNavLinkClass(state), 'mt-1 py-3')}
+                    onClick={closeMobileMenu}
+                  >
+                    {entry.item.label}
+                  </NavLink>
+                )
+              )}
+            </Accordion>
+            <div className="mt-2 border-t pt-2">
+              {EXTERNAL_LINKS.map((link) => (
                 <a
-                  key={item.key}
-                  href={item.href}
+                  key={link.key}
+                  href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block px-4 py-3 text-base font-medium rounded-md transition-colors text-muted-foreground hover:text-foreground"
+                  className="flex items-center gap-1 rounded-md px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  <span className="inline-flex items-center gap-1">
-                    {item.label}
-                    <ExternalLink className="size-3" />
-                  </span>
+                  {link.label}
+                  <ExternalLink className="size-3" />
                 </a>
-              )
-            )}
+              ))}
+            </div>
             {isSupabaseEnabled && (
               <div className="mt-2 border-t px-1 pt-3">
                 <AuthControls />

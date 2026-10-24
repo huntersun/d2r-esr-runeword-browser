@@ -60,7 +60,7 @@ Copy Link keeps it. Guide `rw:`/`gw:`/`unique:`/`mythical:`/`socketable:` links 
 
 ```
 ┌───────────────────────────────────────────────────────────────────────┐
-│  D2R ESR  [Runewords] [Gemwords] [Socketables] [Uniques] [More▾] [⚙]│
+│ D2R ESR  Recipes▾ Items▾ Tools▾ Guide Builds    [📖] [☀] [GH] [⚙] │
 ├───────────────────────────────────────────────────────────────────────┤
 │                                                                       │
 │                         Main Content Area                             │
@@ -83,14 +83,36 @@ the fatal-error screen, so a failed first sync does not hide them. The prefixes 
 
 ### Header Components
 
-- **Logo/Title**: "D2R ESR" or similar branding
-- **Navigation Links**: Runewords, Guide, Gemwords, Socketables, Uniques, Mythicals, Ascendancies, Game Data, Loot Filters, Builds (only when Supabase is configured), plus external ESR Documentation / Changelog links; items that don't fit collapse into a "More" menu (priority-plus, see `Header.tsx`)
-- **Settings Button**: Cog icon in top-right corner
+`src/core/components/Header.tsx` renders from one typed config, `NAV_ENTRIES` in `src/core/navigation/navConfig.ts`
+(groups of `NavItem`s with a label, a one-line description, a path and `end`, plus plain links):
+
+| Entry     | Kind  | Pages                                                                                                                               |
+| --------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Recipes ▾ | group | Runewords (`/`, `end`), Gemwords (`/gemwords`), Socketables (`/socketables`)                                                        |
+| Items ▾   | group | Uniques (`/uniques`), Mythicals (`/mythicals`), Ascendancies (`/ascendancies`), Bases (`/game-data/bases`)                          |
+| Tools ▾   | group | Best Base (`/game-data/best-base`), Affixes (`/game-data/affixes`), Item Types (`/game-data/types`), Loot Filters (`/loot-filters`) |
+| Guide     | link  | `/guide`                                                                                                                            |
+| Builds    | link  | `/builds`, only when Supabase is configured (`requiresSupabase`, filtered by `getNavEntries`)                                       |
+
+- **Brand**: "D2R ESR", a link to `/`.
+- **Desktop (md and up)**: a shadcn `NavigationMenu` (`src/components/ui/navigation-menu.tsx`, `viewport={false}` so
+  each dropdown opens under its own trigger). Each group trigger opens a list of label + description links. Active state:
+  an item is active when the path equals its `to` or starts with `to/` (`end` items: exact match only, so Runewords is
+  active only on `/`); a group trigger is highlighted when any of its items is active (`isNavGroupActive`). Active links
+  get `aria-current="page"`. Keyboard (Radix): triggers are in the tab order, Enter/Space/ArrowDown opens, arrows and
+  Tab move through the items, Escape closes; choosing a link closes the menu.
+- **Right side**: ESR links dropdown (book icon: ESR Documentation, ESR Changelog; md and up), theme toggle, GitHub link,
+  `AuthControls` (Sign In / user menu, Supabase only), settings cog.
+- **Mobile (below md)**: hamburger opens a left `Sheet` with a shadcn `Accordion` (`type="multiple"`) of the same groups;
+  the group of the current route starts open, Guide and Builds are top-level links, then the ESR links and the auth
+  control. Choosing a page closes the sheet.
+
+`navConfig.test.ts` checks that every config path resolves to a real route of the router (not the `*` catch-all), that
+labels, keys and paths are unique, that Builds is hidden without Supabase, and the active-state rules.
 
 ### Nested sections
 
-`/guide`, `/game-data` and `/loot-filters` are nested routes: each has one header entry (`end: false`, so it stays active on
-every child page) and a lazy layout that renders a frame above an `<Outlet />`:
+`/guide`, `/game-data` and `/loot-filters` are nested routes with a lazy layout that renders a frame above an `<Outlet />`:
 
 - `GuideLayout`: the "Experimental" `DevNotice`, then the spine (index), the map (`map`) or a note (`:slug`);
 - `LootFilterLayout`: the "Under development" `DevNotice`, then the library (index) or the editor (`:id`);
@@ -112,15 +134,18 @@ Each child route is its own lazy screen wrapped in `<Suspense>` (each section's 
 The version line comes from `public/game-data/manifest.json`; the docs version from Dexie `metadata.esrVersion`. The note
 never says which version is newer (HTM and git-tag version strings do not compare).
 
-The header links, the Game Data sub-tabs and the loot filter editor's tabs share one set of classes
+The Game Data child pages are separate header items (Bases under Items; Best Base, Affixes and Item Types under Tools).
+Guide and Loot Filters items are prefix-matched, so they stay active on every child page.
+
+The header triggers and links, the Game Data sub-tabs and the loot filter editor's tabs share one set of classes
 (`TAB_BASE` / `TAB_INACTIVE` / `TAB_ACTIVE` in `src/core/components/navTabClasses.ts`). The editor's tabs are not routes but
 buttons in a `role="tablist"` (`role="tab"`, `aria-selected`) that set `?tab=`. The amber notices of `GuideLayout` and
 `LootFilterLayout` are both `DevNotice` (`src/core/components/DevNotice.tsx`).
 
 ### Navigation Style
 
-- Active route highlighted in nav
-- Mobile: Sheet-based slide-out menu
+- Active route highlighted in nav (item and its group trigger)
+- Mobile: Sheet-based slide-out menu with an accordion of the groups
 
 ## Settings Drawer
 
@@ -149,6 +174,11 @@ Opens from the right side when the cog icon is clicked.
 │                             │  App Version: 1.12.1          │
 │                             │  ESR Version: 3.9.07          │
 │                             │  Last updated: 12/21/2025     │
+│                             │─────────────────────────────── │
+│                             │  Credits                      │
+│                             │  Eastern Sun Resurrected by   │
+│                             │  Celestialray                 │
+│                             │  Source code on GitHub        │
 └─────────────────────────────┴───────────────────────────────┘
 ```
 
@@ -167,6 +197,8 @@ Opens from the right side when the cog icon is clicked.
 - **Refresh Data**: Force re-fetch and parse all data
 - **Version display**: App version and current ESR version from metadata
 - **Last updated**: Timestamp of last successful parse
+- **Credits**: small muted block at the bottom: "Eastern Sun Resurrected by Celestialray" (links the ESR site) and
+  "Source code on GitHub" (both URLs from `src/core/navigation/navConfig.ts`)
 
 ## Implementation
 
@@ -260,8 +292,12 @@ src/core/
 │   └── RouteErrorScreen.tsx # Route errorElement
 ├── layouts/
 │   └── AppLayout.tsx       # Main app shell
+├── navigation/
+│   ├── navConfig.ts        # Header groups/items, external URLs, active-state helpers
+│   └── navConfig.test.ts   # Paths exist in the router, unique labels
 └── components/
-    ├── Header.tsx          # Top navigation bar
+    ├── Header.tsx          # Top navigation bar (NavigationMenu groups, mobile accordion)
+    ├── navTabClasses.ts    # Shared nav link / sub-tab classes
     └── SettingsDrawer.tsx  # Settings slide-out panel
 
 src/features/settings/
@@ -278,6 +314,7 @@ src/features/settings/
 
 ## Accessibility
 
-- Navigation links have proper `aria-current` for active state
+- Navigation links have proper `aria-current` for active state; the desktop menu and the mobile sheet are `<nav aria-label="Main">`
+- Group triggers are keyboard operable (Enter/Space/arrows open, Escape closes) via Radix NavigationMenu
 - Settings drawer uses `aria-hidden` and focus trap when open
 - Close button and Escape key close the drawer
