@@ -13,6 +13,7 @@ per-phase implementation notes live in `builds-feature-docs/FEATURE-GAME-DATA.md
 | `/game-data/types`     | Item Types | done                 |
 | `/game-data/best-base` | Best Base  | done                 |
 | `/game-data/affixes`   | Affixes    | done                 |
+| `/game-data/enhance`   | Enhance    | done                 |
 
 The game-file data is a second data system next to the HTM pipeline: it is never stored in IndexedDB and never parsed
 in the browser. Uniques, sets, gemwords and the runeword list stay on the HTM pipeline.
@@ -32,6 +33,7 @@ lazily (`src/features/game-data/engine/browser/loadGameData.ts`).
 | `affixes.json`    | 2532 spawnable magic prefixes, suffixes and automods with rendered text (see "Affixes")                                            |
 | `sources.json`    | "where does it come from" labels for uniques, set items and crafting-relevant misc items (see "Sources")                           |
 | `lootfilter.json` | loot-filter editor reference data: every item code, stats, areas, sounds, uniques and sets with their ids (see "Loot filter data") |
+| `enhance.json`    | corruption, anointment and Vessel of Souls outcomes from cubemain.txt (see "Enhance")                                              |
 
 Arrays are written one element per line so diffs stay readable. Bundle URLs carry the manifest hash (`?v=<sha256>`);
 the manifest itself is always revalidated. The shape is defined in `src/features/game-data/engine/schema.ts`
@@ -45,6 +47,7 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 | `affixes.json`    | 795 KB / 61 KB                                                                 |
 | `sources.json`    | 298 KB / 29 KB                                                                 |
 | `lootfilter.json` | 686 KB / 98 KB                                                                 |
+| `enhance.json`    | ESR 3.2.24: 357 KB / 32 KB                                                     |
 
 ### Bases and types
 
@@ -179,6 +182,59 @@ Counts: `counts.lootFilterItems`, `lootFilterStats`, `lootFilterAreas`, `lootFil
 `lootFilterSets` (ESR 3.2.12: 2292 / 923 / 215 / 12103 / 1390 / 270). Adding the file did not bump
 `GAME_DATA_SCHEMA`: older clients ignore files they do not load.
 
+### Enhance
+
+`enhance.json` (`EnhanceBundle`, built by `build/bundleEnhance.ts` from enabled `cubemain.txt` rows, with
+`uniqueitems.txt` for the Vessel's starting souls) feeds the Enhance page. Top-level arrays (one outcome or recipe per
+line): `corruption` (reagent, notes) + `corruptionSlots` + `corruptionOutcomes`, `anointment` (reagent, rules, charm
+reagents, vessel item) + `anointmentSlots` + `anointmentOutcomes`, `vessel` (item, start souls) + `vesselTiers` +
+`vesselRecipes` + `vesselTransforms`. Every outcome and recipe has its visible `mods` (raw cubemain properties, with
+`chance` when the `mod N chance` column is below 100) and the `lines` rendered by the stat renderer; a property with a
+chance gets its own line ending in "(25% chance)". Mods the renderer warns about are dropped with a warning.
+
+Derivation (rows are classified by their data, not their descriptions):
+
+- **Two-step dummy pattern.** A roll row ("Add … Dummy Stat": `op=16`, `value=0`, output `useitem` with
+  `corrupted_dummy` / `anointed_dummy` `min..max`) gives the roll range; the outcome rows (`op=18`, `param` = the dummy
+  stat id, `value` = the roll, the item alone as input) add the marker, clear the dummy and add the bonus. The dummy
+  stat id is read from the outcome rows (the ones with a negative dummy mod). `void` outputs are blockers.
+- **Hidden mods**: `corrupted`, `anointed`, both dummies, `soul-counter`, `mythicaldesc`, `unusable-item`,
+  `tinkerflag2`, `craftflag`, `craftflag2`, `item-upgraded`. `trap-limit` is a real Vessel bonus ("+1 to trap limit")
+  and stays visible.
+- **Corruption** (`wss`): one slot per item type in the fixed slot list (weapon, shield, body, helm, gloves, belt,
+  boots, ring, amulet, quiver, unique charm). `qualities` = qualities with outcome rows; `rollOnlyQualities` = a roll
+  row but no outcome rows (Low/Normal/Superior rings and amulets); Magic has no rows at all. The outcome list is
+  deduplicated across qualities by roll position; a quality whose row at that roll has other values becomes a
+  `variant` of that outcome (ESR 3.2.24: Low/Normal/Superior body armor roll 15 and belt roll 18). `successRate` =
+  outcomes / rollRange, `brick.rate` = brick rows / rollRange, brick `results` per quality plus more specific subtype
+  rows (Odd Charm → Grand Charm, Square Charm → Large Charm; `isA` follows item types and item codes). Notes: a named
+  item with its own roll and an `op=15` "already corrupted N times" blocker is repeatable (The Triune's Harbinger, 10
+  times, same list as weapons); a non-`wss` row whose `corrupted` mod is negative removes the marker (Astrogha's
+  Petrified Heart); a `void` Vessel + `wss` row on the soul counter means the Vessel cannot be corrupted with souls.
+- **Anointment**: equipment slots from the `um7` roll rows (`<slot>,nru`), `socketedRollRange` from the `,sock` roll
+  rows (one shorter, so the last outcome, "(Sockets)", cannot roll on socketed items); `blockedQualities` from the
+  `void` "<slot>,uni + um7" rows; `noRunewords` when every roll row has `nru`. Pools: `weapon` … `amulet`, `charm`
+  (unique charm + three organs) and `vessel` (rows on the Vessel alone, rolled by the tier 4 anointment recipe).
+  `roll` is the row's `value`, not the number in the description; `label` is the description's last `(…)`.
+- **Vessel of Souls**: the Vessel is input 1 of the conditional rows with a negative `soul-counter` mod; its `param` is
+  the soul counter stat. Tier gates are the `void` "Vessel + any" rows (`op=15` on the soul counter, 260/42/6 in ESR
+  3.2.24): a recipe's tier = 1 + the number of gates above its condition value. Each bonus has an `op=15` (at least N
+  souls) and an `op=18` (exactly N, the last use, adds the "tier exhausted" marker) row; they are deduplicated on tier
+  - materials + visible mods + cost. A tier ends at `value − cost` of its `op=18` rows; it starts where the previous
+    ended (tier 1: the `soul-counter` property of the Vessel's unique row). Caps: a `void` row with the same materials
+    whose condition stat is one of the recipe's stats (property → stat ids via properties.txt and itemstatcost row
+    numbers) sets `maxTimes` from its description ("max 2 trap"). The "Anoint Trap" rows of the transforms are skipped.
+    Disabled rows are skipped; traps are found by `void` output, never by name (the real recipes "trap-limit" and
+    "oskill shuriken trap" contain the word). Completion: `op=18`, value 0 rows whose output is an item (`m21,mod`, the
+    `,mod` qualifier = `keepsMods`).
+
+Counts (`enhance*` in the manifest), ESR 3.2.24: 11 corruption slots with 272 outcomes (weapon and quiver 30 of 40
+rolls, unique charm 20 of 30, the others 24 of 32: 75 % success, unique charm 66.7 %); 790 equipment anointments
+(weapon 179, body 85, helm 96, shield 58, gloves 59, belt 48, boots 48, ring 101, amulet 116), 30 unique charm and 178
+Vessel anointments; 380 Vessel recipes (tier 1: 200 × 350 + 17 × 700 souls, tier 2: 36 × 42, tier 3: 23 × 7, tier 4:
+6 × 1, 74 × 2, 4 × 3, 20 × 5 including the anointment recipe), 63 with a cap, and 29 transforms. Adding the file did
+not bump `GAME_DATA_SCHEMA`.
+
 ## Regenerating
 
 Recommended: one command after an ESR release.
@@ -281,9 +337,10 @@ The script warns when the clone has uncommitted changes, because the output woul
 | `/game-data/best-base` | `BestBaseScreen`  | Best base finder                                                  |
 | `/game-data/affixes`   | `AffixesScreen`   | Affix browser and what-can-roll                                   |
 | `/game-data/types`     | `ItemTypesScreen` | Item type tree and socket-cap table                               |
+| `/game-data/enhance`   | `EnhanceScreen`   | Corruption, anointment and Vessel of Souls outcomes               |
 
 One header entry ("Game Data", `end: false`). All screens are lazy-loaded from `@/features/game-data` (the route
-code-splitting guard test covers it). The four child routes are in `public/sitemap.xml`.
+code-splitting guard test covers it). The five child routes are in `public/sitemap.xml`.
 
 **Version banner** (`components/GameDataVersionBanner.tsx`): "Game files: ESR {esrVersion} (tag {esrTag} @ {commit7},
 generated {YYYY-MM-DD})" from `loadManifest()`. When Dexie `metadata.esrVersion` (the HTM docs version) exists and differs,
@@ -492,6 +549,34 @@ the non-default values. Invalid values fall back to the defaults; unknown type a
 | `auto`   | includeAutomagic | `0` hides automods (default shown)            |
 | `sort`   | sort + sortDir   | `name`/`lvl`/`group`/`freq`, `-` = descending |
 
+### Enhance page
+
+`/game-data/enhance` (`screens/EnhanceScreen.tsx`) loads only `enhance.json`, so it is a static-bundle route that skips
+the startup loading gate (`STATIC_BUNDLE_ROUTE_PREFIXES` in `AppLayout.tsx`). Three tabs:
+
+- **Corruption** (`components/EnhanceCorruption.tsx`): slot pills with outcome counts; a header "N outcomes · 75%
+  success, 25% brick → Rare item of the same type (Crafted, Superior, Normal and Low Quality keep their quality)"
+  built by `brickSummary`, the rates with a "Computed from the recipe rows" tooltip; the corruptible qualities, the
+  qualities without rows, roll-only qualities and the notes; then the outcome list (roll number, lines, variants as
+  "Superior, Normal and Low Quality: …").
+- **Anointment** (`components/EnhanceAnointment.tsx`): Equipment pills (weapon … amulet) and Other pools (Unique
+  Charm, Vessel of Souls), the rules above the list (not on uniques, not on runewords, socketed range), each outcome
+  with its label; the outcomes socketed items cannot roll are marked.
+- **Vessel of Souls** (`components/EnhanceVessel.tsx`): tier pills plus Completion; a tier header (start → end souls,
+  costs), one row per recipe: soul cost badge, "max N×" badge, materials → bonus lines (the anointment recipe links to
+  the Vessel pool on the Anointment tab); Completion lists the 29 transforms.
+
+State lives in the URL (read on every render, written with `replace`), parsed and encoded by `utils/enhance.ts`:
+
+| Param    | Meaning                                                                                     |
+| -------- | ------------------------------------------------------------------------------------------- |
+| `tab`    | `corruption` (default), `anointment`, `vessel`                                              |
+| `slot`   | corruption slot / anointment pool (`weapon` default; `charm`, `vessel` on Anointment)       |
+| `tier`   | Vessel tier `1`–`4` (default `1`) or `completion`                                           |
+| `search` | text (shared key, debounced 300 ms); AND terms over the lines (and labels / material names) |
+
+Invalid values fall back to the tab's first option; Copy Link encodes only the non-default values the tab uses.
+
 ## Runeword matching
 
 `engine/matchRunewords.ts` maps each HTM runeword (`name::variant`) to a txt key. Names are normalised on both sides
@@ -603,7 +688,7 @@ src/features/game-data/
   engine/browser/loadGameData.ts         browser-only loader (fetch, import.meta.env)
   build/       build only: tsv.ts, strings.ts, model.ts, esrSources.ts, bundleTypes.ts, bundleBases.ts,
                bundleRunewords.ts, bundleAffixes.ts, bundleSources.ts (+ treasureClasses.ts, pluginUniques.ts,
-               itemNames.ts), generateBundles.ts, writeBundle.ts
+               itemNames.ts), bundleLootFilter.ts, bundleEnhance.ts, generateBundles.ts, writeBundle.ts
   build/stats/ stat renderer (see "Stat renderer")
 ```
 
@@ -656,9 +741,22 @@ hooks/useAffixesUrlState.ts       URL → slice on mount, share URL
 constants/affixes.ts              kinds, sort keys, labels, level range, page size
 ```
 
+UI files (Enhance):
+
+```
+screens/EnhanceScreen.tsx              loader, tabs, search, Copy Link (URL state)
+components/EnhanceCorruption.tsx       slot pills, rates, qualities, notes, outcome list
+components/EnhanceAnointment.tsx       pool pills, rules, outcome list
+components/EnhanceVessel.tsx           tier pills, recipes, completion
+components/EnhanceParts.tsx            Pills, EnhanceSearch, BonusLines, ComputedRate
+utils/enhance.ts                       URL state, search, brickSummary, texts (+ test)
+```
+
 ## Tests
 
-- Build: `build/tsv.test.ts`, `build/strings.test.ts`, `build/bundleBases.test.ts` (staffmods, range, smite/kick,
+- Build: `build/tsv.test.ts`, `build/strings.test.ts`, `build/bundleEnhance.test.ts` (two-step dummy pattern, dedupe
+  across qualities with variants, rates, chance lines, subtype bricks, repeatable note, anointment labels and rules,
+  Vessel op=15/op=18 dedupe, tiers from gates, cap join, trap/disabled-row exclusion, transforms), `build/bundleBases.test.ts` (staffmods, range, smite/kick,
   automod eligibility and attachment on inline TSV), `build/bundleRunewords.test.ts`, `build/bundleAffixes.test.ts`,
   `build/bundleSources.test.ts` (each label rule on inline TSV; with the ESR clone, the verified examples Pelta Lunata,
   Krok's Basher, Mephisto's Will, Frostmourne, Annihilus, Hellfire Torch, Kill Ledger, Orb of Anointment, Forging Hammer),
@@ -667,8 +765,9 @@ constants/affixes.ts              kinds, sort keys, labels, level range, page si
   `engine/bestBase.test.ts`, `engine/affixEligibility.test.ts`, `engine/browser/loadGameData.test.ts`
 - UI: `store/gameDataSlice.test.ts`, `store/bestBaseState.test.ts`, `utils/filterBases.test.ts`,
   `utils/typeTree.test.ts`, `utils/bestBaseResults.test.ts`, `utils/filterAffixes.test.ts`, `store/affixFilters.test.ts`,
-  `utils/baseAutomods.test.ts`
-- `bundleIntegrity.test.ts`: reads the committed JSON (counts, hashes, schema, type references, affix text). When the
+  `utils/baseAutomods.test.ts`, `utils/enhance.test.ts`
+- `bundleIntegrity.test.ts`: reads the committed JSON (counts, hashes, schema, type references, affix text, the enhance
+  counts and rates listed under "Enhance"). When the
   ESR clone is present it also regenerates the bundles in memory, checks they equal the committed files, and compares
   base names with the clone's `docs/weapons.htm` / `docs/armors.htm` (≥ 95 % overlap; misses are printed).
 - `runewordMatching.integration.test.ts`: skips without `test-fixtures/runewords.htm`, `runewords.json` or `types.json`;

@@ -23,4 +23,7 @@ export const GAME_DATA_URL_PARAM_KEYS = {
   MINLVL: 'minlvl',
   QUALITY: 'q',
   AUTO: 'auto',
+  // Enhance (TIER above is reused for the Vessel tier)
+  TAB: 'tab',
+  SLOT: 'slot',
 } as const;

@@ -154,7 +154,7 @@ Link targets with spaces must be wrapped in angle brackets or use `%20`: `[x](<r
 remaining in the output) is a build error, as is formatting inside a `[[slug|label]]` label. Inside a GFM table cell
 write the label pipe escaped, `[[slug\|label]]`: the generator would escape a bare pipe for the build, but Prettier
 formats the notes too and splits the cell at a bare pipe. `page:` only accepts the app's routes (`/`,
-`/gemwords`, `/socketables`, `/uniques`, `/mythicals`, `/ascendancies`, `/game-data/{bases,best-base,affixes,types}`,
+`/gemwords`, `/socketables`, `/uniques`, `/mythicals`, `/ascendancies`, `/game-data/{bases,best-base,affixes,types,enhance}`,
 `/guide`; a query string is allowed).
 
 Leaf directives (`::name[arg]`) must stand alone on a line. Directive arguments are resolved at build time against the

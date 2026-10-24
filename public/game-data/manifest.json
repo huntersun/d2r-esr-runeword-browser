@@ -3,7 +3,7 @@
   "esrVersion": "3.2.24",
   "esrTag": "3.2.24",
   "esrCommit": "b0622767314f9bf65f9c3a2cdeacded0b2e04a7e",
-  "generatedAt": "2026-10-24T20:40:56.836Z",
+  "generatedAt": "2026-10-24T20:59:25.153Z",
   "files": {
     "types": {
       "hash": "cab8a44704bcb77dd1d552147ce4b2e16d2d30517780f10d4d1b55de7c1e294d",
@@ -28,6 +28,10 @@
     "lootfilter": {
       "hash": "6b8a8f2636d0829bad86ee860d82d137eae851026848ffb89a222d0ff2fe3e34",
       "bytes": 731046
+    },
+    "enhance": {
+      "hash": "cfc51920fb2bf6bfee53e3c96d4fd70b78414a529448b17d1ec9d81aba1bda6e",
+      "bytes": 365523
     }
   },
   "counts": {
@@ -61,7 +65,14 @@
     "lootFilterAreas": 215,
     "lootFilterSounds": 12103,
     "lootFilterUniques": 1390,
-    "lootFilterSets": 270
+    "lootFilterSets": 270,
+    "enhanceCorruptionSlots": 11,
+    "enhanceCorruptionOutcomes": 272,
+    "enhanceAnointmentOutcomes": 790,
+    "enhanceCharmAnointments": 30,
+    "enhanceVesselAnointments": 178,
+    "enhanceVesselRecipes": 380,
+    "enhanceVesselTransforms": 29
   },
   "warnings": [
     "bases: q86 (Scissors Suwayyah) is not in its own tier family [skr, 9qr, 7qr]; treated as normal",

@@ -25,6 +25,7 @@ All routes are children of `AppLayout` in `src/core/router/index.tsx`; every scr
 | `/game-data/best-base`  | BestBaseScreen          | Best base finder for a runeword and a persisted character                                           | `rw`, `v`, `cls`, `lvl`, `str`, `dex`                                                                  |
 | `/game-data/affixes`    | AffixesScreen           | Affix browser + "what can roll" on a base                                                           | `search`, `aff`, `rare`, `minlvl`, `maxlvl`, `cls`, `type`, `base`, `ilvl`, `q`, `auto`, `sort`        |
 | `/game-data/types`      | ItemTypesScreen         | Item type tree + socket caps                                                                        | `type` (focused node)                                                                                  |
+| `/game-data/enhance`    | EnhanceScreen           | Corruption, anointment and Vessel of Souls outcomes (cube recipes)                                  | `tab`, `slot`, `tier`, `search` (kept in the URL)                                                      |
 | `/loot-filters`         | LootFilterLayout        | Loot filter frame: an "Under development" notice above every loot-filter page, then the child route |                                                                                                        |
 | `/loot-filters` (index) | LootFilterLibraryScreen | Loot filter library: new, upload, ESR default filter template, download (.json or .zip)             |                                                                                                        |
 | `/loot-filters/:id`     | LootFilterEditorScreen  | Loot filter editor; unknown id shows "Filter not found"                                             | `tab=rules\|styles\|settings\|json\|test`                                                              |
@@ -43,8 +44,8 @@ be shadowed). `/guide/:slug` slugs are the file names in `content/guide/notes/`.
 feature-specific keys live next to each feature's `useUrlInitialize` hook, and `GAME_DATA_URL_PARAM_KEYS` in
 `src/features/game-data/constants/urlParams.ts`. The filter screens (runewords, gemwords, socketables, uniques, mythicals,
 ascendancies, bases, best base, affixes) read their params once on mount, put them into Redux and remove them from the URL;
-Copy Link rebuilds a URL from the current state (non-default values only). Item Types (`type`) and the loot filter editor
-(`tab`) read their param on every render and keep it in the URL. The builds screens keep their search, class and sort in
+Copy Link rebuilds a URL from the current state (non-default values only). Item Types (`type`), Enhance (`tab`, `slot`,
+`tier`, `search`) and the loot filter editor (`tab`) read their params on every render and keep them in the URL. The builds screens keep their search, class and sort in
 Redux only.
 
 **`?name=<Name>` focus** (runewords, gemwords, socketables, uniques, mythicals): shows only the items whose name equals `<Name>`
@@ -79,20 +80,22 @@ the fatal-error screen, so a failed first sync does not hide them. The prefixes 
 
 - `/guide`: the guide is a static JSON bundle (`public/guide/`), see [GUIDE.md](../features/GUIDE.md);
 - `/loot-filters`: the editor uses the game-data bundles, `public/loot-filters/` and localStorage, see
-  [LOOT-FILTER.md](../features/LOOT-FILTER.md).
+  [LOOT-FILTER.md](../features/LOOT-FILTER.md);
+- `/game-data/enhance`: only `enhance.json` (the other Game Data pages stay behind the gate: Best Base matches the HTM
+  runewords), see [GAME-DATA.md](../features/GAME-DATA.md).
 
 ### Header Components
 
 `src/core/components/Header.tsx` renders from one typed config, `NAV_ENTRIES` in `src/core/navigation/navConfig.ts`
 (groups of `NavItem`s with a label, a one-line description, a path and `end`, plus plain links):
 
-| Entry     | Kind  | Pages                                                                                                                               |
-| --------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Recipes ▾ | group | Runewords (`/`, `end`), Gemwords (`/gemwords`), Socketables (`/socketables`)                                                        |
-| Items ▾   | group | Uniques (`/uniques`), Mythicals (`/mythicals`), Ascendancies (`/ascendancies`), Bases (`/game-data/bases`)                          |
-| Tools ▾   | group | Best Base (`/game-data/best-base`), Affixes (`/game-data/affixes`), Item Types (`/game-data/types`), Loot Filters (`/loot-filters`) |
-| Guide     | link  | `/guide`                                                                                                                            |
-| Builds    | link  | `/builds`, only when Supabase is configured (`requiresSupabase`, filtered by `getNavEntries`)                                       |
+| Entry     | Kind  | Pages                                                                                                                                                               |
+| --------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Recipes ▾ | group | Runewords (`/`, `end`), Gemwords (`/gemwords`), Socketables (`/socketables`)                                                                                        |
+| Items ▾   | group | Uniques (`/uniques`), Mythicals (`/mythicals`), Ascendancies (`/ascendancies`), Bases (`/game-data/bases`)                                                          |
+| Tools ▾   | group | Best Base (`/game-data/best-base`), Affixes (`/game-data/affixes`), Item Types (`/game-data/types`), Enhance (`/game-data/enhance`), Loot Filters (`/loot-filters`) |
+| Guide     | link  | `/guide`                                                                                                                                                            |
+| Builds    | link  | `/builds`, only when Supabase is configured (`requiresSupabase`, filtered by `getNavEntries`)                                                                       |
 
 - **Brand**: "D2R ESR", a link to `/`.
 - **Desktop (md and up)**: a shadcn `NavigationMenu` (`src/components/ui/navigation-menu.tsx`, `viewport={false}` so
@@ -245,7 +248,7 @@ export const router = createBrowserRouter(
           children: [
             { index: true, element: <Navigate to="bases" replace /> },
             { path: 'bases', element: routeElement(GameDataBasesScreen) },
-            // ... best-base, affixes, types
+            // ... best-base, affixes, types, enhance
           ],
         },
         // ... uniques, mythicals, ascendancies (before game-data),

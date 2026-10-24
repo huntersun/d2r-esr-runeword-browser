@@ -8,6 +8,7 @@ const SUB_PAGES = [
   { to: 'best-base', label: 'Best Base' },
   { to: 'affixes', label: 'Affixes' },
   { to: 'types', label: 'Item Types' },
+  { to: 'enhance', label: 'Enhance' },
 ] as const;
 
 export function GameDataLayout() {

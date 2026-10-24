@@ -5,7 +5,7 @@
 export const GAME_DATA_SCHEMA = 1;
 
 export type ClassCode = 'ama' | 'sor' | 'nec' | 'pal' | 'bar' | 'dru' | 'ass' | 'war';
-export type GameDataFile = 'types' | 'bases' | 'runewords' | 'affixes' | 'sources' | 'lootfilter';
+export type GameDataFile = 'types' | 'bases' | 'runewords' | 'affixes' | 'sources' | 'lootfilter' | 'enhance';
 
 export interface GameDataManifest {
   schema: number;
@@ -247,4 +247,149 @@ export interface LootFilterDataBundle {
   sounds: string[];
   uniques: LootFilterUniqueOrSet[];
   sets: LootFilterUniqueOrSet[];
+}
+
+/** Item quality qualifiers of cubemain inputs (`weap,uni`), in display order */
+export const ENHANCE_QUALITIES = ['uni', 'set', 'rar', 'crf', 'mag', 'hiq', 'nor', 'low'] as const;
+export type EnhanceQuality = (typeof ENHANCE_QUALITIES)[number];
+
+/** A cube output property as written in cubemain.txt */
+export interface EnhanceMod {
+  code: string;
+  param: string | null;
+  min: number;
+  max: number;
+  /** `mod N chance` when below 100 (the property is only added with that chance) */
+  chance?: number;
+}
+
+/** Rendered properties of one outcome or recipe */
+export interface EnhanceBonus {
+  /** Visible properties (marker and dummy mods removed) */
+  mods: EnhanceMod[];
+  /** Rendered stat lines; a property with a chance below 100 % gets its own line ending in "(25% chance)" */
+  lines: string[];
+}
+
+export interface EnhanceItemRef {
+  code: string;
+  name: string;
+}
+
+/** One corruption roll of a slot. Lists are shared by every quality of the slot except where `variants` say otherwise. */
+export interface CorruptionOutcome extends EnhanceBonus {
+  /** `CorruptionSlot.slot` */
+  slot: string;
+  /** 1-based position in the slot's roll range */
+  roll: number;
+  /** Qualities whose row at this roll has other values (e.g. Low/Normal/Superior body armor) */
+  variants?: (EnhanceBonus & { qualities: EnhanceQuality[] })[];
+}
+
+export interface CorruptionBrickResult {
+  quality: EnhanceQuality;
+  /** Item type code of a more specific brick row (e.g. `ocha` Odd Charm); null for the slot itself */
+  type: string | null;
+  typeName: string | null;
+  /** Readable output, e.g. "Rare item of the same type" or "Rare Grand Charm" */
+  result: string;
+}
+
+export interface CorruptionSlot {
+  /** URL id, e.g. `weapon`, `body`, `charm` */
+  slot: string;
+  /** cubemain input item type, e.g. `weap` */
+  typeCode: string;
+  label: string;
+  /** Qualities with outcome rows for this slot (in ENHANCE_QUALITIES order) */
+  qualities: EnhanceQuality[];
+  /** Qualities that get the shard roll ("Add Corruption Dummy Stat") but have no outcome rows */
+  rollOnlyQualities: EnhanceQuality[];
+  /** Size of the dummy roll range (`corrupted_dummy` min..max) */
+  rollRange: number;
+  /** Number of outcome rolls (`corruptionOutcomes` of this slot) */
+  outcomes: number;
+  /** outcomes / rollRange, computed from the recipe rows */
+  successRate: number;
+  brick: { rolls: number; rate: number; results: CorruptionBrickResult[] };
+}
+
+export interface AnointmentSlot {
+  slot: string;
+  typeCode: string;
+  label: string;
+  rollRange: number;
+  /** Roll range of socketed items ("… Socketed" dummy rows); null when the slot has none */
+  socketedRollRange: number | null;
+}
+
+export interface AnointmentOutcome extends EnhanceBonus {
+  /** An `AnointmentSlot.slot`, `charm` (unique charm) or `vessel` (Vessel of Souls) */
+  pool: string;
+  /** The row's dummy `value` (not the number in the description) */
+  roll: number;
+  /** The description suffix, e.g. "of Abyss" or "Sockets"; unique charm rows have none */
+  label?: string;
+}
+
+export interface VesselMaterial {
+  code: string;
+  name: string;
+  qty: number;
+}
+
+export interface VesselRecipe extends EnhanceBonus {
+  tier: number;
+  /** Every input but the Vessel itself */
+  materials: VesselMaterial[];
+  soulCost: number;
+  /** From the recipe's `void` cap row (same materials, checks one of the recipe's stats) */
+  maxTimes?: number;
+  /** Rolls one of the Vessel anointments (`anointed_dummy` 1..N) */
+  anointmentRolls?: number;
+}
+
+export interface VesselTier {
+  tier: number;
+  /** Souls when the tier starts / once it is used up */
+  startSouls: number;
+  endSouls: number;
+}
+
+export interface VesselTransform {
+  materials: VesselMaterial[];
+  output: EnhanceItemRef;
+  /** `,mod` output: the weapon keeps the Vessel's bonuses */
+  keepsMods: boolean;
+}
+
+/**
+ * enhance.json: corruption, anointment and Vessel of Souls outcomes from cubemain.txt. Flat top-level arrays so the
+ * serializer writes one outcome / recipe per line.
+ */
+export interface EnhanceBundle {
+  corruption: {
+    reagent: EnhanceItemRef;
+    /** Special rows derived from the data (repeatable corruption, items that cannot be corrupted, marker removal) */
+    notes: string[];
+  };
+  corruptionSlots: CorruptionSlot[];
+  corruptionOutcomes: CorruptionOutcome[];
+  anointment: {
+    reagent: EnhanceItemRef;
+    /** Qualities blocked by `void` trap rows (Unique) */
+    blockedQualities: EnhanceQuality[];
+    /** Every equipment roll row requires `nru` (not a runeword) */
+    noRunewords: boolean;
+    /** Reagents of the unique charm anointment */
+    charmReagents: EnhanceItemRef[];
+    /** The item of the `vessel` pool (rolled by the Vessel tier 4 anointment recipe) */
+    vesselItem: string;
+  };
+  anointmentSlots: AnointmentSlot[];
+  anointmentOutcomes: AnointmentOutcome[];
+  vessel: { item: string; startSouls: number };
+  vesselTiers: VesselTier[];
+  vesselRecipes: VesselRecipe[];
+  vesselTransforms: VesselTransform[];
 }

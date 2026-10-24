@@ -9,6 +9,7 @@ import {
   GAME_DATA_SCHEMA,
   type AffixesBundle,
   type BasesBundle,
+  type EnhanceBundle,
   type GameDataFile,
   type GameDataManifest,
   type LootFilterDataBundle,
@@ -24,6 +25,7 @@ export interface GameDataBundles {
   affixes: AffixesBundle;
   sources: SourcesBundle;
   lootfilter: LootFilterDataBundle;
+  enhance: EnhanceBundle;
 }
 
 export class GameDataSchemaError extends Error {

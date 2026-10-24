@@ -10,6 +10,7 @@ import {
   type AffixesBundle,
   type BaseItem,
   type BasesBundle,
+  type EnhanceBundle,
   type GameDataManifest,
   type LootFilterDataBundle,
   type SourcesBundle,
@@ -31,12 +32,14 @@ const runewordsText = readText('runewords');
 const affixesText = readText('affixes');
 const sourcesText = readText('sources');
 const lootfilterText = readText('lootfilter');
+const enhanceText = readText('enhance');
 const { types } = JSON.parse(typesText) as TypesBundle;
 const { bases, automods: baseAutomods = [] } = JSON.parse(basesText) as BasesBundle;
 const { runewords } = JSON.parse(runewordsText) as TxtRunewordsBundle;
 const { affixes } = JSON.parse(affixesText) as AffixesBundle;
 const { items: sourceItems } = JSON.parse(sourcesText) as SourcesBundle;
 const lootfilter = JSON.parse(lootfilterText) as LootFilterDataBundle;
+const enhance = JSON.parse(enhanceText) as EnhanceBundle;
 
 describe('committed game-data bundles', () => {
   it('match the app schema', () => {
@@ -51,6 +54,7 @@ describe('committed game-data bundles', () => {
       ['affixes', affixesText],
       ['sources', sourcesText],
       ['lootfilter', lootfilterText],
+      ['enhance', enhanceText],
     ] as const) {
       expect(manifest.files[name]?.hash).toBe(createHash('sha256').update(text, 'utf8').digest('hex'));
       expect(manifest.files[name]?.bytes).toBe(Buffer.byteLength(text, 'utf8'));
@@ -191,6 +195,97 @@ describe('committed game-data bundles', () => {
     expect(new Set(lootfilter.areas.map((area) => area.id)).size).toBe(lootfilter.areas.length);
   });
 
+  it('contain the corruption outcomes per slot with the computed rates (ESR 3.2.24)', () => {
+    const { corruptionSlots, corruptionOutcomes } = enhance;
+    expect(corruptionSlots.map((slot) => slot.slot)).toEqual([
+      'weapon',
+      'shield',
+      'body',
+      'helm',
+      'gloves',
+      'belt',
+      'boots',
+      'ring',
+      'amulet',
+      'quiver',
+      'charm',
+    ]);
+    expect(corruptionOutcomes).toHaveLength(272);
+    expect(manifest.counts.enhanceCorruptionOutcomes).toBe(272);
+    for (const slot of corruptionSlots) {
+      expect(
+        corruptionOutcomes.filter((outcome) => outcome.slot === slot.slot),
+        slot.slot
+      ).toHaveLength(slot.outcomes);
+      expect(slot.outcomes + slot.brick.rolls, slot.slot).toBe(slot.rollRange);
+      expect(slot.successRate, slot.slot).toBeCloseTo(slot.slot === 'charm' ? 2 / 3 : 0.75);
+      expect(slot.qualities, slot.slot).not.toContain('mag');
+    }
+    expect(corruptionSlots.find((slot) => slot.slot === 'weapon')).toMatchObject({ outcomes: 30, rollRange: 40 });
+    expect(corruptionSlots.find((slot) => slot.slot === 'quiver')).toMatchObject({ outcomes: 30, qualities: ['uni', 'rar', 'crf'] });
+    expect(corruptionSlots.find((slot) => slot.slot === 'charm')).toMatchObject({ outcomes: 20, qualities: ['uni'] });
+    for (const outcome of corruptionOutcomes) {
+      expect(outcome.lines.length, `${outcome.slot} ${String(outcome.roll)}`).toBeGreaterThan(0);
+      for (const mod of outcome.mods) expect(['corrupted', 'corrupted_dummy']).not.toContain(mod.code);
+    }
+    expect(enhance.corruption.notes).toHaveLength(3);
+  });
+
+  it('contain the anointment pools and rules', () => {
+    const pool = (name: string) => enhance.anointmentOutcomes.filter((outcome) => outcome.pool === name);
+    expect(pool('charm')).toHaveLength(30);
+    expect(pool('vessel')).toHaveLength(178);
+    expect(Object.fromEntries(enhance.anointmentSlots.map((slot) => [slot.slot, pool(slot.slot).length]))).toEqual({
+      weapon: 179,
+      shield: 58,
+      body: 85,
+      helm: 96,
+      gloves: 59,
+      belt: 48,
+      boots: 48,
+      ring: 101,
+      amulet: 116,
+    });
+    for (const slot of enhance.anointmentSlots) {
+      if (slot.socketedRollRange !== null) expect(slot.socketedRollRange, slot.slot).toBe(slot.rollRange - 1);
+    }
+    expect(pool('weapon').at(-1)).toMatchObject({ roll: 179, label: 'Sockets' });
+    expect(enhance.anointment).toMatchObject({ blockedQualities: ['uni'], noRunewords: true });
+    expect(enhance.vesselRecipes.find((recipe) => recipe.anointmentRolls !== undefined)).toMatchObject({
+      tier: 4,
+      soulCost: 5,
+      anointmentRolls: 178,
+    });
+  });
+
+  it('contain the Vessel of Souls tiers, recipes and transforms', () => {
+    const tier = (n: number) => enhance.vesselRecipes.filter((recipe) => recipe.tier === n);
+    const costs = (n: number) =>
+      Object.fromEntries(
+        [...new Set(tier(n).map((recipe) => recipe.soulCost))].map((cost) => [
+          cost,
+          tier(n).filter((recipe) => recipe.soulCost === cost).length,
+        ])
+      );
+    expect(enhance.vessel).toEqual({ item: 'Vessel of Souls', startSouls: 2000 });
+    expect(enhance.vesselTiers.map((entry) => [entry.tier, entry.startSouls, entry.endSouls])).toEqual([
+      [1, 2000, 250],
+      [2, 250, 40],
+      [3, 40, 5],
+      [4, 5, 0],
+    ]);
+    expect(costs(1)).toEqual({ 350: 200, 700: 17 });
+    expect(costs(2)).toEqual({ 42: 36 });
+    expect(costs(3)).toEqual({ 7: 23 });
+    expect(costs(4)).toEqual({ 1: 6, 2: 74, 3: 4, 5: 20 });
+    // The disabled "oskill axe swarm" pair is skipped; the "oskill shuriken trap" recipe is real
+    expect(tier(4).some((recipe) => recipe.mods.some((mod) => mod.code === 'oskill' && mod.param === '561'))).toBe(false);
+    expect(tier(4).some((recipe) => recipe.mods.some((mod) => mod.code === 'oskill' && mod.param === '643'))).toBe(true);
+    expect(enhance.vesselRecipes.filter((recipe) => recipe.maxTimes !== undefined)).toHaveLength(63);
+    expect(enhance.vesselTransforms).toHaveLength(29);
+    expect(enhance.vesselTransforms.every((transform) => transform.keepsMods && transform.output.name.startsWith('Mythical '))).toBe(true);
+  });
+
   it('resolve the merc/helm name collision and class-only bases', () => {
     expect(types.find((type) => type.code === 'merc')?.name).toBe('Helm (merc)');
     expect(types.find((type) => type.code === 'helm')?.name).toBe('Helm');
@@ -235,6 +330,7 @@ describe.skipIf(!existsSync(ESR_DIR))('game data generated from the ESR clone', 
     expect(serializeBundle(generated.affixes)).toBe(affixesText);
     expect(serializeBundle(generated.sources)).toBe(sourcesText);
     expect(serializeBundle(generated.lootfilter)).toBe(lootfilterText);
+    expect(serializeBundle(generated.enhance)).toBe(enhanceText);
   });
 
   it('numbers uniques, sets, stats and sounds like the *ID / *Index comment columns where those are consistent', () => {

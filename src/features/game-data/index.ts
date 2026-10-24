@@ -4,3 +4,4 @@ export { BasesScreen } from './screens/BasesScreen';
 export { BestBaseScreen } from './screens/BestBaseScreen';
 export { AffixesScreen } from './screens/AffixesScreen';
 export { ItemTypesScreen } from './screens/ItemTypesScreen';
+export { EnhanceScreen } from './screens/EnhanceScreen';

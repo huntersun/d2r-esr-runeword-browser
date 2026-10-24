@@ -1,15 +1,28 @@
-import type { AffixesBundle, BasesBundle, LootFilterDataBundle, SourcesBundle, TxtRunewordsBundle, TypesBundle } from '../engine/schema.ts';
+import type {
+  AffixesBundle,
+  BasesBundle,
+  EnhanceBundle,
+  LootFilterDataBundle,
+  SourcesBundle,
+  TxtRunewordsBundle,
+  TypesBundle,
+} from '../engine/schema.ts';
 import { buildAffixesBundle } from './bundleAffixes.ts';
 import { attachAutomods, buildBasesBundle, readStaffMods } from './bundleBases.ts';
+import { buildEnhanceBundle } from './bundleEnhance.ts';
 import { buildLootFilterBundle } from './bundleLootFilter.ts';
 import { buildRunewordsBundle } from './bundleRunewords.ts';
 import { buildSourcesBundle } from './bundleSources.ts';
 import { buildTypesBundle } from './bundleTypes.ts';
 import type { EsrSources } from './esrSources.ts';
-import { readAffixes, readCharStats, readItems, readItemTypes, readRuneRecipes } from './model.ts';
+import { resolveName } from './itemNames.ts';
+import { readAffixes, readCharStats, readItems, readItemTypes, readRuneRecipes, type ItemRow } from './model.ts';
+import type { ModsRenderer } from './bundleRunewords.ts';
+import type { EnhanceContext } from './bundleEnhance.ts';
+import type { PropertyDef } from './stats/tables.ts';
 import { createStatRenderer, readStatTables } from './stats/statRenderer.ts';
 import { buildStringTable } from './strings.ts';
-import { parseTsv } from './tsv.ts';
+import { parseTsv, type TsvTable } from './tsv.ts';
 
 export interface GeneratedBundles {
   types: TypesBundle;
@@ -18,6 +31,7 @@ export interface GeneratedBundles {
   affixes: AffixesBundle;
   sources: SourcesBundle;
   lootfilter: LootFilterDataBundle;
+  enhance: EnhanceBundle;
   counts: Record<string, number>;
   /** Build warnings stored in the manifest */
   warnings: string[];
@@ -39,7 +53,8 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
   const bases = buildBasesBundle(items, buildTypesBundle(typeRows, charStats, strings).bundle, strings, staffMods.bundle);
   const baseTypes = new Set(bases.bundle.bases.flatMap((base) => (base.type2 === null ? [base.type] : [base.type, base.type2])));
   const types = buildTypesBundle(typeRows, charStats, strings, baseTypes);
-  const renderer = createStatRenderer(readStatTables(sources.tables), strings);
+  const statTables = readStatTables(sources.tables);
+  const renderer = createStatRenderer(statTables, strings);
   const renderMods = (mods: Parameters<typeof renderer.renderMods>[0]) => renderer.renderMods(mods);
   const runewords = buildRunewordsBundle(readRuneRecipes(table('runes')), misc, types.bundle, strings, renderMods);
   const affixRows = [
@@ -85,6 +100,13 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
     strings
   );
 
+  const enhance = buildEnhanceBundle(
+    { cubemain: table('cubemain'), uniqueitems: table('uniqueitems') },
+    enhanceContext(strings, items, types.bundle, statTables.properties, rowTable('itemstatcost'), renderMods)
+  );
+  const { corruptionSlots, corruptionOutcomes, anointmentOutcomes, vesselRecipes, vesselTransforms } = enhance.bundle;
+  const countPool = (pool: string) => anointmentOutcomes.filter((outcome) => outcome.pool === pool).length;
+
   const countKind = (kind: string) => bases.bundle.bases.filter((base) => base.kind === kind).length;
   return {
     types: types.bundle,
@@ -93,6 +115,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
     affixes: affixes.bundle,
     sources: sourceItems.bundle,
     lootfilter: lootfilter.bundle,
+    enhance: enhance.bundle,
     counts: {
       types: types.bundle.types.length,
       classes: types.bundle.classes.length,
@@ -125,6 +148,13 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       lootFilterSounds: lootfilter.bundle.sounds.length,
       lootFilterUniques: lootfilter.bundle.uniques.length,
       lootFilterSets: lootfilter.bundle.sets.length,
+      enhanceCorruptionSlots: corruptionSlots.length,
+      enhanceCorruptionOutcomes: corruptionOutcomes.length,
+      enhanceAnointmentOutcomes: anointmentOutcomes.length - countPool('charm') - countPool('vessel'),
+      enhanceCharmAnointments: countPool('charm'),
+      enhanceVesselAnointments: countPool('vessel'),
+      enhanceVesselRecipes: vesselRecipes.length,
+      enhanceVesselTransforms: vesselTransforms.length,
     },
     warnings: [
       ...types.warnings,
@@ -134,7 +164,48 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       ...affixes.warnings,
       ...sourceItems.warnings,
       ...lootfilter.warnings,
+      ...enhance.warnings,
     ],
     stringWarnings: [...stringWarnings],
+  };
+}
+
+/** Names, item type ancestry and property → stat ids for the enhance bundle */
+function enhanceContext(
+  strings: ReadonlyMap<string, string>,
+  items: readonly ItemRow[],
+  types: TypesBundle,
+  properties: ReadonlyMap<string, PropertyDef>,
+  itemstatcost: TsvTable,
+  renderMods: ModsRenderer
+): EnhanceContext {
+  const itemNames = new Map<string, string>();
+  const itemTypes = new Map<string, string[]>();
+  const typeItemNames = new Map<string, Set<string>>();
+  for (const item of items) {
+    if (itemNames.has(item.code)) continue;
+    const name = resolveName(strings, item.namestr, item.name);
+    itemNames.set(item.code, name);
+    const own = [item.type, item.type2].filter((type) => type !== '');
+    itemTypes.set(item.code, own);
+    for (const type of own) typeItemNames.set(type, (typeItemNames.get(type) ?? new Set()).add(name));
+  }
+  const typeInfo = new Map(types.types.map((type) => [type.code, type]));
+  const statIds = new Map(itemstatcost.rows.map((row, id) => [row.str('Stat'), id]));
+  // A type whose items all share one name reads as that name: ESR's "Large Charm" type holds the Grand Charm
+  const typeName = (code: string) => {
+    const names = [...(typeItemNames.get(code) ?? [])];
+    return names.length === 1 ? names[0] : typeInfo.get(code)?.name;
+  };
+  const isType = (code: string, parent: string) => code === parent || (typeInfo.get(code)?.ancestors.includes(parent) ?? false);
+  return {
+    nameOf: (token) => itemNames.get(token) ?? typeName(token) ?? resolveName(strings, token, token),
+    isA: (code, parent) => isType(code, parent) || (itemTypes.get(code) ?? []).some((type) => isType(type, parent)),
+    statIdsOf: (property) =>
+      (properties.get(property)?.slots ?? []).flatMap((slot) => {
+        const id = statIds.get(slot.stat);
+        return id === undefined ? [] : [id];
+      }),
+    renderMods,
   };
 }

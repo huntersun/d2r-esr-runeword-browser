@@ -63,6 +63,7 @@ export const NAV_ENTRIES: readonly NavEntry[] = [
       { key: 'best-base', to: '/game-data/best-base', label: 'Best Base', description: 'Best base for a runeword and character' },
       { key: 'affixes', to: '/game-data/affixes', label: 'Affixes', description: 'Affixes and what can roll on a base' },
       { key: 'item-types', to: '/game-data/types', label: 'Item Types', description: 'Item type tree and socket caps' },
+      { key: 'enhance', to: '/game-data/enhance', label: 'Enhance', description: 'Corruption, anointment and Vessel of Souls outcomes' },
       { key: 'loot-filters', to: '/loot-filters', label: 'Loot Filters', description: 'Build and test loot filters' },
     ],
   },

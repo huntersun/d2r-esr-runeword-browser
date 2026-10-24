@@ -64,6 +64,7 @@ function main(): void {
     affixes: serializeBundle(generated.affixes),
     sources: serializeBundle(generated.sources),
     lootfilter: serializeBundle(generated.lootfilter),
+    enhance: serializeBundle(generated.enhance),
   };
   const manifest = buildManifest({
     esrVersion: sources.esrVersion,

@@ -12,7 +12,7 @@ import { AuthOverlays, selectAuthIsConfigured } from '@/features/auth';
  * Route prefixes that render from static bundles only (no HTM/Dexie data), so they skip both startup gates below:
  * the loading spinner and the fatal sync-error screen. See docs/technical/NAVIGATION.md "Startup loading gate".
  */
-const STATIC_BUNDLE_ROUTE_PREFIXES = ['/guide', '/loot-filters'] as const;
+const STATIC_BUNDLE_ROUTE_PREFIXES = ['/guide', '/loot-filters', '/game-data/enhance'] as const;
 
 function isStaticBundlePath(pathname: string): boolean {
   return STATIC_BUNDLE_ROUTE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
