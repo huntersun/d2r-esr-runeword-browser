@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.32.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.31.0...v1.32.0) (2026-10-25)
+
+
+### Features
+
+* **game-data:** item icons for set items, uniques and builds ([b0533fc](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/b0533fc12aa328b431aaff415e601070d9acfef1))
+* **game-data:** item icons on the Bases page (prototype) ([08e58ff](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/08e58ff66ac6bf46393b8fb44bdbe221f5f5f975))
+* **game-data:** recolour set and unique icons like the game ([dd34467](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/dd344672b4f7268bd5aca71ebb06be2623fea32f))
+* **game-data:** socketable icons on the Socketables page ([6b8de3e](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/6b8de3e2738f2370943de65322d17efd4aaee2ea))
+* **game-data:** vanilla D2R art as the second icon source ([d3f39e8](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/d3f39e8f1cff067a72583839e7a052b1c176fceb))
+
 ## [1.31.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.30.0...v1.31.0) (2026-10-25)
 
 
