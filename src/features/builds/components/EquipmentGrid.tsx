@@ -1,4 +1,5 @@
-import type { EquipmentSlot, ItemRef } from '../buildData';
+import type { CraftAnnotation, EquipmentSlot, ItemRef } from '../buildData';
+import type { CraftDataState } from '../hooks/useCraftData';
 import type { ItemDiff } from '../utils/itemDiff';
 import { setPieceCounts } from '../utils/setBonuses';
 import { SlotCell } from './SlotCell';
@@ -46,9 +47,25 @@ interface EquipmentGridProps {
   readonly notes?: Partial<Record<EquipmentSlot, string>>;
   /** When provided, slot notes become editable. */
   readonly onNoteChange?: (slot: EquipmentSlot, text: string) => void;
+  /** Per-slot crafting annotations. */
+  readonly crafts?: Partial<Record<EquipmentSlot, readonly CraftAnnotation[]>>;
+  /** When provided, slot crafting annotations become editable. */
+  readonly onCraftsChange?: (slot: EquipmentSlot, crafts: readonly CraftAnnotation[]) => void;
+  /** The crafting / enhance bundles, loaded once by the screen. */
+  readonly craftData?: CraftDataState;
 }
 
-export function EquipmentGrid({ items, onChange, disabled, diffs, notes, onNoteChange }: EquipmentGridProps) {
+export function EquipmentGrid({
+  items,
+  onChange,
+  disabled,
+  diffs,
+  notes,
+  onNoteChange,
+  crafts,
+  onCraftsChange,
+  craftData,
+}: EquipmentGridProps) {
   // Set pieces worn in this section only (a grid is one section: player gear or merc gear).
   const pieceCounts = setPieceCounts(items);
   return (
@@ -67,11 +84,20 @@ export function EquipmentGrid({ items, onChange, disabled, diffs, notes, onNoteC
             disabled={disabled}
             diff={diffs?.[slot]}
             note={notes?.[slot]}
+            crafts={crafts?.[slot]}
+            craftData={craftData}
             onChange={
               onChange === undefined
                 ? undefined
                 : (ref) => {
                     onChange(slot, ref);
+                  }
+            }
+            onCraftsChange={
+              onCraftsChange === undefined
+                ? undefined
+                : (list) => {
+                    onCraftsChange(slot, list);
                   }
             }
             onNoteChange={

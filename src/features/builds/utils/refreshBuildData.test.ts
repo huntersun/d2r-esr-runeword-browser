@@ -81,6 +81,27 @@ describe('refreshBuildData', () => {
     expect(refreshed.itemNotes).toEqual({ gloves: 'Corrupt for +1 skills' });
     expect(refreshed.mercenaryNotes).toEqual({ helmet: 'D-Stone until very fast attack speed' });
   });
+
+  it('leaves the per-slot crafting annotations untouched', async () => {
+    const itemCrafts = {
+      gloves: [
+        { kind: 'forge', forge: 'rune', key: 'r19' },
+        { kind: 'dstone', material: 'ppp', uses: 3 },
+      ],
+    } as const;
+    const weaponSwapCrafts = { weapon2: [{ kind: 'corruption', slot: 'weapon', roll: 7 }] } as const;
+    const mercenaryCrafts = { helmet: [{ kind: 'meld', material: 'grb', uses: 1 }] } as const;
+    const buildData: BuildData = {
+      items: { gloves: { type: 'freetext', name: 'GG rare gloves' } },
+      itemCrafts,
+      weaponSwapCrafts,
+      mercenaryCrafts,
+    };
+    const refreshed = await refreshBuildData(buildData);
+    expect(refreshed.itemCrafts).toBe(itemCrafts);
+    expect(refreshed.weaponSwapCrafts).toBe(weaponSwapCrafts);
+    expect(refreshed.mercenaryCrafts).toBe(mercenaryCrafts);
+  });
 });
 
 describe('refreshBuildData with same-name variants', () => {

@@ -24,6 +24,8 @@ import { RequestState } from '@/core/types';
 import { avatarInitials, formatProfileTag, openSignInDialog, selectAuthUserId, selectIsAuthenticated } from '@/features/auth';
 import { asBuildData, type EquipmentSlot, type ItemRef, type WeaponSwapSlot } from '../buildData';
 import { compactItems } from '../utils/buildSnapshot';
+import { hasCrafts } from '../utils/crafts';
+import { useCraftData } from '../hooks/useCraftData';
 import { computeBuildItemDiffs } from '../utils/itemDiff';
 import { hasSetItems } from '../utils/setBonuses';
 import { SetBonusesBlock } from '../components/SetBonusesBlock';
@@ -73,6 +75,13 @@ export function BuildDetailScreen() {
   const itemDiffs = useLiveQuery(
     () => (build !== null ? computeBuildItemDiffs(asBuildData(build.build_data)) : Promise.resolve(undefined)),
     [build?.build_data]
+  );
+
+  // Parsed again below for rendering; here only to decide whether the crafting bundles are needed.
+  const detailData = build !== null ? asBuildData(build.build_data) : null;
+  const craftData = useCraftData(
+    detailData !== null &&
+      (hasCrafts(detailData.itemCrafts) || hasCrafts(detailData.weaponSwapCrafts) || hasCrafts(detailData.mercenaryCrafts))
   );
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -156,7 +165,7 @@ export function BuildDetailScreen() {
   const hasPlayerGear = Object.keys(compactItems(playerItems)).length > 0;
   const hasSwap = Object.keys(compactItems(swapItems)).length > 0;
   const hasMerc = Object.keys(compactItems(mercItems)).length > 0;
-  const hasMercNotes = Object.values(buildData.mercenaryNotes ?? {}).some(hasText);
+  const hasMercNotes = Object.values(buildData.mercenaryNotes ?? {}).some(hasText) || hasCrafts(buildData.mercenaryCrafts);
   const charms = buildData.charms ?? [];
   const ascendancyName = buildData.ascendancy ?? null;
   const skills = buildData.skills ?? null;
@@ -310,14 +319,26 @@ export function BuildDetailScreen() {
                     {hasPlayerGear && (
                       <div>
                         <h3 className="mb-2 text-sm font-semibold text-muted-foreground">Player Gear</h3>
-                        <EquipmentGrid items={playerItems} diffs={diffsReady?.items} notes={buildData.itemNotes} />
+                        <EquipmentGrid
+                          items={playerItems}
+                          diffs={diffsReady?.items}
+                          notes={buildData.itemNotes}
+                          crafts={buildData.itemCrafts}
+                          craftData={craftData}
+                        />
                         {hasSetItems(playerItems) && <SetBonusesBlock items={playerItems} />}
                       </div>
                     )}
                     {hasSwap && (
                       <div>
                         <h3 className="mb-2 text-sm font-semibold text-muted-foreground">Weapon Swap</h3>
-                        <WeaponSwapGrid items={swapItems} diffs={diffsReady?.weaponSwap} notes={buildData.weaponSwapNotes} />
+                        <WeaponSwapGrid
+                          items={swapItems}
+                          diffs={diffsReady?.weaponSwap}
+                          notes={buildData.weaponSwapNotes}
+                          crafts={buildData.weaponSwapCrafts}
+                          craftData={craftData}
+                        />
                       </div>
                     )}
                   </div>
@@ -367,7 +388,13 @@ export function BuildDetailScreen() {
             <TabsContent value="mercenary">
               <section>
                 <SectionHeader title="Mercenary Gear" />
-                <EquipmentGrid items={mercItems} diffs={diffsReady?.mercenary} notes={buildData.mercenaryNotes} />
+                <EquipmentGrid
+                  items={mercItems}
+                  diffs={diffsReady?.mercenary}
+                  notes={buildData.mercenaryNotes}
+                  crafts={buildData.mercenaryCrafts}
+                  craftData={craftData}
+                />
                 {hasSetItems(mercItems) && <SetBonusesBlock items={mercItems} />}
               </section>
             </TabsContent>

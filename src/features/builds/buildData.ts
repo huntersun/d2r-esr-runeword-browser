@@ -2,6 +2,8 @@
 // one of the item-reference variants below, or null/absent for an empty slot.
 // See builds-feature-docs/FEATURE-BUILD-SHARING.md.
 
+import type { ForgingKind } from '@/features/game-data/engine/schema';
+
 /** Per-column runeword/gemword bonuses, stored as rawText strings. */
 export interface ColumnAffixesSnapshot {
   readonly weaponsGloves: readonly string[];
@@ -139,6 +141,32 @@ export function supportsSocketed(ref: ItemRef): ref is SocketableItemRef {
 export type EquipmentSlot = 'helmet' | 'armor' | 'weapon' | 'shield' | 'gloves' | 'boots' | 'belt' | 'amulet' | 'ring1' | 'ring2';
 export type WeaponSwapSlot = 'weapon2' | 'shield2';
 
+/**
+ * A structured crafting annotation on an equipped item: ids into the game-data bundles, never
+ * rendered text (the detail page renders the lines from the viewer's current bundles).
+ * - corruption: enhance.json `corruptionOutcomes` (`slot` = the enhance slot id, e.g. `body`; `roll` 1-based)
+ * - anointment: enhance.json `anointmentOutcomes` (`pool` = an anointment slot id; `roll` = the row's value)
+ * - forge: crafting.json `forgings` (`forge` = the kind, `key` = the option key, e.g. rune / r19)
+ * - dstone / meld: crafting.json `stacking` (`material` / `switchItem` item codes); `uses` = times applied
+ */
+export type CraftAnnotation =
+  | { readonly kind: 'corruption'; readonly slot: string; readonly roll: number }
+  | { readonly kind: 'anointment'; readonly pool: string; readonly roll: number }
+  | { readonly kind: 'forge'; readonly forge: ForgingKind; readonly key: string }
+  | { readonly kind: 'dstone'; readonly material: string; readonly switchItem?: string; readonly uses: number }
+  | { readonly kind: 'meld'; readonly material: string; readonly uses: number };
+
+export type CraftAnnotationKind = CraftAnnotation['kind'];
+
+/** Most crafting annotations stored per slot. */
+export const CRAFTS_MAX_PER_SLOT = 8;
+/** Most uses of one D-stoning / gem meld annotation. */
+export const CRAFT_USES_MAX = 99;
+/** Longest id string (slot, pool, key, material, switch item) accepted. */
+export const CRAFT_ID_MAX_LENGTH = 100;
+
+const FORGING_KINDS: readonly ForgingKind[] = ['skill', 'all', 'stat', 'rune', 'aura'];
+
 export interface BuildData {
   readonly items?: Partial<Record<EquipmentSlot, ItemRef | null>>;
   readonly weaponSwap?: Partial<Record<WeaponSwapSlot, ItemRef | null>>;
@@ -149,6 +177,12 @@ export interface BuildData {
   readonly itemNotes?: Partial<Record<EquipmentSlot, string>>;
   readonly weaponSwapNotes?: Partial<Record<WeaponSwapSlot, string>>;
   readonly mercenaryNotes?: Partial<Record<EquipmentSlot, string>>;
+  // Per-slot structured crafting annotations (forging, D-stoning, gem melding, corruption,
+  // anointment), keyed by slot like the notes: they belong to the slot, survive the snapshot
+  // refresh and stay when the item in the slot is swapped. Absent on older builds.
+  readonly itemCrafts?: Partial<Record<EquipmentSlot, readonly CraftAnnotation[]>>;
+  readonly weaponSwapCrafts?: Partial<Record<WeaponSwapSlot, readonly CraftAnnotation[]>>;
+  readonly mercenaryCrafts?: Partial<Record<EquipmentSlot, readonly CraftAnnotation[]>>;
   readonly charms?: readonly string[];
   readonly ascendancy?: string | null;
   readonly skills?: string | null;
@@ -278,13 +312,64 @@ function filterEntries<T>(value: unknown, isValid: (entry: unknown) => entry is 
 }
 
 const isString = (value: unknown): value is string => typeof value === 'string';
+
+const isCraftId = (value: unknown): value is string => typeof value === 'string' && value.length > 0 && value.length <= CRAFT_ID_MAX_LENGTH;
+const isPositiveInt = (value: unknown): value is number => typeof value === 'number' && Number.isInteger(value) && value > 0;
+const isUses = (value: unknown): value is number => isPositiveInt(value) && value <= CRAFT_USES_MAX;
+const isForgingKind = (value: unknown): value is ForgingKind => FORGING_KINDS.some((kind) => kind === value);
+
+/** A stored crafting annotation rebuilt with only its known fields, or undefined when malformed. */
+export function asCraftAnnotation(value: unknown): CraftAnnotation | undefined {
+  if (!isRecord(value)) return undefined;
+  switch (value.kind) {
+    case 'corruption':
+      return isCraftId(value.slot) && isPositiveInt(value.roll) ? { kind: 'corruption', slot: value.slot, roll: value.roll } : undefined;
+    case 'anointment':
+      return isCraftId(value.pool) && isPositiveInt(value.roll) ? { kind: 'anointment', pool: value.pool, roll: value.roll } : undefined;
+    case 'forge':
+      return isForgingKind(value.forge) && isCraftId(value.key) ? { kind: 'forge', forge: value.forge, key: value.key } : undefined;
+    case 'dstone':
+      if (!isCraftId(value.material) || !isUses(value.uses)) return undefined;
+      if (value.switchItem !== undefined && !isCraftId(value.switchItem)) return undefined;
+      return {
+        kind: 'dstone',
+        material: value.material,
+        ...(value.switchItem !== undefined ? { switchItem: value.switchItem } : {}),
+        uses: value.uses,
+      };
+    case 'meld':
+      return isCraftId(value.material) && isUses(value.uses) ? { kind: 'meld', material: value.material, uses: value.uses } : undefined;
+    default:
+      return undefined;
+  }
+}
+
+/** A slot's stored crafting list, cleaned: malformed entries dropped, at most CRAFTS_MAX_PER_SLOT kept; undefined when nothing is left. */
+export function asCraftList(value: unknown): readonly CraftAnnotation[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const crafts = value
+    .map(asCraftAnnotation)
+    .filter((craft): craft is CraftAnnotation => craft !== undefined)
+    .slice(0, CRAFTS_MAX_PER_SLOT);
+  return crafts.length > 0 ? crafts : undefined;
+}
+
+function craftSection(value: unknown): Record<string, readonly CraftAnnotation[]> | undefined {
+  if (!isRecord(value)) return undefined;
+  const entries = Object.entries(value).flatMap(([slot, list]) => {
+    const crafts = asCraftList(list);
+    return crafts === undefined ? [] : [[slot, crafts] as const];
+  });
+  return Object.fromEntries(entries);
+}
 const optionalString = (value: unknown): string | null | undefined => (typeof value === 'string' || value === null ? value : undefined);
 
 /**
  * Defensive read of the jsonb column into BuildData. The column is user-writable
  * (any authenticated owner can PATCH arbitrary JSON through PostgREST), so every
  * field is validated: malformed item refs, notes and charms are dropped rather than
- * crashing the detail/edit screens. A malformed `base` / `socketed` drops just that field.
+ * crashing the detail/edit screens. A malformed `base` / `socketed` drops just that field,
+ * a malformed crafting annotation just that entry.
  */
 export function asBuildData(value: unknown): BuildData {
   if (!isRecord(value)) return {};
@@ -295,6 +380,9 @@ export function asBuildData(value: unknown): BuildData {
     itemNotes: filterEntries(value.itemNotes, isString),
     weaponSwapNotes: filterEntries(value.weaponSwapNotes, isString),
     mercenaryNotes: filterEntries(value.mercenaryNotes, isString),
+    itemCrafts: craftSection(value.itemCrafts),
+    weaponSwapCrafts: craftSection(value.weaponSwapCrafts),
+    mercenaryCrafts: craftSection(value.mercenaryCrafts),
     charms: Array.isArray(value.charms) ? value.charms.filter(isString) : undefined,
     ascendancy: optionalString(value.ascendancy),
     skills: optionalString(value.skills),

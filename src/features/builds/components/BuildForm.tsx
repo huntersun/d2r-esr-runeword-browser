@@ -11,8 +11,10 @@ import {
   SKILLS_MAX_LENGTH,
   type CharacterClass,
 } from '../constants';
-import type { BuildData, EquipmentSlot, ItemRef, WeaponSwapSlot } from '../buildData';
+import type { BuildData, CraftAnnotation, EquipmentSlot, ItemRef, WeaponSwapSlot } from '../buildData';
 import { compactItems, compactNotes } from '../utils/buildSnapshot';
+import { compactCrafts } from '../utils/crafts';
+import { useCraftData } from '../hooks/useCraftData';
 import { charmTexts, toCharmEntries, type CharmEntry } from '../utils/charms';
 import { useUnsavedChangesPrompt } from '../hooks/useUnsavedChangesPrompt';
 import { EquipmentGrid } from './EquipmentGrid';
@@ -41,6 +43,15 @@ export function BuildForm({ initialValues, submitLabel, saving, saved, onSubmit,
   const [itemNotes, setItemNotes] = useState<Partial<Record<EquipmentSlot, string>>>(initialValues.itemNotes);
   const [weaponSwapNotes, setWeaponSwapNotes] = useState<Partial<Record<WeaponSwapSlot, string>>>(initialValues.weaponSwapNotes);
   const [mercenaryNotes, setMercenaryNotes] = useState<Partial<Record<EquipmentSlot, string>>>(initialValues.mercenaryNotes);
+  const [itemCrafts, setItemCrafts] = useState<Partial<Record<EquipmentSlot, readonly CraftAnnotation[]>>>(initialValues.itemCrafts);
+  const [weaponSwapCrafts, setWeaponSwapCrafts] = useState<Partial<Record<WeaponSwapSlot, readonly CraftAnnotation[]>>>(
+    initialValues.weaponSwapCrafts
+  );
+  const [mercenaryCrafts, setMercenaryCrafts] = useState<Partial<Record<EquipmentSlot, readonly CraftAnnotation[]>>>(
+    initialValues.mercenaryCrafts
+  );
+  // The crafting picker needs the bundles in every slot, so they load once here for the whole form.
+  const craftData = useCraftData(true);
   const [charms, setCharms] = useState<CharmEntry[]>(() => toCharmEntries(initialValues.charms));
   const [ascendancy, setAscendancy] = useState<string | null>(initialValues.ascendancy);
   const [skills, setSkills] = useState(initialValues.skills);
@@ -66,6 +77,9 @@ export function BuildForm({ initialValues, submitLabel, saving, saved, onSubmit,
     const itemNoteMap = compactNotes(itemNotes);
     const swapNoteMap = compactNotes(weaponSwapNotes);
     const mercNoteMap = compactNotes(mercenaryNotes);
+    const itemCraftMap = compactCrafts(itemCrafts);
+    const swapCraftMap = compactCrafts(weaponSwapCrafts);
+    const mercCraftMap = compactCrafts(mercenaryCrafts);
     const cleanedCharms = charmTexts(charms);
     const trimmedSkills = skills.trim();
     const buildData: BuildData = {
@@ -75,6 +89,9 @@ export function BuildForm({ initialValues, submitLabel, saving, saved, onSubmit,
       ...(Object.keys(itemNoteMap).length > 0 ? { itemNotes: itemNoteMap } : {}),
       ...(Object.keys(swapNoteMap).length > 0 ? { weaponSwapNotes: swapNoteMap } : {}),
       ...(Object.keys(mercNoteMap).length > 0 ? { mercenaryNotes: mercNoteMap } : {}),
+      ...(Object.keys(itemCraftMap).length > 0 ? { itemCrafts: itemCraftMap } : {}),
+      ...(Object.keys(swapCraftMap).length > 0 ? { weaponSwapCrafts: swapCraftMap } : {}),
+      ...(Object.keys(mercCraftMap).length > 0 ? { mercenaryCrafts: mercCraftMap } : {}),
       ...(cleanedCharms.length > 0 ? { charms: cleanedCharms } : {}),
       ...(ascendancy !== null ? { ascendancy } : {}),
       ...(trimmedSkills.length > 0 ? { skills: trimmedSkills } : {}),
@@ -167,15 +184,24 @@ export function BuildForm({ initialValues, submitLabel, saving, saved, onSubmit,
         <EquipmentGrid
           items={items}
           notes={itemNotes}
+          crafts={itemCrafts}
+          craftData={craftData}
           disabled={saving}
           onChange={(slot, ref) => {
             setItems((prev) => ({ ...prev, [slot]: ref }));
-            // Emptying a slot clears its note (compactNotes drops the blank on save).
-            if (ref === null) setItemNotes((prev) => ({ ...prev, [slot]: '' }));
+            // Emptying a slot clears its note and crafting (compactNotes / compactCrafts drop them on save).
+            if (ref === null) {
+              setItemNotes((prev) => ({ ...prev, [slot]: '' }));
+              setItemCrafts((prev) => ({ ...prev, [slot]: [] }));
+            }
             markTouched();
           }}
           onNoteChange={(slot, text) => {
             setItemNotes((prev) => ({ ...prev, [slot]: text }));
+            markTouched();
+          }}
+          onCraftsChange={(slot, list) => {
+            setItemCrafts((prev) => ({ ...prev, [slot]: list }));
             markTouched();
           }}
         />
@@ -186,14 +212,23 @@ export function BuildForm({ initialValues, submitLabel, saving, saved, onSubmit,
         <WeaponSwapGrid
           items={weaponSwap}
           notes={weaponSwapNotes}
+          crafts={weaponSwapCrafts}
+          craftData={craftData}
           disabled={saving}
           onChange={(slot, ref) => {
             setWeaponSwap((prev) => ({ ...prev, [slot]: ref }));
-            if (ref === null) setWeaponSwapNotes((prev) => ({ ...prev, [slot]: '' }));
+            if (ref === null) {
+              setWeaponSwapNotes((prev) => ({ ...prev, [slot]: '' }));
+              setWeaponSwapCrafts((prev) => ({ ...prev, [slot]: [] }));
+            }
             markTouched();
           }}
           onNoteChange={(slot, text) => {
             setWeaponSwapNotes((prev) => ({ ...prev, [slot]: text }));
+            markTouched();
+          }}
+          onCraftsChange={(slot, list) => {
+            setWeaponSwapCrafts((prev) => ({ ...prev, [slot]: list }));
             markTouched();
           }}
         />
@@ -204,14 +239,23 @@ export function BuildForm({ initialValues, submitLabel, saving, saved, onSubmit,
         <EquipmentGrid
           items={mercenary}
           notes={mercenaryNotes}
+          crafts={mercenaryCrafts}
+          craftData={craftData}
           disabled={saving}
           onChange={(slot, ref) => {
             setMercenary((prev) => ({ ...prev, [slot]: ref }));
-            if (ref === null) setMercenaryNotes((prev) => ({ ...prev, [slot]: '' }));
+            if (ref === null) {
+              setMercenaryNotes((prev) => ({ ...prev, [slot]: '' }));
+              setMercenaryCrafts((prev) => ({ ...prev, [slot]: [] }));
+            }
             markTouched();
           }}
           onNoteChange={(slot, text) => {
             setMercenaryNotes((prev) => ({ ...prev, [slot]: text }));
+            markTouched();
+          }}
+          onCraftsChange={(slot, list) => {
+            setMercenaryCrafts((prev) => ({ ...prev, [slot]: list }));
             markTouched();
           }}
         />

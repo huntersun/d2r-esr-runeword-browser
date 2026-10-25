@@ -1,4 +1,5 @@
-import type { ItemRef, WeaponSwapSlot } from '../buildData';
+import type { CraftAnnotation, ItemRef, WeaponSwapSlot } from '../buildData';
+import type { CraftDataState } from '../hooks/useCraftData';
 import type { ItemDiff } from '../utils/itemDiff';
 import { SlotCell } from './SlotCell';
 
@@ -15,9 +16,25 @@ interface WeaponSwapGridProps {
   readonly notes?: Partial<Record<WeaponSwapSlot, string>>;
   /** When provided, slot notes become editable. */
   readonly onNoteChange?: (slot: WeaponSwapSlot, text: string) => void;
+  /** Per-slot crafting annotations. */
+  readonly crafts?: Partial<Record<WeaponSwapSlot, readonly CraftAnnotation[]>>;
+  /** When provided, slot crafting annotations become editable. */
+  readonly onCraftsChange?: (slot: WeaponSwapSlot, crafts: readonly CraftAnnotation[]) => void;
+  /** The crafting / enhance bundles, loaded once by the screen. */
+  readonly craftData?: CraftDataState;
 }
 
-export function WeaponSwapGrid({ items, onChange, disabled, diffs, notes, onNoteChange }: WeaponSwapGridProps) {
+export function WeaponSwapGrid({
+  items,
+  onChange,
+  disabled,
+  diffs,
+  notes,
+  onNoteChange,
+  crafts,
+  onCraftsChange,
+  craftData,
+}: WeaponSwapGridProps) {
   return (
     <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2">
       {SWAP_SLOTS.map((slot) => (
@@ -29,11 +46,20 @@ export function WeaponSwapGrid({ items, onChange, disabled, diffs, notes, onNote
           disabled={disabled}
           diff={diffs?.[slot]}
           note={notes?.[slot]}
+          crafts={crafts?.[slot]}
+          craftData={craftData}
           onChange={
             onChange === undefined
               ? undefined
               : (ref) => {
                   onChange(slot, ref);
+                }
+          }
+          onCraftsChange={
+            onCraftsChange === undefined
+              ? undefined
+              : (list) => {
+                  onCraftsChange(slot, list);
                 }
           }
           onNoteChange={

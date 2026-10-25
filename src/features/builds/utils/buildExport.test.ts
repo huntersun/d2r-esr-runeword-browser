@@ -33,6 +33,12 @@ describe('buildExportPayload', () => {
     // The build is included verbatim (faithful raw dump).
     expect(payload.build).toBe(build);
   });
+
+  it('exports the crafting annotations as stored', () => {
+    const buildData = { itemCrafts: { weapon: [{ kind: 'forge', forge: 'rune', key: 'r19' }] } };
+    const payload = buildExportPayload(makeBuild({ build_data: buildData }), 'https://example.test', '2026-06-08T12:00:00.000Z');
+    expect(payload.build.build_data).toBe(buildData);
+  });
 });
 
 describe('buildExportFilename', () => {

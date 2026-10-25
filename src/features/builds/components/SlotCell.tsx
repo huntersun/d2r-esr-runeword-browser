@@ -3,10 +3,13 @@ import { TriangleAlert } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { ITEM_NOTE_MAX_LENGTH } from '../constants';
-import type { EquipmentSlot, ItemRef, WeaponSwapSlot } from '../buildData';
+import type { CraftAnnotation, EquipmentSlot, ItemRef, WeaponSwapSlot } from '../buildData';
+import type { CraftDataState } from '../hooks/useCraftData';
 import type { ItemDiff } from '../utils/itemDiff';
 import { socketedOf } from '../utils/itemChoices';
 import { BuildItemCard } from './BuildItemCard';
+import { CraftsDisplay } from './CraftsDisplay';
+import { CraftsEditor } from './CraftsEditor';
 import { ItemChoicesEditor } from './ItemChoicesEditor';
 import { EquipmentSlotPicker } from './EquipmentSlotPicker';
 import { ItemRefDisplay } from './ItemRefDisplay';
@@ -29,10 +32,31 @@ interface SlotCellProps {
   readonly onNoteChange?: (text: string) => void;
   /** Set items only: pieces of the item's set equipped in this section. */
   readonly setPieces?: number;
+  /** Structured crafting annotations of the slot (forging, D-stoning, melds, corruption, anointment). */
+  readonly crafts?: readonly CraftAnnotation[];
+  /** When provided alongside an item, the crafting annotations become editable. */
+  readonly onCraftsChange?: (crafts: readonly CraftAnnotation[]) => void;
+  /** The crafting / enhance bundles, loaded once per screen. */
+  readonly craftData?: CraftDataState;
 }
 
+const NO_CRAFT_DATA: CraftDataState = { status: 'idle', lookups: undefined };
+
 /** One equipment slot — editable (picker + rich card preview + note) or read-only. */
-export function SlotCell({ label, slot, item, onChange, disabled, diff, note, onNoteChange, setPieces }: SlotCellProps) {
+export function SlotCell({
+  label,
+  slot,
+  item,
+  onChange,
+  disabled,
+  diff,
+  note,
+  onNoteChange,
+  setPieces,
+  crafts = [],
+  onCraftsChange,
+  craftData = NO_CRAFT_DATA,
+}: SlotCellProps) {
   const [showOriginal, setShowOriginal] = useState(false);
 
   if (onChange !== undefined) {
@@ -41,6 +65,9 @@ export function SlotCell({ label, slot, item, onChange, disabled, diff, note, on
         <EquipmentSlotPicker label={label} slot={slot} value={item} disabled={disabled} onChange={onChange} />
         {item !== null && <ItemChoicesEditor item={item} slot={slot} disabled={disabled} onChange={onChange} />}
         {item !== null && <BuildItemCard item={item} slot={slot} setPieces={setPieces} showChoices={false} />}
+        {item !== null && onCraftsChange !== undefined && (
+          <CraftsEditor slot={slot} crafts={crafts} craftData={craftData} disabled={disabled} onChange={onCraftsChange} />
+        )}
         {item !== null && onNoteChange !== undefined && (
           <Textarea
             value={note ?? ''}
@@ -112,6 +139,8 @@ export function SlotCell({ label, slot, item, onChange, disabled, diff, note, on
           <ItemRefDisplay item={diff.stored} slot={slot} />
         </div>
       )}
+
+      {item !== null && <CraftsDisplay slot={slot} crafts={crafts} craftData={craftData} />}
 
       {item !== null && noteText !== undefined && noteText.length > 0 && (
         <div className="rounded-md bg-muted/40 p-2">

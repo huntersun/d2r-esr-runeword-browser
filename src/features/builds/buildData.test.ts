@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { asBuildData, isItemRef } from './buildData';
+import { asBuildData, asCraftAnnotation, isItemRef } from './buildData';
 
 const columnAffixes = { weaponsGloves: ['+1 skills'], helmsBoots: [], armorShieldsBelts: [] };
 
@@ -195,5 +195,79 @@ describe('asBuildData with author choices', () => {
   it('keeps unknown keys on a ref whose choices were cleaned', () => {
     const data = asBuildData({ items: { armor: { ...runeword, futureField: 1, socketed: ['Ber Rune', ''] } } });
     expect(data.items?.armor).toEqual({ ...runeword, futureField: 1, socketed: ['Ber Rune'] });
+  });
+});
+
+describe('asBuildData with crafting annotations', () => {
+  const crafts = [
+    { kind: 'forge', forge: 'rune', key: 'r19' },
+    { kind: 'dstone', material: 'ppp', uses: 3 },
+    { kind: 'dstone', material: 'ppp', switchItem: 'key', uses: 1 },
+    { kind: 'meld', material: 'grb', uses: 2 },
+    { kind: 'corruption', slot: 'body', roll: 15 },
+    { kind: 'anointment', pool: 'body', roll: 3 },
+  ];
+
+  it('reads a build without the crafts maps exactly as before', () => {
+    const data = asBuildData(structuredClone(FULL_EXAMPLE));
+    expect(data.itemCrafts).toBeUndefined();
+    expect(data.weaponSwapCrafts).toBeUndefined();
+    expect(data.mercenaryCrafts).toBeUndefined();
+    expect(JSON.parse(JSON.stringify(data))).toEqual(FULL_EXAMPLE);
+  });
+
+  it('round-trips well-formed annotations in all three maps', () => {
+    const value = {
+      ...FULL_EXAMPLE,
+      itemCrafts: { armor: crafts },
+      weaponSwapCrafts: { shield2: crafts.slice(0, 1) },
+      mercenaryCrafts: { helmet: crafts.slice(4) },
+    };
+    const data = asBuildData(structuredClone(value));
+    expect(JSON.parse(JSON.stringify(data))).toEqual(value);
+  });
+
+  it('drops malformed entries but keeps the rest of the slot and the build', () => {
+    const malformed: unknown[] = [
+      null,
+      'forge',
+      { kind: 'bogus', key: 'x' },
+      { kind: 'forge', forge: 'magic', key: 'r19' },
+      { kind: 'forge', forge: 'rune', key: '' },
+      { kind: 'forge', forge: 'rune', key: 'x'.repeat(101) },
+      { kind: 'corruption', slot: 'body', roll: 0 },
+      { kind: 'corruption', slot: 'body', roll: 1.5 },
+      { kind: 'corruption', slot: 'body', roll: '3' },
+      { kind: 'anointment', pool: 3, roll: 3 },
+      { kind: 'dstone', material: 'ppp', uses: 100 },
+      { kind: 'dstone', material: 'ppp', uses: 0 },
+      { kind: 'dstone', material: 'ppp', switchItem: '', uses: 1 },
+      { kind: 'meld', material: 'grb' },
+    ];
+    expect(malformed.map(asCraftAnnotation).filter((craft) => craft !== undefined)).toEqual([]);
+    const data = asBuildData({
+      items: { helmet: unique },
+      itemCrafts: { helmet: [...malformed, crafts[0]], armor: 'forge', gloves: malformed, boots: [] },
+      weaponSwapCrafts: [crafts[0]],
+      mercenaryCrafts: 'x',
+    });
+    expect(data.items).toEqual({ helmet: unique });
+    expect(data.itemCrafts).toEqual({ helmet: [crafts[0]] });
+    expect(data.weaponSwapCrafts).toBeUndefined();
+    expect(data.mercenaryCrafts).toBeUndefined();
+  });
+
+  it('keeps only the known fields of an annotation', () => {
+    expect(asCraftAnnotation({ kind: 'meld', material: 'grb', uses: 2, lines: ['injected'], switchItem: 'key' })).toEqual({
+      kind: 'meld',
+      material: 'grb',
+      uses: 2,
+    });
+  });
+
+  it('keeps at most eight annotations per slot', () => {
+    const many = Array.from({ length: 10 }, (_, index) => ({ kind: 'meld', material: `m${String(index)}`, uses: 1 }));
+    const list = asBuildData({ itemCrafts: { weapon: many } }).itemCrafts?.weapon;
+    expect(list).toEqual(many.slice(0, 8));
   });
 });

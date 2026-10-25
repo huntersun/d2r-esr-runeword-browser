@@ -332,6 +332,25 @@ Snapshot fields for set items: `name`, `setName`, `setId`, `baseItem` (the base'
 }
 ```
 
+**Crafting annotations: `itemCrafts`, `weaponSwapCrafts`, `mercenaryCrafts` (optional).** Three per-slot maps, keyed by slot exactly like `itemNotes` / `weaponSwapNotes` / `mercenaryNotes`, hold structured crafting annotations (`CraftAnnotation` in `buildData.ts`):
+
+```ts
+type CraftAnnotation =
+  | { kind: 'corruption'; slot: string; roll: number }      // enhance.json corruptionOutcomes (slot id + 1-based roll)
+  | { kind: 'anointment'; pool: string; roll: number }      // enhance.json anointmentOutcomes (pool + roll value)
+  | { kind: 'forge'; forge: 'skill' | 'all' | 'stat' | 'rune' | 'aura'; key: string } // crafting.json forgings
+  | { kind: 'dstone'; material: string; switchItem?: string; uses: number }           // crafting.json stacking (D-stoning)
+  | { kind: 'meld'; material: string; uses: number };                                 // crafting.json stacking (gem melding)
+```
+
+- **Ids, never text.** Every field is an id into a game-data bundle (`crafting.json`, `enhance.json`); the detail page renders the title and bonus lines from the viewer's current bundles (`utils/crafts.ts`, `renderCraft`), so a rebalanced forging shows its current values and no stored text can be spoofed or go out of date. The free-text notes stay as they are, for explanations ("D-Stone until very fast attack speed"); both are shown.
+- **Slot ids.** Corruption and anointment store the enhance.json slot id of the builds slot family: weapon → `weapon`, shield → `shield`, armor → `body`, helmet → `helm`, gloves / boots / belt / amulet / ring → the same id (ring 1/2 and the weapon swap share their family). `crafts.test.ts` checks every family against the committed `enhance.json`.
+- **Stale ids.** An id that no longer exists in the bundles (or a forging / D-stoning without a row for the slot family) renders as a muted title built from the ids, e.g. "Corruption (roll 7)", "Forging (rune r19)", with "Not in the current game data"; when the bundles fail to load the block says "game data unavailable". Nothing throws.
+- **Limits** (`asBuildData`): each slot value must be an array; malformed entries are dropped (strings non-empty and at most 100 characters, `roll` / `uses` positive integers, `uses` at most 99, `forge` one of the five kinds; only the known fields are kept), at most 8 entries per slot, an empty list is dropped, and the build itself never fails. The form also keeps at most one forging, one corruption and one anointment per slot and one D-stoning / meld entry per (material, switch item), whose `uses` grows instead; the validator does not enforce those.
+- **Uses.** D-stoning can be repeated; the game caps the stat, which we do not model, so the detail page shows the first-step lines, the level requirement times `uses`, and the per-use steps ("per use: 5, 4, 3, 2, 1") without summing a total.
+- **Corruption variants.** Some outcomes have other values on Low / Normal / Superior items (`variants`); the default lines are shown with a muted "Other values on … items" note.
+- Like the notes, the lists belong to the slot: they survive the snapshot refresh (`refreshBuildData` spreads `...buildData`), stay when the item in the slot is swapped, and are cleared when the slot is emptied. `compactCrafts` drops empty lists before save. Builds without the maps read and render as before; `build_data` is JSONB, so **no migration** is needed.
+
 #### Full `build_data` Example
 
 ```json
@@ -363,6 +382,10 @@ Snapshot fields for set items: `name`, `setName`, `setId`, `baseItem` (the base'
     "amulet": null,
     "ring1": null,
     "ring2": null
+  },
+  "itemNotes": { "weapon": "Ko forge first, then D-stone to the attack speed breakpoint" },
+  "itemCrafts": {
+    "weapon": [{ "kind": "forge", "forge": "rune", "key": "r19" }, { "kind": "dstone", "material": "ppp", "uses": 3 }]
   },
   "charms": ["Annihilus", "Hellfire Torch", "9x Paladin Combat GCs", "Gheed's Fortune"],
   "ascendancy": "Battlemage",
@@ -620,6 +643,7 @@ The shareable page for a single build. The URL itself (`/build/:buildId`) is the
   - **Mercenary**: Mercenary Gear, same equipment grid layout. Hidden when the build has no merc gear and no merc notes.
   - The tab bar itself is hidden when Player is the only tab. The chosen tab is not persisted; if it isn't available for the build being shown, Player is used.
 - Per-slot crafting/corruption notes and the "Stats updated" diff badge stay on each slot card inside the tabs.
+- Per-slot crafting annotations render under each item card (player gear, weapon swap and mercenary) as a "Crafting:" box listing each annotation's title with its bonus lines in muted text. The screen loads `crafting.json` + `enhance.json` once, only when the build has annotations; stale ids and a failed load are handled as described under "Crafting annotations". The Mercenary tab also shows when only merc crafting annotations exist.
 
 ### Equipment Grid Layout
 
@@ -758,6 +782,8 @@ When a user selects an item from the autocomplete:
 | Helmet | 4 |
 | Gloves, Boots, Belt | 2 |
 | Amulet, Ring 1, Ring 2 | 1 |
+
+**Crafting.** Under the item card (above the note) a "Crafting" row shows a chip per annotation (its rendered title, × to remove; D-stoning and meld chips also get − / + to change `uses`, 1..99) and an "Add…" picker (`components/CraftsEditor.tsx`), searchable over labels and bonus lines, with groups: Corruption and Anointment (the outcomes of the slot's enhance slot, labelled by their first line; hidden once one is set), Forging (options whose `bySlot` has the slot family: "Rune Forging · Ko Rune" with the slot's line muted; hidden once a forging is set), D-stoning and Gem melding (picking one adds `uses: 1`, or increments `uses` if that material + switch item is already there). The row shows only for a filled slot and is hidden at 8 annotations. The form loads `crafting.json` + `enhance.json` once (`hooks/useCraftData.ts`) and passes them down to the slots.
 
 On the detail page the item card is followed by a small box with "Base: …" (resolved from `bases.json`, else the stored name) and "Socketed:" with each filler; a filler that is a local rune, gem or crystal lists its bonus lines for the slot's bonus column in muted text (`utils/socketFillers.ts`). The slot header shows a "⬢n" filler count.
 

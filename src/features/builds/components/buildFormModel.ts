@@ -1,4 +1,4 @@
-import type { BuildData, EquipmentSlot, ItemRef, WeaponSwapSlot } from '../buildData';
+import type { BuildData, CraftAnnotation, EquipmentSlot, ItemRef, WeaponSwapSlot } from '../buildData';
 import type { CharacterClass } from '../constants';
 
 export interface BuildFormValues {
@@ -11,6 +11,9 @@ export interface BuildFormValues {
   readonly itemNotes: Partial<Record<EquipmentSlot, string>>;
   readonly weaponSwapNotes: Partial<Record<WeaponSwapSlot, string>>;
   readonly mercenaryNotes: Partial<Record<EquipmentSlot, string>>;
+  readonly itemCrafts: Partial<Record<EquipmentSlot, readonly CraftAnnotation[]>>;
+  readonly weaponSwapCrafts: Partial<Record<WeaponSwapSlot, readonly CraftAnnotation[]>>;
+  readonly mercenaryCrafts: Partial<Record<EquipmentSlot, readonly CraftAnnotation[]>>;
   readonly charms: readonly string[];
   readonly ascendancy: string | null;
   readonly skills: string;
@@ -26,6 +29,9 @@ export const EMPTY_BUILD_FORM: BuildFormValues = {
   itemNotes: {},
   weaponSwapNotes: {},
   mercenaryNotes: {},
+  itemCrafts: {},
+  weaponSwapCrafts: {},
+  mercenaryCrafts: {},
   charms: [],
   ascendancy: null,
   skills: '',
