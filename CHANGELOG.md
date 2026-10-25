@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.30.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.29.0...v1.30.0) (2026-10-25)
+
+
+### Features
+
+* **builds:** clear shortcut on each skill cell ([0a6f28c](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/0a6f28ce4dead2e04217440658a4cec185cd6cf2))
+* **builds:** max-points shortcut on each skill cell ([ab61d72](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/ab61d72811f51c5202625c70632022ec08f6a05b))
+
+
+### Bug Fixes
+
+* **builds:** offer only the bases that belong in the slot ([0fb704e](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/0fb704e42bb578fa6a567dd4c0edf8b2b5c24908))
+
 ## [1.29.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.28.0...v1.29.0) (2026-10-25)
 
 
