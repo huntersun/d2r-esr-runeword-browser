@@ -46,28 +46,40 @@ export function findItemIcon(index: ItemIconIndex, ref: ItemIconRef): ItemIconIn
   return own ?? (ref.code === undefined ? undefined : index.bases.get(ref.code));
 }
 
+/** The shared icon store: the index once loaded; `failed` after a failed load (until a later subscriber retries). */
+export interface ItemIconsState {
+  readonly index: ItemIconIndex | null;
+  readonly failed: boolean;
+}
+
 /*
  * One shared store instead of `useGameData(['icons'])` per icon: the families table renders ~600 icons, and each
  * useGameData call would run its own effect and state update. The first subscriber starts the (cached) load; a failed
- * load leaves the page without icons until the next subscriber after it.
+ * load leaves the page without icons until the next subscriber after it retries.
  */
-let icons: ItemIconIndex | null = null;
+let state: ItemIconsState = { index: null, failed: false };
 let loading = false;
 const listeners = new Set<() => void>();
 
+function setState(next: ItemIconsState): void {
+  state = next;
+  for (const notify of listeners) notify();
+}
+
 function subscribe(listener: () => void): () => void {
   listeners.add(listener);
-  if (icons === null && !loading) {
+  if (state.index === null && !loading) {
     loading = true;
+    if (state.failed) setState({ index: null, failed: false });
     loadGameDataFile('icons').then(
       (bundle) => {
-        icons = buildItemIconIndex(bundle);
         loading = false;
-        for (const notify of listeners) notify();
+        setState({ index: buildItemIconIndex(bundle), failed: false });
       },
       (error: unknown) => {
         loading = false;
         console.warn('Item icons unavailable:', error);
+        setState({ index: null, failed: true });
       }
     );
   }
@@ -76,11 +88,11 @@ function subscribe(listener: () => void): () => void {
   };
 }
 
-function getSnapshot(): ItemIconIndex | null {
-  return icons;
+function getSnapshot(): ItemIconsState {
+  return state;
 }
 
-/** The item icon index; null while loading (or when icons.json failed to load). */
-export function useItemIcons(): ItemIconIndex | null {
+/** The item icon store: `index` null while loading (`failed` false) or after a failed load (`failed` true). */
+export function useItemIcons(): ItemIconsState {
   return useSyncExternalStore(subscribe, getSnapshot);
 }

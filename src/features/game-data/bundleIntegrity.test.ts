@@ -91,13 +91,33 @@ describe('committed game-data bundles', () => {
     expect(manifest.files.icons?.hash).toBe(createHash('sha256').update(iconsText, 'utf8').digest('hex'));
     const icons = JSON.parse(iconsText) as IconsBundle;
     expect(icons.esrVersion).toBe(manifest.esrVersion);
-    expect(Object.keys(icons)).toEqual(['esrVersion', 'esrTag', 'bases', 'uniques', 'sets']);
+    expect(Object.keys(icons)).toEqual(['esrVersion', 'esrTag', 'vanilla', 'bases', 'uniques', 'sets']);
     expect(manifest.counts.itemIcons).toBe(Object.keys(icons.bases).length);
     expect(manifest.counts.uniqueIcons).toBe(Object.keys(icons.uniques).length);
     expect(manifest.counts.setIcons).toBe(Object.keys(icons.sets).length);
-    expect(Object.keys(icons.bases).length).toBeGreaterThan(300);
-    expect(Object.keys(icons.uniques).length).toBeGreaterThan(600);
-    expect(Object.keys(icons.sets).length).toBeGreaterThan(130);
+    // With the vanilla art as the second source almost every item has an icon (ESR 3.2.24: all of them)
+    expect(Object.keys(icons.bases).length).toBeGreaterThan(640);
+    expect(Object.keys(icons.uniques).length).toBeGreaterThan(1100);
+    expect(Object.keys(icons.sets).length).toBeGreaterThan(260);
+
+    // Vanilla provenance: the Steam build's root hash, the extraction date and the files made from vanilla sprites
+    const vanilla = icons.vanilla;
+    expect(vanilla?.rootHash).toMatch(/^[0-9a-f]{32}$/);
+    expect(vanilla?.extractedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    const vanillaFiles = vanilla?.files ?? [];
+    expect(vanillaFiles.length).toBeGreaterThan(100);
+    expect(vanillaFiles).toEqual([...new Set(vanillaFiles)].sort());
+    for (const file of vanillaFiles) expect(existsSync(resolve(OUTPUT_DIR, 'icons', file)), file).toBe(true);
+    expect(manifest.counts.vanillaIconFiles).toBe(vanillaFiles.length);
+    const usedFiles = new Set(
+      [icons.bases, icons.uniques, icons.sets].flatMap((section) => Object.values(section).map((icon) => icon.file))
+    );
+    for (const file of vanillaFiles) expect(usedFiles.has(file), file).toBe(true);
+    expect(manifest.counts.vanillaIcons).toBe(
+      [icons.bases, icons.uniques, icons.sets]
+        .flatMap((section) => Object.values(section))
+        .filter((icon) => vanillaFiles.includes(icon.file)).length
+    );
 
     const codes = new Set(bases.map((base) => base.code));
     const uniqueNames = new Set(lootfilter.uniques.map((unique) => unique.name));

@@ -706,13 +706,16 @@ export interface CraftingBundle {
 }
 
 /**
- * icons.json: the item icons extracted from the HD item sprites the ESR clone ships (scripts/generate-item-icons.ts).
- * Written by its own generator; generate-game-data.ts only lists it in the manifest.
+ * icons.json: the item icons extracted from the HD item sprites the ESR clone ships, with the vanilla D2R art as the
+ * fallback source (scripts/generate-item-icons.ts). Written by its own generator; generate-game-data.ts only lists it
+ * in the manifest.
  */
 export interface IconsBundle {
   esrVersion: string;
   esrTag: string | null;
-  /** By base code; codes whose art is vanilla D2R (not in the clone) have no entry */
+  /** The vanilla art folder the icons the clone lacks came from; absent when none did */
+  vanilla?: IconsVanillaSource;
+  /** By base code; codes whose art is in neither source have no entry */
   bases: Record<string, ItemIconInfo>;
   /**
    * By unique display name (lootfilter.json `uniques[].name`, mythical uniques included): the item's own HD art, else
@@ -723,8 +726,17 @@ export interface IconsBundle {
   sets: Record<string, ItemIconInfo>;
 }
 
+export interface IconsVanillaSource {
+  /** `root` of the install's steam-build.config (identifies the game build; there is no readable version number) */
+  rootHash: string;
+  /** Extraction date (YYYY-MM-DD, the steam-build.config modification date) */
+  extractedAt: string;
+  /** The icon files made from vanilla sprites (sorted); `--check` without the folder accepts these unverified */
+  files: string[];
+}
+
 export interface ItemIconInfo {
-  /** File name under public/game-data/icons/ (one per distinct HD asset, shared by every entry using it) */
+  /** File name under public/game-data/icons/ (one per distinct HD asset, shared by every entry using it, whichever source) */
   file: string;
   /** Pixel size of the image (cropped to its opaque pixels, fit inside 128×128) */
   w: number;

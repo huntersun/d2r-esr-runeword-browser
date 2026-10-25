@@ -4,13 +4,16 @@
  * test fixtures, run the game-data tests and the staleness check, regenerate and check public/guide/, print the guide
  * freshness report (guide:report), then print a summary. Never commits.
  *
- *   node scripts/update-game-data.ts [--esr <dir>] [--tag <tag>] [--no-fixtures]
+ *   node scripts/update-game-data.ts [--esr <dir>] [--vanilla <dir>] [--tag <tag>] [--no-fixtures]
+ *
+ * The item icons need the vanilla art folder too (--vanilla | D2R_VANILLA_ART_DIR | ../d2r-vanilla-art); without it
+ * they are not regenerated (a warning) and only their clone-derived part is checked.
  */
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { cloneEsr, readRevision, REPO_ROOT, resolveEsrDir, updateEsr } from './lib/esrClone.ts';
+import { cloneEsr, readRevision, REPO_ROOT, resolveEsrDir, resolveVanillaArtDir, updateEsr } from './lib/esrClone.ts';
 import { formatChange, formatSummary, parsePorcelain, shortCommit, type ManifestSnapshot } from './lib/updateSummary.ts';
 
 const MANIFEST = join(REPO_ROOT, 'public', 'game-data', 'manifest.json');
@@ -40,12 +43,15 @@ function main(): void {
   const { values } = parseArgs({
     options: {
       esr: { type: 'string' },
+      vanilla: { type: 'string' },
       tag: { type: 'string' },
       fixtures: { type: 'boolean', default: true },
     },
     allowNegative: true,
   });
   const esrDir = resolveEsrDir(values.esr);
+  const vanillaDir = resolveVanillaArtDir(values.vanilla);
+  const iconArgs = ['--esr', esrDir, '--vanilla', vanillaDir];
   const steps: { name: string; ok: boolean; note?: string }[] = [];
 
   header(`1/5 ESR clone (${esrDir})`);
@@ -69,9 +75,16 @@ function main(): void {
   let generated = run(process.execPath, ['scripts/generate-game-data.ts', '--esr', esrDir]);
   if (generated) {
     // The icons cover the fresh bases.json; the second generate lists the new icons.json in the manifest.
-    const icons = run(process.execPath, ['scripts/generate-item-icons.ts', '--esr', esrDir]);
-    steps.push({ name: 'icons', ok: icons });
-    generated = run(process.execPath, ['scripts/generate-game-data.ts', '--esr', esrDir]);
+    if (existsSync(vanillaDir)) {
+      const icons = run(process.execPath, ['scripts/generate-item-icons.ts', ...iconArgs]);
+      steps.push({ name: 'icons', ok: icons });
+      generated = run(process.execPath, ['scripts/generate-game-data.ts', '--esr', esrDir]);
+    } else {
+      console.warn(
+        `WARNING: vanilla art folder not found (${vanillaDir}); item icons not regenerated (icons:check verifies the clone-derived part).`
+      );
+      steps.push({ name: 'icons', ok: true, note: 'skipped, no vanilla art folder' });
+    }
   }
   steps.push({ name: 'generate', ok: generated });
   const after = readManifest();
@@ -93,7 +106,7 @@ function main(): void {
     const tests = run('npx', ['vitest', 'run', 'src/features/game-data'], { ...process.env, ESR_SOURCE_DIR: esrDir });
     steps.push({ name: 'tests (src/features/game-data)', ok: tests });
     steps.push({ name: 'check', ok: run(process.execPath, ['scripts/generate-game-data.ts', '--check', '--esr', esrDir]) });
-    steps.push({ name: 'icons:check', ok: run(process.execPath, ['scripts/generate-item-icons.ts', '--check', '--esr', esrDir]) });
+    steps.push({ name: 'icons:check', ok: run(process.execPath, ['scripts/generate-item-icons.ts', '--check', ...iconArgs]) });
   } else {
     console.log('Skipped: generation failed.');
   }

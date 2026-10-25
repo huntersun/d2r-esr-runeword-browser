@@ -8,15 +8,19 @@ import {
   assetSlug,
   buildIconsBundle,
   buildSpriteIndex,
+  compareWithoutVanilla,
   cropRgba,
   fitInside,
   listFilesRecursive,
   opaqueBounds,
+  parseBuildConfigRoot,
   parseItemAssets,
   parseNamedArt,
   planItemIcons,
+  resolveArt,
   resolveSprite,
 } from './itemIcons.ts';
+import type { IconsBundle } from '../engine/schema.ts';
 import { serializeBundle } from './writeBundle.ts';
 
 describe('parseItemAssets', () => {
@@ -47,10 +51,11 @@ describe('sprite resolution', () => {
     'misc/rune/moon_rune.sprite',
     'armor/helmet/Cap.sprite',
     'armor/helmet/cap.lowend.sprite.txt',
+    'armor/helmet/cap.lowend.sprite',
     'misc/readme.txt',
   ]);
 
-  it('indexes only .sprite files by lowercased path', () => {
+  it('indexes only .sprite files (not the .lowend halves) by lowercased path', () => {
     expect([...index.keys()].sort()).toEqual(['armor/helmet/cap', 'misc/rune/moon_rune', 'weapon/axe/hand_axe']);
   });
 
@@ -83,9 +88,10 @@ describe('sprite resolution', () => {
       ['r33', 'rune_moon_rune'],
     ]);
     expect([...plan.sprites]).toEqual([
-      ['axe_hand_axe', 'weapon/axe/hand_axe.sprite'],
-      ['rune_moon_rune', 'misc/rune/moon_rune.sprite'],
+      ['axe_hand_axe', { source: 'esr', path: 'weapon/axe/hand_axe.sprite' }],
+      ['rune_moon_rune', { source: 'esr', path: 'misc/rune/moon_rune.sprite' }],
     ]);
+    expect(plan.basesFromVanilla).toBe(0);
     expect(plan.missingEntry).toEqual(['zzz']);
     expect(plan.missingArt).toEqual(['ssd']);
   });
@@ -199,11 +205,178 @@ describe('unique and set item art', () => {
       own: 2,
       base: 3,
       none: 1,
+      vanilla: 0,
       ownArtMissing: 1,
+      noneNames: ['Nothing'],
+      vanillaKeyUsed: [],
+      vanillaKeyRejected: [],
       unusedKeys: ['never_used'],
     });
     expect([...plan.sets]).toEqual([["Civerb's Ward", 'helmet_cap']]);
-    expect(plan.sprites.get('axe_the_gnasher')).toBe('weapon/axe/the_gnasher.sprite');
+    expect(plan.sprites.get('axe_the_gnasher')).toEqual({ source: 'esr', path: 'weapon/axe/the_gnasher.sprite' });
+  });
+});
+
+describe('two art sources (ESR clone first, vanilla folder as the fallback)', () => {
+  const esr = buildSpriteIndex(['weapon/axe/hand_axe.sprite', 'weapon/axe/the_gnasher.sprite', 'weapon/bow/mythical_buriza.sprite']);
+  const vanilla = buildSpriteIndex([
+    'weapon/axe/Hand_Axe.sprite',
+    'weapon/axe/the_gnasher.sprite',
+    'armor/boot/boots.sprite',
+    'armor/boot/boots.lowend.sprite',
+    'armor/helmet/cap.sprite',
+    'weapon/bow/hellcast.sprite',
+    'armor/armor/plate_mail.sprite',
+    'weapon/sword/dreadfang.sprite',
+  ]);
+  const row = (index: string, name: string, code: string, disabled = false): UniqueOrSetRow => ({ id: 0, index, name, code, disabled });
+
+  it('resolves an asset in the clone first, then in the vanilla folder', () => {
+    expect(resolveArt('axe/hand_axe', esr, vanilla)).toEqual({ source: 'esr', path: 'weapon/axe/hand_axe.sprite' });
+    expect(resolveArt('boot/boots', esr, vanilla)).toEqual({ source: 'vanilla', path: 'armor/boot/boots.sprite' });
+    expect(resolveArt('boot/boots', esr, undefined)).toBeNull();
+    expect(resolveArt('ring/ring', esr, vanilla)).toBeNull();
+  });
+
+  it('fills bases from the vanilla art and the vanilla items.json; the mod entries win', () => {
+    const plan = planItemIcons({
+      codes: ['hax', 'lbt', 'cap', 'zzz'],
+      uniques: [],
+      sets: [],
+      // The mod maps cap to an asset neither source has; the vanilla map is not consulted for a code the mod lists
+      assets: new Map([
+        ['hax', 'axe/hand_axe'],
+        ['lbt', 'boot/boots'],
+        ['cap', 'helmet/esr_cap'],
+      ]),
+      uniqueArt: new Map(),
+      setArt: new Map(),
+      index: esr,
+      vanilla: {
+        index: vanilla,
+        assets: new Map([
+          ['hax', 'axe/other'],
+          ['cap', 'helmet/cap'],
+          ['zzz', 'helmet/cap'],
+        ]),
+        uniqueArt: new Map(),
+        setArt: new Map(),
+      },
+    });
+    expect([...plan.bases]).toEqual([
+      ['hax', 'axe_hand_axe'],
+      ['lbt', 'boot_boots'],
+      ['zzz', 'helmet_cap'],
+    ]);
+    expect(plan.basesFromVanilla).toBe(2);
+    expect(plan.missingArt).toEqual(['cap']);
+    expect(plan.sprites.get('axe_hand_axe')).toEqual({ source: 'esr', path: 'weapon/axe/hand_axe.sprite' });
+    expect(plan.sprites.get('boot_boots')).toEqual({ source: 'vanilla', path: 'armor/boot/boots.sprite' });
+  });
+
+  it('uses vanilla own art and vanilla art-map keys, prefers ESR art within a rank and checks the asset folder', () => {
+    const plan = planItemIcons({
+      codes: [],
+      uniques: [
+        // Own art entry in the mod's map, sprite only in the vanilla folder
+        row('Buriza-Do Kyanon', 'Buriza', 'hax'),
+        // Same name, own ESR art: replaces the vanilla own art (same rank, ESR wins)
+        row('Mythical Buriza', 'Buriza', 'hax'),
+        // Key only in the vanilla map, same asset folder as the base: used
+        row('Dreadfang', 'Dreadfang', 'ssd'),
+        // Key only in the vanilla map, other folder than the base (ESR's shield, vanilla's armor): ignored
+        row('Guardian Angel', 'Guardian Angel', 'cap'),
+        row('Plain', 'Plain', 'lbt'),
+      ],
+      sets: [],
+      assets: new Map([
+        ['hax', 'axe/hand_axe'],
+        ['ssd', 'sword/short_sword'],
+        ['cap', 'helmet/cap'],
+        ['lbt', 'boot/boots'],
+      ]),
+      uniqueArt: new Map([
+        ['buriza_do_kyanon', 'bow/hellcast'],
+        ['mythical_buriza', 'bow/mythical_buriza'],
+      ]),
+      setArt: new Map(),
+      index: esr,
+      vanilla: {
+        index: vanilla,
+        assets: new Map(),
+        uniqueArt: new Map([
+          ['dreadfang', 'sword/dreadfang'],
+          ['guardian_angel', 'armor/plate_mail'],
+          ['mythical_buriza', 'bow/hellcast'],
+        ]),
+        setArt: new Map(),
+      },
+    });
+    expect([...plan.uniques]).toEqual([
+      ['Buriza', 'bow_mythical_buriza'],
+      ['Dreadfang', 'sword_dreadfang'],
+      ['Guardian Angel', 'helmet_cap'],
+      ['Plain', 'boot_boots'],
+    ]);
+    expect(plan.uniqueStats).toMatchObject({
+      requested: 4,
+      own: 2,
+      base: 2,
+      none: 0,
+      vanilla: 3,
+      vanillaKeyUsed: ['Dreadfang'],
+      vanillaKeyRejected: ['Guardian Angel'],
+      unusedKeys: [],
+    });
+    // A replaced pick leaves no sprite behind
+    expect(plan.sprites.has('bow_hellcast')).toBe(false);
+  });
+
+  it('reads the root hash of a Steam build config', () => {
+    expect(parseBuildConfigRoot('# Static Build Configuration\n\nroot = 06a0ca43e82f06e0\nvfs-root = 563 5b4\n')).toBe('06a0ca43e82f06e0');
+    expect(parseBuildConfigRoot('vfs-root = 563\n')).toBeNull();
+  });
+});
+
+describe('compareWithoutVanilla', () => {
+  const axe = { file: 'axe_hand_axe.webp', w: 58, h: 128 };
+  const boots = { file: 'boot_boots.webp', w: 100, h: 90 };
+  const committed: IconsBundle = {
+    esrVersion: '3.2.24',
+    esrTag: '3.2.24',
+    vanilla: { rootHash: 'abc', extractedAt: '2026-10-25', files: ['boot_boots.webp'] },
+    bases: { hax: axe, lbt: boots },
+    uniques: { Plain: boots, Gnasher: axe },
+    sets: {},
+  };
+  const esrOnly: IconsBundle = {
+    esrVersion: '3.2.24',
+    esrTag: '3.2.24',
+    bases: { hax: axe },
+    uniques: { Plain: axe, Gnasher: axe },
+    sets: {},
+  };
+
+  it('accepts the committed vanilla-derived entries and matching clone-derived ones', () => {
+    expect(compareWithoutVanilla(committed, esrOnly)).toEqual([]);
+  });
+
+  it('reports clone-derived differences, new entries, a version change and vanilla files the clone now ships', () => {
+    const fresh: IconsBundle = {
+      esrVersion: '3.2.25',
+      esrTag: null,
+      bases: { hax: { ...axe, w: 60 }, lbt: boots, new: axe },
+      uniques: { Plain: axe },
+      sets: {},
+    };
+    expect(compareWithoutVanilla(committed, fresh)).toEqual([
+      'esrVersion 3.2.24 ≠ 3.2.25',
+      'esrTag 3.2.24 ≠ null',
+      'bases/hax: axe_hand_axe.webp 58×128 ≠ axe_hand_axe.webp 60×128',
+      'bases/lbt: boot_boots.webp is now in the clone',
+      'bases/new: missing',
+      "uniques/Gnasher: not produced by the clone's art",
+    ]);
   });
 });
 
@@ -250,6 +423,7 @@ describe('buildIconsBundle', () => {
           ['Axe Unique', 'axe_hand_axe'],
         ]),
         sets: new Map([["Civerb's Ward", 'rune_moon_rune']]),
+        sprites: new Map(),
       },
       images: new Map([
         ['axe_hand_axe', { width: 58, height: 128 }],
@@ -271,5 +445,40 @@ describe('buildIconsBundle', () => {
       sets: {},
     });
     expect(Object.keys(JSON.parse(serializeBundle(bundle)) as object)).toEqual(['esrVersion', 'esrTag', 'bases', 'uniques', 'sets']);
+  });
+
+  it('records the vanilla provenance and the files made from vanilla sprites, only when any were', () => {
+    const plan = {
+      bases: new Map([
+        ['hax', 'axe_hand_axe'],
+        ['lbt', 'boot_boots'],
+        ['cap', 'helmet_cap'],
+      ]),
+      uniques: new Map(),
+      sets: new Map(),
+      sprites: new Map([
+        ['axe_hand_axe', { source: 'esr' as const, path: 'weapon/axe/hand_axe.sprite' }],
+        ['helmet_cap', { source: 'vanilla' as const, path: 'armor/helmet/cap.sprite' }],
+        ['boot_boots', { source: 'vanilla' as const, path: 'armor/boot/boots.sprite' }],
+      ]),
+    };
+    const images = new Map([
+      ['axe_hand_axe', { width: 58, height: 128 }],
+      ['boot_boots', { width: 100, height: 90 }],
+    ]);
+    const vanilla = { rootHash: 'abc', extractedAt: '2026-10-25' };
+    const bundle = buildIconsBundle({ esrVersion: '3.2.24', esrTag: null, vanilla, plan, images, extension: 'webp' });
+    // helmet_cap failed to decode: neither an entry nor a listed file
+    expect(bundle.vanilla).toEqual({ ...vanilla, files: ['boot_boots.webp'] });
+    expect(Object.keys(bundle)).toEqual(['esrVersion', 'esrTag', 'vanilla', 'bases', 'uniques', 'sets']);
+    const esrOnly = buildIconsBundle({
+      esrVersion: '3.2.24',
+      esrTag: null,
+      vanilla,
+      plan,
+      images: new Map([['axe_hand_axe', { width: 58, height: 128 }]]),
+      extension: 'webp',
+    });
+    expect(esrOnly.vanilla).toBeUndefined();
   });
 });

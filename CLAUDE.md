@@ -34,8 +34,8 @@ npm run compiler:health  # Run React Compiler health check
 
 # Game data (txt game files → public/game-data/*.json; needs ../Eastern_Sun_Resurrected clone)
 npm run game-data:generate  # Regenerate the static game-data bundles
-npm run game-data:icons     # Item icons from the ESR HD sprites → public/game-data/icons/*.webp + icons.json (then the manifest)
-npm run game-data:check     # Exit 1 if the committed bundles or item icons are stale
+npm run game-data:icons     # Item icons from the ESR HD sprites, vanilla art (../d2r-vanilla-art, not in git) as fallback → public/game-data/icons/*.webp + icons.json (then the manifest)
+npm run game-data:check     # Exit 1 if the committed bundles or item icons are stale (without ../d2r-vanilla-art: vanilla-derived icons skipped with a warning)
 npm run game-data:update    # After an ESR release: clone/pull ESR, generate, fetch fixtures, run game-data tests + check
 npm run esr:diff            # What changed in ESR since the committed game data (patch notes, tables, strings, docs, launcher); --json, --from/--to <rev>
 

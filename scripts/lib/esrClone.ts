@@ -32,6 +32,16 @@ export function resolveEsrDir(cliValue: string | undefined): string {
   return resolve(REPO_ROOT, cliValue ?? process.env.ESR_SOURCE_DIR ?? DEFAULT_ESR_DIR);
 }
 
+/**
+ * The vanilla D2R item art (hd/items/*.json and hd/global/ui/items/ extracted from a game install, not in git), the
+ * fallback source of generate-item-icons.ts: --vanilla <dir> | D2R_VANILLA_ART_DIR | ../d2r-vanilla-art.
+ */
+export const DEFAULT_VANILLA_ART_DIR = '../d2r-vanilla-art';
+
+export function resolveVanillaArtDir(cliValue: string | undefined): string {
+  return resolve(REPO_ROOT, cliValue ?? process.env.D2R_VANILLA_ART_DIR ?? DEFAULT_VANILLA_ART_DIR);
+}
+
 /** Runs a git command in the clone and returns trimmed stdout, or null when it fails. */
 export function git(esrDir: string, args: string[]): string | null {
   try {

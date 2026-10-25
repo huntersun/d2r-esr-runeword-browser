@@ -63,7 +63,7 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 | `sets.json`       | ESR 3.2.24: 150 KB / 21 KB                                                     |
 | `skills.json`     | ESR 3.2.24: 31 KB / 4 KB                                                       |
 | `crafting.json`   | ESR 3.2.24: 55 KB / 6 KB                                                       |
-| `icons.json`      | ESR 3.2.24: 119 KB / 17 KB (+ `icons/`: 354 WebP files, 1.4 MB)                |
+| `icons.json`      | ESR 3.2.24: 200 KB / 28 KB (+ `icons/`: 492 WebP files, 2.0 MB)                |
 
 ### Bases and types
 
@@ -447,8 +447,18 @@ vps" row with the same ingredients (the VS rows name `hh2`, not the Void Shard).
 ### Item icons
 
 `scripts/generate-item-icons.ts` (`npm run game-data:icons`) extracts item icons from the HD item art the ESR clone
-ships; logic in `build/itemIcons.ts`, sprite decoding by the loot filter's `src/features/loot-filter/engine/sprite.ts`
-(`decodeSprite`). Only art the clone ships is used (no vanilla D2R folder yet).
+ships, with the vanilla D2R art as the second source for the items whose art the mod takes from the base game; logic
+in `build/itemIcons.ts`, sprite decoding by the loot filter's `src/features/loot-filter/engine/sprite.ts`
+(`decodeSprite`).
+
+- **Vanilla art folder**: `--vanilla <dir>` | `D2R_VANILLA_ART_DIR` | `../d2r-vanilla-art` (relative to the repo root,
+  a sibling of the ESR clone; `resolveVanillaArtDir` in `scripts/lib/esrClone.ts`). It is not in git (Blizzard's
+  files): `data/hd/global/ui/items/{armor,misc,weapon}/**.sprite` (444 sprites plus their `.lowend.sprite` halves, which
+  are ignored), `data/hd/items/items.json` / `uniques.json` / `sets.json` (same shapes as the mod's) and
+  `steam-build.config`. It was extracted from the Steam D2R install's CASC storage with the `casc-cli` tool built
+  against current CascLib. To
+  set it up on another machine, extract the same paths into a folder with that layout and point the env var at it.
+  The vanilla sprites use the same format (`SpA1`); all decode.
 
 - **Sources**: `Eastern_Sun_Resurrected.mpq/data/hd/items/items.json` (an array of single-key objects
   `{"hax":{"asset":"axe/hand_axe"}}`), `hd/items/uniques.json` / `sets.json` (unique and set items' own art,
@@ -460,6 +470,13 @@ ships; logic in `build/itemIcons.ts`, sprite decoding by the loot filter's `src/
   sprite directory, because 17 asset paths differ from the file name in letter case (`rune/Moon_rune` →
   `moon_rune.sprite`) and Linux file systems are case-sensitive. Exceptional / elite bases share the normal base's asset.
   The first entry of a repeated code or key wins.
+- **Two sources** (`resolveArt`): the clone's sprite wins whenever it ships the asset; otherwise the vanilla folder's
+  sprite with the same asset path (same case-insensitive index). The vanilla items.json fills codes the mod's items.json
+  lacks (none of the 653 bases need it in 3.2.24); the mod's entry wins for a code both list. A unique / set item whose
+  key the mod's uniques.json / sets.json lacks may use the vanilla file's entry, but only when its asset folder (first
+  path segment) equals the base's: ESR reuses a few vanilla names for other items (its Guardian Angel is a shield,
+  vanilla's an armor). File names stay one WebP per asset slug whichever source it came from, so ESR icons keep their
+  bytes.
 - **Unique / set item art**: the uniques.json / sets.json key is the txt `index` slugged (`artKey`: lowercase, runs of
   spaces and hyphens → `_`, other characters dropped; applied to both sides, which also absorbs irregular keys such as
   `BlackKnights_Holy_Signet` and `scourge of_the_twin_seas`). A txt index also tries itself without `_lod`
@@ -467,45 +484,64 @@ ships; logic in `build/itemIcons.ts`, sprite decoding by the loot filter's `src/
   (`hellfire_torch_new`) is also registered without it. The asset is `normal`, else `uber`, else `ultra`. Every
   uniqueitems.txt / setitems.txt row with a base (`readUniqueOrSetRows` in `build/itemNames.ts`, shared with the loot
   filter bundle, names through the same string table) resolves to one icon: its own art when the entry's asset differs
-  from the base's and the clone has it, else the base's art (via items.json, so shadow bases outside bases.json work
+  from the base's and a source has it, else the base's art (via items.json, so shadow bases outside bases.json work
   too), else none. One icon per display name: enabled rows first; a later enabled row with the same name replaces an
-  earlier one only when it ranks higher (own > base > none). Files are shared by asset slug across bases, uniques and
-  set items.
-- **Scope and counts** (ESR 3.2.24): bases: 653 codes requested, 356 with an icon, 297 with vanilla art (Jewel, Boots,
-  Leather Armor, Short Spear, …), 0 without an items.json entry. Uniques: 1,390 rows → 1,114 names; 283 own art, 431
-  base art only, 400 no art; 210 names have an own entry whose art the clone lacks (vanilla). 8 uniques.json keys match
-  no row (vanilla quest items ESR dropped such as `staff_of_kings`, `khalim_flail`, `amulet_of_the_viper`,
-  `rainbow_facet`, and `gotterdamerung`, a typo of ESR's "Gotterdammerung"). Set items: 270 names; 53 own art, 106 base
-  art only, 111 no art (32 own entries pointing at vanilla art); 108 sets.json keys match no row — all vanilla sets
-  ESR replaced (Civerb's, Isenhart's, Tal Rasha's, …). 2182 items.json entries, 1985 sprites, 354 files (1.4 MB WebP),
-  0 decode failures.
+  earlier one only when it ranks higher (own > base > none; within a rank the clone's art beats vanilla art, so the
+  mythical Buriza-Do Kyanon's ESR art wins over the vanilla Hellcast art of the older Buriza row with the same name).
+  Files are shared by asset slug across bases, uniques and set items.
+- **Scope and counts** (ESR 3.2.24, vanilla root `06a0ca43…` extracted 2026-10-25; the generator prints them per
+  section): bases: 653 codes, 356 from ESR art, 297 from vanilla art (Jewel, Boots, Leather Armor, Short Spear, …),
+  0 without art. Uniques: 1,390 rows → 1,114 names; 695 from ESR art, 419 from vanilla art, 0 without art (392 own art,
+  722 base art only). Two own entries of the mod's uniques.json point at art neither source has
+  (`armor/deflective_spikes`, `amulet/BlackKnights_Holy_Signet`, ESR art missing from the repo); those items show
+  their base's art. 14 names use the vanilla uniques.json (the Warlock-era vanilla uniques the mod lists without an
+  art entry: Measured Wrath, Dreadfang, …); Guardian Angel's vanilla entry is ignored (folder mismatch). 8 mod
+  uniques.json keys match no row (vanilla quest items ESR dropped such as `staff_of_kings`, `khalim_flail`,
+  `amulet_of_the_viper`, `rainbow_facet`, and `gotterdamerung`, a typo of ESR's "Gotterdammerung"). Set items: 270
+  names; 153 from ESR art, 117 from vanilla art, 0 without art (83 own art; 3 from the vanilla sets.json: Bane's
+  Oathmaker, Wraithskin, Authority); 108 mod sets.json keys match no row — all vanilla sets ESR replaced (Civerb's,
+  Isenhart's, Tal Rasha's, …). 2182 items.json entries, 993 sprites in the clone, 444 in the vanilla folder; 492 files
+  (138 from vanilla sprites; 2.0 MB WebP), 0 decode failures. Vanilla art also replaced the base art of 25 names whose
+  own entry pointed at vanilla art (Twinkle → Blood Crescent's art, Stormguild, Athena's Wrath, …).
 - **Pipeline** per distinct asset: decode, crop to the pixels with any alpha (`opaqueBounds` / `cropRgba`), fit inside
   128 × 128 keeping the aspect ratio, never enlarged (`fitInside`; a 1 × 3 item becomes ~43 × 128), encode WebP with
   `sharp` (devDependency, script only: lanczos3, quality 80, alpha quality 100, effort 4; effort 6 was 50× slower for
   4 % smaller files). Output: `public/game-data/icons/<slug>.webp` (slug = asset path lowercased, `/` → `_`) and
-  `icons.json` (`IconsBundle`: `esrVersion`, `esrTag`, `bases: { [code]: info }`, `uniques: { [name]: info }`,
-  `sets: { [name]: info }`, `info` = `{ file, w, h }`, only entries with an image). Unique names are the lootfilter.json
+  `icons.json` (`IconsBundle`: `esrVersion`, `esrTag`, `vanilla` (only when vanilla art was used: `rootHash` = the
+  `root` line of `steam-build.config`, which identifies the game build and has no readable version number;
+  `extractedAt` = that file's modification date, YYYY-MM-DD; `files` = the sorted icon files made from vanilla
+  sprites), `bases: { [code]: info }`, `uniques: { [name]: info }`, `sets: { [name]: info }`, `info` =
+  `{ file, w, h }`, only entries with an image). Unique names are the lootfilter.json
   `uniques[].name` (mythicals included), set item names the sets.json `items[].name`. Stale `.webp` files in `icons/`
   are deleted.
 - **Manifest**: `generate-game-data.ts` does not build icons.json; it lists the committed file in the manifest as is
-  (hash, bytes, `counts.itemIcons` / `uniqueIcons` / `setIcons`) so `loadGameDataFile('icons')` works like every other
+  (hash, bytes, `counts.itemIcons` / `uniqueIcons` / `setIcons`, plus `vanillaIcons` = entries pointing at a vanilla
+  file (833) and `vanillaIconFiles` (138)) so `loadGameDataFile('icons')` works like every other
   bundle. Hence `game-data:icons` runs the icon generator, then `generate-game-data.ts`; `game-data:update` runs
   generate → icons → generate (the icons follow the fresh bases.json).
 - **Check**: `--check` regenerates in memory and compares icons.json and every WebP byte for byte (plus orphans).
-  The output is deterministic on one machine; a `sharp` / libwebp upgrade may change the bytes, then regenerate.
-  `game-data:check` runs both checks.
+  The output is deterministic on one machine; a `sharp` / libwebp upgrade may change the bytes, then regenerate
+  (so may touching `steam-build.config`, which changes `extractedAt`). `game-data:check` runs both checks.
+- **Without the vanilla folder** (other machines; CI does not run the game-data checks): `--check` prints "vanilla art
+  folder not found, vanilla-derived icons not verified", regenerates from the clone alone and verifies what it can
+  (`compareWithoutVanilla`): every clone-derived entry and WebP must match, every other committed entry must point at
+  a file listed in `vanilla.files`, those files must exist, no orphans; exit 0 when that holds. Writing without the
+  folder is refused (exit 1), since it would drop the vanilla-derived icons; `game-data:update` then skips the icon
+  step with a warning (and `--vanilla <dir>` is passed through), and its icons check runs in this reduced mode. An
+  existing but incomplete folder is an error.
 - **Runtime**: `hooks/useItemIcons.ts` shares one `useSyncExternalStore` store for all icons (the families table renders
   ~600; one `useGameData` effect each would be wasteful) and indexes the bundle once (`buildItemIconIndex`: unique and
   set names through `normaliseItemName`, so HTM and build-ref spellings with other apostrophes, casing or spacing match);
   null while loading or after a failed load (a warning, no error card). `findItemIcon` takes a ref
   `{ kind: 'base', code }` or `{ kind: 'unique' | 'set', name, code? }`: the name, then the name without a trailing
   parenthetical (the mythicals page lists "Tathamet's Awakening (Fire Variant)" and its siblings), then the optional base
-  `code`. `components/ItemIcon.tsx` (`item`, `size`, `className`) always reserves a `size` × `size` box, also without an
-  icon and while loading, so names line up and nothing shifts; the `<img>` (lazy, async decoding, `alt=""`, URL through
+  `code`. `components/ItemIcon.tsx` (`item`, `size`, `className`) reserves a `size` × `size` box while icons.json
+  loads, so names do not shift when it arrives; once loaded (or after a failed load, `useItemIcons().failed`) an item
+  without an icon renders nothing, and the call sites' flex gaps collapse with it; the `<img>` (lazy, async decoding, `alt=""`, URL through
   `gameDataUrl` so `BASE_URL` applies) gets width / height from icons.json scaled to fit the box. Image URLs carry no
   content hash (cached by name).
 - **Name matching** (`itemIconMatching.integration.test.ts`, fixtures): all 1,065 HTM unique names and all 41 mythical
-  names are txt unique names (after the variant fallback); 660 unique cards and 41 mythical names get an icon.
+  names are txt unique names (after the variant fallback); all 1,065 unique cards and 41 mythical names get an icon.
 - **Shown**: base cards (48 px, leading, muted box) and the families table (32 px before the name; hidden below `sm` in
   the three tier columns); Sets page item rows (36 px before the name, own art else base); unique item cards (48 px
   beside the name; name, then `baseItemCode` fallback); mythical cards only when the card has no picture from the site
@@ -514,10 +550,9 @@ ships; logic in `build/itemIcons.ts`, sprite decoding by the loot filter's `src/
   and the runeword's chosen base in the choices box (24 px).
 - **Credits**: the home footer credits the item art to Blizzard Entertainment and the ESR team (used with permission).
 
-Next steps (not built): misc items (runes, gems, charms already resolve through items.json); an optional vanilla-art
-folder (e.g. an `ESR_VANILLA_ART_DIR` env var pointing at extracted D2R `hd/global/ui/items`, used as a fallback in
-`resolveSprite`) to fill the vanilla gaps (297 bases, 400 unique and 111 set item names); icon tiles in the pickers
-(loot filter, builds, best base).
+Next steps (not built): misc items (runes, gems, charms already resolve through items.json); icon tiles in the pickers
+(loot filter, builds, best base); the families table draws long weapons (spears, staves) as 6–8 px slivers in its
+32 px box (height-bound, so a wider box would not help).
 
 ## Regenerating
 

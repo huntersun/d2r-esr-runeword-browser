@@ -11,13 +11,14 @@ interface ItemIconProps {
 }
 
 /**
- * The item's HD art (from the ESR clone; a unique's or set item's own art, else its base's), fit inside a `size`×`size` square keeping its aspect ratio.
- * The square is always reserved (also while loading and for items with vanilla art, which have no icon), so names
- * line up and nothing shifts when the icons arrive.
+ * The item's HD art (from the ESR clone, else the vanilla D2R art; a unique's or set item's own art, else its base's),
+ * fit inside a `size`×`size` square keeping its aspect ratio. While icons.json loads the square is reserved, so names
+ * do not shift when the icons arrive; an item without an icon (or a failed load) renders nothing.
  */
 export function ItemIcon({ item, size, className }: ItemIconProps) {
-  const index = useItemIcons();
+  const { index, failed } = useItemIcons();
   const icon = index === null ? undefined : findItemIcon(index, item);
+  if (icon === undefined && (index !== null || failed)) return null;
   const scale = icon === undefined ? 0 : size / Math.max(icon.w, icon.h);
   return (
     <span

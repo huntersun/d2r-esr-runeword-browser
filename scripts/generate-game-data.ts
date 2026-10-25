@@ -36,7 +36,21 @@ function readIcons(): { text: string; counts: Record<string, number> } | null {
   const text = readFileSync(path, 'utf8');
   const bundle = JSON.parse(text) as IconsBundle;
   const count = (section: Record<string, unknown> | undefined) => Object.keys(section ?? {}).length;
-  return { text, counts: { itemIcons: count(bundle.bases), uniqueIcons: count(bundle.uniques), setIcons: count(bundle.sets) } };
+  // Entries (all three sections) whose image came from the vanilla art folder
+  const vanillaFiles = new Set(bundle.vanilla?.files ?? []);
+  const vanillaIcons = [bundle.bases, bundle.uniques, bundle.sets]
+    .flatMap((section) => Object.values(section))
+    .filter((icon) => vanillaFiles.has(icon.file)).length;
+  return {
+    text,
+    counts: {
+      itemIcons: count(bundle.bases),
+      uniqueIcons: count(bundle.uniques),
+      setIcons: count(bundle.sets),
+      vanillaIcons,
+      vanillaIconFiles: vanillaFiles.size,
+    },
+  };
 }
 
 function main(): void {

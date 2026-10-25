@@ -1,6 +1,150 @@
 {
   "esrVersion": "3.2.24",
   "esrTag": "3.2.24",
+  "vanilla": {
+    "rootHash": "06a0ca43e82f06e04f7e20551513a737",
+    "extractedAt": "2026-10-25",
+    "files": [
+      "amulet_amulet3.webp",
+      "armor_ancient_armor.webp",
+      "armor_breast_plate.webp",
+      "armor_chain_mail.webp",
+      "armor_corpsemourn.webp",
+      "armor_field_plate.webp",
+      "armor_full_plate_mail.webp",
+      "armor_gothic_plate.webp",
+      "armor_hard_leather_armor.webp",
+      "armor_ironpelt.webp",
+      "armor_leather_armor.webp",
+      "armor_quilted_armor.webp",
+      "armor_ring_mail.webp",
+      "armor_scale_mail.webp",
+      "armor_splint_mail.webp",
+      "armor_studded_leather.webp",
+      "armor_victors_silk.webp",
+      "belt_belt_m.webp",
+      "belt_heavy_belt.webp",
+      "belt_light_belt.webp",
+      "belt_sash_l.webp",
+      "boot_heavy_boots.webp",
+      "boot_leather_boots.webp",
+      "bow_composite_bow.webp",
+      "bow_crossbow.webp",
+      "bow_doomspittle.webp",
+      "bow_heavy_crossbow.webp",
+      "bow_hellcast.webp",
+      "bow_hellclap.webp",
+      "bow_hunters_bow.webp",
+      "bow_ichorsting.webp",
+      "bow_kuko_shakaku.webp",
+      "bow_langer_briser.webp",
+      "bow_leadcrow.webp",
+      "bow_light_crossbow.webp",
+      "bow_long_battle_bow.webp",
+      "bow_long_bow.webp",
+      "bow_long_war_bow.webp",
+      "bow_piercerib.webp",
+      "bow_pullspite.webp",
+      "bow_pus_spiter.webp",
+      "bow_reflex_bow.webp",
+      "bow_repeating_crossbow.webp",
+      "bow_short_battle_bow.webp",
+      "bow_short_bow.webp",
+      "bow_short_war_bow.webp",
+      "bow_stag_bow.webp",
+      "bow_whichwild_string.webp",
+      "circlet_coronet.webp",
+      "club_club.webp",
+      "club_felloak.webp",
+      "club_spiked_club.webp",
+      "club_stoutnail.webp",
+      "gem_perfect_diamond.webp",
+      "glove_gloves_l.webp",
+      "glove_heavy_gloves.webp",
+      "grimoires_ars_aldiablolos.webp",
+      "grimoires_codex.webp",
+      "grimoires_compendium.webp",
+      "grimoires_grimoire.webp",
+      "grimoires_measured_wrath.webp",
+      "grimoires_oldbook.webp",
+      "grimoires_tome_book.webp",
+      "h2h_claws.webp",
+      "h2h_hatchet_hands.webp",
+      "h2h_shadowkiller.webp",
+      "hammer_bonesob.webp",
+      "hammer_great_maul.webp",
+      "hammer_the_gavel_of_pain.webp",
+      "helmet_avenger_guard.webp",
+      "helmet_bone_helm.webp",
+      "helmet_cap_hat.webp",
+      "helmet_coif_of_glory.webp",
+      "helmet_crown.webp",
+      "helmet_fanged_helm.webp",
+      "helmet_great_helm.webp",
+      "helmet_helm.webp",
+      "helmet_jawbone_cap.webp",
+      "helmet_rockstopper.webp",
+      "helmet_skull_cap.webp",
+      "helmet_war_bonnet.webp",
+      "javelin_glaive.webp",
+      "javelin_maiden_javelin.webp",
+      "javelin_short_spear.webp",
+      "knife_balanced_knife.webp",
+      "knife_banes_spire.webp",
+      "knife_kriss.webp",
+      "knife_the_jade_tan_do.webp",
+      "knife_warshrike.webp",
+      "orb_clasped_orb.webp",
+      "orb_dragon_stone.webp",
+      "orb_eagle_orb.webp",
+      "orb_sacred_globe.webp",
+      "orb_smoked_sphere.webp",
+      "pelt_antlers.webp",
+      "pelt_falcon_mask.webp",
+      "pelt_hawk_helm.webp",
+      "pelt_spirit_mask.webp",
+      "pelt_wolf_head.webp",
+      "polearm_athenas_wrath.webp",
+      "polearm_voulge.webp",
+      "potion_choking_gas_potion.webp",
+      "potion_exploding_potion.webp",
+      "potion_fulminating_potion.webp",
+      "potion_oil_potion.webp",
+      "potion_rancid_gas_potion.webp",
+      "potion_strangling_gas_potion.webp",
+      "ring_ring4.webp",
+      "scepter_scepter.webp",
+      "shield_buckler.webp",
+      "shield_bverrit_keep.webp",
+      "shield_gothic_shield.webp",
+      "shield_lance_guard.webp",
+      "shield_pelta_lunata.webp",
+      "shield_small_shield.webp",
+      "shield_spiked_shield.webp",
+      "shield_stormguild.webp",
+      "shield_swordback_hold.webp",
+      "shield_the_ward.webp",
+      "shield_tower_shield.webp",
+      "staff_battle_staff.webp",
+      "staff_gnarled_staff.webp",
+      "staff_lazarus_spire.webp",
+      "staff_long_staff.webp",
+      "staff_short_staff.webp",
+      "staff_skullcollector.webp",
+      "staff_war_staff.webp",
+      "sword_bastard_sword.webp",
+      "sword_blood_crescent.webp",
+      "sword_crystal_sword.webp",
+      "sword_krintizs_skewer.webp",
+      "sword_plague_bearer.webp",
+      "sword_todesfaelle_flamme.webp",
+      "voodoo_head_demon_head.webp",
+      "voodoo_head_gargoyle_head.webp",
+      "voodoo_head_preserved_head.webp",
+      "voodoo_head_unraveller_head.webp",
+      "voodoo_head_zombie_head.webp"
+    ]
+  },
   "bases": {
     "hax": {
       "file": "axe_hand_axe.webp",
@@ -72,6 +216,16 @@
       "w": 64,
       "h": 128
     },
+    "clb": {
+      "file": "club_club.webp",
+      "w": 40,
+      "h": 128
+    },
+    "scp": {
+      "file": "scepter_scepter.webp",
+      "w": 35,
+      "h": 128
+    },
     "gsc": {
       "file": "scepter_grand_scepter.webp",
       "w": 39,
@@ -80,6 +234,11 @@
     "wsp": {
       "file": "scepter_war_scepter.webp",
       "w": 80,
+      "h": 128
+    },
+    "spc": {
+      "file": "club_spiked_club.webp",
+      "w": 40,
       "h": 128
     },
     "mac": {
@@ -107,6 +266,11 @@
       "w": 52,
       "h": 128
     },
+    "gma": {
+      "file": "hammer_great_maul.webp",
+      "w": 68,
+      "h": 128
+    },
     "ssd": {
       "file": "sword_short_sword.webp",
       "w": 31,
@@ -125,6 +289,11 @@
     "flc": {
       "file": "sword_falchion.webp",
       "w": 34,
+      "h": 128
+    },
+    "crs": {
+      "file": "sword_crystal_sword.webp",
+      "w": 71,
       "h": 128
     },
     "bsd": {
@@ -157,6 +326,11 @@
       "w": 27,
       "h": 128
     },
+    "bsw": {
+      "file": "sword_bastard_sword.webp",
+      "w": 26,
+      "h": 128
+    },
     "flb": {
       "file": "sword_flamberge.webp",
       "w": 52,
@@ -177,6 +351,11 @@
       "w": 60,
       "h": 128
     },
+    "kri": {
+      "file": "knife_kriss.webp",
+      "w": 41,
+      "h": 128
+    },
     "bld": {
       "file": "knife_blade.webp",
       "w": 36,
@@ -192,6 +371,11 @@
       "w": 69,
       "h": 128
     },
+    "bkf": {
+      "file": "knife_balanced_knife.webp",
+      "w": 59,
+      "h": 128
+    },
     "bal": {
       "file": "axe_balanced_axe.webp",
       "w": 125,
@@ -205,6 +389,16 @@
     "pil": {
       "file": "javelin_pilum.webp",
       "w": 24,
+      "h": 128
+    },
+    "ssp": {
+      "file": "javelin_short_spear.webp",
+      "w": 27,
+      "h": 128
+    },
+    "glv": {
+      "file": "javelin_glaive.webp",
+      "w": 25,
       "h": 128
     },
     "tsp": {
@@ -242,6 +436,11 @@
       "w": 54,
       "h": 128
     },
+    "vou": {
+      "file": "polearm_voulge.webp",
+      "w": 56,
+      "h": 128
+    },
     "scy": {
       "file": "polearm_scythe.webp",
       "w": 54,
@@ -261,6 +460,121 @@
       "file": "polearm_war_scythe.webp",
       "w": 62,
       "h": 128
+    },
+    "sst": {
+      "file": "staff_short_staff.webp",
+      "w": 25,
+      "h": 128
+    },
+    "lst": {
+      "file": "staff_long_staff.webp",
+      "w": 26,
+      "h": 128
+    },
+    "cst": {
+      "file": "staff_gnarled_staff.webp",
+      "w": 29,
+      "h": 128
+    },
+    "bst": {
+      "file": "staff_battle_staff.webp",
+      "w": 28,
+      "h": 128
+    },
+    "wst": {
+      "file": "staff_war_staff.webp",
+      "w": 58,
+      "h": 128
+    },
+    "sbw": {
+      "file": "bow_short_bow.webp",
+      "w": 86,
+      "h": 128
+    },
+    "hbw": {
+      "file": "bow_hunters_bow.webp",
+      "w": 84,
+      "h": 128
+    },
+    "lbw": {
+      "file": "bow_long_bow.webp",
+      "w": 59,
+      "h": 128
+    },
+    "cbw": {
+      "file": "bow_composite_bow.webp",
+      "w": 67,
+      "h": 128
+    },
+    "sbb": {
+      "file": "bow_short_battle_bow.webp",
+      "w": 79,
+      "h": 128
+    },
+    "lbb": {
+      "file": "bow_long_battle_bow.webp",
+      "w": 63,
+      "h": 128
+    },
+    "swb": {
+      "file": "bow_short_war_bow.webp",
+      "w": 78,
+      "h": 128
+    },
+    "lwb": {
+      "file": "bow_long_war_bow.webp",
+      "w": 60,
+      "h": 128
+    },
+    "lxb": {
+      "file": "bow_light_crossbow.webp",
+      "w": 96,
+      "h": 128
+    },
+    "mxb": {
+      "file": "bow_crossbow.webp",
+      "w": 87,
+      "h": 128
+    },
+    "hxb": {
+      "file": "bow_heavy_crossbow.webp",
+      "w": 65,
+      "h": 128
+    },
+    "rxb": {
+      "file": "bow_repeating_crossbow.webp",
+      "w": 73,
+      "h": 128
+    },
+    "gps": {
+      "file": "potion_rancid_gas_potion.webp",
+      "w": 75,
+      "h": 93
+    },
+    "ops": {
+      "file": "potion_oil_potion.webp",
+      "w": 75,
+      "h": 93
+    },
+    "gpm": {
+      "file": "potion_choking_gas_potion.webp",
+      "w": 57,
+      "h": 90
+    },
+    "opm": {
+      "file": "potion_exploding_potion.webp",
+      "w": 57,
+      "h": 90
+    },
+    "gpl": {
+      "file": "potion_strangling_gas_potion.webp",
+      "w": 67,
+      "h": 70
+    },
+    "opl": {
+      "file": "potion_fulminating_potion.webp",
+      "w": 67,
+      "h": 70
     },
     "9ha": {
       "file": "axe_hand_axe.webp",
@@ -332,6 +646,16 @@
       "w": 64,
       "h": 128
     },
+    "9cl": {
+      "file": "club_club.webp",
+      "w": 40,
+      "h": 128
+    },
+    "9sc": {
+      "file": "scepter_scepter.webp",
+      "w": 35,
+      "h": 128
+    },
     "9qs": {
       "file": "scepter_grand_scepter.webp",
       "w": 39,
@@ -340,6 +664,11 @@
     "9ws": {
       "file": "scepter_war_scepter.webp",
       "w": 80,
+      "h": 128
+    },
+    "9sp": {
+      "file": "club_spiked_club.webp",
+      "w": 40,
       "h": 128
     },
     "9ma": {
@@ -367,6 +696,11 @@
       "w": 52,
       "h": 128
     },
+    "9gm": {
+      "file": "hammer_great_maul.webp",
+      "w": 68,
+      "h": 128
+    },
     "9ss": {
       "file": "sword_short_sword.webp",
       "w": 31,
@@ -385,6 +719,11 @@
     "9fc": {
       "file": "sword_falchion.webp",
       "w": 34,
+      "h": 128
+    },
+    "9cr": {
+      "file": "sword_crystal_sword.webp",
+      "w": 71,
       "h": 128
     },
     "9bs": {
@@ -417,6 +756,11 @@
       "w": 27,
       "h": 128
     },
+    "9b9": {
+      "file": "sword_bastard_sword.webp",
+      "w": 26,
+      "h": 128
+    },
     "9fb": {
       "file": "sword_flamberge.webp",
       "w": 52,
@@ -437,6 +781,11 @@
       "w": 60,
       "h": 128
     },
+    "9kr": {
+      "file": "knife_kriss.webp",
+      "w": 41,
+      "h": 128
+    },
     "9bl": {
       "file": "knife_blade.webp",
       "w": 36,
@@ -452,6 +801,11 @@
       "w": 69,
       "h": 128
     },
+    "9bk": {
+      "file": "knife_balanced_knife.webp",
+      "w": 59,
+      "h": 128
+    },
     "9b8": {
       "file": "axe_balanced_axe.webp",
       "w": 125,
@@ -465,6 +819,16 @@
     "9pi": {
       "file": "javelin_pilum.webp",
       "w": 24,
+      "h": 128
+    },
+    "9s9": {
+      "file": "javelin_short_spear.webp",
+      "w": 27,
+      "h": 128
+    },
+    "9gl": {
+      "file": "javelin_glaive.webp",
+      "w": 25,
       "h": 128
     },
     "9ts": {
@@ -502,6 +866,11 @@
       "w": 54,
       "h": 128
     },
+    "9vo": {
+      "file": "polearm_voulge.webp",
+      "w": 56,
+      "h": 128
+    },
     "9s8": {
       "file": "polearm_scythe.webp",
       "w": 54,
@@ -522,6 +891,91 @@
       "w": 62,
       "h": 128
     },
+    "8ss": {
+      "file": "staff_short_staff.webp",
+      "w": 25,
+      "h": 128
+    },
+    "8ls": {
+      "file": "staff_long_staff.webp",
+      "w": 26,
+      "h": 128
+    },
+    "8cs": {
+      "file": "staff_gnarled_staff.webp",
+      "w": 29,
+      "h": 128
+    },
+    "8bs": {
+      "file": "staff_battle_staff.webp",
+      "w": 28,
+      "h": 128
+    },
+    "8ws": {
+      "file": "staff_war_staff.webp",
+      "w": 58,
+      "h": 128
+    },
+    "8sb": {
+      "file": "bow_short_bow.webp",
+      "w": 86,
+      "h": 128
+    },
+    "8hb": {
+      "file": "bow_hunters_bow.webp",
+      "w": 84,
+      "h": 128
+    },
+    "8lb": {
+      "file": "bow_long_bow.webp",
+      "w": 59,
+      "h": 128
+    },
+    "8cb": {
+      "file": "bow_composite_bow.webp",
+      "w": 67,
+      "h": 128
+    },
+    "8s8": {
+      "file": "bow_short_battle_bow.webp",
+      "w": 79,
+      "h": 128
+    },
+    "8l8": {
+      "file": "bow_long_battle_bow.webp",
+      "w": 63,
+      "h": 128
+    },
+    "8sw": {
+      "file": "bow_short_war_bow.webp",
+      "w": 78,
+      "h": 128
+    },
+    "8lw": {
+      "file": "bow_long_war_bow.webp",
+      "w": 60,
+      "h": 128
+    },
+    "8lx": {
+      "file": "bow_light_crossbow.webp",
+      "w": 96,
+      "h": 128
+    },
+    "8mx": {
+      "file": "bow_crossbow.webp",
+      "w": 87,
+      "h": 128
+    },
+    "8hx": {
+      "file": "bow_heavy_crossbow.webp",
+      "w": 65,
+      "h": 128
+    },
+    "8rx": {
+      "file": "bow_repeating_crossbow.webp",
+      "w": 73,
+      "h": 128
+    },
     "ktr": {
       "file": "h2h_katar.webp",
       "w": 46,
@@ -530,6 +984,26 @@
     "wrb": {
       "file": "h2h_katar.webp",
       "w": 46,
+      "h": 128
+    },
+    "axf": {
+      "file": "h2h_hatchet_hands.webp",
+      "w": 75,
+      "h": 128
+    },
+    "ces": {
+      "file": "h2h_hatchet_hands.webp",
+      "w": 75,
+      "h": 128
+    },
+    "clw": {
+      "file": "h2h_claws.webp",
+      "w": 45,
+      "h": 128
+    },
+    "btl": {
+      "file": "h2h_claws.webp",
+      "w": 45,
       "h": 128
     },
     "skr": {
@@ -547,6 +1021,26 @@
       "w": 46,
       "h": 128
     },
+    "9xf": {
+      "file": "h2h_hatchet_hands.webp",
+      "w": 75,
+      "h": 128
+    },
+    "9cs": {
+      "file": "h2h_hatchet_hands.webp",
+      "w": 75,
+      "h": 128
+    },
+    "9lw": {
+      "file": "h2h_claws.webp",
+      "w": 45,
+      "h": 128
+    },
+    "9tw": {
+      "file": "h2h_claws.webp",
+      "w": 45,
+      "h": 128
+    },
     "9qr": {
       "file": "h2h_scissors_katar.webp",
       "w": 45,
@@ -562,9 +1056,64 @@
       "w": 46,
       "h": 128
     },
+    "7xf": {
+      "file": "h2h_hatchet_hands.webp",
+      "w": 75,
+      "h": 128
+    },
+    "7cs": {
+      "file": "h2h_hatchet_hands.webp",
+      "w": 75,
+      "h": 128
+    },
+    "7lw": {
+      "file": "h2h_claws.webp",
+      "w": 45,
+      "h": 128
+    },
+    "7tw": {
+      "file": "h2h_claws.webp",
+      "w": 45,
+      "h": 128
+    },
     "7qr": {
       "file": "h2h_scissors_katar.webp",
       "w": 45,
+      "h": 128
+    },
+    "ob1": {
+      "file": "orb_eagle_orb.webp",
+      "w": 55,
+      "h": 128
+    },
+    "ob2": {
+      "file": "orb_sacred_globe.webp",
+      "w": 52,
+      "h": 128
+    },
+    "ob3": {
+      "file": "orb_smoked_sphere.webp",
+      "w": 56,
+      "h": 128
+    },
+    "ob4": {
+      "file": "orb_clasped_orb.webp",
+      "w": 53,
+      "h": 128
+    },
+    "ob5": {
+      "file": "orb_dragon_stone.webp",
+      "w": 45,
+      "h": 128
+    },
+    "am1": {
+      "file": "bow_stag_bow.webp",
+      "w": 78,
+      "h": 128
+    },
+    "am2": {
+      "file": "bow_reflex_bow.webp",
+      "w": 73,
       "h": 128
     },
     "am3": {
@@ -577,6 +1126,46 @@
       "w": 57,
       "h": 128
     },
+    "am5": {
+      "file": "javelin_maiden_javelin.webp",
+      "w": 52,
+      "h": 128
+    },
+    "ob6": {
+      "file": "orb_eagle_orb.webp",
+      "w": 55,
+      "h": 128
+    },
+    "ob7": {
+      "file": "orb_sacred_globe.webp",
+      "w": 52,
+      "h": 128
+    },
+    "ob8": {
+      "file": "orb_smoked_sphere.webp",
+      "w": 56,
+      "h": 128
+    },
+    "ob9": {
+      "file": "orb_clasped_orb.webp",
+      "w": 53,
+      "h": 128
+    },
+    "oba": {
+      "file": "orb_dragon_stone.webp",
+      "w": 45,
+      "h": 128
+    },
+    "am6": {
+      "file": "bow_stag_bow.webp",
+      "w": 78,
+      "h": 128
+    },
+    "am7": {
+      "file": "bow_reflex_bow.webp",
+      "w": 73,
+      "h": 128
+    },
     "am8": {
       "file": "spear_maiden_spear.webp",
       "w": 34,
@@ -587,6 +1176,46 @@
       "w": 57,
       "h": 128
     },
+    "ama": {
+      "file": "javelin_maiden_javelin.webp",
+      "w": 52,
+      "h": 128
+    },
+    "obb": {
+      "file": "orb_eagle_orb.webp",
+      "w": 55,
+      "h": 128
+    },
+    "obc": {
+      "file": "orb_sacred_globe.webp",
+      "w": 52,
+      "h": 128
+    },
+    "obd": {
+      "file": "orb_smoked_sphere.webp",
+      "w": 56,
+      "h": 128
+    },
+    "obe": {
+      "file": "orb_clasped_orb.webp",
+      "w": 53,
+      "h": 128
+    },
+    "obf": {
+      "file": "orb_dragon_stone.webp",
+      "w": 45,
+      "h": 128
+    },
+    "amb": {
+      "file": "bow_stag_bow.webp",
+      "w": 78,
+      "h": 128
+    },
+    "amc": {
+      "file": "bow_reflex_bow.webp",
+      "w": 73,
+      "h": 128
+    },
     "amd": {
       "file": "spear_maiden_spear.webp",
       "w": 34,
@@ -595,6 +1224,11 @@
     "ame": {
       "file": "spear_maiden_pike.webp",
       "w": 57,
+      "h": 128
+    },
+    "amf": {
+      "file": "javelin_maiden_javelin.webp",
+      "w": 52,
       "h": 128
     },
     "0ha": {
@@ -667,6 +1301,16 @@
       "w": 64,
       "h": 128
     },
+    "0cl": {
+      "file": "club_club.webp",
+      "w": 40,
+      "h": 128
+    },
+    "5sc": {
+      "file": "scepter_scepter.webp",
+      "w": 35,
+      "h": 128
+    },
     "0qs": {
       "file": "scepter_grand_scepter.webp",
       "w": 39,
@@ -675,6 +1319,11 @@
     "0ws": {
       "file": "scepter_war_scepter.webp",
       "w": 80,
+      "h": 128
+    },
+    "0sp": {
+      "file": "club_spiked_club.webp",
+      "w": 40,
       "h": 128
     },
     "0ma": {
@@ -702,6 +1351,11 @@
       "w": 52,
       "h": 128
     },
+    "0gm": {
+      "file": "hammer_great_maul.webp",
+      "w": 68,
+      "h": 128
+    },
     "0ss": {
       "file": "sword_short_sword.webp",
       "w": 31,
@@ -720,6 +1374,11 @@
     "0fc": {
       "file": "sword_falchion.webp",
       "w": 34,
+      "h": 128
+    },
+    "0cr": {
+      "file": "sword_crystal_sword.webp",
+      "w": 71,
       "h": 128
     },
     "0bs": {
@@ -752,6 +1411,11 @@
       "w": 27,
       "h": 128
     },
+    "0b0": {
+      "file": "sword_bastard_sword.webp",
+      "w": 26,
+      "h": 128
+    },
     "0fb": {
       "file": "sword_flamberge.webp",
       "w": 52,
@@ -772,6 +1436,11 @@
       "w": 60,
       "h": 128
     },
+    "0kr": {
+      "file": "knife_kriss.webp",
+      "w": 41,
+      "h": 128
+    },
     "0bl": {
       "file": "knife_blade.webp",
       "w": 36,
@@ -787,6 +1456,11 @@
       "w": 69,
       "h": 128
     },
+    "0bk": {
+      "file": "knife_balanced_knife.webp",
+      "w": 59,
+      "h": 128
+    },
     "0b6": {
       "file": "axe_balanced_axe.webp",
       "w": 125,
@@ -800,6 +1474,16 @@
     "0pi": {
       "file": "javelin_pilum.webp",
       "w": 24,
+      "h": 128
+    },
+    "0s9": {
+      "file": "javelin_short_spear.webp",
+      "w": 27,
+      "h": 128
+    },
+    "0gl": {
+      "file": "javelin_glaive.webp",
+      "w": 25,
       "h": 128
     },
     "0ts": {
@@ -837,6 +1521,11 @@
       "w": 54,
       "h": 128
     },
+    "0vo": {
+      "file": "polearm_voulge.webp",
+      "w": 56,
+      "h": 128
+    },
     "0s8": {
       "file": "polearm_scythe.webp",
       "w": 54,
@@ -855,6 +1544,91 @@
     "0wc": {
       "file": "polearm_war_scythe.webp",
       "w": 62,
+      "h": 128
+    },
+    "1ss": {
+      "file": "staff_short_staff.webp",
+      "w": 25,
+      "h": 128
+    },
+    "1ls": {
+      "file": "staff_long_staff.webp",
+      "w": 26,
+      "h": 128
+    },
+    "1cs": {
+      "file": "staff_gnarled_staff.webp",
+      "w": 29,
+      "h": 128
+    },
+    "1bs": {
+      "file": "staff_battle_staff.webp",
+      "w": 28,
+      "h": 128
+    },
+    "1ws": {
+      "file": "staff_war_staff.webp",
+      "w": 58,
+      "h": 128
+    },
+    "1sb": {
+      "file": "bow_short_bow.webp",
+      "w": 86,
+      "h": 128
+    },
+    "1hb": {
+      "file": "bow_hunters_bow.webp",
+      "w": 84,
+      "h": 128
+    },
+    "1lb": {
+      "file": "bow_long_bow.webp",
+      "w": 59,
+      "h": 128
+    },
+    "1cb": {
+      "file": "bow_composite_bow.webp",
+      "w": 67,
+      "h": 128
+    },
+    "1s8": {
+      "file": "bow_short_battle_bow.webp",
+      "w": 79,
+      "h": 128
+    },
+    "1l8": {
+      "file": "bow_long_battle_bow.webp",
+      "w": 63,
+      "h": 128
+    },
+    "1sw": {
+      "file": "bow_short_war_bow.webp",
+      "w": 78,
+      "h": 128
+    },
+    "1lw": {
+      "file": "bow_long_war_bow.webp",
+      "w": 60,
+      "h": 128
+    },
+    "1lx": {
+      "file": "bow_light_crossbow.webp",
+      "w": 96,
+      "h": 128
+    },
+    "1mx": {
+      "file": "bow_crossbow.webp",
+      "w": 87,
+      "h": 128
+    },
+    "1hx": {
+      "file": "bow_heavy_crossbow.webp",
+      "w": 65,
+      "h": 128
+    },
+    "1rx": {
+      "file": "bow_repeating_crossbow.webp",
+      "w": 73,
       "h": 128
     },
     "aq2": {
@@ -880,6 +1654,21 @@
     "0gp": {
       "file": "scepter_great_scepter.webp",
       "w": 75,
+      "h": 128
+    },
+    "apb": {
+      "file": "bow_pullspite.webp",
+      "w": 70,
+      "h": 128
+    },
+    "9pb": {
+      "file": "bow_pullspite.webp",
+      "w": 70,
+      "h": 128
+    },
+    "0pb": {
+      "file": "bow_pullspite.webp",
+      "w": 70,
       "h": 128
     },
     "0nn": {
@@ -1037,6 +1826,21 @@
       "w": 45,
       "h": 128
     },
+    "m01": {
+      "file": "bow_long_battle_bow.webp",
+      "w": 63,
+      "h": 128
+    },
+    "m02": {
+      "file": "bow_heavy_crossbow.webp",
+      "w": 65,
+      "h": 128
+    },
+    "m03": {
+      "file": "hammer_great_maul.webp",
+      "w": 68,
+      "h": 128
+    },
     "m04": {
       "file": "wand_grim_wand.webp",
       "w": 64,
@@ -1047,9 +1851,24 @@
       "w": 61,
       "h": 128
     },
+    "m07": {
+      "file": "orb_dragon_stone.webp",
+      "w": 45,
+      "h": 128
+    },
+    "m08": {
+      "file": "knife_balanced_knife.webp",
+      "w": 59,
+      "h": 128
+    },
     "m09": {
       "file": "sword_mana_blade.webp",
       "w": 59,
+      "h": 128
+    },
+    "m11": {
+      "file": "staff_war_staff.webp",
+      "w": 58,
       "h": 128
     },
     "m12": {
@@ -1072,9 +1891,29 @@
       "w": 39,
       "h": 128
     },
+    "m17": {
+      "file": "scepter_scepter.webp",
+      "w": 35,
+      "h": 128
+    },
     "m18": {
       "file": "sword_great_sword.webp",
       "w": 47,
+      "h": 128
+    },
+    "m29": {
+      "file": "staff_gnarled_staff.webp",
+      "w": 29,
+      "h": 128
+    },
+    "m30": {
+      "file": "bow_long_war_bow.webp",
+      "w": 60,
+      "h": 128
+    },
+    "m31": {
+      "file": "javelin_maiden_javelin.webp",
+      "w": 52,
       "h": 128
     },
     "m32": {
@@ -1095,6 +1934,11 @@
     "m35": {
       "file": "sword_paladin_sword.webp",
       "w": 30,
+      "h": 128
+    },
+    "m36": {
+      "file": "staff_battle_staff.webp",
+      "w": 28,
       "h": 128
     },
     "m37": {
@@ -1147,9 +1991,34 @@
       "w": 37,
       "h": 128
     },
+    "cap": {
+      "file": "helmet_cap_hat.webp",
+      "w": 89,
+      "h": 128
+    },
+    "skp": {
+      "file": "helmet_skull_cap.webp",
+      "w": 128,
+      "h": 111
+    },
+    "hlm": {
+      "file": "helmet_helm.webp",
+      "w": 102,
+      "h": 128
+    },
     "fhl": {
       "file": "helmet_full_helm.webp",
       "w": 95,
+      "h": 128
+    },
+    "ghm": {
+      "file": "helmet_great_helm.webp",
+      "w": 70,
+      "h": 128
+    },
+    "crn": {
+      "file": "helmet_crown.webp",
+      "w": 91,
       "h": 128
     },
     "msk": {
@@ -1157,14 +2026,89 @@
       "w": 128,
       "h": 110
     },
+    "qui": {
+      "file": "armor_quilted_armor.webp",
+      "w": 96,
+      "h": 128
+    },
+    "lea": {
+      "file": "armor_leather_armor.webp",
+      "w": 110,
+      "h": 128
+    },
+    "hla": {
+      "file": "armor_hard_leather_armor.webp",
+      "w": 119,
+      "h": 128
+    },
+    "stu": {
+      "file": "armor_studded_leather.webp",
+      "w": 83,
+      "h": 128
+    },
+    "rng": {
+      "file": "armor_ring_mail.webp",
+      "w": 112,
+      "h": 128
+    },
+    "scl": {
+      "file": "armor_scale_mail.webp",
+      "w": 127,
+      "h": 128
+    },
+    "chn": {
+      "file": "armor_chain_mail.webp",
+      "w": 84,
+      "h": 128
+    },
+    "brs": {
+      "file": "armor_breast_plate.webp",
+      "w": 93,
+      "h": 128
+    },
+    "spl": {
+      "file": "armor_splint_mail.webp",
+      "w": 92,
+      "h": 128
+    },
     "plt": {
       "file": "armor_plate_mail.webp",
       "w": 128,
       "h": 121
     },
+    "fld": {
+      "file": "armor_field_plate.webp",
+      "w": 83,
+      "h": 128
+    },
+    "gth": {
+      "file": "armor_gothic_plate.webp",
+      "w": 75,
+      "h": 128
+    },
+    "ful": {
+      "file": "armor_full_plate_mail.webp",
+      "w": 79,
+      "h": 128
+    },
+    "aar": {
+      "file": "armor_ancient_armor.webp",
+      "w": 93,
+      "h": 128
+    },
     "ltp": {
       "file": "armor_light_plate.webp",
       "w": 94,
+      "h": 128
+    },
+    "buc": {
+      "file": "shield_buckler.webp",
+      "w": 113,
+      "h": 128
+    },
+    "sml": {
+      "file": "shield_small_shield.webp",
+      "w": 114,
       "h": 128
     },
     "lrg": {
@@ -1176,6 +2120,26 @@
       "file": "shield_kite_shield.webp",
       "w": 99,
       "h": 128
+    },
+    "tow": {
+      "file": "shield_tower_shield.webp",
+      "w": 69,
+      "h": 128
+    },
+    "gts": {
+      "file": "shield_gothic_shield.webp",
+      "w": 48,
+      "h": 128
+    },
+    "lgl": {
+      "file": "glove_gloves_l.webp",
+      "w": 128,
+      "h": 110
+    },
+    "vgl": {
+      "file": "glove_heavy_gloves.webp",
+      "w": 128,
+      "h": 108
     },
     "mgl": {
       "file": "glove_bracers_m.webp",
@@ -1190,6 +2154,16 @@
     "hgl": {
       "file": "glove_gaunlets_h.webp",
       "w": 127,
+      "h": 128
+    },
+    "lbt": {
+      "file": "boot_leather_boots.webp",
+      "w": 128,
+      "h": 113
+    },
+    "vbt": {
+      "file": "boot_heavy_boots.webp",
+      "w": 117,
       "h": 128
     },
     "mbt": {
@@ -1207,14 +2181,59 @@
       "w": 113,
       "h": 128
     },
+    "lbl": {
+      "file": "belt_sash_l.webp",
+      "w": 128,
+      "h": 58
+    },
+    "vbl": {
+      "file": "belt_light_belt.webp",
+      "w": 128,
+      "h": 48
+    },
+    "mbl": {
+      "file": "belt_belt_m.webp",
+      "w": 128,
+      "h": 56
+    },
+    "tbl": {
+      "file": "belt_heavy_belt.webp",
+      "w": 128,
+      "h": 62
+    },
     "hbl": {
       "file": "belt_girdle_h.webp",
       "w": 128,
       "h": 71
     },
+    "bhm": {
+      "file": "helmet_bone_helm.webp",
+      "w": 128,
+      "h": 76
+    },
     "bsh": {
       "file": "shield_bone_shield.webp",
       "w": 64,
+      "h": 128
+    },
+    "spk": {
+      "file": "shield_spiked_shield.webp",
+      "w": 94,
+      "h": 128
+    },
+    "xap": {
+      "file": "helmet_cap_hat.webp",
+      "w": 89,
+      "h": 128
+    },
+    "xkp": {
+      "file": "helmet_skull_cap.webp",
+      "w": 128,
+      "h": 111
+    },
+    "xlm": {
+      "file": "helmet_helm.webp",
+      "w": 102,
       "h": 128
     },
     "xhl": {
@@ -1222,19 +2241,104 @@
       "w": 95,
       "h": 128
     },
+    "xhm": {
+      "file": "helmet_great_helm.webp",
+      "w": 70,
+      "h": 128
+    },
+    "xrn": {
+      "file": "helmet_crown.webp",
+      "w": 91,
+      "h": 128
+    },
     "xsk": {
       "file": "helmet_mask.webp",
       "w": 128,
       "h": 110
+    },
+    "xui": {
+      "file": "armor_quilted_armor.webp",
+      "w": 96,
+      "h": 128
+    },
+    "xea": {
+      "file": "armor_leather_armor.webp",
+      "w": 110,
+      "h": 128
+    },
+    "xla": {
+      "file": "armor_hard_leather_armor.webp",
+      "w": 119,
+      "h": 128
+    },
+    "xtu": {
+      "file": "armor_studded_leather.webp",
+      "w": 83,
+      "h": 128
+    },
+    "xng": {
+      "file": "armor_ring_mail.webp",
+      "w": 112,
+      "h": 128
+    },
+    "xcl": {
+      "file": "armor_scale_mail.webp",
+      "w": 127,
+      "h": 128
+    },
+    "xhn": {
+      "file": "armor_chain_mail.webp",
+      "w": 84,
+      "h": 128
+    },
+    "xrs": {
+      "file": "armor_breast_plate.webp",
+      "w": 93,
+      "h": 128
+    },
+    "xpl": {
+      "file": "armor_splint_mail.webp",
+      "w": 92,
+      "h": 128
     },
     "xlt": {
       "file": "armor_plate_mail.webp",
       "w": 128,
       "h": 121
     },
+    "xld": {
+      "file": "armor_field_plate.webp",
+      "w": 83,
+      "h": 128
+    },
+    "xth": {
+      "file": "armor_gothic_plate.webp",
+      "w": 75,
+      "h": 128
+    },
+    "xul": {
+      "file": "armor_full_plate_mail.webp",
+      "w": 79,
+      "h": 128
+    },
+    "xar": {
+      "file": "armor_ancient_armor.webp",
+      "w": 93,
+      "h": 128
+    },
     "xtp": {
       "file": "armor_light_plate.webp",
       "w": 94,
+      "h": 128
+    },
+    "xuc": {
+      "file": "shield_buckler.webp",
+      "w": 113,
+      "h": 128
+    },
+    "xml": {
+      "file": "shield_small_shield.webp",
+      "w": 114,
       "h": 128
     },
     "xrg": {
@@ -1246,6 +2350,26 @@
       "file": "shield_kite_shield.webp",
       "w": 99,
       "h": 128
+    },
+    "xow": {
+      "file": "shield_tower_shield.webp",
+      "w": 69,
+      "h": 128
+    },
+    "xts": {
+      "file": "shield_gothic_shield.webp",
+      "w": 48,
+      "h": 128
+    },
+    "xlg": {
+      "file": "glove_gloves_l.webp",
+      "w": 128,
+      "h": 110
+    },
+    "xvg": {
+      "file": "glove_heavy_gloves.webp",
+      "w": 128,
+      "h": 108
     },
     "xmg": {
       "file": "glove_bracers_m.webp",
@@ -1260,6 +2384,16 @@
     "xhg": {
       "file": "glove_gaunlets_h.webp",
       "w": 127,
+      "h": 128
+    },
+    "xlb": {
+      "file": "boot_leather_boots.webp",
+      "w": 128,
+      "h": 113
+    },
+    "xvb": {
+      "file": "boot_heavy_boots.webp",
+      "w": 117,
       "h": 128
     },
     "xmb": {
@@ -1277,14 +2411,79 @@
       "w": 113,
       "h": 128
     },
+    "zlb": {
+      "file": "belt_sash_l.webp",
+      "w": 128,
+      "h": 58
+    },
+    "zvb": {
+      "file": "belt_light_belt.webp",
+      "w": 128,
+      "h": 48
+    },
+    "zmb": {
+      "file": "belt_belt_m.webp",
+      "w": 128,
+      "h": 56
+    },
+    "ztb": {
+      "file": "belt_heavy_belt.webp",
+      "w": 128,
+      "h": 62
+    },
     "zhb": {
       "file": "belt_girdle_h.webp",
       "w": 128,
       "h": 71
     },
+    "xh9": {
+      "file": "helmet_bone_helm.webp",
+      "w": 128,
+      "h": 76
+    },
     "xsh": {
       "file": "shield_bone_shield.webp",
       "w": 64,
+      "h": 128
+    },
+    "xpk": {
+      "file": "shield_spiked_shield.webp",
+      "w": 94,
+      "h": 128
+    },
+    "dr1": {
+      "file": "pelt_wolf_head.webp",
+      "w": 123,
+      "h": 128
+    },
+    "dr2": {
+      "file": "pelt_hawk_helm.webp",
+      "w": 89,
+      "h": 128
+    },
+    "dr3": {
+      "file": "pelt_antlers.webp",
+      "w": 128,
+      "h": 125
+    },
+    "dr4": {
+      "file": "pelt_falcon_mask.webp",
+      "w": 88,
+      "h": 128
+    },
+    "dr5": {
+      "file": "pelt_spirit_mask.webp",
+      "w": 123,
+      "h": 128
+    },
+    "ba1": {
+      "file": "helmet_jawbone_cap.webp",
+      "w": 128,
+      "h": 127
+    },
+    "ba2": {
+      "file": "helmet_fanged_helm.webp",
+      "w": 122,
       "h": 128
     },
     "ba3": {
@@ -1295,6 +2494,11 @@
     "ba4": {
       "file": "helmet_assault_helmet.webp",
       "w": 104,
+      "h": 128
+    },
+    "ba5": {
+      "file": "helmet_avenger_guard.webp",
+      "w": 92,
       "h": 128
     },
     "pa1": {
@@ -1322,10 +2526,40 @@
       "w": 125,
       "h": 128
     },
+    "ne1": {
+      "file": "voodoo_head_preserved_head.webp",
+      "w": 112,
+      "h": 128
+    },
+    "ne2": {
+      "file": "voodoo_head_zombie_head.webp",
+      "w": 122,
+      "h": 128
+    },
+    "ne3": {
+      "file": "voodoo_head_unraveller_head.webp",
+      "w": 128,
+      "h": 126
+    },
+    "ne4": {
+      "file": "voodoo_head_gargoyle_head.webp",
+      "w": 106,
+      "h": 128
+    },
+    "ne5": {
+      "file": "voodoo_head_demon_head.webp",
+      "w": 109,
+      "h": 128
+    },
     "ci0": {
       "file": "circlet_circlet.webp",
       "w": 128,
       "h": 73
+    },
+    "ci1": {
+      "file": "circlet_coronet.webp",
+      "w": 128,
+      "h": 81
     },
     "ci2": {
       "file": "circlet_tiara.webp",
@@ -1337,6 +2571,41 @@
       "w": 128,
       "h": 91
     },
+    "dr6": {
+      "file": "pelt_wolf_head.webp",
+      "w": 123,
+      "h": 128
+    },
+    "dr7": {
+      "file": "pelt_hawk_helm.webp",
+      "w": 89,
+      "h": 128
+    },
+    "dr8": {
+      "file": "pelt_antlers.webp",
+      "w": 128,
+      "h": 125
+    },
+    "dr9": {
+      "file": "pelt_falcon_mask.webp",
+      "w": 88,
+      "h": 128
+    },
+    "dra": {
+      "file": "pelt_spirit_mask.webp",
+      "w": 123,
+      "h": 128
+    },
+    "ba6": {
+      "file": "helmet_jawbone_cap.webp",
+      "w": 128,
+      "h": 127
+    },
+    "ba7": {
+      "file": "helmet_fanged_helm.webp",
+      "w": 122,
+      "h": 128
+    },
     "ba8": {
       "file": "helmet_horned_helm.webp",
       "w": 71,
@@ -1345,6 +2614,11 @@
     "ba9": {
       "file": "helmet_assault_helmet.webp",
       "w": 104,
+      "h": 128
+    },
+    "baa": {
+      "file": "helmet_avenger_guard.webp",
+      "w": 92,
       "h": 128
     },
     "pa6": {
@@ -1372,6 +2646,66 @@
       "w": 125,
       "h": 128
     },
+    "ne6": {
+      "file": "voodoo_head_preserved_head.webp",
+      "w": 112,
+      "h": 128
+    },
+    "ne7": {
+      "file": "voodoo_head_zombie_head.webp",
+      "w": 122,
+      "h": 128
+    },
+    "ne8": {
+      "file": "voodoo_head_unraveller_head.webp",
+      "w": 128,
+      "h": 126
+    },
+    "ne9": {
+      "file": "voodoo_head_gargoyle_head.webp",
+      "w": 106,
+      "h": 128
+    },
+    "nea": {
+      "file": "voodoo_head_demon_head.webp",
+      "w": 109,
+      "h": 128
+    },
+    "drb": {
+      "file": "pelt_wolf_head.webp",
+      "w": 123,
+      "h": 128
+    },
+    "drc": {
+      "file": "pelt_hawk_helm.webp",
+      "w": 89,
+      "h": 128
+    },
+    "drd": {
+      "file": "pelt_antlers.webp",
+      "w": 128,
+      "h": 125
+    },
+    "dre": {
+      "file": "pelt_falcon_mask.webp",
+      "w": 88,
+      "h": 128
+    },
+    "drf": {
+      "file": "pelt_spirit_mask.webp",
+      "w": 123,
+      "h": 128
+    },
+    "bab": {
+      "file": "helmet_jawbone_cap.webp",
+      "w": 128,
+      "h": 127
+    },
+    "bac": {
+      "file": "helmet_fanged_helm.webp",
+      "w": 122,
+      "h": 128
+    },
     "bad": {
       "file": "helmet_horned_helm.webp",
       "w": 71,
@@ -1380,6 +2714,11 @@
     "bae": {
       "file": "helmet_assault_helmet.webp",
       "w": 104,
+      "h": 128
+    },
+    "baf": {
+      "file": "helmet_avenger_guard.webp",
+      "w": 92,
       "h": 128
     },
     "pab": {
@@ -1407,9 +2746,59 @@
       "w": 125,
       "h": 128
     },
+    "neb": {
+      "file": "voodoo_head_preserved_head.webp",
+      "w": 112,
+      "h": 128
+    },
+    "neg": {
+      "file": "voodoo_head_zombie_head.webp",
+      "w": 122,
+      "h": 128
+    },
+    "ned": {
+      "file": "voodoo_head_unraveller_head.webp",
+      "w": 128,
+      "h": 126
+    },
+    "nee": {
+      "file": "voodoo_head_gargoyle_head.webp",
+      "w": 106,
+      "h": 128
+    },
+    "nef": {
+      "file": "voodoo_head_demon_head.webp",
+      "w": 109,
+      "h": 128
+    },
+    "yap": {
+      "file": "helmet_cap_hat.webp",
+      "w": 89,
+      "h": 128
+    },
+    "ykp": {
+      "file": "helmet_skull_cap.webp",
+      "w": 128,
+      "h": 111
+    },
+    "ylm": {
+      "file": "helmet_helm.webp",
+      "w": 102,
+      "h": 128
+    },
     "yhl": {
       "file": "helmet_full_helm.webp",
       "w": 95,
+      "h": 128
+    },
+    "yhm": {
+      "file": "helmet_great_helm.webp",
+      "w": 70,
+      "h": 128
+    },
+    "yrn": {
+      "file": "helmet_crown.webp",
+      "w": 91,
       "h": 128
     },
     "ysk": {
@@ -1417,14 +2806,89 @@
       "w": 128,
       "h": 110
     },
+    "yui": {
+      "file": "armor_quilted_armor.webp",
+      "w": 96,
+      "h": 128
+    },
+    "yea": {
+      "file": "armor_leather_armor.webp",
+      "w": 110,
+      "h": 128
+    },
+    "yla": {
+      "file": "armor_hard_leather_armor.webp",
+      "w": 119,
+      "h": 128
+    },
+    "ytu": {
+      "file": "armor_studded_leather.webp",
+      "w": 83,
+      "h": 128
+    },
+    "yng": {
+      "file": "armor_ring_mail.webp",
+      "w": 112,
+      "h": 128
+    },
+    "ycl": {
+      "file": "armor_scale_mail.webp",
+      "w": 127,
+      "h": 128
+    },
+    "yhn": {
+      "file": "armor_chain_mail.webp",
+      "w": 84,
+      "h": 128
+    },
+    "yrs": {
+      "file": "armor_breast_plate.webp",
+      "w": 93,
+      "h": 128
+    },
+    "ypl": {
+      "file": "armor_splint_mail.webp",
+      "w": 92,
+      "h": 128
+    },
     "ylt": {
       "file": "armor_plate_mail.webp",
       "w": 128,
       "h": 121
     },
+    "yld": {
+      "file": "armor_field_plate.webp",
+      "w": 83,
+      "h": 128
+    },
+    "yth": {
+      "file": "armor_gothic_plate.webp",
+      "w": 75,
+      "h": 128
+    },
+    "yul": {
+      "file": "armor_full_plate_mail.webp",
+      "w": 79,
+      "h": 128
+    },
+    "yar": {
+      "file": "armor_victors_silk.webp",
+      "w": 92,
+      "h": 128
+    },
     "ytp": {
       "file": "armor_light_plate.webp",
       "w": 94,
+      "h": 128
+    },
+    "yuc": {
+      "file": "shield_buckler.webp",
+      "w": 113,
+      "h": 128
+    },
+    "yml": {
+      "file": "shield_small_shield.webp",
+      "w": 114,
       "h": 128
     },
     "yrg": {
@@ -1436,6 +2900,26 @@
       "file": "shield_kite_shield.webp",
       "w": 99,
       "h": 128
+    },
+    "yow": {
+      "file": "shield_tower_shield.webp",
+      "w": 69,
+      "h": 128
+    },
+    "yts": {
+      "file": "shield_gothic_shield.webp",
+      "w": 48,
+      "h": 128
+    },
+    "ylg": {
+      "file": "glove_gloves_l.webp",
+      "w": 128,
+      "h": 110
+    },
+    "yvg": {
+      "file": "glove_heavy_gloves.webp",
+      "w": 128,
+      "h": 108
     },
     "ymg": {
       "file": "glove_bracers_m.webp",
@@ -1450,6 +2934,16 @@
     "yhg": {
       "file": "glove_gaunlets_h.webp",
       "w": 127,
+      "h": 128
+    },
+    "ylb": {
+      "file": "boot_leather_boots.webp",
+      "w": 128,
+      "h": 113
+    },
+    "yvb": {
+      "file": "boot_heavy_boots.webp",
+      "w": 117,
       "h": 128
     },
     "ymb": {
@@ -1467,14 +2961,44 @@
       "w": 113,
       "h": 128
     },
+    "alb": {
+      "file": "belt_sash_l.webp",
+      "w": 128,
+      "h": 58
+    },
+    "avb": {
+      "file": "belt_light_belt.webp",
+      "w": 128,
+      "h": 48
+    },
+    "bmb": {
+      "file": "belt_belt_m.webp",
+      "w": 128,
+      "h": 56
+    },
+    "atb": {
+      "file": "belt_heavy_belt.webp",
+      "w": 128,
+      "h": 62
+    },
     "ahb": {
       "file": "belt_girdle_h.webp",
       "w": 128,
       "h": 71
     },
+    "yh9": {
+      "file": "helmet_bone_helm.webp",
+      "w": 128,
+      "h": 76
+    },
     "ysh": {
       "file": "shield_bone_shield.webp",
       "w": 64,
+      "h": 128
+    },
+    "ypk": {
+      "file": "shield_spiked_shield.webp",
+      "w": 94,
       "h": 128
     },
     "cix": {
@@ -1637,6 +3161,26 @@
       "w": 112,
       "h": 128
     },
+    "qdf": {
+      "file": "pelt_antlers.webp",
+      "w": 128,
+      "h": 125
+    },
+    "m06": {
+      "file": "armor_studded_leather.webp",
+      "w": 83,
+      "h": 128
+    },
+    "m10": {
+      "file": "belt_sash_l.webp",
+      "w": 128,
+      "h": 58
+    },
+    "m15": {
+      "file": "pelt_spirit_mask.webp",
+      "w": 123,
+      "h": 128
+    },
     "m20": {
       "file": "circlet_diadem.webp",
       "w": 128,
@@ -1645,6 +3189,81 @@
     "m60": {
       "file": "armor_light_plate.webp",
       "w": 94,
+      "h": 128
+    },
+    "wa1": {
+      "file": "grimoires_oldbook.webp",
+      "w": 103,
+      "h": 128
+    },
+    "wa2": {
+      "file": "grimoires_tome_book.webp",
+      "w": 103,
+      "h": 128
+    },
+    "wa3": {
+      "file": "grimoires_codex.webp",
+      "w": 104,
+      "h": 128
+    },
+    "wa4": {
+      "file": "grimoires_compendium.webp",
+      "w": 108,
+      "h": 128
+    },
+    "wa5": {
+      "file": "grimoires_grimoire.webp",
+      "w": 103,
+      "h": 128
+    },
+    "wa6": {
+      "file": "grimoires_oldbook.webp",
+      "w": 103,
+      "h": 128
+    },
+    "wa7": {
+      "file": "grimoires_tome_book.webp",
+      "w": 103,
+      "h": 128
+    },
+    "wa8": {
+      "file": "grimoires_codex.webp",
+      "w": 104,
+      "h": 128
+    },
+    "wa9": {
+      "file": "grimoires_compendium.webp",
+      "w": 108,
+      "h": 128
+    },
+    "waa": {
+      "file": "grimoires_grimoire.webp",
+      "w": 103,
+      "h": 128
+    },
+    "wab": {
+      "file": "grimoires_oldbook.webp",
+      "w": 103,
+      "h": 128
+    },
+    "wac": {
+      "file": "grimoires_tome_book.webp",
+      "w": 103,
+      "h": 128
+    },
+    "wad": {
+      "file": "grimoires_codex.webp",
+      "w": 104,
+      "h": 128
+    },
+    "wae": {
+      "file": "grimoires_compendium.webp",
+      "w": 108,
+      "h": 128
+    },
+    "waf": {
+      "file": "grimoires_grimoire.webp",
+      "w": 103,
       "h": 128
     },
     "amu": {
@@ -1671,6 +3290,11 @@
       "file": "charm_charm_large.webp",
       "w": 45,
       "h": 128
+    },
+    "jew": {
+      "file": "gem_perfect_diamond.webp",
+      "w": 59,
+      "h": 79
     },
     "zrn": {
       "file": "ring_ama_ring.webp",
@@ -1781,6 +3405,11 @@
       "file": "charm_odd_charm.webp",
       "w": 59,
       "h": 128
+    },
+    "mjw": {
+      "file": "gem_perfect_diamond.webp",
+      "w": 59,
+      "h": 79
     }
   },
   "uniques": {
@@ -1980,9 +3609,9 @@
       "h": 95
     },
     "Collar of the Minotaur": {
-      "file": "amulet_amulet.webp",
-      "w": 88,
-      "h": 86
+      "file": "amulet_amulet3.webp",
+      "w": 96,
+      "h": 91
     },
     "Beads of the Guardian": {
       "file": "amulet_amulet4.webp",
@@ -2149,6 +3778,11 @@
       "w": 78,
       "h": 100
     },
+    "Nexus Star": {
+      "file": "gem_perfect_diamond.webp",
+      "w": 59,
+      "h": 79
+    },
     "Smiiiff Stone": {
       "file": "gem_smiiiff_stone.webp",
       "w": 72,
@@ -2268,6 +3902,11 @@
       "file": "helmet_diamond_hairband.webp",
       "w": 128,
       "h": 50
+    },
+    "Zan-Esus' Commitment": {
+      "file": "circlet_coronet.webp",
+      "w": 128,
+      "h": 81
     },
     "Lunar Charm": {
       "file": "helmet_lunar_charm.webp",
@@ -2429,6 +4068,186 @@
       "w": 67,
       "h": 128
     },
+    "Frostarc": {
+      "file": "bow_short_bow.webp",
+      "w": 86,
+      "h": 128
+    },
+    "Firebrander": {
+      "file": "bow_hunters_bow.webp",
+      "w": 84,
+      "h": 128
+    },
+    "Bakou's Sharpshooter": {
+      "file": "bow_long_bow.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Ancient Piercer": {
+      "file": "bow_short_battle_bow.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Plaguebearer": {
+      "file": "bow_composite_bow.webp",
+      "w": 67,
+      "h": 128
+    },
+    "Quiveraiden": {
+      "file": "bow_long_battle_bow.webp",
+      "w": 63,
+      "h": 128
+    },
+    "Sparkraven": {
+      "file": "bow_short_war_bow.webp",
+      "w": 78,
+      "h": 128
+    },
+    "Bow of the Stars": {
+      "file": "bow_long_war_bow.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Rotstring": {
+      "file": "bow_short_bow.webp",
+      "w": 86,
+      "h": 128
+    },
+    "Raven's Cord": {
+      "file": "bow_hunters_bow.webp",
+      "w": 84,
+      "h": 128
+    },
+    "Titan's Wake": {
+      "file": "bow_long_bow.webp",
+      "w": 59,
+      "h": 128
+    },
+    "The Harp of Souls": {
+      "file": "bow_composite_bow.webp",
+      "w": 67,
+      "h": 128
+    },
+    "The Keening": {
+      "file": "bow_short_battle_bow.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Eaglehorn": {
+      "file": "bow_long_battle_bow.webp",
+      "w": 63,
+      "h": 128
+    },
+    "Zerae's Gift": {
+      "file": "bow_short_war_bow.webp",
+      "w": 78,
+      "h": 128
+    },
+    "Heartseeker": {
+      "file": "bow_long_war_bow.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Karaniis' Bow of Incandescence": {
+      "file": "bow_short_bow.webp",
+      "w": 86,
+      "h": 128
+    },
+    "Gnat Sting": {
+      "file": "bow_hunters_bow.webp",
+      "w": 84,
+      "h": 128
+    },
+    "Bloodraven's Arch": {
+      "file": "bow_long_bow.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Moonbeam": {
+      "file": "bow_composite_bow.webp",
+      "w": 67,
+      "h": 128
+    },
+    "Undead's Blight": {
+      "file": "bow_short_battle_bow.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Wild Airs of the Elements": {
+      "file": "bow_long_battle_bow.webp",
+      "w": 63,
+      "h": 128
+    },
+    "The Guardian": {
+      "file": "bow_short_war_bow.webp",
+      "w": 78,
+      "h": 128
+    },
+    "Enigma": {
+      "file": "bow_long_war_bow.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Rapid Frenzy": {
+      "file": "bow_light_crossbow.webp",
+      "w": 96,
+      "h": 128
+    },
+    "Firespitter": {
+      "file": "bow_crossbow.webp",
+      "w": 87,
+      "h": 128
+    },
+    "Polar Boltcaster": {
+      "file": "bow_hellcast.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Unholy Dartgun": {
+      "file": "bow_doomspittle.webp",
+      "w": 65,
+      "h": 128
+    },
+    "The Needler": {
+      "file": "bow_light_crossbow.webp",
+      "w": 96,
+      "h": 128
+    },
+    "Cataclysm": {
+      "file": "bow_crossbow.webp",
+      "w": 87,
+      "h": 128
+    },
+    "Magnium": {
+      "file": "bow_hellcast.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Qoto's Bow of Fortuitous Battle": {
+      "file": "bow_doomspittle.webp",
+      "w": 65,
+      "h": 128
+    },
+    "Deadly Hunter": {
+      "file": "bow_light_crossbow.webp",
+      "w": 96,
+      "h": 128
+    },
+    "Scope of the Hawk": {
+      "file": "bow_crossbow.webp",
+      "w": 87,
+      "h": 128
+    },
+    "Chaos Launcher": {
+      "file": "bow_hellcast.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Deadly Precision": {
+      "file": "bow_doomspittle.webp",
+      "w": 65,
+      "h": 128
+    },
     "Yegg's Firedagger": {
       "file": "knife_dagger.webp",
       "w": 59,
@@ -2437,6 +4256,11 @@
     "Requier's Skill": {
       "file": "knife_dirk.webp",
       "w": 60,
+      "h": 128
+    },
+    "The Golden Spike": {
+      "file": "knife_kriss.webp",
+      "w": 41,
       "h": 128
     },
     "Anguirel": {
@@ -2474,6 +4298,11 @@
       "w": 60,
       "h": 128
     },
+    "Famine": {
+      "file": "knife_kriss.webp",
+      "w": 41,
+      "h": 128
+    },
     "Mordenkainen's Dagger": {
       "file": "knife_blade.webp",
       "w": 36,
@@ -2487,6 +4316,16 @@
     "LED": {
       "file": "javelin_pilum.webp",
       "w": 24,
+      "h": 128
+    },
+    "Ric's Faith": {
+      "file": "javelin_short_spear.webp",
+      "w": 27,
+      "h": 128
+    },
+    "Free Lance": {
+      "file": "javelin_glaive.webp",
+      "w": 25,
       "h": 128
     },
     "Flying Impaler": {
@@ -2504,6 +4343,16 @@
       "w": 24,
       "h": 128
     },
+    "Revenant's Spear of the Vampyr": {
+      "file": "javelin_short_spear.webp",
+      "w": 27,
+      "h": 128
+    },
+    "Futurebreeze": {
+      "file": "javelin_glaive.webp",
+      "w": 25,
+      "h": 128
+    },
     "Olympus Hand": {
       "file": "javelin_throwing_spear.webp",
       "w": 28,
@@ -2519,9 +4368,29 @@
       "w": 24,
       "h": 128
     },
+    "Johan's Picket": {
+      "file": "javelin_short_spear.webp",
+      "w": 27,
+      "h": 128
+    },
+    "Rainbow Rocket": {
+      "file": "javelin_glaive.webp",
+      "w": 25,
+      "h": 128
+    },
     "Moby's Demise": {
       "file": "javelin_throwing_spear.webp",
       "w": 28,
+      "h": 128
+    },
+    "Inifuss Branch": {
+      "file": "club_felloak.webp",
+      "w": 41,
+      "h": 128
+    },
+    "The Horror": {
+      "file": "club_stoutnail.webp",
+      "w": 47,
       "h": 128
     },
     "Bonemash": {
@@ -2545,8 +4414,23 @@
       "h": 128
     },
     "Bul-Kathos' Rage": {
-      "file": "hammer_maul.webp",
-      "w": 52,
+      "file": "hammer_bonesob.webp",
+      "w": 50,
+      "h": 128
+    },
+    "Arreat's Peak": {
+      "file": "hammer_great_maul.webp",
+      "w": 68,
+      "h": 128
+    },
+    "Koth's Cudgel": {
+      "file": "club_felloak.webp",
+      "w": 41,
+      "h": 128
+    },
+    "Blood Splinter": {
+      "file": "club_stoutnail.webp",
+      "w": 47,
       "h": 128
     },
     "Dreamflange": {
@@ -2572,6 +4456,11 @@
     "Vulcan's Piledriver": {
       "file": "hammer_vulcan_piledriver.webp",
       "w": 58,
+      "h": 128
+    },
+    "Justicar Militiari": {
+      "file": "hammer_the_gavel_of_pain.webp",
+      "w": 75,
       "h": 128
     },
     "Caveman's Fury": {
@@ -2619,6 +4508,11 @@
       "w": 54,
       "h": 128
     },
+    "Lawful Arm": {
+      "file": "polearm_voulge.webp",
+      "w": 56,
+      "h": 128
+    },
     "Blade of Oblivion": {
       "file": "polearm_scythe.webp",
       "w": 54,
@@ -2642,6 +4536,11 @@
     "Defender of the Highlands": {
       "file": "polearm_bardiche.webp",
       "w": 54,
+      "h": 128
+    },
+    "Bill of the Crane Shamans": {
+      "file": "polearm_voulge.webp",
+      "w": 56,
       "h": 128
     },
     "Reaver of Darkness": {
@@ -2669,6 +4568,11 @@
       "w": 54,
       "h": 128
     },
+    "Nine Lives Stealer": {
+      "file": "polearm_voulge.webp",
+      "w": 56,
+      "h": 128
+    },
     "Soul Reaver": {
       "file": "polearm_scythe.webp",
       "w": 54,
@@ -2689,6 +4593,11 @@
       "w": 62,
       "h": 128
     },
+    "Holy Icon": {
+      "file": "scepter_scepter.webp",
+      "w": 35,
+      "h": 128
+    },
     "Blessed Avenger": {
       "file": "scepter_grand_scepter.webp",
       "w": 39,
@@ -2704,6 +4613,11 @@
       "w": 80,
       "h": 128
     },
+    "Righteous Avenger": {
+      "file": "scepter_scepter.webp",
+      "w": 35,
+      "h": 128
+    },
     "Demon Slayer": {
       "file": "scepter_grand_scepter.webp",
       "w": 39,
@@ -2717,6 +4631,11 @@
     "Redemption": {
       "file": "scepter_war_scepter.webp",
       "w": 80,
+      "h": 128
+    },
+    "Agent of the Light": {
+      "file": "scepter_scepter.webp",
+      "w": 35,
       "h": 128
     },
     "Judgement": {
@@ -2809,6 +4728,81 @@
       "w": 59,
       "h": 128
     },
+    "Zann Esu's Raiment": {
+      "file": "staff_short_staff.webp",
+      "w": 25,
+      "h": 128
+    },
+    "The Fradstik": {
+      "file": "staff_long_staff.webp",
+      "w": 26,
+      "h": 128
+    },
+    "Phenom's Rule": {
+      "file": "staff_gnarled_staff.webp",
+      "w": 29,
+      "h": 128
+    },
+    "Morquan's Aura": {
+      "file": "staff_battle_staff.webp",
+      "w": 28,
+      "h": 128
+    },
+    "Yoyo's Sanity": {
+      "file": "staff_war_staff.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Staff of the Horadrim": {
+      "file": "staff_short_staff.webp",
+      "w": 25,
+      "h": 128
+    },
+    "The Staff of Aesculapius": {
+      "file": "staff_long_staff.webp",
+      "w": 26,
+      "h": 128
+    },
+    "Doomspire": {
+      "file": "staff_gnarled_staff.webp",
+      "w": 29,
+      "h": 128
+    },
+    "The Staff of Erana": {
+      "file": "staff_battle_staff.webp",
+      "w": 28,
+      "h": 128
+    },
+    "Tal Rasha's Walking Stick": {
+      "file": "staff_skullcollector.webp",
+      "w": 49,
+      "h": 128
+    },
+    "Burning Sands": {
+      "file": "staff_short_staff.webp",
+      "w": 25,
+      "h": 128
+    },
+    "Magelord's Assistant": {
+      "file": "staff_long_staff.webp",
+      "w": 26,
+      "h": 128
+    },
+    "The Protector": {
+      "file": "staff_gnarled_staff.webp",
+      "w": 29,
+      "h": 128
+    },
+    "Dragon Staff": {
+      "file": "staff_battle_staff.webp",
+      "w": 28,
+      "h": 128
+    },
+    "Vizjereis' Knowledge": {
+      "file": "staff_skullcollector.webp",
+      "w": 49,
+      "h": 128
+    },
     "Umbar's Blade": {
       "file": "sword_short_sword.webp",
       "w": 31,
@@ -2820,8 +4814,8 @@
       "h": 98
     },
     "Tavern's Blade": {
-      "file": "sword_saber.webp",
-      "w": 39,
+      "file": "sword_krintizs_skewer.webp",
+      "w": 35,
       "h": 128
     },
     "Ironslice": {
@@ -2864,6 +4858,11 @@
       "w": 27,
       "h": 128
     },
+    "Gonnermouth's Blade": {
+      "file": "sword_bastard_sword.webp",
+      "w": 26,
+      "h": 128
+    },
     "Blizzard's Sword": {
       "file": "sword_flamberge.webp",
       "w": 52,
@@ -2880,8 +4879,8 @@
       "h": 128
     },
     "Scourge of the Twin Seas": {
-      "file": "sword_scimitar.webp",
-      "w": 33,
+      "file": "sword_blood_crescent.webp",
+      "w": 39,
       "h": 128
     },
     "Soulforge": {
@@ -2905,7 +4904,7 @@
       "h": 128
     },
     "Celestial Avenger": {
-      "file": "sword_long_sword.webp",
+      "file": "sword_plague_bearer.webp",
       "w": 64,
       "h": 128
     },
@@ -2929,6 +4928,11 @@
       "w": 27,
       "h": 128
     },
+    "Jeldaria's Focus": {
+      "file": "sword_bastard_sword.webp",
+      "w": 26,
+      "h": 128
+    },
     "Inarius' Fall": {
       "file": "sword_flamberge.webp",
       "w": 52,
@@ -2945,8 +4949,8 @@
       "h": 128
     },
     "Twinkle": {
-      "file": "sword_scimitar.webp",
-      "w": 33,
+      "file": "sword_blood_crescent.webp",
+      "w": 39,
       "h": 128
     },
     "Icing Death": {
@@ -3019,6 +5023,11 @@
       "w": 69,
       "h": 128
     },
+    "The Surgeon": {
+      "file": "knife_balanced_knife.webp",
+      "w": 59,
+      "h": 128
+    },
     "The Miner": {
       "file": "axe_balanced_axe.webp",
       "w": 125,
@@ -3034,6 +5043,11 @@
       "w": 69,
       "h": 128
     },
+    "The Hurricane": {
+      "file": "knife_balanced_knife.webp",
+      "w": 59,
+      "h": 128
+    },
     "Minotaur's Sidearm": {
       "file": "axe_balanced_axe.webp",
       "w": 125,
@@ -3047,6 +5061,11 @@
     "Dark Knight's Dread": {
       "file": "axe_throwing_axe.webp",
       "w": 69,
+      "h": 128
+    },
+    "Unicorn's Horn": {
+      "file": "knife_balanced_knife.webp",
+      "w": 59,
       "h": 128
     },
     "Hephasto's Last Project": {
@@ -3114,6 +5133,26 @@
       "w": 42,
       "h": 128
     },
+    "Fuego": {
+      "file": "bow_stag_bow.webp",
+      "w": 78,
+      "h": 128
+    },
+    "Scilla's Nimbleness": {
+      "file": "bow_reflex_bow.webp",
+      "w": 73,
+      "h": 128
+    },
+    "Kashya's Issue": {
+      "file": "bow_pullspite.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Fluffy Rabbit's Hare-y Javelin": {
+      "file": "javelin_maiden_javelin.webp",
+      "w": 52,
+      "h": 128
+    },
     "Rod of Zerae": {
       "file": "spear_maiden_spear.webp",
       "w": 34,
@@ -3124,6 +5163,26 @@
       "w": 57,
       "h": 128
     },
+    "Oxhorn": {
+      "file": "bow_stag_bow.webp",
+      "w": 78,
+      "h": 128
+    },
+    "Lycander's Aim": {
+      "file": "bow_reflex_bow.webp",
+      "w": 73,
+      "h": 128
+    },
+    "Robin Hood's Precision": {
+      "file": "bow_pullspite.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Titan's Revenge": {
+      "file": "javelin_maiden_javelin.webp",
+      "w": 52,
+      "h": 128
+    },
     "The Dragoon Shaft": {
       "file": "spear_maiden_spear.webp",
       "w": 34,
@@ -3132,6 +5191,26 @@
     "Lycander's Flank": {
       "file": "spear_maiden_pike.webp",
       "w": 57,
+      "h": 128
+    },
+    "Goldfinger": {
+      "file": "bow_stag_bow.webp",
+      "w": 78,
+      "h": 128
+    },
+    "Artemis' Wrath": {
+      "file": "bow_reflex_bow.webp",
+      "w": 73,
+      "h": 128
+    },
+    "Maija's Menace": {
+      "file": "bow_pullspite.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Zeus' Bolts": {
+      "file": "javelin_maiden_javelin.webp",
+      "w": 52,
       "h": 128
     },
     "Lightfoot": {
@@ -3154,6 +5233,26 @@
       "w": 46,
       "h": 128
     },
+    "Shadow Slice": {
+      "file": "h2h_hatchet_hands.webp",
+      "w": 75,
+      "h": 128
+    },
+    "Soulsear": {
+      "file": "h2h_hatchet_hands.webp",
+      "w": 75,
+      "h": 128
+    },
+    "Scratch of Persia": {
+      "file": "h2h_claws.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Threaded Spines": {
+      "file": "h2h_claws.webp",
+      "w": 45,
+      "h": 128
+    },
     "Royal Grapple": {
       "file": "h2h_scissors_katar.webp",
       "w": 45,
@@ -3174,6 +5273,26 @@
       "w": 46,
       "h": 128
     },
+    "Sparkmonger": {
+      "file": "h2h_hatchet_hands.webp",
+      "w": 75,
+      "h": 128
+    },
+    "Doom's Apprentice": {
+      "file": "h2h_hatchet_hands.webp",
+      "w": 75,
+      "h": 128
+    },
+    "Scratch of the Elements": {
+      "file": "h2h_claws.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Fangs of the King Cobra": {
+      "file": "h2h_claws.webp",
+      "w": 45,
+      "h": 128
+    },
     "Warpfist": {
       "file": "h2h_scissors_katar.webp",
       "w": 45,
@@ -3192,6 +5311,26 @@
     "Excalibria": {
       "file": "h2h_katar.webp",
       "w": 46,
+      "h": 128
+    },
+    "Polar Edge": {
+      "file": "h2h_hatchet_hands.webp",
+      "w": 75,
+      "h": 128
+    },
+    "The Freedom of Imprisonment": {
+      "file": "h2h_hatchet_hands.webp",
+      "w": 75,
+      "h": 128
+    },
+    "Raja's Majesty": {
+      "file": "h2h_claws.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Viz-Jaq'taar's Invention": {
+      "file": "h2h_claws.webp",
+      "w": 45,
       "h": 128
     },
     "Sleight of Hand": {
@@ -3309,9 +5448,59 @@
       "w": 30,
       "h": 128
     },
+    "Xiao Ji Ji": {
+      "file": "orb_eagle_orb.webp",
+      "w": 55,
+      "h": 128
+    },
+    "Cruel Heart": {
+      "file": "orb_sacred_globe.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Hell's Torment": {
+      "file": "orb_smoked_sphere.webp",
+      "w": 56,
+      "h": 128
+    },
+    "Drannor's Claw": {
+      "file": "orb_clasped_orb.webp",
+      "w": 53,
+      "h": 128
+    },
+    "Orb of the Red Dragon": {
+      "file": "orb_dragon_stone.webp",
+      "w": 45,
+      "h": 128
+    },
     "Infinite Thought": {
       "file": "sword_mana_blade.webp",
       "w": 59,
+      "h": 128
+    },
+    "Azimuth's Regard": {
+      "file": "orb_eagle_orb.webp",
+      "w": 55,
+      "h": 128
+    },
+    "Apocalypse Stone": {
+      "file": "orb_sacred_globe.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Magica Strife": {
+      "file": "orb_smoked_sphere.webp",
+      "w": 56,
+      "h": 128
+    },
+    "Auraura's Jewel": {
+      "file": "orb_clasped_orb.webp",
+      "w": 53,
+      "h": 128
+    },
+    "The Oculus": {
+      "file": "orb_dragon_stone.webp",
+      "w": 45,
       "h": 128
     },
     "The Secret of Mana": {
@@ -3319,9 +5508,49 @@
       "w": 59,
       "h": 128
     },
+    "Orb of the Horadrim": {
+      "file": "orb_eagle_orb.webp",
+      "w": 55,
+      "h": 128
+    },
+    "Wrath of Asmodeus": {
+      "file": "orb_sacred_globe.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Heart of the Succubi": {
+      "file": "orb_smoked_sphere.webp",
+      "w": 56,
+      "h": 128
+    },
+    "Baal's Eye": {
+      "file": "orb_clasped_orb.webp",
+      "w": 53,
+      "h": 128
+    },
+    "Spatial Distortion": {
+      "file": "orb_dragon_stone.webp",
+      "w": 45,
+      "h": 128
+    },
     "Blade of the Fallen Angel": {
       "file": "sword_mana_blade.webp",
       "w": 59,
+      "h": 128
+    },
+    "Cap of the Raven": {
+      "file": "helmet_war_bonnet.webp",
+      "w": 128,
+      "h": 121
+    },
+    "Warriors Coif": {
+      "file": "helmet_skull_cap.webp",
+      "w": 128,
+      "h": 111
+    },
+    "Obsidian Helm": {
+      "file": "helmet_coif_of_glory.webp",
+      "w": 96,
       "h": 128
     },
     "Sparhawk's Spirit": {
@@ -3344,9 +5573,29 @@
       "w": 104,
       "h": 128
     },
+    "Raging Wolf": {
+      "file": "helmet_great_helm.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Leoric's Rule": {
+      "file": "helmet_crown.webp",
+      "w": 91,
+      "h": 128
+    },
     "Crown of the Mountain King": {
       "file": "helmet_crown_of_thieves.webp",
       "w": 103,
+      "h": 128
+    },
+    "Cap of the Blessed": {
+      "file": "helmet_cap_hat.webp",
+      "w": 89,
+      "h": 128
+    },
+    "Knowledge": {
+      "file": "helmet_rockstopper.webp",
+      "w": 95,
       "h": 128
     },
     "The Eagle Helm": {
@@ -3360,8 +5609,8 @@
       "h": 114
     },
     "Veil of Steel": {
-      "file": "helmet_full_helm.webp",
-      "w": 95,
+      "file": "helmet_great_helm.webp",
+      "w": 70,
       "h": 128
     },
     "Burial Mask of Marduuk": {
@@ -3374,14 +5623,34 @@
       "w": 104,
       "h": 128
     },
+    "Gotterdammerung": {
+      "file": "helmet_great_helm.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Royal Circlet": {
+      "file": "helmet_crown.webp",
+      "w": 91,
+      "h": 128
+    },
     "Dwarven Spirits": {
       "file": "helmet_crown_of_thieves.webp",
       "w": 103,
       "h": 128
     },
+    "Servant's Leathers": {
+      "file": "helmet_cap_hat.webp",
+      "w": 89,
+      "h": 128
+    },
     "Beowulf's Mask": {
       "file": "helmet_beowulf_mask.webp",
       "w": 90,
+      "h": 128
+    },
+    "Golem Shell": {
+      "file": "helmet_coif_of_glory.webp",
+      "w": 96,
       "h": 128
     },
     "Arthur's Crown": {
@@ -3404,6 +5673,16 @@
       "w": 104,
       "h": 128
     },
+    "Spirit of Genghis Khan": {
+      "file": "helmet_great_helm.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Arreat's Faceplate": {
+      "file": "helmet_crown.webp",
+      "w": 91,
+      "h": 128
+    },
     "Bruenor's Cranium": {
       "file": "circlet_bruenors_cranium.webp",
       "w": 128,
@@ -3419,9 +5698,49 @@
       "w": 82,
       "h": 128
     },
+    "Gecko's Leather": {
+      "file": "armor_leather_armor.webp",
+      "w": 110,
+      "h": 128
+    },
+    "Ragegarb": {
+      "file": "armor_hard_leather_armor.webp",
+      "w": 119,
+      "h": 128
+    },
+    "Rathma's Protector": {
+      "file": "armor_studded_leather.webp",
+      "w": 83,
+      "h": 128
+    },
+    "Mail of the Shadows": {
+      "file": "armor_ring_mail.webp",
+      "w": 112,
+      "h": 128
+    },
+    "Fearless Garb": {
+      "file": "armor_scale_mail.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Mail of the Sun": {
+      "file": "armor_chain_mail.webp",
+      "w": 84,
+      "h": 128
+    },
+    "Rasputin's Chestplate": {
+      "file": "armor_breast_plate.webp",
+      "w": 93,
+      "h": 128
+    },
     "Darkmage's Robe": {
       "file": "armor_cape.webp",
       "w": 64,
+      "h": 128
+    },
+    "Krujoy's Mail": {
+      "file": "armor_splint_mail.webp",
+      "w": 92,
       "h": 128
     },
     "Flashpoint Armor": {
@@ -3434,6 +5753,11 @@
       "w": 90,
       "h": 128
     },
+    "Plate of Spikes": {
+      "file": "armor_gothic_plate.webp",
+      "w": 75,
+      "h": 128
+    },
     "Frozen Soulbearer": {
       "file": "armor_frozen_soulbearer.webp",
       "w": 81,
@@ -3444,9 +5768,19 @@
       "w": 128,
       "h": 78
     },
+    "Lightbringer's Revenge": {
+      "file": "armor_full_plate_mail.webp",
+      "w": 79,
+      "h": 128
+    },
     "Corrupted Sanctuary": {
       "file": "armor_elven_chain.webp",
       "w": 79,
+      "h": 128
+    },
+    "Steel of Legends": {
+      "file": "armor_ancient_armor.webp",
+      "w": 93,
       "h": 128
     },
     "Shroud of Azalin": {
@@ -3459,6 +5793,16 @@
       "w": 83,
       "h": 128
     },
+    "Black Armor": {
+      "file": "armor_leather_armor.webp",
+      "w": 110,
+      "h": 128
+    },
+    "Demon Skin": {
+      "file": "armor_hard_leather_armor.webp",
+      "w": 119,
+      "h": 128
+    },
     "Palashia's Defense": {
       "file": "armor_palashia_defense.webp",
       "w": 68,
@@ -3469,9 +5813,19 @@
       "w": 87,
       "h": 128
     },
+    "Ancient Guardian": {
+      "file": "armor_scale_mail.webp",
+      "w": 127,
+      "h": 128
+    },
     "Armor of the Wind": {
       "file": "armor_armor_of_the_wind.webp",
       "w": 96,
+      "h": 128
+    },
+    "Scarab Demon Carapace": {
+      "file": "armor_breast_plate.webp",
+      "w": 93,
       "h": 128
     },
     "Wisdom's Wrap": {
@@ -3479,10 +5833,25 @@
       "w": 64,
       "h": 128
     },
+    "Mountain's Skin": {
+      "file": "armor_splint_mail.webp",
+      "w": 92,
+      "h": 128
+    },
     "Arkaine's Valor": {
-      "file": "armor_plate_mail.webp",
-      "w": 128,
-      "h": 121
+      "file": "armor_splint_mail.webp",
+      "w": 92,
+      "h": 128
+    },
+    "Armor of the Deep": {
+      "file": "armor_field_plate.webp",
+      "w": 83,
+      "h": 128
+    },
+    "Piotyr's Plate": {
+      "file": "armor_gothic_plate.webp",
+      "w": 75,
+      "h": 128
     },
     "Templar Protector": {
       "file": "armor_light_plate.webp",
@@ -3494,14 +5863,59 @@
       "w": 128,
       "h": 78
     },
+    "Armor of the Dragon Mage": {
+      "file": "armor_full_plate_mail.webp",
+      "w": 79,
+      "h": 128
+    },
     "Drizzt's Mithril": {
       "file": "armor_elven_chain.webp",
       "w": 79,
       "h": 128
     },
+    "Demonspike Coat": {
+      "file": "armor_ancient_armor.webp",
+      "w": 93,
+      "h": 128
+    },
     "Lothar's Cape": {
       "file": "armor_cloak.webp",
       "w": 75,
+      "h": 128
+    },
+    "Nightscape": {
+      "file": "armor_quilted_armor.webp",
+      "w": 96,
+      "h": 128
+    },
+    "Cottonmouth Jacket": {
+      "file": "armor_leather_armor.webp",
+      "w": 110,
+      "h": 128
+    },
+    "Hellrust": {
+      "file": "armor_hard_leather_armor.webp",
+      "w": 119,
+      "h": 128
+    },
+    "Brilliance": {
+      "file": "armor_studded_leather.webp",
+      "w": 83,
+      "h": 128
+    },
+    "Chains of Binding": {
+      "file": "armor_ring_mail.webp",
+      "w": 112,
+      "h": 128
+    },
+    "Acero Frio": {
+      "file": "armor_scale_mail.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Vulcanguard": {
+      "file": "armor_chain_mail.webp",
+      "w": 84,
       "h": 128
     },
     "Atlastrust": {
@@ -3514,6 +5928,11 @@
       "w": 80,
       "h": 128
     },
+    "Hellforge's Finest": {
+      "file": "armor_splint_mail.webp",
+      "w": 92,
+      "h": 128
+    },
     "Blanchwood Vest": {
       "file": "armor_blanchwood_vest.webp",
       "w": 85,
@@ -3522,6 +5941,11 @@
     "Aakta's Defense": {
       "file": "armor_aaktas_defense.webp",
       "w": 86,
+      "h": 128
+    },
+    "Leoric's Plate": {
+      "file": "armor_gothic_plate.webp",
+      "w": 75,
       "h": 128
     },
     "Robes of Power": {
@@ -3544,14 +5968,29 @@
       "w": 79,
       "h": 128
     },
+    "The Guardian of Time": {
+      "file": "armor_victors_silk.webp",
+      "w": 92,
+      "h": 128
+    },
+    "Romanary Pelt": {
+      "file": "shield_pelta_lunata.webp",
+      "w": 112,
+      "h": 128
+    },
     "Stargate": {
       "file": "shield_umbral_disk.webp",
       "w": 113,
       "h": 128
     },
     "Mercenary's Brace": {
-      "file": "shield_large_shield.webp",
-      "w": 106,
+      "file": "shield_stormguild.webp",
+      "w": 110,
+      "h": 128
+    },
+    "Spikes of Rajamir": {
+      "file": "shield_swordback_hold.webp",
+      "w": 91,
       "h": 128
     },
     "Raven's Shield": {
@@ -3564,9 +6003,24 @@
       "w": 84,
       "h": 128
     },
+    "Stormwynd's Mania": {
+      "file": "shield_bverrit_keep.webp",
+      "w": 59,
+      "h": 128
+    },
     "Phrozen Heart": {
       "file": "shield_phrozen_heart.webp",
       "w": 83,
+      "h": 128
+    },
+    "Defender of Justice": {
+      "file": "shield_the_ward.webp",
+      "w": 45,
+      "h": 128
+    },
+    "The Deflector": {
+      "file": "shield_pelta_lunata.webp",
+      "w": 112,
       "h": 128
     },
     "Karcheus' Ward": {
@@ -3577,6 +6031,11 @@
     "The Face of the Sun": {
       "file": "shield_stormchaser.webp",
       "w": 118,
+      "h": 128
+    },
+    "Spikewall": {
+      "file": "shield_lance_guard.webp",
+      "w": 89,
       "h": 128
     },
     "The Shield of Pain": {
@@ -3599,6 +6058,16 @@
       "w": 90,
       "h": 128
     },
+    "Mithril Shield": {
+      "file": "shield_the_ward.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Lady Raven's Power": {
+      "file": "shield_pelta_lunata.webp",
+      "w": 112,
+      "h": 128
+    },
     "Elzix's Treasure": {
       "file": "shield_mosers_blessed_circle.webp",
       "w": 121,
@@ -3607,6 +6076,11 @@
     "Cyclop's Protector": {
       "file": "shield_cyclop_protector.webp",
       "w": 73,
+      "h": 128
+    },
+    "The Seduction of Pain": {
+      "file": "shield_swordback_hold.webp",
+      "w": 91,
       "h": 128
     },
     "Dragon's Breach": {
@@ -3619,10 +6093,30 @@
       "w": 95,
       "h": 128
     },
+    "The Barricade": {
+      "file": "shield_bverrit_keep.webp",
+      "w": 59,
+      "h": 128
+    },
     "Guardian Angel": {
       "file": "shield_fortress_shield.webp",
       "w": 90,
       "h": 128
+    },
+    "Stonewall": {
+      "file": "shield_the_ward.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Leather of Luck": {
+      "file": "glove_gloves_l.webp",
+      "w": 128,
+      "h": 110
+    },
+    "Hand of Grog": {
+      "file": "glove_heavy_gloves.webp",
+      "w": 128,
+      "h": 108
     },
     "Gloves of Firebrand": {
       "file": "glove_bracers_m.webp",
@@ -3644,6 +6138,16 @@
       "w": 126,
       "h": 128
     },
+    "Hands of the Assassin": {
+      "file": "glove_gloves_l.webp",
+      "w": 128,
+      "h": 110
+    },
+    "Gloves of Nor Tiraj": {
+      "file": "glove_heavy_gloves.webp",
+      "w": 128,
+      "h": 108
+    },
     "Shiva's Touch": {
       "file": "glove_bracers_m.webp",
       "w": 128,
@@ -3664,6 +6168,16 @@
       "w": 126,
       "h": 128
     },
+    "Gloves of the Dark Mage": {
+      "file": "glove_gloves_l.webp",
+      "w": 128,
+      "h": 110
+    },
+    "The Hands of Atlas": {
+      "file": "glove_heavy_gloves.webp",
+      "w": 128,
+      "h": 108
+    },
     "Death's Grip": {
       "file": "glove_bracers_m.webp",
       "w": 128,
@@ -3682,6 +6196,16 @@
     "Greiz's Legion": {
       "file": "glove_iron_guards.webp",
       "w": 126,
+      "h": 128
+    },
+    "Boots of Firewalk": {
+      "file": "boot_leather_boots.webp",
+      "w": 128,
+      "h": 113
+    },
+    "Icelander's Wear": {
+      "file": "boot_heavy_boots.webp",
+      "w": 117,
       "h": 128
     },
     "Orcish Walkgarb": {
@@ -3704,6 +6228,16 @@
       "w": 113,
       "h": 128
     },
+    "Demonspeed": {
+      "file": "boot_leather_boots.webp",
+      "w": 128,
+      "h": 113
+    },
+    "Flickerheel": {
+      "file": "boot_heavy_boots.webp",
+      "w": 117,
+      "h": 128
+    },
     "Chillcobble": {
       "file": "boot_chain_boots.webp",
       "w": 121,
@@ -3722,6 +6256,16 @@
     "Wren's Reinforced Tech Boots": {
       "file": "boot_crystal_boots.webp",
       "w": 113,
+      "h": 128
+    },
+    "Heart of the Moon": {
+      "file": "boot_leather_boots.webp",
+      "w": 128,
+      "h": 113
+    },
+    "Boots of the Serpent": {
+      "file": "boot_heavy_boots.webp",
+      "w": 117,
       "h": 128
     },
     "Boots of Aether": {
@@ -3744,6 +6288,26 @@
       "w": 113,
       "h": 128
     },
+    "Imperial Sash": {
+      "file": "belt_sash_l.webp",
+      "w": 128,
+      "h": 58
+    },
+    "Raimen's Belt of Fear": {
+      "file": "belt_light_belt.webp",
+      "w": 128,
+      "h": 48
+    },
+    "Glowharness": {
+      "file": "belt_belt_m.webp",
+      "w": 128,
+      "h": 56
+    },
+    "Blustone's Belt": {
+      "file": "belt_heavy_belt.webp",
+      "w": 128,
+      "h": 62
+    },
     "Harness of the Gods": {
       "file": "belt_girdle_h.webp",
       "w": 128,
@@ -3753,6 +6317,26 @@
       "file": "belt_muscle_wrap.webp",
       "w": 128,
       "h": 61
+    },
+    "Smiles of Fortune": {
+      "file": "belt_sash_l.webp",
+      "w": 128,
+      "h": 58
+    },
+    "Rumour of Pain": {
+      "file": "belt_light_belt.webp",
+      "w": 128,
+      "h": 48
+    },
+    "Strap of Cythys": {
+      "file": "belt_belt_m.webp",
+      "w": 128,
+      "h": 56
+    },
+    "Battlecharge": {
+      "file": "belt_heavy_belt.webp",
+      "w": 128,
+      "h": 62
     },
     "Timeloop": {
       "file": "belt_girdle_h.webp",
@@ -3764,6 +6348,26 @@
       "w": 128,
       "h": 61
     },
+    "Blazeband": {
+      "file": "belt_sash_l.webp",
+      "w": 128,
+      "h": 58
+    },
+    "Band of Constriction": {
+      "file": "belt_light_belt.webp",
+      "w": 128,
+      "h": 48
+    },
+    "Laertes' Treasure": {
+      "file": "belt_belt_m.webp",
+      "w": 128,
+      "h": 56
+    },
+    "Spartacus' Defense": {
+      "file": "belt_heavy_belt.webp",
+      "w": 128,
+      "h": 62
+    },
     "Girdle of Giant Strength": {
       "file": "belt_girdle_h.webp",
       "w": 128,
@@ -3774,6 +6378,16 @@
       "w": 128,
       "h": 61
     },
+    "Hinge of Sinnew": {
+      "file": "helmet_jawbone_cap.webp",
+      "w": 128,
+      "h": 127
+    },
+    "Crusheye": {
+      "file": "helmet_fanged_helm.webp",
+      "w": 122,
+      "h": 128
+    },
     "The Raging Bull": {
       "file": "helmet_horned_helm.webp",
       "w": 71,
@@ -3782,6 +6396,21 @@
     "Army of One": {
       "file": "helmet_assault_helmet.webp",
       "w": 104,
+      "h": 128
+    },
+    "The Augmentor": {
+      "file": "helmet_avenger_guard.webp",
+      "w": 92,
+      "h": 128
+    },
+    "Helm of the Dead King": {
+      "file": "helmet_jawbone_cap.webp",
+      "w": 128,
+      "h": 127
+    },
+    "Savannah's Pride": {
+      "file": "helmet_fanged_helm.webp",
+      "w": 122,
       "h": 128
     },
     "The Crimson Faceplate": {
@@ -3795,8 +6424,18 @@
       "h": 128
     },
     "Arreat's Face": {
-      "file": "helmet_assault_helmet.webp",
-      "w": 104,
+      "file": "helmet_avenger_guard.webp",
+      "w": 92,
+      "h": 128
+    },
+    "Coldfist's Icy Stare": {
+      "file": "helmet_jawbone_cap.webp",
+      "w": 128,
+      "h": 127
+    },
+    "Adrenaline Rush": {
+      "file": "helmet_fanged_helm.webp",
+      "w": 122,
       "h": 128
     },
     "Wyrm's Wrap": {
@@ -3809,9 +6448,59 @@
       "w": 104,
       "h": 128
     },
+    "The Ancients' Blessing": {
+      "file": "helmet_avenger_guard.webp",
+      "w": 92,
+      "h": 128
+    },
+    "Fang's Valor": {
+      "file": "pelt_wolf_head.webp",
+      "w": 123,
+      "h": 128
+    },
+    "Shadow Crow": {
+      "file": "pelt_hawk_helm.webp",
+      "w": 89,
+      "h": 128
+    },
+    "Alizee's Flaming Horns": {
+      "file": "pelt_antlers.webp",
+      "w": 128,
+      "h": 125
+    },
+    "Razor Beak": {
+      "file": "pelt_falcon_mask.webp",
+      "w": 88,
+      "h": 128
+    },
+    "Starwolf's Facade": {
+      "file": "pelt_spirit_mask.webp",
+      "w": 123,
+      "h": 128
+    },
+    "Con Dar Warpaint": {
+      "file": "pelt_wolf_head.webp",
+      "w": 123,
+      "h": 128
+    },
     "Ravenlord": {
       "file": "helmet_ravenlord.webp",
       "w": 121,
+      "h": 128
+    },
+    "Horns of Allesthir": {
+      "file": "pelt_antlers.webp",
+      "w": 128,
+      "h": 125
+    },
+    "Phoenix Tail": {
+      "file": "pelt_falcon_mask.webp",
+      "w": 88,
+      "h": 128
+    },
+    "Jalal's Mane": {
+      "file": "pelt_spirit_mask.webp",
+      "w": 123,
       "h": 128
     },
     "Necromancer's Essense": {
@@ -3824,9 +6513,24 @@
       "w": 117,
       "h": 128
     },
+    "Tetonic Horns": {
+      "file": "pelt_antlers.webp",
+      "w": 128,
+      "h": 125
+    },
+    "Aire Libre": {
+      "file": "pelt_falcon_mask.webp",
+      "w": 88,
+      "h": 128
+    },
     "Beast of the Night": {
       "file": "helmet_beast_of_the_night.webp",
       "w": 92,
+      "h": 128
+    },
+    "Wirt's Skull": {
+      "file": "voodoo_head_preserved_head.webp",
+      "w": 112,
       "h": 128
     },
     "Corpsefire's Head": {
@@ -3837,6 +6541,66 @@
     "Radament's Rotting Skull": {
       "file": "shield_radaments_skull.webp",
       "w": 90,
+      "h": 128
+    },
+    "Pitspawn's Gaze": {
+      "file": "voodoo_head_gargoyle_head.webp",
+      "w": 106,
+      "h": 128
+    },
+    "Andariel's Face": {
+      "file": "voodoo_head_demon_head.webp",
+      "w": 109,
+      "h": 128
+    },
+    "Ancient Kaa's Soul": {
+      "file": "voodoo_head_preserved_head.webp",
+      "w": 112,
+      "h": 128
+    },
+    "Red Death's Madness": {
+      "file": "voodoo_head_zombie_head.webp",
+      "w": 122,
+      "h": 128
+    },
+    "The Grim Compass": {
+      "file": "voodoo_head_unraveller_head.webp",
+      "w": 128,
+      "h": 126
+    },
+    "Disturbing Visions": {
+      "file": "voodoo_head_gargoyle_head.webp",
+      "w": 106,
+      "h": 128
+    },
+    "Homunculus": {
+      "file": "voodoo_head_demon_head.webp",
+      "w": 109,
+      "h": 128
+    },
+    "Splitskull Shield": {
+      "file": "voodoo_head_preserved_head.webp",
+      "w": 112,
+      "h": 128
+    },
+    "Head of the Cerberus": {
+      "file": "voodoo_head_zombie_head.webp",
+      "w": 122,
+      "h": 128
+    },
+    "Shenk's Mask": {
+      "file": "voodoo_head_unraveller_head.webp",
+      "w": 128,
+      "h": 126
+    },
+    "Winged Embrace": {
+      "file": "voodoo_head_gargoyle_head.webp",
+      "w": 106,
+      "h": 128
+    },
+    "Dracula's Wit": {
+      "file": "voodoo_head_demon_head.webp",
+      "w": 109,
       "h": 128
     },
     "Dogma": {
@@ -3912,6 +6676,81 @@
     "Black Hole": {
       "file": "shield_black_hole.webp",
       "w": 125,
+      "h": 128
+    },
+    "Tome of Nightmares": {
+      "file": "grimoires_oldbook.webp",
+      "w": 103,
+      "h": 128
+    },
+    "Hidden Knowledge": {
+      "file": "grimoires_tome_book.webp",
+      "w": 103,
+      "h": 128
+    },
+    "Searing Rites": {
+      "file": "grimoires_codex.webp",
+      "w": 104,
+      "h": 128
+    },
+    "Paper Cuts": {
+      "file": "grimoires_compendium.webp",
+      "w": 108,
+      "h": 128
+    },
+    "Book of Mirrors": {
+      "file": "grimoires_grimoire.webp",
+      "w": 103,
+      "h": 128
+    },
+    "Spark of Death": {
+      "file": "grimoires_oldbook.webp",
+      "w": 103,
+      "h": 128
+    },
+    "Word of Malediction": {
+      "file": "grimoires_tome_book.webp",
+      "w": 103,
+      "h": 128
+    },
+    "Voice of the Abyss": {
+      "file": "grimoires_codex.webp",
+      "w": 104,
+      "h": 128
+    },
+    "Stillness of the Heart": {
+      "file": "grimoires_compendium.webp",
+      "w": 108,
+      "h": 128
+    },
+    "Triune's Last Resort": {
+      "file": "grimoires_grimoire.webp",
+      "w": 103,
+      "h": 128
+    },
+    "Voidrend": {
+      "file": "grimoires_oldbook.webp",
+      "w": 103,
+      "h": 128
+    },
+    "Litany of Scorched Earth": {
+      "file": "grimoires_tome_book.webp",
+      "w": 103,
+      "h": 128
+    },
+    "Chains of the Damned": {
+      "file": "grimoires_codex.webp",
+      "w": 104,
+      "h": 128
+    },
+    "Tabula Rasa": {
+      "file": "grimoires_compendium.webp",
+      "w": 108,
+      "h": 128
+    },
+    "The Grand Sacrifice": {
+      "file": "grimoires_grimoire.webp",
+      "w": 103,
       "h": 128
     },
     "Sightless Archer": {
@@ -4029,6 +6868,16 @@
       "w": 64,
       "h": 128
     },
+    "Felloak": {
+      "file": "club_felloak.webp",
+      "w": 41,
+      "h": 128
+    },
+    "Knell Striker": {
+      "file": "scepter_scepter.webp",
+      "w": 35,
+      "h": 128
+    },
     "Rusthandle": {
       "file": "scepter_grand_scepter.webp",
       "w": 39,
@@ -4037,6 +6886,11 @@
     "Stormeye": {
       "file": "scepter_war_scepter.webp",
       "w": 80,
+      "h": 128
+    },
+    "Stoutnail": {
+      "file": "club_stoutnail.webp",
+      "w": 47,
       "h": 128
     },
     "Crushflange": {
@@ -4060,8 +6914,13 @@
       "h": 128
     },
     "Bonesnap": {
-      "file": "hammer_maul.webp",
-      "w": 52,
+      "file": "hammer_bonesob.webp",
+      "w": 50,
+      "h": 128
+    },
+    "Steeldriver": {
+      "file": "hammer_great_maul.webp",
+      "w": 68,
       "h": 128
     },
     "Rixot's Keen": {
@@ -4070,18 +6929,23 @@
       "h": 128
     },
     "Blood Crescent": {
-      "file": "sword_scimitar.webp",
-      "w": 33,
+      "file": "sword_blood_crescent.webp",
+      "w": 39,
       "h": 128
     },
     "Skewer of Krintiz": {
-      "file": "sword_saber.webp",
-      "w": 39,
+      "file": "sword_krintizs_skewer.webp",
+      "w": 35,
       "h": 128
     },
     "Gleamscythe": {
       "file": "sword_gleamscythe.webp",
       "w": 45,
+      "h": 128
+    },
+    "Azurewrath_old": {
+      "file": "sword_crystal_sword.webp",
+      "w": 71,
       "h": 128
     },
     "Griswold's Edge": {
@@ -4139,6 +7003,11 @@
       "w": 60,
       "h": 128
     },
+    "The Jade Tan Do": {
+      "file": "knife_the_jade_tan_do.webp",
+      "w": 43,
+      "h": 128
+    },
     "Spectral Shard": {
       "file": "knife_blade.webp",
       "w": 36,
@@ -4174,6 +7043,11 @@
       "w": 54,
       "h": 128
     },
+    "Steelgoad": {
+      "file": "polearm_voulge.webp",
+      "w": 56,
+      "h": 128
+    },
     "Soul Harvest": {
       "file": "polearm_soul_harvest.webp",
       "w": 70,
@@ -4194,6 +7068,106 @@
       "w": 62,
       "h": 128
     },
+    "Bane Ash": {
+      "file": "staff_short_staff.webp",
+      "w": 25,
+      "h": 128
+    },
+    "Serpent Lord": {
+      "file": "staff_long_staff.webp",
+      "w": 26,
+      "h": 128
+    },
+    "Spire of Lazarus": {
+      "file": "staff_lazarus_spire.webp",
+      "w": 31,
+      "h": 128
+    },
+    "The Salamander": {
+      "file": "staff_battle_staff.webp",
+      "w": 28,
+      "h": 128
+    },
+    "The Iron Jang Bong": {
+      "file": "staff_war_staff.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Pluckeye": {
+      "file": "bow_short_bow.webp",
+      "w": 86,
+      "h": 128
+    },
+    "Witherstring": {
+      "file": "bow_hunters_bow.webp",
+      "w": 84,
+      "h": 128
+    },
+    "Raven Claw": {
+      "file": "bow_long_bow.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Rogue's Bow": {
+      "file": "bow_piercerib.webp",
+      "w": 77,
+      "h": 128
+    },
+    "Stormstrike": {
+      "file": "bow_pullspite.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Wizendraw": {
+      "file": "bow_long_battle_bow.webp",
+      "w": 63,
+      "h": 128
+    },
+    "Hellclap": {
+      "file": "bow_hellclap.webp",
+      "w": 76,
+      "h": 128
+    },
+    "Blastbark": {
+      "file": "bow_long_war_bow.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Leadcrow": {
+      "file": "bow_leadcrow.webp",
+      "w": 72,
+      "h": 128
+    },
+    "Ichorsting": {
+      "file": "bow_ichorsting.webp",
+      "w": 76,
+      "h": 128
+    },
+    "Hellcast": {
+      "file": "bow_hellcast.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Doomslinger": {
+      "file": "bow_doomspittle.webp",
+      "w": 65,
+      "h": 128
+    },
+    "Biggin's Bonnet": {
+      "file": "helmet_war_bonnet.webp",
+      "w": 128,
+      "h": 121
+    },
+    "Tarnhelm": {
+      "file": "helmet_skull_cap.webp",
+      "w": 128,
+      "h": 111
+    },
+    "Coif of Glory": {
+      "file": "helmet_coif_of_glory.webp",
+      "w": 96,
+      "h": 128
+    },
     "Duskdeep": {
       "file": "helmet_duskdeep.webp",
       "w": 88,
@@ -4204,24 +7178,99 @@
       "w": 104,
       "h": 128
     },
+    "Howltusk": {
+      "file": "helmet_great_helm.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Undead Crown": {
+      "file": "helmet_crown.webp",
+      "w": 91,
+      "h": 128
+    },
     "The Face of Horror": {
       "file": "helmet_mask.webp",
       "w": 128,
       "h": 110
+    },
+    "Greyform": {
+      "file": "armor_quilted_armor.webp",
+      "w": 96,
+      "h": 128
+    },
+    "Blinkbat's Form": {
+      "file": "armor_leather_armor.webp",
+      "w": 110,
+      "h": 128
+    },
+    "The Centurion": {
+      "file": "armor_hard_leather_armor.webp",
+      "w": 119,
+      "h": 128
+    },
+    "Twitchthroe": {
+      "file": "armor_studded_leather.webp",
+      "w": 83,
+      "h": 128
+    },
+    "Darkglow": {
+      "file": "armor_ring_mail.webp",
+      "w": 112,
+      "h": 128
+    },
+    "Hawkmail": {
+      "file": "armor_scale_mail.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Sparking Mail": {
+      "file": "armor_chain_mail.webp",
+      "w": 84,
+      "h": 128
+    },
+    "Venom Ward": {
+      "file": "armor_breast_plate.webp",
+      "w": 93,
+      "h": 128
+    },
+    "Iceblink": {
+      "file": "armor_splint_mail.webp",
+      "w": 92,
+      "h": 128
     },
     "Boneflesh": {
       "file": "armor_plate_mail.webp",
       "w": 128,
       "h": 121
     },
+    "Rockfleece": {
+      "file": "armor_field_plate.webp",
+      "w": 83,
+      "h": 128
+    },
+    "Rattlecage": {
+      "file": "armor_gothic_plate.webp",
+      "w": 75,
+      "h": 128
+    },
     "Goldskin": {
       "file": "armor_goldskin.webp",
       "w": 88,
       "h": 128
     },
+    "Silks of the Victor": {
+      "file": "armor_victors_silk.webp",
+      "w": 92,
+      "h": 128
+    },
     "Heavenly Garb": {
       "file": "armor_light_plate.webp",
       "w": 94,
+      "h": 128
+    },
+    "Pelta Lunata": {
+      "file": "shield_pelta_lunata.webp",
+      "w": 112,
       "h": 128
     },
     "Umbral Disk": {
@@ -4230,8 +7279,8 @@
       "h": 128
     },
     "Stormguild": {
-      "file": "shield_large_shield.webp",
-      "w": 106,
+      "file": "shield_stormguild.webp",
+      "w": 110,
       "h": 128
     },
     "Wall of the Eyeless": {
@@ -4239,10 +7288,35 @@
       "w": 98,
       "h": 128
     },
+    "Swordback Hold": {
+      "file": "shield_swordback_hold.webp",
+      "w": 91,
+      "h": 128
+    },
     "Steelclash": {
       "file": "shield_steelclash.webp",
       "w": 85,
       "h": 128
+    },
+    "Bverrit Keep": {
+      "file": "shield_bverrit_keep.webp",
+      "w": 59,
+      "h": 128
+    },
+    "The Ward": {
+      "file": "shield_the_ward.webp",
+      "w": 45,
+      "h": 128
+    },
+    "The Hand of Broc": {
+      "file": "glove_gloves_l.webp",
+      "w": 128,
+      "h": 110
+    },
+    "Bloodfist": {
+      "file": "glove_heavy_gloves.webp",
+      "w": 128,
+      "h": 108
     },
     "Chance Guards": {
       "file": "glove_bracers_m.webp",
@@ -4259,6 +7333,16 @@
       "w": 127,
       "h": 128
     },
+    "Hotspur": {
+      "file": "boot_leather_boots.webp",
+      "w": 128,
+      "h": 113
+    },
+    "Gorefoot": {
+      "file": "boot_heavy_boots.webp",
+      "w": 117,
+      "h": 128
+    },
     "Treads of Cthon": {
       "file": "boot_chain_boots.webp",
       "w": 121,
@@ -4273,6 +7357,26 @@
       "file": "boot_plate_boots.webp",
       "w": 113,
       "h": 128
+    },
+    "Lenymo": {
+      "file": "belt_sash_l.webp",
+      "w": 128,
+      "h": 58
+    },
+    "Snakecord": {
+      "file": "belt_light_belt.webp",
+      "w": 128,
+      "h": 48
+    },
+    "Nightsmoke": {
+      "file": "belt_belt_m.webp",
+      "w": 128,
+      "h": 56
+    },
+    "Goldwrap": {
+      "file": "belt_heavy_belt.webp",
+      "w": 128,
+      "h": 62
     },
     "Bladebuckle": {
       "file": "belt_girdle_h.webp",
@@ -4379,6 +7483,16 @@
       "w": 42,
       "h": 128
     },
+    "Dark Clan Crusher": {
+      "file": "club_felloak.webp",
+      "w": 41,
+      "h": 128
+    },
+    "Zakarum's Hand": {
+      "file": "scepter_scepter.webp",
+      "w": 35,
+      "h": 128
+    },
     "The Fetid Sprinkler": {
       "file": "scepter_grand_scepter.webp",
       "w": 39,
@@ -4387,6 +7501,11 @@
     "Hand of Blessed Light": {
       "file": "scepter_war_scepter.webp",
       "w": 80,
+      "h": 128
+    },
+    "Fleshrender": {
+      "file": "club_stoutnail.webp",
+      "w": 47,
       "h": 128
     },
     "Sureshrill Frost": {
@@ -4414,14 +7533,19 @@
       "w": 52,
       "h": 128
     },
+    "The Gavel of Pain": {
+      "file": "hammer_the_gavel_of_pain.webp",
+      "w": 75,
+      "h": 128
+    },
     "Bloodletter": {
       "file": "sword_short_sword.webp",
       "w": 31,
       "h": 128
     },
     "Coldsteel Eye": {
-      "file": "sword_scimitar.webp",
-      "w": 33,
+      "file": "sword_blood_crescent.webp",
+      "w": 39,
       "h": 128
     },
     "Hexfire": {
@@ -4445,7 +7569,7 @@
       "h": 128
     },
     "Plague Bearer": {
-      "file": "sword_long_sword.webp",
+      "file": "sword_plague_bearer.webp",
       "w": 64,
       "h": 128
     },
@@ -4475,8 +7599,8 @@
       "h": 128
     },
     "Todesfaelle Flamme": {
-      "file": "sword_flamberge.webp",
-      "w": 52,
+      "file": "sword_todesfaelle_flamme.webp",
+      "w": 50,
       "h": 128
     },
     "Swordguard": {
@@ -4492,6 +7616,11 @@
     "Heart Carver": {
       "file": "knife_dirk.webp",
       "w": 60,
+      "h": 128
+    },
+    "Blackbog's Sharp": {
+      "file": "knife_the_jade_tan_do.webp",
+      "w": 43,
       "h": 128
     },
     "Stormspike": {
@@ -4529,9 +7658,14 @@
       "w": 54,
       "h": 128
     },
+    "Blackleach Blade": {
+      "file": "polearm_voulge.webp",
+      "w": 56,
+      "h": 128
+    },
     "Athena's Wrath": {
-      "file": "polearm_scythe.webp",
-      "w": 54,
+      "file": "polearm_athenas_wrath.webp",
+      "w": 67,
       "h": 128
     },
     "Pierre Tombale Couant": {
@@ -4549,14 +7683,114 @@
       "w": 62,
       "h": 128
     },
+    "Razorswitch": {
+      "file": "staff_short_staff.webp",
+      "w": 25,
+      "h": 128
+    },
+    "Ribcracker": {
+      "file": "staff_long_staff.webp",
+      "w": 26,
+      "h": 128
+    },
+    "Chromatic Ire": {
+      "file": "staff_lazarus_spire.webp",
+      "w": 31,
+      "h": 128
+    },
+    "Warpspear": {
+      "file": "staff_battle_staff.webp",
+      "w": 28,
+      "h": 128
+    },
+    "Skull Collector": {
+      "file": "staff_skullcollector.webp",
+      "w": 49,
+      "h": 128
+    },
+    "Skystrike": {
+      "file": "bow_short_bow.webp",
+      "w": 86,
+      "h": 128
+    },
+    "Riphook": {
+      "file": "bow_hunters_bow.webp",
+      "w": 84,
+      "h": 128
+    },
+    "Kuko Shakaku": {
+      "file": "bow_kuko_shakaku.webp",
+      "w": 61,
+      "h": 128
+    },
+    "Endlesshail": {
+      "file": "bow_piercerib.webp",
+      "w": 77,
+      "h": 128
+    },
+    "Witchwild String": {
+      "file": "bow_whichwild_string.webp",
+      "w": 77,
+      "h": 128
+    },
+    "Cliffkiller": {
+      "file": "bow_long_battle_bow.webp",
+      "w": 63,
+      "h": 128
+    },
+    "Magewrath": {
+      "file": "bow_hellclap.webp",
+      "w": 76,
+      "h": 128
+    },
+    "Goldstrike Arch": {
+      "file": "bow_long_war_bow.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Langer Briser": {
+      "file": "bow_langer_briser.webp",
+      "w": 81,
+      "h": 128
+    },
+    "Pus Spitter": {
+      "file": "bow_pus_spiter.webp",
+      "w": 89,
+      "h": 128
+    },
     "Buriza-Do Kyanon": {
       "file": "bow_mythical_buriza_do_kyanon.webp",
       "w": 67,
       "h": 128
     },
+    "Demon Machine": {
+      "file": "bow_doomspittle.webp",
+      "w": 65,
+      "h": 128
+    },
+    "Peasant Crown": {
+      "file": "helmet_cap_hat.webp",
+      "w": 89,
+      "h": 128
+    },
+    "Rockstopper": {
+      "file": "helmet_rockstopper.webp",
+      "w": 95,
+      "h": 128
+    },
+    "Stealskull": {
+      "file": "helmet_coif_of_glory.webp",
+      "w": 96,
+      "h": 128
+    },
     "Darksight Helm": {
       "file": "helmet_duskdeep.webp",
       "w": 88,
+      "h": 128
+    },
+    "Valkyrie Wing": {
+      "file": "helmet_great_helm.webp",
+      "w": 70,
       "h": 128
     },
     "Crown of Thieves": {
@@ -4574,9 +7808,79 @@
       "w": 104,
       "h": 128
     },
+    "The Spirit Shroud": {
+      "file": "armor_quilted_armor.webp",
+      "w": 96,
+      "h": 128
+    },
+    "Skin of the Vipermagi": {
+      "file": "armor_leather_armor.webp",
+      "w": 110,
+      "h": 128
+    },
+    "Skin of the Flayed One": {
+      "file": "armor_hard_leather_armor.webp",
+      "w": 119,
+      "h": 128
+    },
+    "Iron Pelt": {
+      "file": "armor_ironpelt.webp",
+      "w": 85,
+      "h": 128
+    },
+    "Spirit Forge": {
+      "file": "armor_ring_mail.webp",
+      "w": 112,
+      "h": 128
+    },
+    "Crow Caw": {
+      "file": "armor_scale_mail.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Shaftstop": {
+      "file": "armor_chain_mail.webp",
+      "w": 84,
+      "h": 128
+    },
+    "Duriel's Shell": {
+      "file": "armor_breast_plate.webp",
+      "w": 93,
+      "h": 128
+    },
+    "Skullder's Ire": {
+      "file": "armor_splint_mail.webp",
+      "w": 92,
+      "h": 128
+    },
+    "Toothrow": {
+      "file": "armor_field_plate.webp",
+      "w": 83,
+      "h": 128
+    },
+    "Atma's Wail": {
+      "file": "armor_gothic_plate.webp",
+      "w": 75,
+      "h": 128
+    },
+    "Black Hades": {
+      "file": "armor_full_plate_mail.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Corpsemourn": {
+      "file": "armor_corpsemourn.webp",
+      "w": 89,
+      "h": 128
+    },
     "Que-Hegan's Wisdom": {
       "file": "armor_light_plate.webp",
       "w": 94,
+      "h": 128
+    },
+    "Visceratuant": {
+      "file": "shield_pelta_lunata.webp",
+      "w": 112,
       "h": 128
     },
     "Moser's Blessed Circle": {
@@ -4594,10 +7898,35 @@
       "w": 85,
       "h": 128
     },
+    "Gerke's Sanctuary": {
+      "file": "shield_bverrit_keep.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Radament's Sphere": {
+      "file": "shield_the_ward.webp",
+      "w": 45,
+      "h": 128
+    },
     "Lidless Wall": {
       "file": "shield_lidless_wall.webp",
       "w": 99,
       "h": 128
+    },
+    "Lance Guard": {
+      "file": "shield_lance_guard.webp",
+      "w": 89,
+      "h": 128
+    },
+    "Venom Grip": {
+      "file": "glove_gloves_l.webp",
+      "w": 128,
+      "h": 110
+    },
+    "Gravepalm": {
+      "file": "glove_heavy_gloves.webp",
+      "w": 128,
+      "h": 108
     },
     "Ghoulhide": {
       "file": "glove_bracers_m.webp",
@@ -4612,6 +7941,16 @@
     "Hellmouth": {
       "file": "glove_gaunlets_h.webp",
       "w": 127,
+      "h": 128
+    },
+    "Infernostride": {
+      "file": "boot_leather_boots.webp",
+      "w": 128,
+      "h": 113
+    },
+    "Waterwalk": {
+      "file": "boot_heavy_boots.webp",
+      "w": 117,
       "h": 128
     },
     "Silkweave": {
@@ -4629,10 +7968,40 @@
       "w": 113,
       "h": 128
     },
+    "String of Ears": {
+      "file": "belt_sash_l.webp",
+      "w": 128,
+      "h": 58
+    },
+    "Razortail": {
+      "file": "belt_light_belt.webp",
+      "w": 128,
+      "h": 48
+    },
+    "Gloom's Trap": {
+      "file": "belt_belt_m.webp",
+      "w": 128,
+      "h": 56
+    },
+    "Snowclash": {
+      "file": "belt_heavy_belt.webp",
+      "w": 128,
+      "h": 62
+    },
     "Thundergod's Vigor": {
       "file": "belt_girdle_h.webp",
       "w": 128,
       "h": 71
+    },
+    "Harlequin Crest": {
+      "file": "helmet_cap_hat.webp",
+      "w": 89,
+      "h": 128
+    },
+    "The Gladiator's Bane": {
+      "file": "armor_studded_leather.webp",
+      "w": 83,
+      "h": 128
     },
     "Blackoak Shield": {
       "file": "shield_umbral_disk.webp",
@@ -4659,6 +8028,11 @@
       "w": 43,
       "h": 128
     },
+    "The Cranium Basher": {
+      "file": "hammer_great_maul.webp",
+      "w": 68,
+      "h": 128
+    },
     "Lightsabre": {
       "file": "sword_lightsabre.webp",
       "w": 70,
@@ -4677,6 +8051,11 @@
     "Stormspire": {
       "file": "polearm_war_scythe.webp",
       "w": 62,
+      "h": 128
+    },
+    "Windforce": {
+      "file": "bow_long_war_bow.webp",
+      "w": 60,
       "h": 128
     },
     "Bul-Kathos' Wedding Band": {
@@ -4724,6 +8103,11 @@
       "w": 66,
       "h": 98
     },
+    "Bartuc's Cut-Throat": {
+      "file": "h2h_claws.webp",
+      "w": 45,
+      "h": 128
+    },
     "The Scalper": {
       "file": "axe_throwing_axe.webp",
       "w": 69,
@@ -4735,8 +8119,8 @@
       "h": 128
     },
     "Djinn Slayer": {
-      "file": "sword_scimitar.webp",
-      "w": 33,
+      "file": "sword_blood_crescent.webp",
+      "w": 39,
       "h": 128
     },
     "Deathbit": {
@@ -4744,9 +8128,29 @@
       "w": 69,
       "h": 128
     },
+    "Warshrike": {
+      "file": "knife_warshrike.webp",
+      "w": 69,
+      "h": 128
+    },
+    "Gut Siphon": {
+      "file": "bow_doomspittle.webp",
+      "w": 65,
+      "h": 128
+    },
     "Razor's Edge": {
       "file": "axe_the_gnasher.webp",
       "w": 53,
+      "h": 128
+    },
+    "Demon Limb": {
+      "file": "club_stoutnail.webp",
+      "w": 47,
+      "h": 128
+    },
+    "Steel Shade": {
+      "file": "helmet_coif_of_glory.webp",
+      "w": 96,
       "h": 128
     },
     "Tomb Reaver": {
@@ -4764,10 +8168,20 @@
       "w": 90,
       "h": 97
     },
+    "Azurewrath": {
+      "file": "sword_crystal_sword.webp",
+      "w": 71,
+      "h": 128
+    },
     "Seraph's Hymn": {
       "file": "amulet_seraphs_hymn.webp",
       "w": 98,
       "h": 98
+    },
+    "Fleshripper": {
+      "file": "knife_the_jade_tan_do.webp",
+      "w": 43,
+      "h": 128
     },
     "Horizon's Tornado": {
       "file": "mace_flail.webp",
@@ -4787,6 +8201,16 @@
     "Shadow Dancer": {
       "file": "boot_plate_boots.webp",
       "w": 113,
+      "h": 128
+    },
+    "Cerebus' Bite": {
+      "file": "pelt_wolf_head.webp",
+      "w": 123,
+      "h": 128
+    },
+    "Tyrael's Might": {
+      "file": "armor_victors_silk.webp",
+      "w": 92,
       "h": 128
     },
     "Soul Drainer": {
@@ -4814,6 +8238,11 @@
       "w": 34,
       "h": 128
     },
+    "Leviathan": {
+      "file": "armor_field_plate.webp",
+      "w": 83,
+      "h": 128
+    },
     "Wisp Projector": {
       "file": "ring_wisp.webp",
       "w": 81,
@@ -4827,6 +8256,11 @@
     "Lacerator": {
       "file": "axe_balanced_axe.webp",
       "w": 125,
+      "h": 128
+    },
+    "Mang Song's Lesson": {
+      "file": "staff_skullcollector.webp",
+      "w": 49,
       "h": 128
     },
     "Viperfork": {
@@ -4849,14 +8283,44 @@
       "w": 54,
       "h": 128
     },
+    "Spirit Keeper": {
+      "file": "pelt_antlers.webp",
+      "w": 128,
+      "h": 125
+    },
+    "Hellrack": {
+      "file": "bow_hellcast.webp",
+      "w": 58,
+      "h": 128
+    },
     "Alma Negra": {
       "file": "shield_rondache.webp",
       "w": 121,
       "h": 128
     },
+    "Darkforce Spawn": {
+      "file": "voodoo_head_demon_head.webp",
+      "w": 109,
+      "h": 128
+    },
+    "Widowmaker": {
+      "file": "bow_hellclap.webp",
+      "w": 76,
+      "h": 128
+    },
+    "Blood Raven's Charge": {
+      "file": "bow_hellclap.webp",
+      "w": 76,
+      "h": 128
+    },
     "Ghostflame": {
       "file": "knife_blade.webp",
       "w": 36,
+      "h": 128
+    },
+    "Shadow Killer": {
+      "file": "h2h_shadowkiller.webp",
+      "w": 61,
       "h": 128
     },
     "Gimmershred": {
@@ -4874,9 +8338,34 @@
       "w": 52,
       "h": 128
     },
+    "Thunderstroke": {
+      "file": "javelin_maiden_javelin.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Demon's Arch": {
+      "file": "javelin_short_spear.webp",
+      "w": 27,
+      "h": 128
+    },
+    "Boneflame": {
+      "file": "voodoo_head_gargoyle_head.webp",
+      "w": 106,
+      "h": 128
+    },
     "Steel Pillar": {
       "file": "spear_pike.webp",
       "w": 59,
+      "h": 128
+    },
+    "Nightwing's Veil": {
+      "file": "helmet_great_helm.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Crown of Ages": {
+      "file": "helmet_crown.webp",
+      "w": 91,
       "h": 128
     },
     "Andariel's Visage": {
@@ -4889,6 +8378,21 @@
       "w": 55,
       "h": 128
     },
+    "Steel Carapace": {
+      "file": "armor_full_plate_mail.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Medusa's Gaze": {
+      "file": "shield_bverrit_keep.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Ravenlore": {
+      "file": "pelt_falcon_mask.webp",
+      "w": 88,
+      "h": 128
+    },
     "Boneshade": {
       "file": "wand_gravenspine.webp",
       "w": 56,
@@ -4899,10 +8403,30 @@
       "w": 29,
       "h": 128
     },
+    "Death's Fathom": {
+      "file": "orb_dragon_stone.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Wolfhowl": {
+      "file": "helmet_fanged_helm.webp",
+      "w": 122,
+      "h": 128
+    },
+    "Spirit Ward": {
+      "file": "shield_the_ward.webp",
+      "w": 45,
+      "h": 128
+    },
     "Kira's Guardian": {
       "file": "circlet_tiara.webp",
       "w": 128,
       "h": 95
+    },
+    "Ormus' Robes": {
+      "file": "armor_quilted_armor.webp",
+      "w": 96,
+      "h": 128
     },
     "Stormlash": {
       "file": "mace_flail.webp",
@@ -4914,9 +8438,39 @@
       "w": 104,
       "h": 128
     },
+    "Spike Thorn": {
+      "file": "shield_swordback_hold.webp",
+      "w": 91,
+      "h": 128
+    },
+    "Dracul's Grasp": {
+      "file": "glove_heavy_gloves.webp",
+      "w": 128,
+      "h": 108
+    },
     "Frostwind": {
       "file": "sword_hellplague.webp",
       "w": 80,
+      "h": 128
+    },
+    "Templar's Might": {
+      "file": "armor_victors_silk.webp",
+      "w": 92,
+      "h": 128
+    },
+    "Eschuta's Temper": {
+      "file": "orb_sacred_globe.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Firelizard's Talons": {
+      "file": "h2h_claws.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Sandstorm Trek": {
+      "file": "boot_heavy_boots.webp",
+      "w": 117,
       "h": 128
     },
     "Marrowwalk": {
@@ -4924,15 +8478,40 @@
       "w": 121,
       "h": 128
     },
+    "Heaven's Light": {
+      "file": "scepter_scepter.webp",
+      "w": 35,
+      "h": 128
+    },
+    "Arachnid Mesh": {
+      "file": "belt_sash_l.webp",
+      "w": 128,
+      "h": 58
+    },
+    "Nosferatu's Coil": {
+      "file": "belt_light_belt.webp",
+      "w": 128,
+      "h": 48
+    },
     "Metalgrid": {
       "file": "amulet_amulet.webp",
       "w": 88,
       "h": 86
     },
+    "Verdungo's Hearty Cord": {
+      "file": "belt_belt_m.webp",
+      "w": 128,
+      "h": 56
+    },
     "Carrion Wind": {
       "file": "ring_carrion_wind.webp",
       "w": 97,
       "h": 96
+    },
+    "Giant Skull": {
+      "file": "helmet_bone_helm.webp",
+      "w": 128,
+      "h": 76
     },
     "Astreon's Iron Ward": {
       "file": "scepter_war_scepter.webp",
@@ -4954,9 +8533,34 @@
       "w": 87,
       "h": 128
     },
+    "Nord's Tenderizer": {
+      "file": "club_felloak.webp",
+      "w": 41,
+      "h": 128
+    },
+    "Earth Shifter": {
+      "file": "hammer_great_maul.webp",
+      "w": 68,
+      "h": 128
+    },
+    "Wraith Flight": {
+      "file": "javelin_glaive.webp",
+      "w": 25,
+      "h": 128
+    },
     "Bonehew": {
       "file": "polearm_bardiche.webp",
       "w": 54,
+      "h": 128
+    },
+    "Ondal's Wisdom": {
+      "file": "staff_lazarus_spire.webp",
+      "w": 31,
+      "h": 128
+    },
+    "The Redeemer": {
+      "file": "scepter_scepter.webp",
+      "w": 35,
       "h": 128
     },
     "Head Hunter's Glory": {
@@ -5279,6 +8883,26 @@
       "w": 67,
       "h": 128
     },
+    "Measured Wrath": {
+      "file": "grimoires_measured_wrath.webp",
+      "w": 105,
+      "h": 128
+    },
+    "Ars Dul'Mephistos": {
+      "file": "grimoires_ars_aldiablolos.webp",
+      "w": 103,
+      "h": 128
+    },
+    "Ars Al'Diabolos": {
+      "file": "grimoires_ars_aldiablolos.webp",
+      "w": 103,
+      "h": 128
+    },
+    "Ars Tor'Baalos": {
+      "file": "grimoires_ars_aldiablolos.webp",
+      "w": 103,
+      "h": 128
+    },
     "Dreadfang": {
       "file": "sword_two_handed_sword.webp",
       "w": 27,
@@ -5308,6 +8932,11 @@
       "file": "amulet_amulet.webp",
       "w": 88,
       "h": 86
+    },
+    "Gheed's Wager": {
+      "file": "belt_heavy_belt.webp",
+      "w": 128,
+      "h": 62
     },
     "Hellwarden's Will": {
       "file": "helmet_mask.webp",
@@ -5356,6 +8985,21 @@
     }
   },
   "sets": {
+    "Autolycus' Robes": {
+      "file": "armor_quilted_armor.webp",
+      "w": 96,
+      "h": 128
+    },
+    "Autolycus' Thieving Tools": {
+      "file": "belt_light_belt.webp",
+      "w": 128,
+      "h": 48
+    },
+    "Boots of Sneaking": {
+      "file": "boot_leather_boots.webp",
+      "w": 128,
+      "h": 113
+    },
     "Achilles' Force": {
       "file": "glove_gaunlets_h.webp",
       "w": 127,
@@ -5381,15 +9025,35 @@
       "w": 94,
       "h": 97
     },
+    "Armor of Gloom": {
+      "file": "armor_full_plate_mail.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Stormshield": {
+      "file": "shield_tower_shield.webp",
+      "w": 69,
+      "h": 128
+    },
     "Tharn's Ward": {
       "file": "helmet_duskdeep.webp",
       "w": 88,
       "h": 128
     },
+    "Bard's Graceful Hand": {
+      "file": "glove_heavy_gloves.webp",
+      "w": 128,
+      "h": 108
+    },
     "The Acolyte's Spirit": {
       "file": "ring_ring5.webp",
       "w": 95,
       "h": 82
+    },
+    "Root's Banded Restraint": {
+      "file": "belt_sash_l.webp",
+      "w": 128,
+      "h": 58
     },
     "Wanderer's Waltz": {
       "file": "boot_crystal_boots.webp",
@@ -5406,24 +9070,49 @@
       "w": 87,
       "h": 85
     },
+    "Band of Famine": {
+      "file": "belt_belt_m.webp",
+      "w": 128,
+      "h": 56
+    },
     "Band of Pestilence": {
       "file": "ring_ring.webp",
       "w": 87,
       "h": 85
+    },
+    "Crook of the Darkest Valley": {
+      "file": "staff_gnarled_staff.webp",
+      "w": 29,
+      "h": 128
     },
     "Shepherd's Blessing": {
       "file": "glove_light_gauntlets.webp",
       "w": 128,
       "h": 119
     },
-    "Tasselhoff's Jerkin": {
-      "file": "armor_elven_chain.webp",
-      "w": 79,
+    "Shepherd's Invocation": {
+      "file": "armor_breast_plate.webp",
+      "w": 93,
       "h": 128
+    },
+    "Tasselhoff's Jerkin": {
+      "file": "armor_ironpelt.webp",
+      "w": 85,
+      "h": 128
+    },
+    "Tasselhoff's Pouches": {
+      "file": "belt_belt_m.webp",
+      "w": 128,
+      "h": 56
     },
     "Tasselhoff's Breaches": {
       "file": "boot_light_plate_boots.webp",
       "w": 109,
+      "h": 128
+    },
+    "Arctic Horn": {
+      "file": "bow_hellclap.webp",
+      "w": 76,
       "h": 128
     },
     "Arctic Mitts": {
@@ -5431,9 +9120,19 @@
       "w": 128,
       "h": 119
     },
+    "Arctic Binding": {
+      "file": "belt_light_belt.webp",
+      "w": 128,
+      "h": 48
+    },
     "Gabrielle's Pointed Staff": {
       "file": "spear_maiden_spear.webp",
       "w": 34,
+      "h": 128
+    },
+    "Gabrielle's Defense": {
+      "file": "armor_scale_mail.webp",
+      "w": 127,
       "h": 128
     },
     "Gabrielle's Revelation": {
@@ -5446,10 +9145,20 @@
       "w": 112,
       "h": 128
     },
+    "Lixo's Harp": {
+      "file": "bow_long_war_bow.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Lixo's Coat": {
+      "file": "armor_hard_leather_armor.webp",
+      "w": 119,
+      "h": 128
+    },
     "Lixo's Jewel": {
-      "file": "ring_ring.webp",
-      "w": 87,
-      "h": 85
+      "file": "ring_ring4.webp",
+      "w": 80,
+      "h": 95
     },
     "Aanna's Touch": {
       "file": "spear_pike.webp",
@@ -5469,6 +9178,11 @@
     "Aanna's March": {
       "file": "boot_light_plate_boots.webp",
       "w": 109,
+      "h": 128
+    },
+    "Alaziel's Point": {
+      "file": "javelin_maiden_javelin.webp",
+      "w": 52,
       "h": 128
     },
     "Alaziel's Protector": {
@@ -5491,6 +9205,11 @@
       "w": 95,
       "h": 128
     },
+    "Noir's Focus": {
+      "file": "bow_pullspite.webp",
+      "w": 70,
+      "h": 128
+    },
     "Noir's Tenacity": {
       "file": "glove_iron_guards.webp",
       "w": 126,
@@ -5511,20 +9230,45 @@
       "w": 34,
       "h": 128
     },
+    "Milea's Mail": {
+      "file": "armor_ring_mail.webp",
+      "w": 112,
+      "h": 128
+    },
     "Death's Touch": {
       "file": "h2h_katar.webp",
       "w": 46,
       "h": 128
     },
+    "Death's Hand": {
+      "file": "glove_gloves_l.webp",
+      "w": 128,
+      "h": 110
+    },
     "Death's Guard": {
-      "file": "armor_cloak.webp",
-      "w": 75,
-      "h": 128
+      "file": "belt_sash_l.webp",
+      "w": 128,
+      "h": 58
     },
     "Vega's Beauty": {
       "file": "circlet_vegas_beauty.webp",
       "w": 97,
       "h": 128
+    },
+    "Grace": {
+      "file": "h2h_claws.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Power": {
+      "file": "h2h_claws.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Vega's Sash": {
+      "file": "belt_heavy_belt.webp",
+      "w": 128,
+      "h": 62
     },
     "Motoko's Power": {
       "file": "sword_katana.webp",
@@ -5540,6 +9284,16 @@
       "file": "amulet_amulet4.webp",
       "w": 96,
       "h": 91
+    },
+    "Alora's Veil": {
+      "file": "helmet_cap_hat.webp",
+      "w": 89,
+      "h": 128
+    },
+    "Alora's Silent Assault": {
+      "file": "h2h_hatchet_hands.webp",
+      "w": 75,
+      "h": 128
     },
     "Alora's Silhouette": {
       "file": "armor_cloak.webp",
@@ -5565,6 +9319,11 @@
       "file": "h2h_scissors_katar.webp",
       "w": 45,
       "h": 128
+    },
+    "Sascha's Black Slipper": {
+      "file": "boot_leather_boots.webp",
+      "w": 128,
+      "h": 113
     },
     "Ihsan's Gaze": {
       "file": "helmet_ihsan_helm.webp",
@@ -5596,10 +9355,25 @@
       "w": 128,
       "h": 78
     },
+    "Borik's Black Hand": {
+      "file": "glove_heavy_gloves.webp",
+      "w": 128,
+      "h": 108
+    },
+    "Infernal Cranium": {
+      "file": "helmet_war_bonnet.webp",
+      "w": 128,
+      "h": 121
+    },
     "Infernal Torch": {
       "file": "wand_grim_wand.webp",
       "w": 64,
       "h": 128
+    },
+    "Infernal Sign": {
+      "file": "belt_heavy_belt.webp",
+      "w": 128,
+      "h": 62
     },
     "Rathol's Gaze": {
       "file": "helmet_mask.webp",
@@ -5609,6 +9383,11 @@
     "Rathol's Touch": {
       "file": "polearm_necroscythe2.webp",
       "w": 61,
+      "h": 128
+    },
+    "Rathol's Fear": {
+      "file": "armor_ring_mail.webp",
+      "w": 112,
       "h": 128
     },
     "Wrathamon's Skull": {
@@ -5631,6 +9410,11 @@
       "w": 58,
       "h": 128
     },
+    "The Hands of Wier": {
+      "file": "glove_gloves_l.webp",
+      "w": 128,
+      "h": 110
+    },
     "The Lich's Pate": {
       "file": "helmet_mask.webp",
       "w": 128,
@@ -5651,6 +9435,11 @@
       "w": 128,
       "h": 114
     },
+    "The Lich's Sole": {
+      "file": "belt_light_belt.webp",
+      "w": 128,
+      "h": 48
+    },
     "Nupraptor's Skull": {
       "file": "helmet_deaths_cowl.webp",
       "w": 104,
@@ -5661,10 +9450,25 @@
       "w": 42,
       "h": 128
     },
+    "Nupraptor's Servant": {
+      "file": "voodoo_head_demon_head.webp",
+      "w": 109,
+      "h": 128
+    },
     "Lim-Dul's Hex": {
       "file": "wand_blackhand_key.webp",
       "w": 42,
       "h": 128
+    },
+    "Lim Dul's High Guardian": {
+      "file": "voodoo_head_preserved_head.webp",
+      "w": 112,
+      "h": 128
+    },
+    "Lim Dul's Vault": {
+      "file": "belt_sash_l.webp",
+      "w": 128,
+      "h": 58
     },
     "Lim Dul's Oath": {
       "file": "boot_chain_boots.webp",
@@ -5686,9 +9490,19 @@
       "w": 61,
       "h": 128
     },
+    "Berserker's Headgear": {
+      "file": "helmet_coif_of_glory.webp",
+      "w": 96,
+      "h": 128
+    },
     "Berserker's Hatchet": {
       "file": "axe_hand_axe.webp",
       "w": 58,
+      "h": 128
+    },
+    "Berserker's Hauberk": {
+      "file": "armor_leather_armor.webp",
+      "w": 110,
       "h": 128
     },
     "Messerschmidt's Reaver": {
@@ -5711,6 +9525,16 @@
       "w": 60,
       "h": 128
     },
+    "Kain's Fear": {
+      "file": "armor_victors_silk.webp",
+      "w": 92,
+      "h": 128
+    },
+    "Kain's Sentinel": {
+      "file": "shield_the_ward.webp",
+      "w": 45,
+      "h": 128
+    },
     "Kain's Wings": {
       "file": "glove_iron_guards.webp",
       "w": 126,
@@ -5726,6 +9550,11 @@
       "w": 35,
       "h": 128
     },
+    "Krakerag's Chestplate": {
+      "file": "armor_field_plate.webp",
+      "w": 83,
+      "h": 128
+    },
     "Krakerag's Slay": {
       "file": "sword_giant_sword.webp",
       "w": 27,
@@ -5739,6 +9568,11 @@
     "Darkshade's Skewer": {
       "file": "mace_bloodrise.webp",
       "w": 43,
+      "h": 128
+    },
+    "Darkshade's Spined Sheath": {
+      "file": "armor_ancient_armor.webp",
+      "w": 93,
       "h": 128
     },
     "Darkshade's Evisceration": {
@@ -5761,10 +9595,30 @@
       "w": 47,
       "h": 128
     },
+    "Sarevok's Savage Heart": {
+      "file": "armor_field_plate.webp",
+      "w": 83,
+      "h": 128
+    },
+    "Crown of the Northern Tribes": {
+      "file": "helmet_avenger_guard.webp",
+      "w": 92,
+      "h": 128
+    },
+    "Harrogath's Heirloom": {
+      "file": "armor_full_plate_mail.webp",
+      "w": 79,
+      "h": 128
+    },
     "Worldstone Shard": {
       "file": "ring_barb_ring.webp",
       "w": 97,
       "h": 76
+    },
+    "Milabrega's Ironsoles": {
+      "file": "boot_heavy_boots.webp",
+      "w": 117,
+      "h": 128
     },
     "Milabrega's Rod": {
       "file": "scepter_war_scepter.webp",
@@ -5774,6 +9628,26 @@
     "Milabrega's Orb": {
       "file": "shield_umbral_disk.webp",
       "w": 113,
+      "h": 128
+    },
+    "Tyrael's Halo_old": {
+      "file": "armor_breast_plate.webp",
+      "w": 93,
+      "h": 128
+    },
+    "Tyrael's Virtue_old": {
+      "file": "sword_crystal_sword.webp",
+      "w": 71,
+      "h": 128
+    },
+    "Tyrael's Faith_old": {
+      "file": "shield_spiked_shield.webp",
+      "w": 94,
+      "h": 128
+    },
+    "Anduin's Vision": {
+      "file": "helmet_crown.webp",
+      "w": 91,
       "h": 128
     },
     "Anduin's Vanquisher": {
@@ -5786,6 +9660,11 @@
       "w": 55,
       "h": 128
     },
+    "Malek's Sight": {
+      "file": "helmet_crown.webp",
+      "w": 91,
+      "h": 128
+    },
     "Malek's Strike": {
       "file": "sword_paladin_sword.webp",
       "w": 30,
@@ -5796,6 +9675,11 @@
       "w": 79,
       "h": 128
     },
+    "Malek's Defense": {
+      "file": "shield_spiked_shield.webp",
+      "w": 94,
+      "h": 128
+    },
     "Malek's Grip": {
       "file": "belt_muscle_wrap.webp",
       "w": 128,
@@ -5804,6 +9688,16 @@
     "Lancelot's Prediction": {
       "file": "sword_paladin_sword.webp",
       "w": 30,
+      "h": 128
+    },
+    "Lancelot's Security": {
+      "file": "armor_full_plate_mail.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Lancelot's Heraldic Lion": {
+      "file": "helmet_crown.webp",
+      "w": 91,
       "h": 128
     },
     "Griffith's Stare": {
@@ -5831,6 +9725,11 @@
       "w": 95,
       "h": 128
     },
+    "Darien's Faith": {
+      "file": "armor_scale_mail.webp",
+      "w": 127,
+      "h": 128
+    },
     "Darien's Band": {
       "file": "belt_girdle_h.webp",
       "w": 128,
@@ -5840,6 +9739,11 @@
       "file": "amulet_amulet.webp",
       "w": 88,
       "h": 86
+    },
+    "Arcanna's Deathwand": {
+      "file": "staff_war_staff.webp",
+      "w": 58,
+      "h": 128
     },
     "Arcanna's Flesh": {
       "file": "armor_light_plate.webp",
@@ -5851,6 +9755,11 @@
       "w": 128,
       "h": 67
     },
+    "Tara's Eye": {
+      "file": "orb_smoked_sphere.webp",
+      "w": 56,
+      "h": 128
+    },
     "Tara's Gown": {
       "file": "armor_cape.webp",
       "w": 64,
@@ -5861,10 +9770,25 @@
       "w": 95,
       "h": 128
     },
+    "Naj's Puzzler": {
+      "file": "staff_lazarus_spire.webp",
+      "w": 31,
+      "h": 128
+    },
     "Naj's Light Plate": {
       "file": "armor_plate_mail.webp",
       "w": 128,
       "h": 121
+    },
+    "Naj's Fireward": {
+      "file": "boot_leather_boots.webp",
+      "w": 128,
+      "h": 113
+    },
+    "Divada's Tiara": {
+      "file": "circlet_coronet.webp",
+      "w": 128,
+      "h": 81
     },
     "Divada's Focus": {
       "file": "sword_mana_blade.webp",
@@ -5874,6 +9798,11 @@
     "Divada's Shawl": {
       "file": "armor_robe.webp",
       "w": 64,
+      "h": 128
+    },
+    "Divada's Screen": {
+      "file": "shield_pelta_lunata.webp",
+      "w": 112,
       "h": 128
     },
     "Raistlin's Glance": {
@@ -5886,6 +9815,11 @@
       "w": 96,
       "h": 91
     },
+    "The Staff of the Magi": {
+      "file": "staff_war_staff.webp",
+      "w": 58,
+      "h": 128
+    },
     "Robes of the Arch-Magi": {
       "file": "armor_light_plate.webp",
       "w": 94,
@@ -5896,19 +9830,54 @@
       "w": 72,
       "h": 94
     },
+    "Jade Wrap": {
+      "file": "armor_hard_leather_armor.webp",
+      "w": 119,
+      "h": 128
+    },
     "Jade Crest": {
       "file": "ring_sorceress_ring.webp",
       "w": 92,
       "h": 65
+    },
+    "Jade Slipper": {
+      "file": "boot_heavy_boots.webp",
+      "w": 117,
+      "h": 128
+    },
+    "Arion's Eye": {
+      "file": "orb_sacred_globe.webp",
+      "w": 52,
+      "h": 128
     },
     "Arion's Heart": {
       "file": "armor_archmage_robe2.webp",
       "w": 80,
       "h": 128
     },
+    "Arion's Hand": {
+      "file": "glove_gloves_l.webp",
+      "w": 128,
+      "h": 110
+    },
+    "Hsaru's Iron Arm": {
+      "file": "club_club.webp",
+      "w": 40,
+      "h": 128
+    },
+    "Hsarus' Iron Fist": {
+      "file": "shield_pelta_lunata.webp",
+      "w": 112,
+      "h": 128
+    },
     "Hsarus' Iron Heel": {
       "file": "boot_chain_boots.webp",
       "w": 121,
+      "h": 128
+    },
+    "Blackwing's Will": {
+      "file": "pelt_hawk_helm.webp",
+      "w": 89,
       "h": 128
     },
     "Blackwing's Force": {
@@ -5926,14 +9895,49 @@
       "w": 121,
       "h": 128
     },
+    "Danarak's Spirit": {
+      "file": "pelt_falcon_mask.webp",
+      "w": 88,
+      "h": 128
+    },
     "Danarak's Mallet": {
       "file": "hammer_maul.webp",
       "w": 52,
       "h": 128
     },
+    "Danarak's Wrap": {
+      "file": "armor_quilted_armor.webp",
+      "w": 96,
+      "h": 128
+    },
+    "Horns of Power": {
+      "file": "pelt_antlers.webp",
+      "w": 128,
+      "h": 125
+    },
     "Keeper of the Fire": {
       "file": "sword_ginthers_rift.webp",
       "w": 60,
+      "h": 128
+    },
+    "Robes of Earth and Water": {
+      "file": "armor_scale_mail.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Sandals of the Wind": {
+      "file": "boot_heavy_boots.webp",
+      "w": 117,
+      "h": 128
+    },
+    "Terra's Clairvoyance": {
+      "file": "pelt_wolf_head.webp",
+      "w": 123,
+      "h": 128
+    },
+    "Fyrre's Deception": {
+      "file": "hammer_great_maul.webp",
+      "w": 68,
       "h": 128
     },
     "Gaia's Carapace": {
@@ -5961,6 +9965,16 @@
       "w": 127,
       "h": 128
     },
+    "Jaheira's Girdle": {
+      "file": "belt_heavy_belt.webp",
+      "w": 128,
+      "h": 62
+    },
+    "Branch of the Ents": {
+      "file": "staff_long_staff.webp",
+      "w": 26,
+      "h": 128
+    },
     "Hide of the Tarrasque": {
       "file": "armor_light_plate.webp",
       "w": 94,
@@ -5971,14 +9985,34 @@
       "w": 126,
       "h": 128
     },
+    "Rogue's Bow-N (merc only)": {
+      "file": "bow_short_bow.webp",
+      "w": 86,
+      "h": 128
+    },
     "Rogue's Suit-N (merc only)": {
       "file": "armor_rogue_armor.webp",
       "w": 81,
       "h": 128
     },
+    "Rogue's Cap-N (merc only)": {
+      "file": "helmet_rockstopper.webp",
+      "w": 95,
+      "h": 128
+    },
     "Mercenary's Pike-N (merc only)": {
       "file": "spear_spetum.webp",
       "w": 58,
+      "h": 128
+    },
+    "Mercenary's Wraps-N (merc only)": {
+      "file": "armor_ironpelt.webp",
+      "w": 85,
+      "h": 128
+    },
+    "Mercenary's Shiek-N (merc only)": {
+      "file": "helmet_helm.webp",
+      "w": 102,
       "h": 128
     },
     "Iron Wolf's Broad Sword-N (merc only)": {
@@ -5991,6 +10025,11 @@
       "w": 64,
       "h": 128
     },
+    "Iron Wolf's Coif-N (merc only)": {
+      "file": "helmet_coif_of_glory.webp",
+      "w": 96,
+      "h": 128
+    },
     "Iron Wolf's Guard-N (merc only)": {
       "file": "shield_iron_wolf_shield.webp",
       "w": 127,
@@ -6001,9 +10040,19 @@
       "w": 25,
       "h": 128
     },
+    "Barbarian's Shelter-N (merc only)": {
+      "file": "armor_gothic_plate.webp",
+      "w": 75,
+      "h": 128
+    },
     "Barbarian's Visage-N (merc only)": {
-      "file": "helmet_horned_helm.webp",
-      "w": 71,
+      "file": "helmet_great_helm.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Rogue's Bow-NM (merc only)": {
+      "file": "bow_short_bow.webp",
+      "w": 86,
       "h": 128
     },
     "Rogue's Suit-NM (merc only)": {
@@ -6011,9 +10060,24 @@
       "w": 81,
       "h": 128
     },
+    "Rogue's Cap-NM (merc only)": {
+      "file": "helmet_rockstopper.webp",
+      "w": 95,
+      "h": 128
+    },
     "Mercenary's Pike-NM (merc only)": {
       "file": "spear_spetum.webp",
       "w": 58,
+      "h": 128
+    },
+    "Mercenary's Wraps-NM (merc only)": {
+      "file": "armor_ironpelt.webp",
+      "w": 85,
+      "h": 128
+    },
+    "Mercenary's Shiek-NM (merc only)": {
+      "file": "helmet_helm.webp",
+      "w": 102,
       "h": 128
     },
     "Iron Wolf's Broad Sword-NM (merc only)": {
@@ -6026,6 +10090,11 @@
       "w": 64,
       "h": 128
     },
+    "Iron Wolf's Coif-NM (merc only)": {
+      "file": "helmet_coif_of_glory.webp",
+      "w": 96,
+      "h": 128
+    },
     "Iron Wolf's Guard-NM (merc only)": {
       "file": "shield_iron_wolf_shield.webp",
       "w": 127,
@@ -6036,9 +10105,19 @@
       "w": 25,
       "h": 128
     },
+    "Barbarian's Shelter-NM (merc only)": {
+      "file": "armor_gothic_plate.webp",
+      "w": 75,
+      "h": 128
+    },
     "Barbarian's Visage-NM (merc only)": {
-      "file": "helmet_horned_helm.webp",
-      "w": 71,
+      "file": "helmet_great_helm.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Rogue's Bow-H (merc only)": {
+      "file": "bow_short_bow.webp",
+      "w": 86,
       "h": 128
     },
     "Rogue's Suit-H (merc only)": {
@@ -6046,9 +10125,24 @@
       "w": 81,
       "h": 128
     },
+    "Rogue's Cap-H (merc only)": {
+      "file": "helmet_rockstopper.webp",
+      "w": 95,
+      "h": 128
+    },
     "Mercenary's Pike-H (merc only)": {
       "file": "spear_spetum.webp",
       "w": 58,
+      "h": 128
+    },
+    "Mercenary's Wraps-H (merc only)": {
+      "file": "armor_ironpelt.webp",
+      "w": 85,
+      "h": 128
+    },
+    "Mercenary's Shiek-H (merc only)": {
+      "file": "helmet_helm.webp",
+      "w": 102,
       "h": 128
     },
     "Iron Wolf's Broad Sword-H (merc only)": {
@@ -6061,6 +10155,11 @@
       "w": 64,
       "h": 128
     },
+    "Iron Wolf's Coif-H (merc only)": {
+      "file": "helmet_coif_of_glory.webp",
+      "w": 96,
+      "h": 128
+    },
     "Iron Wolf's Guard-H (merc only)": {
       "file": "shield_iron_wolf_shield.webp",
       "w": 127,
@@ -6071,9 +10170,14 @@
       "w": 25,
       "h": 128
     },
+    "Barbarian's Shelter-H (merc only)": {
+      "file": "armor_gothic_plate.webp",
+      "w": 75,
+      "h": 128
+    },
     "Barbarian's Visage-H (merc only)": {
-      "file": "helmet_horned_helm.webp",
-      "w": 71,
+      "file": "helmet_great_helm.webp",
+      "w": 70,
       "h": 128
     },
     "Cow King's Steel Horns": {
@@ -6081,9 +10185,24 @@
       "w": 103,
       "h": 128
     },
+    "Cow King's Steel Hide": {
+      "file": "armor_victors_silk.webp",
+      "w": 92,
+      "h": 128
+    },
     "Cow King's Steel Hoofs": {
       "file": "boot_crystal_boots.webp",
       "w": 113,
+      "h": 128
+    },
+    "Tyrael's Halo": {
+      "file": "armor_breast_plate.webp",
+      "w": 93,
+      "h": 128
+    },
+    "Tyrael's Virtue": {
+      "file": "sword_crystal_sword.webp",
+      "w": 71,
       "h": 128
     },
     "Tyrael's Faith": {
@@ -6091,14 +10210,39 @@
       "w": 85,
       "h": 128
     },
+    "Bane's Oathmaker": {
+      "file": "knife_banes_spire.webp",
+      "w": 38,
+      "h": 128
+    },
+    "Bane's Wraithskin": {
+      "file": "armor_hard_leather_armor.webp",
+      "w": 119,
+      "h": 128
+    },
+    "Bane's Authority": {
+      "file": "belt_light_belt.webp",
+      "w": 128,
+      "h": 48
+    },
     "The Dark One's Slicer": {
       "file": "sword_warlock_blade.webp",
       "w": 37,
       "h": 128
     },
+    "The Dark One's Lie": {
+      "file": "grimoires_codex.webp",
+      "w": 104,
+      "h": 128
+    },
     "The Dark One's Shroud": {
       "file": "armor_cape.webp",
       "w": 64,
+      "h": 128
+    },
+    "The Dark One's Mind": {
+      "file": "helmet_helm.webp",
+      "w": 102,
       "h": 128
     },
     "Blade of the Kingslayer": {
@@ -6116,14 +10260,49 @@
       "w": 128,
       "h": 114
     },
+    "Book of the Dead": {
+      "file": "grimoires_codex.webp",
+      "w": 104,
+      "h": 128
+    },
     "Phylactery": {
       "file": "amulet_amulet.webp",
       "w": 88,
       "h": 86
     },
+    "Rathma's Command": {
+      "file": "staff_gnarled_staff.webp",
+      "w": 29,
+      "h": 128
+    },
+    "Dark Carapace": {
+      "file": "armor_full_plate_mail.webp",
+      "w": 79,
+      "h": 128
+    },
     "Power of the Void": {
       "file": "wand_yew_wand.webp",
       "w": 56,
+      "h": 128
+    },
+    "Knowledge of the Void": {
+      "file": "grimoires_oldbook.webp",
+      "w": 103,
+      "h": 128
+    },
+    "Memory of the Void": {
+      "file": "circlet_coronet.webp",
+      "w": 128,
+      "h": 81
+    },
+    "Harness of the Void": {
+      "file": "belt_sash_l.webp",
+      "w": 128,
+      "h": 58
+    },
+    "Bible of the Abyssal Dominion": {
+      "file": "grimoires_compendium.webp",
+      "w": 108,
       "h": 128
     },
     "Eye of the Abyssal Dominion": {
@@ -6150,6 +10329,11 @@
       "file": "belt_muscle_wrap.webp",
       "w": 128,
       "h": 61
+    },
+    "Harbinger of Ruin's Soul Compendium": {
+      "file": "grimoires_grimoire.webp",
+      "w": 103,
+      "h": 128
     }
   }
 }

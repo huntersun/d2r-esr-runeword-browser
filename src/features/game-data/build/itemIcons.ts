@@ -1,13 +1,15 @@
 /**
- * Item icons from the HD item sprites an ESR clone ships (pure logic; scripts/generate-item-icons.ts does the IO and
- * the WebP encoding).
+ * Item icons from the HD item sprites an ESR clone ships, with the vanilla D2R art (extracted from a game install) as
+ * the fallback source (pure logic; scripts/generate-item-icons.ts does the IO and the WebP encoding).
  *
  * - `hd/items/items.json` maps an item code to an asset path (`{"hax":{"asset":"axe/hand_axe"}}`);
  * - the asset is `hd/global/ui/items/{weapon|armor|misc}/<asset>.sprite`, matched case-insensitively (17 asset paths
  *   differ from the file name in letter case, and Linux file systems are case-sensitive);
  * - `hd/items/uniques.json` / `sets.json` map a slug of the unique / set item's `index` to its own asset
  *   (`{"the_gnasher":{"normal":"axe/the_gnasher",…}}`); uniques and set items without one use their base's asset;
- * - items whose asset is not in the clone use vanilla D2R art and get no icon.
+ * - items whose asset is not in the clone use vanilla D2R art: the same asset path in the vanilla folder (same layout,
+ *   `data/hd/...` instead of `Eastern_Sun_Resurrected.mpq/data/hd/...`). The clone's sprite wins when it ships one;
+ *   the vanilla items.json / uniques.json / sets.json fill in codes and keys the mod's files do not list.
  */
 import { readdirSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
@@ -18,6 +20,13 @@ export const ESR_HD_ITEMS_FILE = 'Eastern_Sun_Resurrected.mpq/data/hd/items/item
 export const ESR_HD_UNIQUES_FILE = 'Eastern_Sun_Resurrected.mpq/data/hd/items/uniques.json';
 export const ESR_HD_SETS_FILE = 'Eastern_Sun_Resurrected.mpq/data/hd/items/sets.json';
 export const ESR_HD_ITEM_SPRITES_DIR = 'Eastern_Sun_Resurrected.mpq/data/hd/global/ui/items';
+/** The same files in the vanilla art folder (extracted from the D2R install's CASC storage) */
+export const VANILLA_HD_ITEMS_FILE = 'data/hd/items/items.json';
+export const VANILLA_HD_UNIQUES_FILE = 'data/hd/items/uniques.json';
+export const VANILLA_HD_SETS_FILE = 'data/hd/items/sets.json';
+export const VANILLA_HD_ITEM_SPRITES_DIR = 'data/hd/global/ui/items';
+/** The install's Steam build config; its `root` hash identifies the game version the art was extracted from */
+export const VANILLA_BUILD_CONFIG_FILE = 'steam-build.config';
 /** Subfolders of ESR_HD_ITEM_SPRITES_DIR an asset path resolves into, in lookup order */
 export const ITEM_SPRITE_FOLDERS = ['weapon', 'armor', 'misc'] as const;
 /** Icons fit inside a square of this many pixels (keeping the aspect ratio, never enlarged) */
@@ -50,12 +59,16 @@ export function parseItemAssets(json: unknown): ItemAssets {
 /** Lowercased `folder/asset` (no extension) → the real relative path of the `.sprite` file, `/`-separated. */
 export type SpriteIndex = ReadonlyMap<string, string>;
 
-/** Builds the index from relative `.sprite` paths (`weapon/axe/hand_axe.sprite`); other files are ignored. */
+/**
+ * Builds the index from relative `.sprite` paths (`weapon/axe/hand_axe.sprite`); other files are ignored, and so are
+ * the `.lowend.sprite` halves of a game install (low-resolution copies).
+ */
 export function buildSpriteIndex(relativePaths: readonly string[]): SpriteIndex {
   const index = new Map<string, string>();
   for (const path of [...relativePaths].sort()) {
     const normalized = path.split(sep).join('/');
-    if (!normalized.toLowerCase().endsWith('.sprite')) continue;
+    const lower = normalized.toLowerCase();
+    if (!lower.endsWith('.sprite') || lower.endsWith('.lowend.sprite')) continue;
     const key = normalized.slice(0, -'.sprite'.length).toLowerCase();
     if (!index.has(key)) index.set(key, normalized);
   }
@@ -79,6 +92,41 @@ export function resolveSprite(asset: string, index: SpriteIndex): string | null 
     if (path !== undefined) return path;
   }
   return null;
+}
+
+/** Which art folder a sprite comes from */
+export type ArtSource = 'esr' | 'vanilla';
+
+export interface ResolvedSprite {
+  readonly source: ArtSource;
+  /** Real relative path under that source's sprite directory */
+  readonly path: string;
+}
+
+/** The clone's sprite when it ships one, else the vanilla folder's (when given); null when neither has it. */
+export function resolveArt(asset: string, esr: SpriteIndex, vanilla: SpriteIndex | undefined): ResolvedSprite | null {
+  const own = resolveSprite(asset, esr);
+  if (own !== null) return { source: 'esr', path: own };
+  const fallback = vanilla === undefined ? null : resolveSprite(asset, vanilla);
+  return fallback === null ? null : { source: 'vanilla', path: fallback };
+}
+
+/** First segment of an asset path (`shield/fortress_shield` → `shield`), lowercased */
+export function assetFolder(asset: string): string {
+  return asset.replace(/\\/g, '/').replace(/^\/+/, '').split('/')[0]?.toLowerCase() ?? '';
+}
+
+/** `primary` plus the keys of `fallback` it lacks (the mod's json files win over the vanilla ones). */
+export function withFallback<V>(primary: ReadonlyMap<string, V>, fallback: ReadonlyMap<string, V> | undefined): ReadonlyMap<string, V> {
+  if (fallback === undefined) return primary;
+  const merged = new Map(primary);
+  for (const [key, value] of fallback) if (!merged.has(key)) merged.set(key, value);
+  return merged;
+}
+
+/** `root = <hash>` of a Steam build config; null when the line is missing. */
+export function parseBuildConfigRoot(text: string): string | null {
+  return /^root\s*=\s*([0-9a-f]+)\s*$/im.exec(text)?.[1] ?? null;
 }
 
 /** Output file name of an asset: `axe/Hand_Axe` → `axe_hand_axe.webp`. */
@@ -150,30 +198,40 @@ export function parseNamedArt(json: unknown, file: string): NamedArt {
 export interface NamedIconStats {
   /** Distinct display names */
   readonly requested: number;
-  /** Own HD art (an entry in uniques.json / sets.json whose asset differs from the base's and is in the clone) */
+  /** Own HD art (an entry in uniques.json / sets.json whose asset differs from the base's and is in a source) */
   readonly own: number;
-  /** The base's art (no own entry, an own entry equal to the base's asset, or own art the clone lacks) */
+  /** The base's art (no own entry, an own entry equal to the base's asset, or own art no source has) */
   readonly base: number;
-  /** Neither own nor base art in the clone */
+  /** Neither own nor base art in any source */
   readonly none: number;
-  /** Names whose own entry points at art the clone lacks (vanilla); counted in `base` or `none` */
+  /** Of `own` + `base`: the chosen art comes from the vanilla folder */
+  readonly vanilla: number;
+  /** Names whose own entry points at art no source has; counted in `base` or `none` */
   readonly ownArtMissing: number;
-  /** Art map keys no txt row matched (e.g. vanilla items ESR removed) */
+  /** The names without art (`none`), in row order */
+  readonly noneNames: readonly string[];
+  /** Names whose own entry comes from the vanilla file (the mod's lacks one; same asset folder as the base) */
+  readonly vanillaKeyUsed: readonly string[];
+  /** Names whose only own entry is in the vanilla file and points into another asset folder than the base (ignored) */
+  readonly vanillaKeyRejected: readonly string[];
+  /** Keys of the mod's art map no txt row matched (e.g. vanilla items ESR removed) */
   readonly unusedKeys: readonly string[];
 }
 
 export interface IconPlan {
-  /** Code → asset slug, for codes whose art the clone ships (input order) */
+  /** Code → asset slug, for codes with art in a source (input order) */
   readonly bases: ReadonlyMap<string, string>;
+  /** Of `bases`: codes whose art comes from the vanilla folder */
+  readonly basesFromVanilla: number;
   /** Unique display name → asset slug (own art, else the base's) */
   readonly uniques: ReadonlyMap<string, string>;
   /** Set item display name → asset slug */
   readonly sets: ReadonlyMap<string, string>;
-  /** Slug → real relative sprite path, one per distinct asset */
-  readonly sprites: ReadonlyMap<string, string>;
-  /** Base codes without an items.json entry */
+  /** Slug → source and real relative sprite path, one per distinct asset */
+  readonly sprites: ReadonlyMap<string, ResolvedSprite>;
+  /** Base codes without an items.json entry (mod or vanilla) */
   readonly missingEntry: readonly string[];
-  /** Base codes whose asset is not in the clone (vanilla D2R art) */
+  /** Base codes whose asset is in no source */
   readonly missingArt: readonly string[];
   readonly uniqueStats: NamedIconStats;
   readonly setStats: NamedIconStats;
@@ -191,19 +249,33 @@ export interface IconPlanInput {
   readonly uniqueArt: ReadonlyMap<string, string>;
   readonly setArt: ReadonlyMap<string, string>;
   readonly index: SpriteIndex;
+  /** The vanilla art folder: its sprites and json maps, used where the clone's lack an asset, code or key */
+  readonly vanilla?: VanillaArt;
+}
+
+export interface VanillaArt {
+  readonly index: SpriteIndex;
+  readonly assets: ReadonlyMap<string, string>;
+  readonly uniqueArt: ReadonlyMap<string, string>;
+  readonly setArt: ReadonlyMap<string, string>;
 }
 
 type Rank = 0 | 1 | 2;
+/** Rank first; within a rank the clone's art beats the vanilla folder's */
+const score = (pick: NamedPick): number => pick.rank * 2 + (pick.art?.sprite.source === 'esr' ? 1 : 0);
 interface NamedPick {
   /** The chosen asset and its sprite; null without art */
-  readonly art: { readonly asset: string; readonly sprite: string } | null;
+  readonly art: { readonly asset: string; readonly sprite: ResolvedSprite } | null;
   readonly rank: Rank;
   readonly ownArtMissing: boolean;
 }
 
 export function planItemIcons(input: IconPlanInput): IconPlan {
-  const sprites = new Map<string, string>();
-  const addSprite = (asset: string, sprite: string): string => {
+  const vanilla = input.vanilla;
+  const assets = withFallback(input.assets, vanilla?.assets);
+  const resolve = (asset: string) => resolveArt(asset, input.index, vanilla?.index);
+  const sprites = new Map<string, ResolvedSprite>();
+  const addSprite = (asset: string, sprite: ResolvedSprite): string => {
     const slug = assetSlug(asset);
     if (!sprites.has(slug)) sprites.set(slug, sprite);
     return slug;
@@ -212,36 +284,62 @@ export function planItemIcons(input: IconPlanInput): IconPlan {
   const bases = new Map<string, string>();
   const missingEntry: string[] = [];
   const missingArt: string[] = [];
+  let basesFromVanilla = 0;
   for (const code of input.codes) {
     if (bases.has(code) || missingEntry.includes(code) || missingArt.includes(code)) continue;
-    const asset = input.assets.get(code);
+    const asset = assets.get(code);
     if (asset === undefined) {
       missingEntry.push(code);
       continue;
     }
-    const sprite = resolveSprite(asset, input.index);
+    const sprite = resolve(asset);
     if (sprite === null) {
       missingArt.push(code);
       continue;
     }
+    if (sprite.source === 'vanilla') basesFromVanilla++;
     bases.set(code, addSprite(asset, sprite));
   }
 
   /*
    * One icon per display name. Enabled rows come first; a later row replaces an earlier one with the same name only
-   * when it is enabled and ranks higher (own art 2 > base art 1 > none 0), so a name with several versions shows its
-   * own art when any enabled version has one.
+   * when it is enabled and ranks higher (own art 2 > base art 1 > none 0; within a rank the clone's art beats the
+   * vanilla folder's), so a name with several versions shows its own art when any enabled version has one, and ESR's
+   * own art when a version has that (the mythical Buriza-Do Kyanon over the vanilla Buriza's Hellcast art).
    */
-  const planNamed = (rows: readonly UniqueOrSetRow[], art: ReadonlyMap<string, string>) => {
+  const planNamed = (
+    rows: readonly UniqueOrSetRow[],
+    modArt: ReadonlyMap<string, string>,
+    vanillaArt: ReadonlyMap<string, string> | undefined
+  ) => {
     const picks = new Map<string, NamedPick>();
     const usedKeys = new Set<string>();
+    const vanillaKeyRejected = new Set<string>();
+    const vanillaKeyUsed = new Set<string>();
     for (const row of [...rows.filter((entry) => !entry.disabled), ...rows.filter((entry) => entry.disabled)]) {
-      const key = artKeyCandidates(row.index).find((candidate) => art.has(candidate));
+      const candidates = artKeyCandidates(row.index);
+      const key = candidates.find((candidate) => modArt.has(candidate));
       if (key !== undefined) usedKeys.add(key);
-      const ownAsset = key === undefined ? undefined : art.get(key);
-      const baseAsset = input.assets.get(row.code);
-      const ownSprite = ownAsset === undefined ? null : resolveSprite(ownAsset, input.index);
-      const baseSprite = baseAsset === undefined ? null : resolveSprite(baseAsset, input.index);
+      const baseAsset = assets.get(row.code);
+      let ownAsset = key === undefined ? undefined : modArt.get(key);
+      if (ownAsset === undefined && vanillaArt !== undefined) {
+        /*
+         * A vanilla entry for a name the mod's file lacks: ESR reuses some vanilla names for other items (its Guardian
+         * Angel is a shield, vanilla's an armor), so the entry counts only when its asset folder matches the base's.
+         */
+        const vanillaKey = candidates.find((candidate) => vanillaArt.has(candidate));
+        const vanillaAsset = vanillaKey === undefined ? undefined : vanillaArt.get(vanillaKey);
+        if (vanillaAsset !== undefined) {
+          if (baseAsset !== undefined && assetFolder(vanillaAsset) === assetFolder(baseAsset)) {
+            ownAsset = vanillaAsset;
+            vanillaKeyUsed.add(row.name);
+          } else {
+            vanillaKeyRejected.add(row.name);
+          }
+        }
+      }
+      const ownSprite = ownAsset === undefined ? null : resolve(ownAsset);
+      const baseSprite = baseAsset === undefined ? null : resolve(baseAsset);
       let pick: NamedPick;
       if (ownAsset !== undefined && ownSprite !== null && (baseAsset === undefined || assetSlug(ownAsset) !== assetSlug(baseAsset))) {
         pick = { art: { asset: ownAsset, sprite: ownSprite }, rank: 2, ownArtMissing: false };
@@ -251,7 +349,7 @@ export function planItemIcons(input: IconPlanInput): IconPlan {
         pick = { art: null, rank: 0, ownArtMissing: ownAsset !== undefined && ownSprite === null };
       }
       const existing = picks.get(row.name);
-      if (existing !== undefined && (row.disabled || existing.rank >= pick.rank)) continue;
+      if (existing !== undefined && (row.disabled || score(existing) >= score(pick))) continue;
       picks.set(row.name, pick);
     }
     const byName = new Map<string, string>();
@@ -263,16 +361,21 @@ export function planItemIcons(input: IconPlanInput): IconPlan {
       own: values.filter((pick) => pick.rank === 2).length,
       base: values.filter((pick) => pick.rank === 1).length,
       none: values.filter((pick) => pick.rank === 0).length,
+      vanilla: values.filter((pick) => pick.art?.sprite.source === 'vanilla').length,
       ownArtMissing: values.filter((pick) => pick.ownArtMissing).length,
-      unusedKeys: [...art.keys()].filter((key) => !usedKeys.has(key) && !usedKeys.has(key.replace(/_new$/, ''))),
+      noneNames: [...picks].filter(([, pick]) => pick.rank === 0).map(([name]) => name),
+      vanillaKeyUsed: [...vanillaKeyUsed],
+      vanillaKeyRejected: [...vanillaKeyRejected],
+      unusedKeys: [...modArt.keys()].filter((key) => !usedKeys.has(key) && !usedKeys.has(key.replace(/_new$/, ''))),
     };
     return { byName, stats };
   };
 
-  const uniques = planNamed(input.uniques, input.uniqueArt);
-  const sets = planNamed(input.sets, input.setArt);
+  const uniques = planNamed(input.uniques, input.uniqueArt, vanilla?.uniqueArt);
+  const sets = planNamed(input.sets, input.setArt, vanilla?.setArt);
   return {
     bases,
+    basesFromVanilla,
     uniques: uniques.byName,
     sets: sets.byName,
     sprites,
@@ -325,11 +428,15 @@ export function fitInside(width: number, height: number, max: number = ICON_MAX_
   return { width: Math.max(1, Math.round(width * scale)), height: Math.max(1, Math.round(height * scale)) };
 }
 
-/** icons.json: only the entries whose slug got an image (decode failures drop out). */
+/**
+ * icons.json: only the entries whose slug got an image (decode failures drop out). `vanilla` (the art folder's
+ * provenance) is written, with the files that came from it, only when any did.
+ */
 export function buildIconsBundle(input: {
   esrVersion: string;
   esrTag: string | null;
-  plan: Pick<IconPlan, 'bases' | 'uniques' | 'sets'>;
+  vanilla?: { rootHash: string; extractedAt: string };
+  plan: Pick<IconPlan, 'bases' | 'uniques' | 'sets' | 'sprites'>;
   images: ReadonlyMap<string, { width: number; height: number }>;
   extension: string;
 }): IconsBundle {
@@ -342,11 +449,46 @@ export function buildIconsBundle(input: {
     }
     return icons;
   };
+  const vanillaFiles = [...input.plan.sprites]
+    .filter(([slug, sprite]) => sprite.source === 'vanilla' && input.images.has(slug))
+    .map(([slug]) => `${slug}.${input.extension}`)
+    .sort();
   return {
     esrVersion: input.esrVersion,
     esrTag: input.esrTag,
+    ...(input.vanilla !== undefined && vanillaFiles.length > 0 ? { vanilla: { ...input.vanilla, files: vanillaFiles } } : {}),
     bases: section(input.plan.bases),
     uniques: section(input.plan.uniques),
     sets: section(input.plan.sets),
   };
+}
+
+/**
+ * Compares the committed icons.json with one generated without the vanilla folder (CI, other machines): every entry
+ * the clone's art yields must be committed as is, and every other committed entry must point at a file the committed
+ * bundle lists as vanilla-derived (unverifiable here, accepted). Returns the differences (empty when consistent).
+ */
+export function compareWithoutVanilla(committed: IconsBundle, esrOnly: IconsBundle): string[] {
+  const problems: string[] = [];
+  if (committed.esrVersion !== esrOnly.esrVersion) problems.push(`esrVersion ${committed.esrVersion} ≠ ${esrOnly.esrVersion}`);
+  if (committed.esrTag !== esrOnly.esrTag) problems.push(`esrTag ${String(committed.esrTag)} ≠ ${String(esrOnly.esrTag)}`);
+  const vanillaFiles = new Set(committed.vanilla?.files ?? []);
+  const same = (a: ItemIconInfo, b: ItemIconInfo) => a.file === b.file && a.w === b.w && a.h === b.h;
+  const describe = (icon: ItemIconInfo) => `${icon.file} ${String(icon.w)}×${String(icon.h)}`;
+  for (const section of ['bases', 'uniques', 'sets'] as const) {
+    const old = committed[section];
+    const fresh = esrOnly[section];
+    for (const [key, icon] of Object.entries(old)) {
+      const expected = Object.hasOwn(fresh, key) ? fresh[key] : undefined;
+      if (vanillaFiles.has(icon.file)) {
+        // A vanilla file the clone now ships would come from the clone
+        if (expected?.file === icon.file) problems.push(`${section}/${key}: ${icon.file} is now in the clone`);
+        continue;
+      }
+      if (expected === undefined) problems.push(`${section}/${key}: not produced by the clone's art`);
+      else if (!same(icon, expected)) problems.push(`${section}/${key}: ${describe(icon)} ≠ ${describe(expected)}`);
+    }
+    for (const key of Object.keys(fresh)) if (!Object.hasOwn(old, key)) problems.push(`${section}/${key}: missing`);
+  }
+  return problems;
 }
