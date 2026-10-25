@@ -313,12 +313,31 @@ Snapshot fields for set items: `name`, `setName`, `setId`, `baseItem` (the base'
 }
 ```
 
+**Author choices: `base` and `socketed` (optional).** Two optional fields record what the author chose for an item. They are *author choices, not snapshots*:
+
+- `base` (runeword refs only): `{ "code": "kit", "name": "Kite Shield" }`, the runeword's base item; `code` is the `public/game-data/bases.json` code, `name` its display name at save time (shown as is when the code no longer resolves).
+- `socketed` (unique, mythical, runeword and set refs): the socket fillers in socket order, as names: `["Ko Rune", "Perfect Ruby", "Rainbow Facet"]`. Rune / gem / crystal / unique jewel names from the local data, or any free text. Gemwords (their sockets are the recipe) and freetext items (nothing to attach to) never carry it.
+- Limits: strings trimmed, non-empty, at most 100 characters; at most 6 fillers. `asBuildData` drops a malformed `base` or `socketed` (and blank or over-long fillers) but always keeps the item itself; unknown keys stay ignored.
+- They never make an item "changed" in the version diff, and a snapshot refresh (`resolveCurrentRef`, `refreshBuildData` on save) carries both over from the stored ref onto the rebuilt one, so an edit never drops the base or the jewels.
+- Builds saved before these fields existed simply lack them and read and render exactly as before; `build_data` is JSONB, so **no migration** is needed.
+
+```json
+{
+  "type": "runeword",
+  "name": "Spirit",
+  "variant": 1,
+  "snapshot": { "...": "..." },
+  "base": { "code": "kit", "name": "Kite Shield" },
+  "socketed": ["Rainbow Facet"]
+}
+```
+
 #### Full `build_data` Example
 
 ```json
 {
   "items": {
-    "helmet": { "type": "unique", "id": 42, "snapshot": { "name": "Harlequin Crest", "baseItem": "Shako", "properties": ["..."] } },
+    "helmet": { "type": "unique", "id": 42, "snapshot": { "name": "Harlequin Crest", "baseItem": "Shako", "properties": ["..."] }, "socketed": ["Ber Rune"] },
     "armor": { "type": "runeword", "name": "Enigma", "variant": 1, "snapshot": { "runes": ["Jah", "Ith", "Ber"], "columnAffixes": { "weaponsGloves": ["..."], "helmsBoots": ["..."], "armorShieldsBelts": ["..."] } } },
     "weapon": { "type": "unique", "id": 105, "snapshot": { "name": "Grief", "baseItem": "Phase Blade", "properties": ["..."] } },
     "shield": { "type": "unique", "id": 78, "snapshot": { "name": "Herald of Zakarum", "properties": ["..."] } },
@@ -331,7 +350,7 @@ Snapshot fields for set items: `name`, `setName`, `setId`, `baseItem` (the base'
   },
   "weaponSwap": {
     "weapon2": { "type": "runeword", "name": "Call to Arms", "variant": 1, "snapshot": { "runes": ["..."], "columnAffixes": { "weaponsGloves": ["..."], "helmsBoots": ["..."], "armorShieldsBelts": ["..."] } } },
-    "shield2": { "type": "runeword", "name": "Spirit", "variant": 1, "snapshot": { "runes": ["..."], "columnAffixes": { "weaponsGloves": ["..."], "helmsBoots": ["..."], "armorShieldsBelts": ["..."] } } }
+    "shield2": { "type": "runeword", "name": "Spirit", "variant": 1, "snapshot": { "runes": ["..."], "columnAffixes": { "weaponsGloves": ["..."], "helmsBoots": ["..."], "armorShieldsBelts": ["..."] } }, "base": { "code": "kit", "name": "Kite Shield" } }
   },
   "mercenary": {
     "helmet": { "type": "unique", "id": 150, "snapshot": { "name": "Andariel's Visage", "properties": ["..."] } },
@@ -637,6 +656,8 @@ When viewing a build, item stats are displayed using the **current data** from t
 3. **Tap/click badge**: Reveals the **original snapshot stats** from when the build author created or last edited the build
 4. **Item not found**: If the referenced item no longer exists in the viewer's current data (removed or renamed in a newer ESR version), fall back to displaying the snapshot data with a note: "This item may no longer exist in the current ESR version"
 
+The author choices `base` and `socketed` are not part of the comparison: a ref whose snapshot matches is `unchanged` whatever base or fillers it carries.
+
 ### Mobile Responsive
 
 On small screens (below `md` breakpoint), the equipment grid stacks to a **vertical list** of slot cards. The grid layout is used on tablet and larger screens. The tab bar spans the full width on mobile; on the Player tab, Charms and Ascendancy stack below the gear (they sit in a sticky side column from `lg` up).
@@ -724,6 +745,21 @@ When a user selects an item from the autocomplete:
 - **Gemword**: The reference stores the gemword's `name` and `variant` (compound key) and a full snapshot — same structure as runewords, with a `gems` recipe instead of `runes`
 - **Set item**: The reference stores the item's `name` (unique across `sets.json`) and a snapshot with its set (`setName`, `setId`), own lines and own partial bonuses
 - **Freetext**: If the user's input doesn't match any item, it's stored as a freetext entry with just the typed name
+
+**Base and socket fillers.** Under a filled slot the form shows the author choices (`components/ItemChoicesEditor.tsx`); picking another item in the slot starts with none.
+
+- **Base** (runewords only): a compact "Base" row with the chosen base's summary ("Kite Shield · Shield · 4 sockets · Req Str 75 · Req Lvl 15", using the base's maximum socket count) or "Choose base…", opening a searchable list and a "No base" entry. Candidates come from `utils/runewordBases.ts`: the local runeword (Dexie, with its same-name variants) is matched to the `runewords.json` rows by the Best Base engine (`matchRunewords` with the type-name tie-break, then `rowsForSockets` for the recipe's socket count/range); a base qualifies when `fitsItemTypes(base, row)` holds for one of those rows and its largest `socketCaps` entry is at least the row's sockets. Misc bases are excluded; the list is sorted by type name, tier (normal → exceptional → elite → mythical), then name. When the recipe does not match the game files, every weapon/armour base is offered with the note "Recipe not matched to the game files". The row is hidden when a matched recipe has no base (charm runewords); when the bundles fail to load it reads "Bases unavailable".
+- **Socket fillers**: "Sockets (n/N)" (runewords: "Jewel sockets") with a chip per filler and an "Add…" picker grouped as ESR Runes, LoD Runes, Kanji Runes, Gems, Crystals, Unique Jewels (`htmUniqueItems` category `Jewel`) and Custom (free text). Only names are stored.
+- **Caps** (`utils/sockets.ts`): a runeword's free sockets are its jewel sockets only: the largest `jewels` of the matched txt rows (narrowed to the rows the chosen base can hold), else the HTM recipe (`socketsMax - sockets`, or the "(N) Jewels" line), else 0, in which case the filler row is hidden. Uniques, mythicals and set items are capped by slot family:
+
+| Slot | Max fillers |
+| --- | --- |
+| Weapon, Weapon 2, Shield, Shield 2, Armor | 6 |
+| Helmet | 4 |
+| Gloves, Boots, Belt | 2 |
+| Amulet, Ring 1, Ring 2 | 1 |
+
+On the detail page the item card is followed by a small box with "Base: …" (resolved from `bases.json`, else the stored name) and "Socketed:" with each filler; a filler that is a local rune, gem or crystal lists its bonus lines for the slot's bonus column in muted text (`utils/socketFillers.ts`). The slot header shows a "⬢n" filler count.
 
 ### Form Layout
 

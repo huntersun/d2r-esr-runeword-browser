@@ -5,7 +5,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { ITEM_NOTE_MAX_LENGTH } from '../constants';
 import type { EquipmentSlot, ItemRef, WeaponSwapSlot } from '../buildData';
 import type { ItemDiff } from '../utils/itemDiff';
+import { socketedOf } from '../utils/itemChoices';
 import { BuildItemCard } from './BuildItemCard';
+import { ItemChoicesEditor } from './ItemChoicesEditor';
 import { EquipmentSlotPicker } from './EquipmentSlotPicker';
 import { ItemRefDisplay } from './ItemRefDisplay';
 
@@ -37,7 +39,8 @@ export function SlotCell({ label, slot, item, onChange, disabled, diff, note, on
     return (
       <div className="flex flex-col gap-2">
         <EquipmentSlotPicker label={label} slot={slot} value={item} disabled={disabled} onChange={onChange} />
-        {item !== null && <BuildItemCard item={item} slot={slot} setPieces={setPieces} />}
+        {item !== null && <ItemChoicesEditor item={item} slot={slot} disabled={disabled} onChange={onChange} />}
+        {item !== null && <BuildItemCard item={item} slot={slot} setPieces={setPieces} showChoices={false} />}
         {item !== null && onNoteChange !== undefined && (
           <Textarea
             value={note ?? ''}
@@ -59,11 +62,19 @@ export function SlotCell({ label, slot, item, onChange, disabled, diff, note, on
   // to the saved snapshot when the item is missing from the current ESR data).
   const status = diff?.status;
   const noteText = note?.trim();
+  const socketCount = item === null ? 0 : socketedOf(item).length;
 
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <p className="text-xs font-medium text-muted-foreground">
+          {label}
+          {socketCount > 0 && (
+            <span className="ml-1.5 font-normal" title={`${String(socketCount)} socketed`}>
+              ⬢{socketCount}
+            </span>
+          )}
+        </p>
         {status === 'changed' && (
           <button
             type="button"

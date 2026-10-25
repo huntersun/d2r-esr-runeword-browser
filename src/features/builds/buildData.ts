@@ -66,16 +66,29 @@ export interface SetItemSnapshot {
   readonly partial: readonly SetBonusGroupSnapshot[];
 }
 
+/** The author's chosen base for a runeword (bases.json `code`); absent on builds saved before it existed */
+export interface RunewordBaseChoice {
+  readonly code: string;
+  readonly name: string;
+}
+
+// `base` and `socketed` are AUTHOR CHOICES, not snapshots: the version diff ignores them,
+// and a snapshot refresh (resolveCurrentRef / refreshBuildData) carries them over unchanged.
+
 export interface UniqueItemRef {
   readonly type: 'unique';
   readonly id: number;
   readonly snapshot: UniqueSnapshot;
+  /** Author-chosen socket fillers (rune / gem / crystal / jewel names, free text allowed), in socket order */
+  readonly socketed?: readonly string[];
 }
 
 export interface MythicalItemRef {
   readonly type: 'mythical';
   readonly id: number;
   readonly snapshot: UniqueSnapshot;
+  /** Author-chosen socket fillers (rune / gem / crystal / jewel names, free text allowed), in socket order */
+  readonly socketed?: readonly string[];
 }
 
 export interface RunewordItemRef {
@@ -83,6 +96,9 @@ export interface RunewordItemRef {
   readonly name: string;
   readonly variant: number;
   readonly snapshot: RunewordSnapshot;
+  readonly base?: RunewordBaseChoice;
+  /** Author-chosen fillers for the runeword's free (jewel) sockets, in socket order */
+  readonly socketed?: readonly string[];
 }
 
 export interface GemwordItemRef {
@@ -97,6 +113,8 @@ export interface SetItemRef {
   readonly type: 'set';
   readonly name: string;
   readonly snapshot: SetItemSnapshot;
+  /** Author-chosen socket fillers (rune / gem / crystal / jewel names, free text allowed), in socket order */
+  readonly socketed?: readonly string[];
 }
 
 export interface FreetextItemRef {
@@ -105,6 +123,18 @@ export interface FreetextItemRef {
 }
 
 export type ItemRef = UniqueItemRef | MythicalItemRef | RunewordItemRef | GemwordItemRef | SetItemRef | FreetextItemRef;
+
+/** Item refs that can carry socket fillers (gemword sockets are the recipe; freetext has nothing to attach to). */
+export type SocketableItemRef = UniqueItemRef | MythicalItemRef | RunewordItemRef | SetItemRef;
+
+/** Most socket fillers stored on one item (the largest socket count in the game). */
+export const SOCKETED_MAX_ENTRIES = 6;
+/** Longest filler name / base code / base name accepted. */
+export const ITEM_CHOICE_MAX_LENGTH = 100;
+
+export function supportsSocketed(ref: ItemRef): ref is SocketableItemRef {
+  return ref.type === 'unique' || ref.type === 'mythical' || ref.type === 'runeword' || ref.type === 'set';
+}
 
 export type EquipmentSlot = 'helmet' | 'armor' | 'weapon' | 'shield' | 'gloves' | 'boots' | 'belt' | 'amulet' | 'ring1' | 'ring2';
 export type WeaponSwapSlot = 'weapon2' | 'shield2';
@@ -193,6 +223,54 @@ export function isItemRef(value: unknown): value is ItemRef {
   }
 }
 
+const isChoiceText = (value: unknown): value is string =>
+  typeof value === 'string' && value.trim().length > 0 && value.trim().length <= ITEM_CHOICE_MAX_LENGTH;
+
+/** A stored runeword base choice, or undefined when absent or malformed. */
+export function asRunewordBaseChoice(value: unknown): RunewordBaseChoice | undefined {
+  if (!isRecord(value) || !isChoiceText(value.code) || !isChoiceText(value.name)) return undefined;
+  return { code: value.code.trim(), name: value.name.trim() };
+}
+
+/**
+ * Stored socket fillers, cleaned: trimmed, blank / non-string / over-long entries dropped, at most
+ * SOCKETED_MAX_ENTRIES kept. Undefined when absent, not an array, or nothing valid is left.
+ */
+export function asSocketed(value: unknown): readonly string[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const fillers = value
+    .filter(isChoiceText)
+    .map((entry) => entry.trim())
+    .slice(0, SOCKETED_MAX_ENTRIES);
+  return fillers.length > 0 ? fillers : undefined;
+}
+
+/**
+ * Re-validates the optional author choices (`base`, `socketed`) of a ref that passed isItemRef:
+ * malformed ones are dropped, never the item. Refs without them are returned as is, and the fields
+ * are left alone on types that do not use them (unknown keys are ignored, as everywhere else).
+ */
+export function sanitizeItemRef(ref: ItemRef): ItemRef {
+  if (!supportsSocketed(ref)) return ref;
+  const raw = ref as unknown as UnknownRecord;
+  const choiceKeys = ref.type === 'runeword' ? ['base', 'socketed'] : ['socketed'];
+  if (!choiceKeys.some((key) => key in raw)) return ref;
+  const rest = Object.fromEntries(Object.entries(raw).filter(([key]) => !choiceKeys.includes(key)));
+  const base = ref.type === 'runeword' ? asRunewordBaseChoice(raw.base) : undefined;
+  const socketed = asSocketed(raw.socketed);
+  return {
+    ...rest,
+    ...(base !== undefined ? { base } : {}),
+    ...(socketed !== undefined ? { socketed } : {}),
+  } as unknown as ItemRef;
+}
+
+function itemSection(value: unknown): Record<string, ItemRef> | undefined {
+  const section = filterEntries(value, isItemRef);
+  if (section === undefined) return undefined;
+  return Object.fromEntries(Object.entries(section).map(([slot, ref]) => [slot, sanitizeItemRef(ref)]));
+}
+
 /** Keeps only the entries of a jsonb object whose value passes `isValid`; undefined if not an object. */
 function filterEntries<T>(value: unknown, isValid: (entry: unknown) => entry is T): Record<string, T> | undefined {
   if (!isRecord(value)) return undefined;
@@ -206,14 +284,14 @@ const optionalString = (value: unknown): string | null | undefined => (typeof va
  * Defensive read of the jsonb column into BuildData. The column is user-writable
  * (any authenticated owner can PATCH arbitrary JSON through PostgREST), so every
  * field is validated: malformed item refs, notes and charms are dropped rather than
- * crashing the detail/edit screens.
+ * crashing the detail/edit screens. A malformed `base` / `socketed` drops just that field.
  */
 export function asBuildData(value: unknown): BuildData {
   if (!isRecord(value)) return {};
   return {
-    items: filterEntries(value.items, isItemRef),
-    weaponSwap: filterEntries(value.weaponSwap, isItemRef),
-    mercenary: filterEntries(value.mercenary, isItemRef),
+    items: itemSection(value.items),
+    weaponSwap: itemSection(value.weaponSwap),
+    mercenary: itemSection(value.mercenary),
     itemNotes: filterEntries(value.itemNotes, isString),
     weaponSwapNotes: filterEntries(value.weaponSwapNotes, isString),
     mercenaryNotes: filterEntries(value.mercenaryNotes, isString),

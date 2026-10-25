@@ -12,6 +12,7 @@ import type {
   UniqueSnapshot,
   WeaponSwapSlot,
 } from '../buildData';
+import { supportsSocketed } from '../buildData';
 import { gemwordToRef, mythicalToRef, runewordToRef, setItemToRef, uniqueToRef } from './buildSnapshot';
 import { findMythicalRecord, findUniqueRecord } from './itemLookup';
 import { propertyText } from './propertyText';
@@ -39,11 +40,31 @@ export interface BuildItemDiffs {
 }
 
 /**
+ * Copies the author's choices (`base`, `socketed`) from the stored ref onto a freshly
+ * rebuilt one. They are not part of the snapshot, so rebuilding must never drop them.
+ */
+export function withAuthorChoices(stored: ItemRef, current: ItemRef): ItemRef {
+  if (current === stored || !supportsSocketed(stored) || !supportsSocketed(current)) return current;
+  const base = stored.type === 'runeword' && current.type === 'runeword' ? stored.base : undefined;
+  return {
+    ...current,
+    ...(base !== undefined ? { base } : {}),
+    ...(stored.socketed !== undefined ? { socketed: stored.socketed } : {}),
+  };
+}
+
+/**
  * Resolves an item reference against the current local DB, rebuilding its snapshot
- * from live data. Returns null when the item no longer exists (removed/renamed in a
- * newer ESR version). Freetext items have no DB row, so they resolve to themselves.
+ * from live data and keeping the author's choices (`base`, `socketed`). Returns null
+ * when the item no longer exists (removed/renamed in a newer ESR version). Freetext
+ * items have no DB row, so they resolve to themselves.
  */
 export async function resolveCurrentRef(ref: ItemRef): Promise<ItemRef | null> {
+  const current = await resolveCurrentSnapshotRef(ref);
+  return current === null ? null : withAuthorChoices(ref, current);
+}
+
+async function resolveCurrentSnapshotRef(ref: ItemRef): Promise<ItemRef | null> {
   switch (ref.type) {
     case 'unique': {
       const item = await findUniqueRecord(ref);
@@ -171,6 +192,7 @@ function setSnapshotsEqual(a: SetItemSnapshot, b: SetItemSnapshot): boolean {
 
 /**
  * Whether two item references carry equivalent snapshots (freetext compares by name).
+ * The author's choices (`base`, `socketed`) are not snapshots and never count as a change.
  * Affix/property lists compare as whole text, so a line the ESR site re-wraps (split
  * vs merged, whitespace) is not a change, while any wording/number/order change is.
  */

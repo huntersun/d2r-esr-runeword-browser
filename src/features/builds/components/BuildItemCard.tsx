@@ -6,7 +6,9 @@ import { MythicalUniqueCard } from '@/features/mythical-uniques';
 import { RunewordCard } from '@/features/runewords';
 import { GemwordCard, useGemBonusMap } from '@/features/gemwords';
 import type { EquipmentSlot, ItemRef, WeaponSwapSlot } from '../buildData';
+import { hasItemChoices } from '../utils/itemChoices';
 import { itemRefKey, resolveFullItem } from '../utils/resolveItem';
+import { ItemChoicesDisplay } from './ItemChoicesDisplay';
 import { ItemRefDisplay } from './ItemRefDisplay';
 import { SetItemBuildCard } from './SetItemBuildCard';
 
@@ -23,6 +25,8 @@ interface BuildItemCardProps {
   readonly slot: EquipmentSlot | WeaponSwapSlot;
   /** Set items only: pieces of the item's set equipped in this section (marks its partial groups active/inactive). */
   readonly setPieces?: number;
+  /** Show the author's choices (runeword base, socket fillers) under the card; off in the form, which edits them. */
+  readonly showChoices?: boolean;
 }
 
 /**
@@ -30,7 +34,17 @@ interface BuildItemCardProps {
  * from the viewer's current local data. Falls back to the saved snapshot text for
  * freetext items, items missing from the current ESR data, or while data loads.
  */
-export function BuildItemCard({ item, slot, setPieces }: BuildItemCardProps) {
+export function BuildItemCard({ item, slot, setPieces, showChoices = true }: BuildItemCardProps) {
+  if (!showChoices || !hasItemChoices(item)) return <ItemCard item={item} slot={slot} setPieces={setPieces} />;
+  return (
+    <div className="flex h-full flex-col gap-1.5">
+      <ItemCard item={item} slot={slot} setPieces={setPieces} />
+      <ItemChoicesDisplay item={item} slot={slot} />
+    </div>
+  );
+}
+
+function ItemCard({ item, slot, setPieces }: Omit<BuildItemCardProps, 'showChoices'>) {
   const resolved = useLiveQuery(() => resolveFullItem(item), [itemRefKey(item)]);
 
   if (resolved) {
