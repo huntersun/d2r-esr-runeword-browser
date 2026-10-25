@@ -15,6 +15,7 @@ import { readdirSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import type { IconsBundle, ItemIconInfo } from '../engine/schema.ts';
 import type { UniqueOrSetRow } from './itemNames.ts';
+import { type TintRef, untintedFile } from './itemTint.ts';
 
 export const ESR_HD_ITEMS_FILE = 'Eastern_Sun_Resurrected.mpq/data/hd/items/items.json';
 export const ESR_HD_UNIQUES_FILE = 'Eastern_Sun_Resurrected.mpq/data/hd/items/uniques.json';
@@ -227,6 +228,9 @@ export interface IconPlan {
   readonly uniques: ReadonlyMap<string, string>;
   /** Set item display name → asset slug */
   readonly sets: ReadonlyMap<string, string>;
+  /** Unique / set item display name → the row its icon came from and whether it is the item's own art */
+  readonly uniqueChoices: ReadonlyMap<string, NamedArtChoice>;
+  readonly setChoices: ReadonlyMap<string, NamedArtChoice>;
   /** Slug → source and real relative sprite path, one per distinct asset */
   readonly sprites: ReadonlyMap<string, ResolvedSprite>;
   /** Base codes without an items.json entry (mod or vanilla) */
@@ -260,6 +264,18 @@ export interface VanillaArt {
   readonly setArt: ReadonlyMap<string, string>;
 }
 
+/** The row behind a unique / set item's icon (for its inventory colour transform) */
+export interface NamedArtChoice {
+  /** Asset slug of the chosen art */
+  readonly slug: string;
+  /** The item's own art (rank 2), not its base's */
+  readonly own: boolean;
+  /** Base item code of the row */
+  readonly code: string;
+  /** The row's `invtransform` colour code (blank: none) */
+  readonly invTransform: string;
+}
+
 type Rank = 0 | 1 | 2;
 /** Rank first; within a rank the clone's art beats the vanilla folder's */
 const score = (pick: NamedPick): number => pick.rank * 2 + (pick.art?.sprite.source === 'esr' ? 1 : 0);
@@ -268,6 +284,7 @@ interface NamedPick {
   readonly art: { readonly asset: string; readonly sprite: ResolvedSprite } | null;
   readonly rank: Rank;
   readonly ownArtMissing: boolean;
+  readonly row: UniqueOrSetRow;
 }
 
 export function planItemIcons(input: IconPlanInput): IconPlan {
@@ -342,19 +359,30 @@ export function planItemIcons(input: IconPlanInput): IconPlan {
       const baseSprite = baseAsset === undefined ? null : resolve(baseAsset);
       let pick: NamedPick;
       if (ownAsset !== undefined && ownSprite !== null && (baseAsset === undefined || assetSlug(ownAsset) !== assetSlug(baseAsset))) {
-        pick = { art: { asset: ownAsset, sprite: ownSprite }, rank: 2, ownArtMissing: false };
+        pick = { art: { asset: ownAsset, sprite: ownSprite }, rank: 2, ownArtMissing: false, row };
       } else if (baseAsset !== undefined && baseSprite !== null) {
-        pick = { art: { asset: baseAsset, sprite: baseSprite }, rank: 1, ownArtMissing: ownAsset !== undefined && ownSprite === null };
+        pick = {
+          art: { asset: baseAsset, sprite: baseSprite },
+          rank: 1,
+          ownArtMissing: ownAsset !== undefined && ownSprite === null,
+          row,
+        };
       } else {
-        pick = { art: null, rank: 0, ownArtMissing: ownAsset !== undefined && ownSprite === null };
+        pick = { art: null, rank: 0, ownArtMissing: ownAsset !== undefined && ownSprite === null, row };
       }
       const existing = picks.get(row.name);
       if (existing !== undefined && (row.disabled || score(existing) >= score(pick))) continue;
       picks.set(row.name, pick);
     }
     const byName = new Map<string, string>();
+    const choices = new Map<string, NamedArtChoice>();
     // Sprites are registered for the final picks only, so a replaced pick leaves no unused file behind
-    for (const [name, pick] of picks) if (pick.art !== null) byName.set(name, addSprite(pick.art.asset, pick.art.sprite));
+    for (const [name, pick] of picks) {
+      if (pick.art === null) continue;
+      const slug = addSprite(pick.art.asset, pick.art.sprite);
+      byName.set(name, slug);
+      choices.set(name, { slug, own: pick.rank === 2, code: pick.row.code, invTransform: pick.row.invTransform });
+    }
     const values = [...picks.values()];
     const stats: NamedIconStats = {
       requested: picks.size,
@@ -368,7 +396,7 @@ export function planItemIcons(input: IconPlanInput): IconPlan {
       vanillaKeyRejected: [...vanillaKeyRejected],
       unusedKeys: [...modArt.keys()].filter((key) => !usedKeys.has(key) && !usedKeys.has(key.replace(/_new$/, ''))),
     };
-    return { byName, stats };
+    return { byName, choices, stats };
   };
 
   const uniques = planNamed(input.uniques, input.uniqueArt, vanilla?.uniqueArt);
@@ -378,6 +406,8 @@ export function planItemIcons(input: IconPlanInput): IconPlan {
     basesFromVanilla,
     uniques: uniques.byName,
     sets: sets.byName,
+    uniqueChoices: uniques.choices,
+    setChoices: sets.choices,
     sprites,
     missingEntry,
     missingArt,
@@ -437,12 +467,25 @@ export function buildIconsBundle(input: {
   esrTag: string | null;
   vanilla?: { rootHash: string; extractedAt: string };
   plan: Pick<IconPlan, 'bases' | 'uniques' | 'sets' | 'sprites'>;
+  /** Recoloured variants by unique / set item name (`planTints`); their images are in `images` under the variant slug */
+  tints?: { uniques: ReadonlyMap<string, TintRef>; sets: ReadonlyMap<string, TintRef> };
   images: ReadonlyMap<string, { width: number; height: number }>;
   extension: string;
 }): IconsBundle {
-  const section = (bySlug: ReadonlyMap<string, string>): Record<string, ItemIconInfo> => {
+  const section = (bySlug: ReadonlyMap<string, string>, tints?: ReadonlyMap<string, TintRef>): Record<string, ItemIconInfo> => {
     const icons: Record<string, ItemIconInfo> = {};
     for (const [key, slug] of bySlug) {
+      const tint = tints?.get(key);
+      const tinted = tint === undefined ? undefined : input.images.get(tint.slug);
+      if (tint !== undefined && tinted !== undefined) {
+        icons[key] = {
+          file: `${tint.slug}.${input.extension}`,
+          w: tinted.width,
+          h: tinted.height,
+          tint: { map: tint.map, color: tint.color },
+        };
+        continue;
+      }
       const image = input.images.get(slug);
       if (image === undefined) continue;
       icons[key] = { file: `${slug}.${input.extension}`, w: image.width, h: image.height };
@@ -458,15 +501,17 @@ export function buildIconsBundle(input: {
     esrTag: input.esrTag,
     ...(input.vanilla !== undefined && vanillaFiles.length > 0 ? { vanilla: { ...input.vanilla, files: vanillaFiles } } : {}),
     bases: section(input.plan.bases),
-    uniques: section(input.plan.uniques),
-    sets: section(input.plan.sets),
+    uniques: section(input.plan.uniques, input.tints?.uniques),
+    sets: section(input.plan.sets, input.tints?.sets),
   };
 }
 
 /**
  * Compares the committed icons.json with one generated without the vanilla folder (CI, other machines): every entry
  * the clone's art yields must be committed as is, and every other committed entry must point at a file the committed
- * bundle lists as vanilla-derived (unverifiable here, accepted). Returns the differences (empty when consistent).
+ * bundle lists as vanilla-derived (unverifiable here, accepted). A recoloured entry (`tint`; the colour maps are in the
+ * vanilla folder) is compared through its untinted file: that file and the size must match the clone's entry, unless
+ * the untinted file is vanilla-derived. Returns the differences (empty when consistent).
  */
 export function compareWithoutVanilla(committed: IconsBundle, esrOnly: IconsBundle): string[] {
   const problems: string[] = [];
@@ -478,8 +523,12 @@ export function compareWithoutVanilla(committed: IconsBundle, esrOnly: IconsBund
   for (const section of ['bases', 'uniques', 'sets'] as const) {
     const old = committed[section];
     const fresh = esrOnly[section];
-    for (const [key, icon] of Object.entries(old)) {
+    for (const [key, committedIcon] of Object.entries(old)) {
       const expected = Object.hasOwn(fresh, key) ? fresh[key] : undefined;
+      const icon =
+        committedIcon.tint === undefined
+          ? committedIcon
+          : { file: untintedFile(committedIcon.file), w: committedIcon.w, h: committedIcon.h };
       if (vanillaFiles.has(icon.file)) {
         // A vanilla file the clone now ships would come from the clone
         if (expected?.file === icon.file) problems.push(`${section}/${key}: ${icon.file} is now in the clone`);

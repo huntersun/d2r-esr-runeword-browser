@@ -741,4 +741,9 @@ export interface ItemIconInfo {
   /** Pixel size of the image (cropped to its opaque pixels, fit inside 128×128) */
   w: number;
   h: number;
+  /**
+   * Unique / set items only: the inventory colour transform baked into `file` (the base row's `InvTrans` colour-map
+   * file without `.dat` and the item row's `invtransform` colour code), approximating the game's palette recolour
+   */
+  tint?: { map: string; color: string };
 }

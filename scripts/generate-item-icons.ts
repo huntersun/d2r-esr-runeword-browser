@@ -9,6 +9,8 @@
  * Sources: the ESR clone (--esr <dir> | ESR_SOURCE_DIR | ../Eastern_Sun_Resurrected) and the vanilla D2R art folder
  * extracted from a game install (--vanilla <dir> | D2R_VANILLA_ART_DIR | ../d2r-vanilla-art; paths relative to the repo
  * root). The clone's sprite wins; the vanilla one fills the gaps.
+ * Unique / set items with an inventory colour transform (`invtransform` + the base's `InvTrans`) also get a recoloured
+ * variant, approximating the game's palette recolour with the vanilla folder's colour maps (build/itemTint.ts).
  * --check regenerates in memory and exits 1 when icons.json or any image differs from the committed files. Without the
  * vanilla folder it verifies only the clone-derived part, accepts the committed vanilla-derived files with a warning and
  * exits 0; writing without the folder is refused (it would drop those files).
@@ -48,6 +50,21 @@ import {
   VANILLA_HD_UNIQUES_FILE,
   type VanillaArt,
 } from '../src/features/game-data/build/itemIcons.ts';
+import {
+  buildTint,
+  COLORMAP_DIR,
+  COLORMAP_FILES,
+  colormapBlock,
+  GREYSCALE_MAX_CHROMA,
+  meanChroma,
+  PALETTE_FILE,
+  parsePalette,
+  planTints,
+  readInvTrans,
+  type Tint,
+  TINT_COLORS,
+  type TintStats,
+} from '../src/features/game-data/build/itemTint.ts';
 import { serializeBundle } from '../src/features/game-data/build/writeBundle.ts';
 import { decodeSprite } from '../src/features/loot-filter/engine/sprite.ts';
 import { git, REPO_ROOT, resolveEsrDir, resolveVanillaArtDir } from './lib/esrClone.ts';
@@ -56,6 +73,8 @@ const OUTPUT_DIR = join(REPO_ROOT, 'public', 'game-data');
 const ICONS_DIR = join(OUTPUT_DIR, 'icons');
 const EXTENSION = 'webp';
 const WEBP_QUALITY = 80;
+/** colors.txt in the vanilla art folder (the colour codes' block order) */
+const VANILLA_COLORS_FILE = 'data/global/excel/colors.txt';
 
 interface EncodedIcon {
   width: number;
@@ -63,11 +82,15 @@ interface EncodedIcon {
   bytes: Buffer;
 }
 
-async function encodeIcon(spritePath: string): Promise<EncodedIcon> {
-  const sprite = decodeSprite(new Uint8Array(readFileSync(spritePath)));
+const readSprite = (path: string) => decodeSprite(new Uint8Array(readFileSync(path)));
+
+/** Decodes, crops, recolours (`tint`, on the full-size pixels), fits inside 128 × 128 and encodes one sprite. */
+async function encodeIcon(spritePath: string, tint?: Tint): Promise<EncodedIcon> {
+  const sprite = readSprite(spritePath);
   const box = opaqueBounds(sprite.width, sprite.height, sprite.rgba);
   if (box === null) throw new Error('fully transparent');
   const cropped = cropRgba(sprite.width, sprite.rgba, box);
+  tint?.apply(cropped);
   const size = fitInside(box.width, box.height);
   const bytes = await sharp(cropped, { raw: { width: box.width, height: box.height, channels: 4 } })
     .resize(size.width, size.height, { fit: 'fill', kernel: 'lanczos3' })
@@ -81,6 +104,19 @@ interface VanillaFolder {
   readonly spritesDir: string;
   readonly rootHash: string;
   readonly extractedAt: string;
+  /** act1 pal.dat as RGB */
+  readonly palette: Uint8Array;
+  /** Colour-map file (without `.dat`) → bytes */
+  readonly colormaps: ReadonlyMap<string, Uint8Array>;
+}
+
+/** colors.txt (`Transform Color`, `Code`): the codes must be TINT_COLORS in order, since a code's row is its block index. */
+function checkColorsTxt(path: string): void {
+  const codes = parseTsv(readFileSync(path, 'utf8'), 'colors.txt').rows.map((row) => row.str('Code'));
+  if (codes.join(',') !== TINT_COLORS.join(',')) {
+    console.error(`${path}: colour codes ${codes.join(', ')} differ from the expected ${TINT_COLORS.join(', ')}`);
+    process.exit(1);
+  }
 }
 
 /** The vanilla art folder, or null when the directory does not exist; exits when it exists but is incomplete. */
@@ -89,7 +125,15 @@ function readVanillaFolder(dir: string): VanillaFolder | null {
   const spritesDir = join(dir, VANILLA_HD_ITEM_SPRITES_DIR);
   const required = [
     spritesDir,
-    ...[VANILLA_HD_ITEMS_FILE, VANILLA_HD_UNIQUES_FILE, VANILLA_HD_SETS_FILE, VANILLA_BUILD_CONFIG_FILE].map((file) => join(dir, file)),
+    ...[
+      VANILLA_HD_ITEMS_FILE,
+      VANILLA_HD_UNIQUES_FILE,
+      VANILLA_HD_SETS_FILE,
+      VANILLA_BUILD_CONFIG_FILE,
+      PALETTE_FILE,
+      VANILLA_COLORS_FILE,
+      ...COLORMAP_FILES.map((file) => `${COLORMAP_DIR}/${file}.dat`),
+    ].map((file) => join(dir, file)),
   ];
   const missing = required.filter((path) => !existsSync(path));
   if (missing.length > 0) {
@@ -103,6 +147,8 @@ function readVanillaFolder(dir: string): VanillaFolder | null {
     process.exit(1);
   }
   const json = (file: string): unknown => JSON.parse(readFileSync(join(dir, file), 'utf8'));
+  checkColorsTxt(join(dir, VANILLA_COLORS_FILE));
+  const bytes = (file: string) => new Uint8Array(readFileSync(join(dir, file)));
   return {
     art: {
       index: buildSpriteIndex(listFilesRecursive(spritesDir)),
@@ -113,6 +159,8 @@ function readVanillaFolder(dir: string): VanillaFolder | null {
     spritesDir,
     rootHash,
     extractedAt: statSync(configPath).mtime.toISOString().slice(0, 10),
+    palette: parsePalette(bytes(PALETTE_FILE)),
+    colormaps: new Map(COLORMAP_FILES.map((file) => [file, bytes(`${COLORMAP_DIR}/${file}.dat`)])),
   };
 }
 
@@ -164,6 +212,7 @@ async function main(): Promise<void> {
   const table = (name: string) => parseTsv(readFileSync(join(esrDir, ESR_EXCEL_DIR, `${name}.txt`), 'utf8'), `${name}.txt`);
   const uniques = readUniqueOrSetRows(table('uniqueitems'), 'code', strings);
   const sets = readUniqueOrSetRows(table('setitems'), 'item', strings);
+  const invTrans = readInvTrans([table('weapons'), table('armor'), table('misc')]);
   const index = buildSpriteIndex(listFilesRecursive(spritesDir));
   const plan = planItemIcons({
     codes,
@@ -177,6 +226,18 @@ async function main(): Promise<void> {
   });
 
   const sourceDirs: Record<ArtSource, string> = { esr: spritesDir, vanilla: vanilla?.spritesDir ?? '' };
+  // Inventory colour transforms need the vanilla folder's palette files; without it no entry is recoloured
+  const tintPlan = planTints({
+    uniqueChoices: plan.uniqueChoices,
+    setChoices: plan.setChoices,
+    invTrans,
+    colormaps: vanilla === null ? null : new Set(vanilla.colormaps.keys()),
+    tintOwnArt: (slug) => {
+      const sprite = plan.sprites.get(slug);
+      return sprite !== undefined && meanChroma(readSprite(join(sourceDirs[sprite.source], sprite.path)).rgba) <= GREYSCALE_MAX_CHROMA;
+    },
+  });
+
   const images = new Map<string, EncodedIcon>();
   const failures: string[] = [];
   for (const [slug, sprite] of plan.sprites) {
@@ -186,11 +247,25 @@ async function main(): Promise<void> {
       failures.push(`${sprite.source}: ${sprite.path}: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
+  const tints = new Map<string, Tint>();
+  for (const [slug, variant] of tintPlan.variants) {
+    const sprite = plan.sprites.get(variant.source);
+    const map = vanilla?.colormaps.get(variant.map);
+    if (sprite === undefined || vanilla === null || map === undefined || !images.has(variant.source)) continue;
+    const key = `${variant.map}-${variant.color}`;
+    let tint = tints.get(key);
+    if (tint === undefined) {
+      tint = buildTint(vanilla.palette, colormapBlock(map, TINT_COLORS.indexOf(variant.color)));
+      tints.set(key, tint);
+    }
+    images.set(slug, await encodeIcon(join(sourceDirs[sprite.source], sprite.path), tint));
+  }
   const bundle = buildIconsBundle({
     esrVersion,
     esrTag,
     ...(vanilla === null ? {} : { vanilla: { rootHash: vanilla.rootHash, extractedAt: vanilla.extractedAt } }),
     plan,
+    tints: tintPlan,
     images,
     extension: EXTENSION,
   });
@@ -198,6 +273,17 @@ async function main(): Promise<void> {
   const files = new Map([...images].map(([slug, image]) => [`${slug}.${EXTENSION}`, image.bytes]));
   const totalBytes = [...files.values()].reduce((sum, bytes) => sum + bytes.byteLength, 0);
   const vanillaFileCount = [...plan.sprites.values()].filter((sprite) => sprite.source === 'vanilla').length;
+  const tintedFiles = new Set(
+    [bundle.uniques, bundle.sets].flatMap((section) =>
+      Object.values(section)
+        .filter((icon) => icon.tint !== undefined)
+        .map((icon) => icon.file)
+    )
+  );
+  const usedFiles = new Set(
+    [bundle.bases, bundle.uniques, bundle.sets].flatMap((section) => Object.values(section).map((icon) => icon.file))
+  );
+  const unusedFiles = [...files.keys()].filter((name) => !usedFiles.has(name));
   const failedEntries = [plan.bases, plan.uniques, plan.sets].reduce(
     (sum, map) => sum + [...map.values()].filter((slug) => !images.has(slug)).length,
     0
@@ -221,6 +307,10 @@ async function main(): Promise<void> {
   console.log(
     `  icons written (distinct assets): ${String(files.size)} (${String(vanillaFileCount)} from vanilla art), ${(totalBytes / 1024).toFixed(1)} KB`
   );
+  printTints('uniques', tintPlan.uniqueStats);
+  printTints('set items', tintPlan.setStats);
+  console.log(`    recoloured files (distinct asset, map, colour): ${String(tintedFiles.size)}`);
+  console.log(`    untinted files only the recoloured variants use: ${String(unusedFiles.length)}${listCodes(unusedFiles)}`);
   console.log(`  decode failures: ${String(failures.length)} sprites, ${String(failedEntries)} entries`);
   for (const failure of failures) console.log(`    - ${failure}`);
 
@@ -267,10 +357,21 @@ function checkWithoutVanilla(esrOnly: IconsBundle, files: ReadonlyMap<string, Bu
   if (!existsSync(iconsJson)) return ['icons.json (missing)'];
   const committed = JSON.parse(readFileSync(iconsJson, 'utf8')) as IconsBundle;
   const vanillaFiles = new Set(committed.vanilla?.files ?? []);
+  // Recoloured files need the vanilla folder's colour maps: accepted unverified, like the vanilla-derived ones
+  const tintedFiles = new Set(
+    [committed.uniques, committed.sets].flatMap((section) =>
+      Object.values(section)
+        .filter((icon) => icon.tint !== undefined)
+        .map((icon) => icon.file)
+    )
+  );
   const stale = compareWithoutVanilla(committed, esrOnly).map((problem) => `icons.json (${problem})`);
   for (const [name, bytes] of files) if (!sameFile(name, bytes)) stale.push(`icons/${name}`);
   for (const name of vanillaFiles) if (!existsSync(join(ICONS_DIR, name))) stale.push(`icons/${name} (vanilla, missing)`);
-  for (const name of listIconFiles()) if (!files.has(name) && !vanillaFiles.has(name)) stale.push(`icons/${name} (orphan)`);
+  for (const name of tintedFiles) if (!existsSync(join(ICONS_DIR, name))) stale.push(`icons/${name} (recoloured, missing)`);
+  for (const name of listIconFiles()) {
+    if (!files.has(name) && !vanillaFiles.has(name) && !tintedFiles.has(name)) stale.push(`icons/${name} (orphan)`);
+  }
   return stale;
 }
 
@@ -298,6 +399,14 @@ function printNamed(label: string, rows: number, stats: NamedIconStats, duplicat
   }
   console.log(`    art keys no row matched: ${String(stats.unusedKeys.length)}${listCodes(stats.unusedKeys)}`);
   if (duplicates.length > 0) console.log(`    repeated art keys (first wins): ${duplicates.join(', ')}`);
+}
+
+function printTints(label: string, stats: TintStats): void {
+  console.log(`  colour transforms, ${label}: ${String(stats.recoloured)} recoloured (${String(stats.recolouredOwnArt)} of them own art)`);
+  console.log(`    colour code but the base never recolours (InvTrans 0, 3, 4): ${String(stats.neverRecolour)}`);
+  console.log(`    colour code but no palette data (vanilla folder missing): ${String(stats.noPaletteData)}`);
+  if (stats.ownArtSkipped > 0) console.log(`    own art left untinted: ${String(stats.ownArtSkipped)}`);
+  if (stats.unknownColor.length > 0) console.log(`    unknown colour codes: ${stats.unknownColor.join(', ')}`);
 }
 
 function listCodes(codes: readonly string[]): string {

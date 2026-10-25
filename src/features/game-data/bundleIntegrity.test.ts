@@ -6,6 +6,7 @@ import { EXTRA_FAMILIES } from './build/cube/cubeCatalog.ts';
 import { CUBE_FAMILIES } from './build/cube/cubeFamilies.ts';
 import { readEsrSources } from './build/esrSources.ts';
 import { generateBundles } from './build/generateBundles.ts';
+import { COLORMAP_FILES, TINT_COLORS, untintedFile } from './build/itemTint.ts';
 import { serializeBundle } from './build/writeBundle.ts';
 import {
   GAME_DATA_SCHEMA,
@@ -109,15 +110,28 @@ describe('committed game-data bundles', () => {
     expect(vanillaFiles).toEqual([...new Set(vanillaFiles)].sort());
     for (const file of vanillaFiles) expect(existsSync(resolve(OUTPUT_DIR, 'icons', file)), file).toBe(true);
     expect(manifest.counts.vanillaIconFiles).toBe(vanillaFiles.length);
-    const usedFiles = new Set(
-      [icons.bases, icons.uniques, icons.sets].flatMap((section) => Object.values(section).map((icon) => icon.file))
-    );
+    const entries = [icons.bases, icons.uniques, icons.sets].flatMap((section) => Object.values(section));
+    // A vanilla file is used directly or through a recoloured variant made from it
+    const usedFiles = new Set(entries.map((icon) => untintedFile(icon.file)));
     for (const file of vanillaFiles) expect(usedFiles.has(file), file).toBe(true);
-    expect(manifest.counts.vanillaIcons).toBe(
-      [icons.bases, icons.uniques, icons.sets]
-        .flatMap((section) => Object.values(section))
-        .filter((icon) => vanillaFiles.includes(icon.file)).length
-    );
+    expect(manifest.counts.vanillaIcons).toBe(entries.filter((icon) => vanillaFiles.includes(untintedFile(icon.file))).length);
+
+    // Inventory colour transforms: only unique / set entries, file named after the untinted file, map and colour
+    expect(Object.values(icons.bases).some((icon) => icon.tint !== undefined)).toBe(false);
+    const tinted = [icons.uniques, icons.sets].flatMap((section) => Object.values(section)).filter((icon) => icon.tint !== undefined);
+    for (const icon of tinted) {
+      const tint = icon.tint ?? { map: '', color: '' };
+      expect(icon.file).toBe(`${untintedFile(icon.file).replace(/\.webp$/, '')}__${tint.map}-${tint.color}.webp`);
+      expect(COLORMAP_FILES as readonly string[]).toContain(tint.map);
+      expect(TINT_COLORS as readonly string[]).toContain(tint.color);
+      expect(existsSync(resolve(OUTPUT_DIR, 'icons', untintedFile(icon.file))), icon.file).toBe(true);
+    }
+    // ESR 3.2.24: 869 recoloured entries (668 uniques, 201 set items), 692 files
+    expect(tinted.length).toBeGreaterThan(800);
+    expect(manifest.counts.tintedIcons).toBe(tinted.length);
+    expect(manifest.counts.tintedIconFiles).toBe(new Set(tinted.map((icon) => icon.file)).size);
+    expect(icons.sets["Alaziel's Grip"]?.tint).toEqual({ map: 'invgreybrown', color: 'cred' });
+    expect(icons.sets["Alaziel's Protector"]?.tint).toBeUndefined();
 
     const codes = new Set(bases.map((base) => base.code));
     const uniqueNames = new Set(lootfilter.uniques.map((unique) => unique.name));

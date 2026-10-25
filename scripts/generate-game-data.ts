@@ -14,6 +14,7 @@ import { parseArgs } from 'node:util';
 import type { GameDataManifest, IconsBundle } from '../src/features/game-data/engine/schema.ts';
 import { readEsrSources } from '../src/features/game-data/build/esrSources.ts';
 import { generateBundles } from '../src/features/game-data/build/generateBundles.ts';
+import { untintedFile } from '../src/features/game-data/build/itemTint.ts';
 import { buildManifest, serializeBundle } from '../src/features/game-data/build/writeBundle.ts';
 import { git, REPO_ROOT, resolveEsrDir } from './lib/esrClone.ts';
 
@@ -36,11 +37,11 @@ function readIcons(): { text: string; counts: Record<string, number> } | null {
   const text = readFileSync(path, 'utf8');
   const bundle = JSON.parse(text) as IconsBundle;
   const count = (section: Record<string, unknown> | undefined) => Object.keys(section ?? {}).length;
-  // Entries (all three sections) whose image came from the vanilla art folder
+  // Entries (all three sections) whose image came from the vanilla art folder (recoloured ones through their source file)
   const vanillaFiles = new Set(bundle.vanilla?.files ?? []);
-  const vanillaIcons = [bundle.bases, bundle.uniques, bundle.sets]
-    .flatMap((section) => Object.values(section))
-    .filter((icon) => vanillaFiles.has(icon.file)).length;
+  const entries = [bundle.bases, bundle.uniques, bundle.sets].flatMap((section) => Object.values(section));
+  const vanillaIcons = entries.filter((icon) => vanillaFiles.has(untintedFile(icon.file))).length;
+  const tinted = entries.filter((icon) => icon.tint !== undefined);
   return {
     text,
     counts: {
@@ -49,6 +50,8 @@ function readIcons(): { text: string; counts: Record<string, number> } | null {
       setIcons: count(bundle.sets),
       vanillaIcons,
       vanillaIconFiles: vanillaFiles.size,
+      tintedIcons: tinted.length,
+      tintedIconFiles: new Set(tinted.map((icon) => icon.file)).size,
     },
   };
 }

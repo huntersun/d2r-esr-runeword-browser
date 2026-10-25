@@ -63,7 +63,7 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 | `sets.json`       | ESR 3.2.24: 150 KB / 21 KB                                                     |
 | `skills.json`     | ESR 3.2.24: 31 KB / 4 KB                                                       |
 | `crafting.json`   | ESR 3.2.24: 55 KB / 6 KB                                                       |
-| `icons.json`      | ESR 3.2.24: 200 KB / 28 KB (+ `icons/`: 492 WebP files, 2.0 MB)                |
+| `icons.json`      | ESR 3.2.24: 284 KB / 34 KB (+ `icons/`: 1,184 WebP files, 4.8 MB)              |
 
 ### Bases and types
 
@@ -454,8 +454,11 @@ in `build/itemIcons.ts`, sprite decoding by the loot filter's `src/features/loot
 - **Vanilla art folder**: `--vanilla <dir>` | `D2R_VANILLA_ART_DIR` | `../d2r-vanilla-art` (relative to the repo root,
   a sibling of the ESR clone; `resolveVanillaArtDir` in `scripts/lib/esrClone.ts`). It is not in git (Blizzard's
   files): `data/hd/global/ui/items/{armor,misc,weapon}/**.sprite` (444 sprites plus their `.lowend.sprite` halves, which
-  are ignored), `data/hd/items/items.json` / `uniques.json` / `sets.json` (same shapes as the mod's) and
-  `steam-build.config`. It was extracted from the Steam D2R install's CASC storage with the `casc-cli` tool built
+  are ignored), `data/hd/items/items.json` / `uniques.json` / `sets.json` (same shapes as the mod's),
+  `steam-build.config`, and for the colour transforms `data/global/palette/act1/pal.dat`,
+  `data/global/items/palette/{grey,grey2,greybrown,invgrey,invgrey2,invgreybrown}.dat` and
+  `data/global/excel/colors.txt` (its code order is checked against the hard-coded block order; ESR ships none of
+  these files, the game's are used). It was extracted from the Steam D2R install's CASC storage with the `casc-cli` tool built
   against current CascLib. To
   set it up on another machine, extract the same paths into a folder with that layout and point the env var at it.
   The vanilla sprites use the same format (`SpA1`); all decode.
@@ -500,23 +503,49 @@ in `build/itemIcons.ts`, sprite decoding by the loot filter's `src/features/loot
   `amulet_of_the_viper`, `rainbow_facet`, and `gotterdamerung`, a typo of ESR's "Gotterdammerung"). Set items: 270
   names; 153 from ESR art, 117 from vanilla art, 0 without art (83 own art; 3 from the vanilla sets.json: Bane's
   Oathmaker, Wraithskin, Authority); 108 mod sets.json keys match no row — all vanilla sets ESR replaced (Civerb's,
-  Isenhart's, Tal Rasha's, …). 2182 items.json entries, 993 sprites in the clone, 444 in the vanilla folder; 492 files
-  (138 from vanilla sprites; 2.0 MB WebP), 0 decode failures. Vanilla art also replaced the base art of 25 names whose
-  own entry pointed at vanilla art (Twinkle → Blood Crescent's art, Stormguild, Athena's Wrath, …).
+  Isenhart's, Tal Rasha's, …). 2182 items.json entries, 993 sprites in the clone, 444 in the vanilla folder; 492
+  untinted files (138 from vanilla sprites; 2.0 MB WebP) plus 692 recoloured ones (see "Colour transforms"), 0 decode
+  failures. Vanilla art also replaced the base art of 25 names whose own entry pointed at vanilla art (Twinkle →
+  Blood Crescent's art, Stormguild, Athena's Wrath, …).
+- **Colour transforms**: the game recolours a unique / set item's inventory art at draw time with the legacy palette
+  system (D2R has no HD colour data; the owner saw Alaziel's Abstraction red in game while the base art is not). The
+  row's `invtransform` (uniqueitems.txt / setitems.txt) names a colors.txt colour (`whit` … `bwht` = block 0 … 20);
+  the base row's `InvTrans` (weapons / armor / misc.txt, every row incl. shadow bases; `readInvTrans`) picks the
+  colour-map file: 1 `grey`, 2 `grey2`, 5 `greybrown`, 6 `invgrey`, 7 `invgrey2`, 8 `invgreybrown`; 0, 3, 4 never
+  recolour. A map is 21 blocks of 256 bytes; a pixel of palette index `i` is drawn as `pal[map[colour × 256 + i]]`
+  (`pal.dat` is 256 × BGR). HD sprites are true colour, so `build/itemTint.ts` (`buildTint`) **approximates** the
+  renderer: per pixel the 8 nearest palette entries (RGB distance, index 0 excluded), weighted by
+  `(1 − d / d₉)²` (d₉ = distance of the 9th nearest, so the result is continuous and does not posterise); entries the
+  block maps to the same colour, or farther than 64, keep the pixel; the others contribute their destination colour
+  scaled by the pixel's luminance over the entry's (shading survives). Alpha is kept, results are cached per colour
+  (about 10 s for the whole run). k = 4 left speckle on saturated parts (gems), k = 8 / 64 tinted mid-tone leather more
+  fully; tuned on a comparison sheet. Applied to base art always and to own art only when the sprite is greyscale
+  (alpha-weighted mean `max − min` ≤ 5, `meanChroma`): ESR ships about 60 own sprites in pure greyscale, evidently
+  drawn for the transform (Alaziel's Buckler), while tinting coloured own art wipes out its design (Divada's Screen
+  turned all blue), though the game would tint it. Output: `<asset slug>__<map>-<colour>.webp`, shared by every item
+  with the same triple; the entry gets `tint: { map, color }`. The untinted file is still written for every planned
+  asset (24 are then used only through their variants), so the reduced check produces a subset of the files. Limits:
+  the colour maps were made for the 8-bit inventory art, so a light grey under `cred` turns brick red rather than a
+  saturated red, some colours (`lgrn`, `dgrn`, `lpur`, `dpur` on greys) barely change, and partially coloured own art
+  (5 < chroma) stays untinted. ESR 3.2.24: 869 entries recoloured (668 uniques, 40 of them own art; 201 set items,
+  19 own art), 692 files (2.9 MB); with a colour code but a base that never recolours: 12 uniques, 4 set items; own
+  art left untinted because it is coloured: 130 uniques, 45 set items; no unknown codes. Without the vanilla folder no
+  entry is recoloured ("no palette data" count).
 - **Pipeline** per distinct asset: decode, crop to the pixels with any alpha (`opaqueBounds` / `cropRgba`), fit inside
   128 × 128 keeping the aspect ratio, never enlarged (`fitInside`; a 1 × 3 item becomes ~43 × 128), encode WebP with
   `sharp` (devDependency, script only: lanczos3, quality 80, alpha quality 100, effort 4; effort 6 was 50× slower for
-  4 % smaller files). Output: `public/game-data/icons/<slug>.webp` (slug = asset path lowercased, `/` → `_`) and
+  4 % smaller files; a recoloured variant is tinted on the full-size cropped pixels before the resize). Output: `public/game-data/icons/<slug>.webp` (slug = asset path lowercased, `/` → `_`) and
   `icons.json` (`IconsBundle`: `esrVersion`, `esrTag`, `vanilla` (only when vanilla art was used: `rootHash` = the
   `root` line of `steam-build.config`, which identifies the game build and has no readable version number;
   `extractedAt` = that file's modification date, YYYY-MM-DD; `files` = the sorted icon files made from vanilla
   sprites), `bases: { [code]: info }`, `uniques: { [name]: info }`, `sets: { [name]: info }`, `info` =
-  `{ file, w, h }`, only entries with an image). Unique names are the lootfilter.json
+  `{ file, w, h, tint? }`, only entries with an image). Unique names are the lootfilter.json
   `uniques[].name` (mythicals included), set item names the sets.json `items[].name`. Stale `.webp` files in `icons/`
   are deleted.
 - **Manifest**: `generate-game-data.ts` does not build icons.json; it lists the committed file in the manifest as is
   (hash, bytes, `counts.itemIcons` / `uniqueIcons` / `setIcons`, plus `vanillaIcons` = entries pointing at a vanilla
-  file (833) and `vanillaIconFiles` (138)) so `loadGameDataFile('icons')` works like every other
+  file, recoloured ones through their untinted file (833), `vanillaIconFiles` (138), `tintedIcons` (869) and
+  `tintedIconFiles` (692)) so `loadGameDataFile('icons')` works like every other
   bundle. Hence `game-data:icons` runs the icon generator, then `generate-game-data.ts`; `game-data:update` runs
   generate → icons → generate (the icons follow the fresh bases.json).
 - **Check**: `--check` regenerates in memory and compares icons.json and every WebP byte for byte (plus orphans).
@@ -525,7 +554,8 @@ in `build/itemIcons.ts`, sprite decoding by the loot filter's `src/features/loot
 - **Without the vanilla folder** (other machines; CI does not run the game-data checks): `--check` prints "vanilla art
   folder not found, vanilla-derived icons not verified", regenerates from the clone alone and verifies what it can
   (`compareWithoutVanilla`): every clone-derived entry and WebP must match, every other committed entry must point at
-  a file listed in `vanilla.files`, those files must exist, no orphans; exit 0 when that holds. Writing without the
+  a file listed in `vanilla.files`, a recoloured entry is compared through its untinted file (file name and size; the
+  colour maps are in the vanilla folder), those files and the recoloured ones must exist, no orphans; exit 0 when that holds. Writing without the
   folder is refused (exit 1), since it would drop the vanilla-derived icons; `game-data:update` then skips the icon
   step with a warning (and `--vanilla <dir>` is passed through), and its icons check runs in this reduced mode. An
   existing but incomplete folder is an error.

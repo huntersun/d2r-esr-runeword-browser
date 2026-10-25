@@ -30,6 +30,8 @@ export interface UniqueOrSetRow {
   /** Base item code (`code` in uniqueitems.txt, `item` in setitems.txt) */
   readonly code: string;
   readonly disabled: boolean;
+  /** `invtransform`: colors.txt code the inventory art is recoloured with (blank: none) */
+  readonly invTransform: string;
 }
 
 /** The rows of uniqueitems.txt (`codeColumn` = `code`) or setitems.txt (`item`) that name a base; others are skipped. */
@@ -45,6 +47,7 @@ export function readUniqueOrSetRows(table: TsvTable, codeColumn: 'code' | 'item'
       name: resolveName(strings, index, index),
       code,
       disabled: row.has('disabled') && row.str('disabled') === '1',
+      invTransform: row.has('invtransform') ? row.str('invtransform') : '',
     });
   });
   return entries;

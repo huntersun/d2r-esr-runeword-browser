@@ -2,6 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { UniqueOrSetRow } from './itemNames.ts';
+import type { TintRef } from './itemTint.ts';
 import {
   artKey,
   artKeyCandidates,
@@ -134,6 +135,7 @@ describe('unique and set item art', () => {
     name,
     code,
     disabled,
+    invTransform: '',
   });
 
   it('slugs a txt index or an art key the same way', () => {
@@ -215,6 +217,26 @@ describe('unique and set item art', () => {
     expect([...plan.sets]).toEqual([["Civerb's Ward", 'helmet_cap']]);
     expect(plan.sprites.get('axe_the_gnasher')).toEqual({ source: 'esr', path: 'weapon/axe/the_gnasher.sprite' });
   });
+
+  it('records the row behind each icon (own art or not, base code, colour code) for the colour transforms', () => {
+    const plan = planItemIcons({
+      codes: [],
+      uniques: [
+        { ...row('The Gnasher', 'The Gnasher', 'hax'), invTransform: 'cred' },
+        { ...row('Plain Axe', 'Plain Axe', 'hax'), invTransform: 'blac' },
+        row('Nothing', 'Nothing', 'lbt'),
+      ],
+      sets: [],
+      assets,
+      uniqueArt: new Map([['the_gnasher', 'axe/the_gnasher']]),
+      setArt: new Map(),
+      index,
+    });
+    expect([...plan.uniqueChoices]).toEqual([
+      ['The Gnasher', { slug: 'axe_the_gnasher', own: true, code: 'hax', invTransform: 'cred' }],
+      ['Plain Axe', { slug: 'axe_hand_axe', own: false, code: 'hax', invTransform: 'blac' }],
+    ]);
+  });
 });
 
 describe('two art sources (ESR clone first, vanilla folder as the fallback)', () => {
@@ -229,7 +251,14 @@ describe('two art sources (ESR clone first, vanilla folder as the fallback)', ()
     'armor/armor/plate_mail.sprite',
     'weapon/sword/dreadfang.sprite',
   ]);
-  const row = (index: string, name: string, code: string, disabled = false): UniqueOrSetRow => ({ id: 0, index, name, code, disabled });
+  const row = (index: string, name: string, code: string, disabled = false): UniqueOrSetRow => ({
+    id: 0,
+    index,
+    name,
+    code,
+    disabled,
+    invTransform: '',
+  });
 
   it('resolves an asset in the clone first, then in the vanilla folder', () => {
     expect(resolveArt('axe/hand_axe', esr, vanilla)).toEqual({ source: 'esr', path: 'weapon/axe/hand_axe.sprite' });
@@ -378,6 +407,23 @@ describe('compareWithoutVanilla', () => {
       "uniques/Gnasher: not produced by the clone's art",
     ]);
   });
+
+  it('compares recoloured entries through their untinted file', () => {
+    const tint = { map: 'invgreybrown', color: 'cred' };
+    const withTints: IconsBundle = {
+      ...committed,
+      uniques: {
+        Plain: { ...boots, file: 'boot_boots__invgreybrown-cred.webp', tint },
+        Gnasher: { ...axe, file: 'axe_hand_axe__invgreybrown-cred.webp', tint },
+      },
+    };
+    expect(compareWithoutVanilla(withTints, esrOnly)).toEqual([]);
+    const otherSize = {
+      ...withTints,
+      uniques: { ...withTints.uniques, Gnasher: { ...axe, w: 50, file: 'axe_hand_axe__invgreybrown-cred.webp', tint } },
+    };
+    expect(compareWithoutVanilla(otherSize, esrOnly)).toEqual(['uniques/Gnasher: axe_hand_axe.webp 50×128 ≠ axe_hand_axe.webp 58×128']);
+  });
 });
 
 describe('cropping and sizing', () => {
@@ -445,6 +491,40 @@ describe('buildIconsBundle', () => {
       sets: {},
     });
     expect(Object.keys(JSON.parse(serializeBundle(bundle)) as object)).toEqual(['esrVersion', 'esrTag', 'bases', 'uniques', 'sets']);
+  });
+
+  it('points recoloured unique / set entries at their variant file and records the tint', () => {
+    const tint: TintRef = { slug: 'axe_hand_axe__invgreybrown-cred', source: 'axe_hand_axe', map: 'invgreybrown', color: 'cred' };
+    const bundle = buildIconsBundle({
+      esrVersion: '3.2.24',
+      esrTag: null,
+      plan: {
+        bases: new Map([['hax', 'axe_hand_axe']]),
+        uniques: new Map([
+          ['Red Axe', 'axe_hand_axe'],
+          ['Lost Tint', 'axe_hand_axe'],
+        ]),
+        sets: new Map([['Red Set Axe', 'axe_hand_axe']]),
+        sprites: new Map(),
+      },
+      tints: {
+        uniques: new Map([
+          ['Red Axe', tint],
+          // No image for the variant (encoding skipped): the untinted file
+          ['Lost Tint', { ...tint, slug: 'axe_hand_axe__invgreybrown-blac', color: 'blac' }],
+        ]),
+        sets: new Map([['Red Set Axe', tint]]),
+      },
+      images: new Map([
+        ['axe_hand_axe', { width: 58, height: 128 }],
+        ['axe_hand_axe__invgreybrown-cred', { width: 58, height: 128 }],
+      ]),
+      extension: 'webp',
+    });
+    const red = { file: 'axe_hand_axe__invgreybrown-cred.webp', w: 58, h: 128, tint: { map: 'invgreybrown', color: 'cred' } };
+    expect(bundle.bases).toEqual({ hax: { file: 'axe_hand_axe.webp', w: 58, h: 128 } });
+    expect(bundle.uniques).toEqual({ 'Red Axe': red, 'Lost Tint': { file: 'axe_hand_axe.webp', w: 58, h: 128 } });
+    expect(bundle.sets).toEqual({ 'Red Set Axe': red });
   });
 
   it('records the vanilla provenance and the files made from vanilla sprites, only when any were', () => {
