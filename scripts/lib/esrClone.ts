@@ -14,13 +14,14 @@ export const DEFAULT_ESR_DIR = '../Eastern_Sun_Resurrected';
  * Paths the generators and the tests read (non-cone sparse-checkout patterns). docs/ is the official site: weapons.htm
  * and armors.htm are the base-name oracle of bundleIntegrity.test.ts, and the guide checks its docs: links against it.
  * patchnotes/ is reference material for the guide authors. hd/items/ and hd/global/ui/items/ are the item art
- * (generate-item-icons.ts).
+ * (generate-item-icons.ts), hd/global/ui/spells/ the skill icon sheets (generate-skill-icons.ts).
  */
 export const ESR_SPARSE_PATHS = [
   '/Eastern_Sun_Resurrected.mpq/data/global/excel/',
   '/Eastern_Sun_Resurrected.mpq/data/local/lng/strings/',
   '/Eastern_Sun_Resurrected.mpq/data/hd/items/',
   '/Eastern_Sun_Resurrected.mpq/data/hd/global/ui/items/',
+  '/Eastern_Sun_Resurrected.mpq/data/hd/global/ui/spells/',
   '/d2rloader/metadata.json',
   `/${ESR_BOSS_SET_UNIQUE_DROP_FILE}`,
   '/docs/',

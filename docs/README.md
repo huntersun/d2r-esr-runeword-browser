@@ -23,6 +23,7 @@ Architecture decisions, coding guidelines, tech stack documentation, and impleme
 - [Socketables](./features/SOCKETABLES.md) - Unified view of all socketables (gems, runes, crystals) with filters
 - [Unique Items](./features/UNIQUE-ITEMS.md) - Browse and filter unique items parsed from HTM pages
 - [Game Data](./features/GAME-DATA.md) - Static bundles built from the ESR txt game files (Bases, Item Types, Best Base and Affixes pages)
+- [Skills](./features/SKILLS.md) - Class skill trees and item-granted skills from the game files: descriptions, synergies, the items that grant each skill (`/skills`)
 - [Loot Filter](./features/LOOT-FILTER.md) - Loot filter editor for ESR's loot filter plugin: browser library, rule builder with game-data pickers, styles, label/sound/icon previews, JSON tab, test-item tab, download for the launcher
 - [Guide](./features/GUIDE.md) - New-player guide: markdown notes compiled into a static bundle, journey spine, data directives, staleness tracking
 
@@ -69,6 +70,7 @@ The app uses a single HTM-based data system. All data is fetched from the ESR do
 | Unique Items          | `/uniques`                                                                            | Unique weapons, armors, and other items with category filters                                                                                                                                                                         |
 | Mythicals             | `/mythicals`                                                                          | Mythical unique items (`src/features/mythical-uniques/`)                                                                                                                                                                              |
 | Ascendancies          | `/ascendancies`                                                                       | Ascendancies with their tier bonuses (`src/features/ascendancies/`)                                                                                                                                                                   |
+| Skills                | `/skills`                                                                             | The 8 class skill trees and 181 item-only skills from the game files: description, mana, synergies, the uniques / sets / runewords granting each ([SKILLS.md](./features/SKILLS.md), `src/features/skills/`)                          |
 | Game Data: Bases      | `/game-data/bases` (`/game-data` redirects here)                                      | Base items from the ESR txt game files: search, kind/tier/type/sockets/level/class filters, sorting, socket caps per ilvl band, a Normal/Exceptional/Elite families table (`src/features/game-data/`)                                 |
 | Game Data: Sets       | `/game-data/sets`                                                                     | Every set from sets.txt / setitems.txt: items with own lines, per-item and set-wide partial bonuses, full-set bonuses, sources; search, max level, pieces, class, `?name=` (set or set item)                                          |
 | Game Data: Best Base  | `/game-data/best-base`                                                                | Best base finder for a runeword and a persisted character (class/level/Str/Dex), ranked per item type; `?rw=&v=` from the runeword cards, `cls`/`lvl`/`str`/`dex` override the character                                              |
@@ -85,8 +87,11 @@ Favourites for runewords, gemwords, and unique items (sign-in required, synced t
 A second, build-time data source: `npm run game-data:generate` converts the ESR repo's txt game tables (from a local
 clone at `../Eastern_Sun_Resurrected`) into JSON committed under `public/game-data/` (`manifest.json`, `types.json`,
 `bases.json`, `runewords.json`, `affixes.json`, `sources.json`, `lootfilter.json`, `enhance.json`, `cube.json`,
-`materials.json`, `sets.json`, `skills.json`, `crafting.json`; the last two feed the builds feature only), plus item
-icons from the mod's HD sprites, with the vanilla D2R art extracted from a game install as the fallback (`npm run game-data:icons`: `icons.json` + `icons/*.webp`: bases, uniques, set items and socketables, shown on the Bases, Sets, Unique Items and Socketables pages and in builds).
+`materials.json`, `sets.json`, `skills.json`, `skilldetails.json`, `crafting.json`; `skills.json` feeds the Skills page
+and the builds feature, `crafting.json` the builds feature only), plus item icons from the mod's HD sprites, with the
+vanilla D2R art extracted from a game install as the fallback (`npm run game-data:icons`: `icons.json` + `icons/*.webp`:
+bases, uniques, set items and socketables, shown on the Bases, Sets, Unique Items and Socketables pages and in builds),
+and skill icons cropped from the mod's HD skill icon sheets (`icons/skills/*.webp`, `npm run game-data:skill-icons`).
 The browser fetches these lazily;
 they never go through the HTM parsers or IndexedDB. The game-file version is `metadata.modVersion` of the cloned
 repo's `d2rloader/metadata.json`; the docs-data version is the same field read live from GitHub at startup (the

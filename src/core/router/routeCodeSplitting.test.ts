@@ -10,6 +10,7 @@ const routeScreenImports = [
   '@/features/htm-unique-items',
   '@/features/mythical-uniques',
   '@/features/ascendancies',
+  '@/features/skills',
   '@/features/game-data',
   '@/features/guide',
   '@/features/loot-filter',

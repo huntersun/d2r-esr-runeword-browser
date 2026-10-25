@@ -63,6 +63,11 @@ const AscendanciesScreen = lazy(async () => {
   return { default: module.AscendanciesScreen };
 });
 
+const SkillsScreen = lazy(async () => {
+  const module = await import('@/features/skills');
+  return { default: module.SkillsScreen };
+});
+
 // The builds screens dispatch fetch requests in mount effects, so they must not mount before the builds saga listens
 // (an action dispatched earlier is silently lost and the page stays on skeletons). `startBuilds` is idempotent and
 // resolves at once when Supabase is not configured, where the screens show their "not configured" state instead.
@@ -193,6 +198,7 @@ export const router = createBrowserRouter(
         { path: 'uniques', element: routeElement(HtmUniqueItemsScreen) },
         { path: 'mythicals', element: routeElement(MythicalUniquesScreen) },
         { path: 'ascendancies', element: routeElement(AscendanciesScreen) },
+        { path: 'skills', element: routeElement(SkillsScreen) },
         {
           path: 'game-data',
           element: routeElement(GameDataLayout),

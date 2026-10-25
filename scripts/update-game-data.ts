@@ -85,6 +85,8 @@ function main(): void {
       );
       steps.push({ name: 'icons', ok: true, note: 'skipped, no vanilla art folder' });
     }
+    // Skill icons need only the clone; their keys come from the fresh skilldetails.json
+    steps.push({ name: 'skill icons', ok: run(process.execPath, ['scripts/generate-skill-icons.ts', '--esr', esrDir]) });
   }
   steps.push({ name: 'generate', ok: generated });
   const after = readManifest();
@@ -107,6 +109,7 @@ function main(): void {
     steps.push({ name: 'tests (src/features/game-data)', ok: tests });
     steps.push({ name: 'check', ok: run(process.execPath, ['scripts/generate-game-data.ts', '--check', '--esr', esrDir]) });
     steps.push({ name: 'icons:check', ok: run(process.execPath, ['scripts/generate-item-icons.ts', '--check', ...iconArgs]) });
+    steps.push({ name: 'skill-icons:check', ok: run(process.execPath, ['scripts/generate-skill-icons.ts', '--check', '--esr', esrDir]) });
   } else {
     console.log('Skipped: generation failed.');
   }

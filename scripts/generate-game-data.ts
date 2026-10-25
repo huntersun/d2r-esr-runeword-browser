@@ -98,6 +98,7 @@ function main(): void {
     materials: serializeBundle(generated.materials),
     sets: serializeBundle(generated.sets),
     skills: serializeBundle(generated.skills),
+    skilldetails: serializeBundle(generated.skilldetails),
     crafting: serializeBundle(generated.crafting),
     tiers: serializeBundle(generated.tiers),
   };

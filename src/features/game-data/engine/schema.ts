@@ -17,6 +17,7 @@ export type GameDataFile =
   | 'materials'
   | 'sets'
   | 'skills'
+  | 'skilldetails'
   | 'crafting'
   | 'tiers'
   | 'icons';
@@ -662,6 +663,102 @@ export interface SkillsBundle {
   /** experience.txt `MaxLvl` row (the character level cap) */
   maxLevel: number;
   classes: SkillClassTree[];
+}
+
+// --- skilldetails.json --------------------------------------------------------------------------------------------
+
+/**
+ * How an item grants a skill: the uniqueitems / setitems / runes.txt property code. `skill` = +levels to a class skill
+ * (class only), `oskill` = usable skill for any class, `aura` = aura when equipped, `charged` = charges, the rest = a
+ * chance to cast on hit / attack / getting hit / kill / death / level up / cast / taking damage.
+ */
+export type SkillGrantHow =
+  | 'skill'
+  | 'oskill'
+  | 'aura'
+  | 'charged'
+  | 'hit-skill'
+  | 'att-skill'
+  | 'gethit-skill'
+  | 'kill-skill'
+  | 'death-skill'
+  | 'levelup-skill'
+  | 'cast-skill'
+  | 'takedmg-skill';
+
+/** What page an item lives on: uniques (Uniques or Mythicals page), set items (Sets), runewords, gemwords */
+export type SkillGrantItemKind = 'unique' | 'set' | 'runeword' | 'gemword';
+
+export interface SkillGrantItem {
+  kind: SkillGrantItemKind;
+  /** Display name (string table); same-name rows (variants of one unique) share one entry */
+  name: string;
+}
+
+export interface SkillGrant {
+  /** Index into SkillDetailsBundle.items */
+  item: number;
+  how: SkillGrantHow;
+  /** Skill level, or the [min, max] range of a rolled level */
+  level: number | [number, number];
+  /** Event skills (`*-skill` except `skill` / `oskill`): % chance to cast */
+  chance?: number;
+  /** `charged`: number of charges */
+  charges?: number;
+  /** Set items: a partial bonus (aprop*) that needs more pieces of the set worn */
+  partial?: true;
+}
+
+export interface SkillSynergy {
+  /** Display name of the synergy skill (dsc3textb) */
+  name: string;
+  /**
+   * skills.txt id of that skill when the name resolves (same class first) and differs from `name`. The skill to link
+   * is `id ?? name`, when the bundle has it ("Any Other Curse" has no skill).
+   */
+  id?: string;
+  /** The bonus line without the skill name ("+12% Fire Damage per Level"); `?` where the value is a formula */
+  text?: string;
+}
+
+export interface SkillDetail {
+  /** skills.txt `skill`, the same id as skills.json */
+  id: string;
+  name: string;
+  /** Class code; null for an item skill (no charclass) */
+  cls: ClassCode | null;
+  /** Skill tab (skilldesc SkillPage 1..3) for class skills, null for item skills */
+  page: number | null;
+  reqLevel: number;
+  maxLevel: number;
+  /** skills.txt reqskill1..3 (skill ids), omitted when none */
+  reqSkills?: string[];
+  /** skills.txt `aura` / `passive` flags */
+  type?: 'aura' | 'passive';
+  /** skills.txt EType as a label ("Fire", "Lightning"); omitted when none */
+  element?: string;
+  /** Mana cost at level 1 and per extra level ((mana | lvlmana) × 2^manashift / 256), omitted when both are 0 */
+  mana?: [number, number];
+  /** skilldesc `str long` (strings), one entry per line */
+  description: string[];
+  /** Description lines whose values are constants or skill params (formula lines are left out) */
+  lines?: string[];
+  /** dsc3 "Receives Bonuses From" lines */
+  synergies?: SkillSynergy[];
+  /** Other dsc3 text lines (special synergy rules) */
+  notes?: string[];
+  /** Icon key: `<class prefix>-<cel>` (e.g. `so-0`) or `gen-<cel>` for item skills; file icons/skills/<icon>.webp */
+  icon?: string;
+  /** Uniques, set items and runewords granting the skill; omitted when none */
+  grantedBy?: SkillGrant[];
+}
+
+/** skilldetails.json: details of every class skill and of every described item skill some item grants */
+export interface SkillDetailsBundle {
+  /** Items referenced by SkillGrant.item, sorted by kind and name */
+  items: SkillGrantItem[];
+  /** Class skills (class order, tab, row, column), then item skills by name */
+  skills: SkillDetail[];
 }
 
 // --- crafting.json ------------------------------------------------------------------------------------------------

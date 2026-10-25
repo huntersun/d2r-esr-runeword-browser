@@ -46,6 +46,7 @@ src/
 │   ├── htm-unique-items/       # Unique item browsing and filtering
 │   ├── mythical-uniques/       # Mythical unique items
 │   ├── ascendancies/           # Ascendancies and their tier bonuses
+│   ├── skills/                 # Skill trees + item-granted skills (game-data bundles)
 │   ├── game-data/              # Pages built on the static txt game-file bundles (bases, best base, affixes, item types)
 │   ├── guide/                  # New-player guide (static bundle compiled from content/guide/)
 │   ├── loot-filter/            # Loot filter library and editor

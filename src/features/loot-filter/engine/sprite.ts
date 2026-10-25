@@ -22,7 +22,8 @@ const HEADER_SIZE = 40;
 const MAGICS: readonly string[] = ['SpA1', 'SPa1'];
 const MAX_SIDE = 4096;
 
-export function decodeSprite(bytes: ArrayBuffer | Uint8Array): DecodedSprite {
+/** `maxSide`: the largest width / height accepted (the skill icon sheets are strips up to 16236 px wide). */
+export function decodeSprite(bytes: ArrayBuffer | Uint8Array, maxSide = MAX_SIDE): DecodedSprite {
   const data = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
   if (data.byteLength < HEADER_SIZE) throw new Error('Not a .sprite file: it is shorter than the 40-byte header');
   const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
@@ -33,7 +34,7 @@ export function decodeSprite(bytes: ArrayBuffer | Uint8Array): DecodedSprite {
   const width = view.getInt32(8, true);
   const height = view.getInt32(12, true);
   const frames = view.getInt32(20, true);
-  if (width <= 0 || height <= 0 || width > MAX_SIDE || height > MAX_SIDE) {
+  if (width <= 0 || height <= 0 || width > maxSide || height > maxSide) {
     throw new Error(`Unsupported .sprite size ${String(width)}×${String(height)}`);
   }
   if (frames < 1) throw new Error('The .sprite file has no frames');

@@ -18,6 +18,7 @@ import {
   type LootFilterDataBundle,
   type MaterialsBundle,
   type SetsBundle,
+  type SkillDetailsBundle,
   type SkillsBundle,
   type SourcesBundle,
   type TiersBundle,
@@ -37,6 +38,7 @@ export interface GameDataBundles {
   materials: MaterialsBundle;
   sets: SetsBundle;
   skills: SkillsBundle;
+  skilldetails: SkillDetailsBundle;
   crafting: CraftingBundle;
   tiers: TiersBundle;
   icons: IconsBundle;

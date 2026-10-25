@@ -28,44 +28,46 @@ A Node script converts a local clone of `CelestialRayOne/Eastern_Sun_Resurrected
 `public/game-data/`. The browser never parses txt files and never stores this data in IndexedDB; it fetches the JSON
 lazily (`src/features/game-data/engine/browser/loadGameData.ts`).
 
-| File              | Contents                                                                                                                           |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `manifest.json`   | schema, ESR version / tag / commit, `generatedAt`, sha256 + size per file, counts, warnings                                        |
-| `types.json`      | item types (Equiv parents, ancestors, socket caps per ilvl band, class, UI/runeword categories) + 8 classes with skill-tab names   |
-| `bases.json`      | spawnable weapons (369) and armors (255) plus 29 equippable accessories (rings, amulets, charms, jewels)                           |
-| `runewords.json`  | runes.txt runeword recipes: 391 `Runeword*` keys with 449 rows and rendered stats (see "Runewords")                                |
-| `affixes.json`    | 2532 spawnable magic prefixes, suffixes and automods with rendered text (see "Affixes")                                            |
-| `sources.json`    | "where does it come from" labels for uniques, set items and crafting-relevant misc items (see "Sources")                           |
-| `lootfilter.json` | loot-filter editor reference data: every item code, stats, areas, sounds, uniques and sets with their ids (see "Loot filter data") |
-| `enhance.json`    | corruption, anointment and Vessel of Souls outcomes from cubemain.txt (see "Enhance")                                              |
-| `cube.json`       | every other player-facing cubemain.txt recipe, grouped into families by official section (see "Cube recipes")                      |
-| `materials.json`  | every misc item worth looking up, with its sources, the cube families using / making it and its Enhance roles (see "Materials")    |
-| `sets.json`       | every set with its items, own lines, per-item and set-wide partial bonuses and full-set bonuses (see "Sets")                       |
-| `skills.json`     | the class skill trees (tabs, grid position, level and skill requirements) and the level cap, for builds (see "Skills")             |
-| `crafting.json`   | forging, D-stoning and gem meld options with rendered lines per slot family, for builds (see "Crafting options")                   |
-| `tiers.json`      | base tier of every weapons.txt / armor.txt row with one, spawnable or not, for the unique and set item tier badges (see "Tiers")   |
-| `icons.json`      | item icon index (base code / unique / set item / socketable name → WebP file under `icons/`, size); own generator ("Item icons")   |
+| File                | Contents                                                                                                                           |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `manifest.json`     | schema, ESR version / tag / commit, `generatedAt`, sha256 + size per file, counts, warnings                                        |
+| `types.json`        | item types (Equiv parents, ancestors, socket caps per ilvl band, class, UI/runeword categories) + 8 classes with skill-tab names   |
+| `bases.json`        | spawnable weapons (369) and armors (255) plus 29 equippable accessories (rings, amulets, charms, jewels)                           |
+| `runewords.json`    | runes.txt runeword recipes: 391 `Runeword*` keys with 449 rows and rendered stats (see "Runewords")                                |
+| `affixes.json`      | 2532 spawnable magic prefixes, suffixes and automods with rendered text (see "Affixes")                                            |
+| `sources.json`      | "where does it come from" labels for uniques, set items and crafting-relevant misc items (see "Sources")                           |
+| `lootfilter.json`   | loot-filter editor reference data: every item code, stats, areas, sounds, uniques and sets with their ids (see "Loot filter data") |
+| `enhance.json`      | corruption, anointment and Vessel of Souls outcomes from cubemain.txt (see "Enhance")                                              |
+| `cube.json`         | every other player-facing cubemain.txt recipe, grouped into families by official section (see "Cube recipes")                      |
+| `materials.json`    | every misc item worth looking up, with its sources, the cube families using / making it and its Enhance roles (see "Materials")    |
+| `sets.json`         | every set with its items, own lines, per-item and set-wide partial bonuses and full-set bonuses (see "Sets")                       |
+| `skills.json`       | the class skill trees (tabs, grid position, level and skill requirements) and the level cap, for builds (see "Skills")             |
+| `skilldetails.json` | details of every class skill and item-granted skill and the items granting them, for the Skills page ([SKILLS.md](./SKILLS.md))    |
+| `crafting.json`     | forging, D-stoning and gem meld options with rendered lines per slot family, for builds (see "Crafting options")                   |
+| `tiers.json`        | base tier of every weapons.txt / armor.txt row with one, spawnable or not, for the unique and set item tier badges (see "Tiers")   |
+| `icons.json`        | item icon index (base code / unique / set item / socketable name → WebP file under `icons/`, size); own generator ("Item icons")   |
 
 Arrays are written one element per line so diffs stay readable. Bundle URLs carry the manifest hash (`?v=<sha256>`);
 the manifest itself is always revalidated. The shape is defined in `src/features/game-data/engine/schema.ts`
 (`GAME_DATA_SCHEMA`); bump it whenever a bundle shape changes incompatibly.
 
-| Bundle            | ESR 3.2.12 size (raw / gzip)                                                   |
-| ----------------- | ------------------------------------------------------------------------------ |
-| `types.json`      | 44 KB / 5 KB                                                                   |
-| `bases.json`      | 292 KB / 26 KB (ESR 3.2.24 with automods, staffmods and range: 322 KB / 27 KB) |
-| `runewords.json`  | 197 KB / 28 KB                                                                 |
-| `affixes.json`    | 795 KB / 61 KB                                                                 |
-| `sources.json`    | 298 KB / 29 KB                                                                 |
-| `lootfilter.json` | 686 KB / 98 KB                                                                 |
-| `enhance.json`    | ESR 3.2.24: 357 KB / 32 KB                                                     |
-| `cube.json`       | ESR 3.2.24: 517 KB / 55 KB                                                     |
-| `materials.json`  | ESR 3.2.24: 165 KB / 11 KB                                                     |
-| `sets.json`       | ESR 3.2.24: 150 KB / 21 KB                                                     |
-| `skills.json`     | ESR 3.2.24: 31 KB / 4 KB                                                       |
-| `crafting.json`   | ESR 3.2.24: 55 KB / 6 KB                                                       |
-| `tiers.json`      | ESR 3.2.24: 23 KB / 3 KB                                                       |
-| `icons.json`      | ESR 3.2.24: 303 KB / 36 KB (+ `icons/`: 1,361 WebP files, 5.3 MB)              |
+| Bundle              | ESR 3.2.12 size (raw / gzip)                                                   |
+| ------------------- | ------------------------------------------------------------------------------ |
+| `types.json`        | 44 KB / 5 KB                                                                   |
+| `bases.json`        | 292 KB / 26 KB (ESR 3.2.24 with automods, staffmods and range: 322 KB / 27 KB) |
+| `runewords.json`    | 197 KB / 28 KB                                                                 |
+| `affixes.json`      | 795 KB / 61 KB                                                                 |
+| `sources.json`      | 298 KB / 29 KB                                                                 |
+| `lootfilter.json`   | 686 KB / 98 KB                                                                 |
+| `enhance.json`      | ESR 3.2.24: 357 KB / 32 KB                                                     |
+| `cube.json`         | ESR 3.2.24: 517 KB / 55 KB                                                     |
+| `materials.json`    | ESR 3.2.24: 165 KB / 11 KB                                                     |
+| `sets.json`         | ESR 3.2.24: 150 KB / 21 KB                                                     |
+| `skills.json`       | ESR 3.2.24: 31 KB / 4 KB                                                       |
+| `skilldetails.json` | ESR 3.2.24: 387 KB / 61 KB (+ `icons/skills/`: 325 WebP files, 433 KB)         |
+| `crafting.json`     | ESR 3.2.24: 55 KB / 6 KB                                                       |
+| `tiers.json`        | ESR 3.2.24: 23 KB / 3 KB                                                       |
+| `icons.json`        | ESR 3.2.24: 303 KB / 36 KB (+ `icons/`: 1,361 WebP files, 5.3 MB)              |
 
 ### Bases and types
 
@@ -404,7 +406,8 @@ Counts: `tierCodes` 1067 (`tierCodesNormal` 321, `tierCodesExceptional` 331, `ti
 ### Skills
 
 `skills.json` (`SkillsBundle`, built by `build/bundleSkills.ts` from skills.txt, skilldesc.txt and experience.txt, after
-the types) holds the class skill trees for the builds feature's skill allocation. No page shows it.
+the types) holds the class skill trees for the builds feature's skill allocation and the Skills page's tree layout
+(the page's details come from `skilldetails.json`, see [SKILLS.md](./SKILLS.md)).
 
 - **Classes**: the 8 classes of types.json in its order (`code`, `name`), each with tabs 1..3. A tab `name` is the
   types.json tab name (charstats.txt `StrSkillTab1..3`, "+%d to " already stripped) without a trailing " Skills"
@@ -650,18 +653,19 @@ npm run game-data:update -- --esr <dir>        # use another clone directory
 
 1. **ESR clone**: when the directory is missing it creates a shallow, blobless, sparse clone (excel tables, strings,
    `d2rloader/metadata.json`, `docs/weapons.htm`, `docs/armors.htm`, the HD item art `data/hd/items/` and
-   `data/hd/global/ui/items/`). Otherwise it aborts if the clone is dirty or on a
+   `data/hd/global/ui/items/`, the HD skill icon sheets `data/hd/global/ui/spells/`). Otherwise it aborts if the clone is dirty or on a
    branch other than `main`, fetches `main` and fast-forwards (a detached HEAD from an earlier `--tag` run goes back
    to `main`); with `--tag` it fetches that tag and checks it out detached. It does not run `git fetch --tags`: on a
    shallow clone that downloads the full history of every old release; the tag pointing at the new HEAD is fetched
    instead. Works with plain (non-sparse) clones too.
 2. Records the previous `manifest.json`.
 3. Runs `generate-game-data.ts --esr <dir>`, then `generate-item-icons.ts` and `generate-game-data.ts` again (so the
-   manifest lists the new icons.json). A failure skips the verify step and exits 1.
+   manifest lists the new icons.json), then `generate-skill-icons.ts` (the cels of the fresh skilldetails.json). A
+   failure skips the verify step and exits 1.
 4. Runs `fetch-test-fixtures.js` (skippable with `--no-fixtures`). A download failure is only a warning; tests that
    need a missing fixture skip themselves.
-5. Runs `npx vitest run src/features/game-data` (with `ESR_SOURCE_DIR` set to the clone) and `--check` (game data
-   and item icons).
+5. Runs `npx vitest run src/features/game-data` (with `ESR_SOURCE_DIR` set to the clone) and `--check` (game data,
+   item icons and skill icons).
 6. Prints a summary: version/tag/commit before → after, changed counts (incl. warnings), generator warnings, step
    results and changed files under `public/game-data/`, then the commit command to run. It never runs `git add`/`commit`.
 
@@ -1201,6 +1205,7 @@ Warnings are printed and stored in `manifest.warnings`; string conflicts are pri
 ```
 scripts/generate-game-data.ts            CLI: arguments, git, file I/O
 scripts/generate-item-icons.ts           CLI: item icons (sharp WebP encoding, file I/O)
+scripts/generate-skill-icons.ts          CLI: skill icons (cels of the HD skill icon sheets, see SKILLS.md)
 src/features/game-data/
   engine/      runtime + build time: schema.ts, itemTypes.ts, sockets.ts, matchRunewords.ts, bestBase.ts,
                affixEligibility.ts
@@ -1208,7 +1213,8 @@ src/features/game-data/
   build/       build only: tsv.ts, strings.ts, model.ts, esrSources.ts, bundleTypes.ts, bundleBases.ts,
                bundleRunewords.ts, bundleAffixes.ts, bundleSources.ts (+ treasureClasses.ts, pluginUniques.ts,
                itemNames.ts), bundleLootFilter.ts, bundleEnhance.ts, bundleCube.ts, bundleMaterials.ts, bundleSets.ts,
-               bundleSkills.ts, bundleCrafting.ts, bundleTiers.ts (+ tiers.ts), itemIcons.ts, generateBundles.ts,
+               bundleSkills.ts, bundleSkillDetails.ts, skillIcons.ts, bundleCrafting.ts, bundleTiers.ts (+ tiers.ts), itemIcons.ts,
+               generateBundles.ts,
                writeBundle.ts
   build/cube/  cubemain rows and texts shared with the guide: cubeRows.ts, cubeText.ts, cubeFamilies.ts, cubeCatalog.ts
   build/stats/ stat renderer (see "Stat renderer")

@@ -163,7 +163,7 @@ export interface PropertyMod {
 }
 
 /** Non-empty `<prefix>Code<n>` property columns, e.g. `mods(row, 'T1', 7)` or the affix `mod1code` layout. */
-function readMods(row: TsvRow, n: number, column: (i: number, part: 'code' | 'param' | 'min' | 'max') => string): PropertyMod[] {
+export function readMods(row: TsvRow, n: number, column: (i: number, part: 'code' | 'param' | 'min' | 'max') => string): PropertyMod[] {
   const mods: PropertyMod[] = [];
   for (let i = 1; i <= n; i++) {
     const code = row.str(column(i, 'code'));

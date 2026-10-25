@@ -22,6 +22,7 @@ import {
   type LootFilterDataBundle,
   type MaterialsBundle,
   type SetsBundle,
+  type SkillDetailsBundle,
   type SkillsBundle,
   type SourcesBundle,
   type TiersBundle,
@@ -48,6 +49,7 @@ const cubeText = readText('cube');
 const materialsText = readText('materials');
 const setsText = readText('sets');
 const skillsText = readText('skills');
+const skillDetailsText = readText('skilldetails');
 const craftingText = readText('crafting');
 const tiersText = readText('tiers');
 const { types, classes: typeClasses } = JSON.parse(typesText) as TypesBundle;
@@ -62,6 +64,7 @@ const cube = JSON.parse(cubeText) as CubeBundle;
 const materials = JSON.parse(materialsText) as MaterialsBundle;
 const { sets } = JSON.parse(setsText) as SetsBundle;
 const skills = JSON.parse(skillsText) as SkillsBundle;
+const skillDetails = JSON.parse(skillDetailsText) as SkillDetailsBundle;
 const crafting = JSON.parse(craftingText) as CraftingBundle;
 const { codes: tierCodes } = JSON.parse(tiersText) as TiersBundle;
 
@@ -83,6 +86,7 @@ describe('committed game-data bundles', () => {
       ['materials', materialsText],
       ['sets', setsText],
       ['skills', skillsText],
+      ['skilldetails', skillDetailsText],
       ['crafting', craftingText],
       ['tiers', tiersText],
     ] as const) {
@@ -538,6 +542,41 @@ describe('committed game-data bundles', () => {
     expect(tainted).toMatchObject({ name: 'Summon Tainted', reqLevel: 12, reqSkills: ['Summon Goatman'] });
   });
 
+  it('detail every class skill and the item skills items grant, with an icon file per key (ESR 3.2.24)', () => {
+    const { items, skills: details } = skillDetails;
+    const treeIds = skills.classes.flatMap((cls) => cls.tabs.flatMap((tab) => tab.skills.map((skill) => `${cls.code}/${skill.id}`)));
+    const classDetails = details.filter((skill) => skill.cls !== null);
+    // Same skills, same order (class, tab, row, column) as the trees of skills.json
+    expect(classDetails.map((skill) => `${skill.cls ?? ''}/${skill.id}`)).toEqual(treeIds);
+    const itemSkills = details.filter((skill) => skill.cls === null);
+    expect(itemSkills.length).toBeGreaterThan(150);
+    expect(manifest.counts.skillDetails).toBe(details.length);
+    expect(manifest.counts.skillDetailsItemSkills).toBe(itemSkills.length);
+    expect(manifest.counts.skillGrantItems).toBe(items.length);
+    const grants = details.flatMap((skill) => skill.grantedBy ?? []);
+    expect(manifest.counts.skillGrants).toBe(grants.length);
+    expect(grants.length).toBeGreaterThan(2500);
+    for (const grant of grants) expect(items[grant.item]).toBeDefined();
+    for (const skill of itemSkills) expect(skill.grantedBy?.length, skill.id).toBeGreaterThan(0);
+
+    const fireBolt = details.find((skill) => skill.id === 'Fire Bolt');
+    expect(fireBolt).toMatchObject({ cls: 'sor', page: 1, element: 'Fire', mana: [2, 0.5], icon: 'so-0' });
+    expect(fireBolt?.description[0]).toBe('Create a magical flaming missile to scorch your target');
+    expect(fireBolt?.synergies?.map((synergy) => synergy.name)).toEqual(['Fire Ball', 'Rain of Fire', 'Molten Focus']);
+    expect(fireBolt?.synergies?.[2]?.text).toBe('+12% Fire Damage per Level');
+    const grantOf = (skill: string, item: string) =>
+      details.find((entry) => entry.id === skill)?.grantedBy?.filter((grant) => items[grant.item]?.name === item);
+    expect(grantOf('Teleport', 'Cactus Petal')).toEqual([expect.objectContaining({ how: 'charged', charges: 7, level: 1 })]);
+    expect(grantOf('Rift Shot', 'Enigma')).toEqual([expect.objectContaining({ how: 'oskill', level: [10, 20] })]);
+    // The unique Enigma (a mythical) grants Rift Shot; the Enigma runeword is a separate item
+    expect(items[grantOf('Rift Shot', 'Enigma')?.[0]?.item ?? -1]?.kind).toBe('unique');
+    expect(items.filter((item) => item.name === 'Enigma').map((item) => item.kind)).toEqual(['unique', 'runeword']);
+
+    const iconKeys = new Set(details.flatMap((skill) => (skill.icon === undefined ? [] : [skill.icon])));
+    expect(manifest.counts.skillIcons).toBe(iconKeys.size);
+    for (const key of iconKeys) expect(existsSync(resolve(OUTPUT_DIR, 'icons/skills', `${key}.webp`)), key).toBe(true);
+  });
+
   it('list the forging, D-stoning and gem meld options per slot family (ESR 3.2.24)', () => {
     const { forgings, stacking } = crafting;
     const ofKind = (kind: string) => forgings.filter((option) => option.kind === kind);
@@ -689,6 +728,7 @@ describe.skipIf(!existsSync(ESR_DIR))('game data generated from the ESR clone', 
     expect(serializeBundle(generated.materials)).toBe(materialsText);
     expect(serializeBundle(generated.sets)).toBe(setsText);
     expect(serializeBundle(generated.skills)).toBe(skillsText);
+    expect(serializeBundle(generated.skilldetails)).toBe(skillDetailsText);
     expect(serializeBundle(generated.crafting)).toBe(craftingText);
     expect(serializeBundle(generated.tiers)).toBe(tiersText);
   });

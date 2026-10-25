@@ -7,6 +7,7 @@ import type {
   LootFilterDataBundle,
   MaterialsBundle,
   SetsBundle,
+  SkillDetailsBundle,
   SkillsBundle,
   SourcesBundle,
   TiersBundle,
@@ -23,6 +24,7 @@ import { buildLootFilterBundle } from './bundleLootFilter.ts';
 import { buildRunewordsBundle } from './bundleRunewords.ts';
 import { buildSetsBundle } from './bundleSets.ts';
 import { buildSkillsBundle } from './bundleSkills.ts';
+import { buildSkillDetailsBundle, readGrantSources } from './bundleSkillDetails.ts';
 import { buildCraftingBundle } from './bundleCrafting.ts';
 import { buildSourcesBundle } from './bundleSources.ts';
 import { buildTiersBundle } from './bundleTiers.ts';
@@ -49,6 +51,7 @@ export interface GeneratedBundles {
   materials: MaterialsBundle;
   sets: SetsBundle;
   skills: SkillsBundle;
+  skilldetails: SkillDetailsBundle;
   crafting: CraftingBundle;
   tiers: TiersBundle;
   counts: Record<string, number>;
@@ -72,6 +75,10 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
   const bases = buildBasesBundle(items, buildTypesBundle(typeRows, charStats, strings).bundle, strings, staffMods.bundle);
   const baseTypes = new Set(bases.bundle.bases.flatMap((base) => (base.type2 === null ? [base.type] : [base.type, base.type2])));
   const types = buildTypesBundle(typeRows, charStats, strings, baseTypes);
+  const runeTypes = new Set(
+    types.bundle.types.filter((type) => type.code === 'rune' || type.ancestors.includes('rune')).map((type) => type.code)
+  );
+  const runeCodes = new Set(misc.filter((item) => runeTypes.has(item.type)).map((item) => item.code));
   const statTables = readStatTables(sources.tables);
   const renderer = createStatRenderer(statTables, strings);
   const renderMods = (mods: Parameters<typeof renderer.renderMods>[0]) => renderer.renderMods(mods);
@@ -183,6 +190,22 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
     strings,
   });
 
+  const skillDetails = buildSkillDetailsBundle({
+    skills: table('skills'),
+    skilldesc: table('skilldesc'),
+    classes: types.bundle.classes,
+    strings,
+    items: readGrantSources({
+      uniqueitems: table('uniqueitems'),
+      setitems: table('setitems'),
+      runes: readRuneRecipes(table('runes')),
+      strings,
+      isRune: (code) => runeCodes.has(code),
+    }),
+  });
+  const skillDetailCount = (pick: (skill: SkillDetailsBundle['skills'][number]) => boolean) =>
+    skillDetails.bundle.skills.filter(pick).length;
+
   const crafting = buildCraftingBundle({
     cube: cubeTables.cube,
     nameOf: cubeTables.nameOf,
@@ -208,6 +231,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
     materials: materials.bundle,
     sets: sets.bundle,
     skills: skills.bundle,
+    skilldetails: skillDetails.bundle,
     crafting: crafting.bundle,
     tiers: tiers.bundle,
     counts: {
@@ -278,6 +302,15 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       skillClasses: skills.bundle.classes.length,
       skills: skills.bundle.classes.reduce((sum, cls) => sum + cls.tabs.reduce((tabSum, tab) => tabSum + tab.skills.length, 0), 0),
       skillsSkipped: skills.skipped,
+      skillDetails: skillDetails.bundle.skills.length,
+      skillDetailsItemSkills: skillDetailCount((skill) => skill.cls === null),
+      skillDetailsWithGrants: skillDetailCount((skill) => skill.grantedBy !== undefined),
+      skillDetailsWithSynergies: skillDetailCount((skill) => skill.synergies !== undefined),
+      skillDetailsWithoutDescription: skillDetailCount((skill) => skill.description.length === 0),
+      skillGrantItems: skillDetails.bundle.items.length,
+      skillGrants: skillDetails.bundle.skills.reduce((sum, skill) => sum + (skill.grantedBy?.length ?? 0), 0),
+      skillGrantsUndescribed: skillDetails.undescribedGrants,
+      skillIcons: new Set(skillDetails.bundle.skills.flatMap((skill) => (skill.icon === undefined ? [] : [skill.icon]))).size,
       craftingForgings: crafting.bundle.forgings.length,
       craftingStacking: crafting.bundle.stacking.length,
       craftingRowsUsed: crafting.rowsUsed,
@@ -301,6 +334,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       ...materials.warnings,
       ...sets.warnings,
       ...skills.warnings,
+      ...skillDetails.warnings,
       ...crafting.warnings,
       ...tiers.warnings,
     ],
