@@ -3,6 +3,7 @@ import { fitsItemTypes } from '@/features/game-data/engine/bestBase';
 import { htmRunewordId, matchRunewords, rowsForSockets } from '@/features/game-data/engine/matchRunewords';
 import { maxSockets } from '@/features/game-data/utils/filterBases';
 import type { BaseItem, BasesBundle, TxtRunewordRow, TxtRunewordsBundle, TypesBundle } from '@/features/game-data/engine/schema';
+import { slotGroup, typeSlots, type PickerSlot } from './slotFit';
 
 export interface RunewordBaseBundles {
   readonly bases: BasesBundle;
@@ -63,6 +64,20 @@ export function runewordBaseCandidates(
   const rows = socketRows.length > 0 ? socketRows : match.rows;
   const candidates = gearBases.filter((base) => rowsForBase(rows, base).length > 0);
   return { rows, candidates: sortBases(candidates, typeNames), unmatched: false };
+}
+
+/**
+ * Whether a base belongs in an equipment slot, by its types.json type name through the picker's
+ * slot mapping (`typeSlots`); an unknown type fits everywhere, like elsewhere in the picker.
+ */
+export function baseFitsSlot(base: Pick<BaseItem, 'type'>, slot: PickerSlot, typeNames: ReadonlyMap<string, string>): boolean {
+  const groups = typeSlots(typeNames.get(base.type) ?? base.type);
+  return groups === undefined || groups.includes(slotGroup(slot));
+}
+
+/** The candidates that belong in the slot: a Sword/Any Shield recipe offers only shields in a shield slot. */
+export function basesForSlot(candidates: readonly BaseItem[], slot: PickerSlot, typeNames: ReadonlyMap<string, string>): BaseItem[] {
+  return candidates.filter((base) => baseFitsSlot(base, slot, typeNames));
 }
 
 /** The rows a chosen base can hold (item types fit and the base can have the row's socket count). */

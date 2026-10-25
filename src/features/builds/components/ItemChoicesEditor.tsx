@@ -38,21 +38,23 @@ interface ItemChoicesEditorProps {
  * uniques / mythicals / set items). Nothing for gemwords and freetext.
  */
 export function ItemChoicesEditor({ item, slot, onChange, disabled }: ItemChoicesEditorProps) {
-  if (item.type === 'runeword') return <RunewordChoicesEditor item={item} onChange={onChange} disabled={disabled} />;
+  if (item.type === 'runeword') return <RunewordChoicesEditor item={item} slot={slot} onChange={onChange} disabled={disabled} />;
   if (!supportsSocketed(item)) return null;
   return <SocketedEditor item={item} cap={slotSocketCap(slot)} onChange={onChange} disabled={disabled} />;
 }
 
 function RunewordChoicesEditor({
   item,
+  slot,
   onChange,
   disabled,
 }: {
   readonly item: RunewordItemRef;
+  readonly slot: EquipmentSlot | WeaponSwapSlot;
   readonly onChange: (ref: ItemRef) => void;
   readonly disabled?: boolean;
 }) {
-  const state = useRunewordBases(item);
+  const state = useRunewordBases(item, slot);
   if (state.status === 'loading') return null;
 
   const setBase = (base: RunewordBaseChoice | undefined) => {

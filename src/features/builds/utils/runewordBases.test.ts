@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { Runeword } from '@/core/db';
 import { parseRunewordsHtml } from '@/features/data-sync/parsers/runewordsParser';
 import type { BaseItem, BasesBundle, TxtRunewordsBundle, TypesBundle } from '@/features/game-data/engine/schema';
-import { allGearBases, baseSummary, rowsForBase, runewordBaseCandidates, typeNameMap } from './runewordBases';
+import { allGearBases, baseSummary, basesForSlot, rowsForBase, runewordBaseCandidates, typeNameMap } from './runewordBases';
 import { runewordJewelSockets } from './sockets';
 
 function makeBase(overrides: Partial<BaseItem> & Pick<BaseItem, 'code' | 'name'>): BaseItem {
@@ -181,6 +181,20 @@ describe('runewordBaseCandidates on the committed game data', () => {
     expect(names).not.toContain('Buckler');
     expect(result.candidates.every((base) => Math.max(...base.socketCaps) >= 4)).toBe(true);
     expect(result.candidates.every((base) => base.ancestors.includes('shld') || base.ancestors.includes('swor'))).toBe(true);
+  });
+
+  it('basesForSlot narrows Spirit (Sword / Any Shield) to what belongs in the slot', () => {
+    const { result } = find('Spirit', 'Any Shield');
+    const shield = basesForSlot(result.candidates, 'shield', typeNames).map((base) => base.name);
+    const weapon = basesForSlot(result.candidates, 'weapon', typeNames).map((base) => base.name);
+    // Shields stay; one-handed swords stay too (off-hand dual wield); two-handed katanas go.
+    expect(shield).toContain('Kite Shield');
+    expect(shield).not.toContain('Ninja To');
+    // The weapon slot keeps every sword and drops the shields.
+    expect(weapon).toContain('Ninja To');
+    expect(weapon).not.toContain('Kite Shield');
+    // No sword or shield belongs on a ring.
+    expect(basesForSlot(result.candidates, 'ring1', typeNames)).toEqual([]);
   });
 
   it('Enigma and Insight (body armour) offer body armours only', () => {

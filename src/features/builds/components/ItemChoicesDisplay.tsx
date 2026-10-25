@@ -16,14 +16,14 @@ export function ItemChoicesDisplay({ item, slot }: ItemChoicesDisplayProps) {
   if (!hasItemChoices(item)) return null;
   return (
     <div className="space-y-1 rounded-md border bg-muted/30 px-3 py-2 text-sm">
-      {item.type === 'runeword' && item.base !== undefined && <RunewordBaseLine item={item} />}
+      {item.type === 'runeword' && item.base !== undefined && <RunewordBaseLine item={item} slot={slot} />}
       {socketedOf(item).length > 0 && <SocketedLines fillers={socketedOf(item)} slot={slot} />}
     </div>
   );
 }
 
-function RunewordBaseLine({ item }: { readonly item: RunewordItemRef }) {
-  const state = useRunewordBases(item);
+function RunewordBaseLine({ item, slot }: { readonly item: RunewordItemRef; readonly slot: EquipmentSlot | WeaponSwapSlot }) {
+  const state = useRunewordBases(item, slot);
   const label =
     state.status === 'ready' && state.chosenBase !== undefined ? baseSummary(state.chosenBase, state.typeNames) : (item.base?.name ?? '');
   return (
