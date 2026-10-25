@@ -23,8 +23,13 @@ Background docs (read only what you need): `docs/features/GAME-DATA.md` (Regener
 ## 1. Regenerate
 
 Run `npm run game-data:update` (add `-- --tag <tag>` when the owner named a version; tags have no `v` prefix). It
-clones/pulls ESR, generates `public/game-data`, fetches the test fixtures, runs `vitest src/features/game-data`,
-`game-data --check`, `guide:generate`, `guide:check`, prints the guide freshness report and a summary. It never commits.
+clones/pulls ESR, generates `public/game-data`, regenerates the item icons (ESR sprites + the vanilla art folder
+`../d2r-vanilla-art`, `--vanilla <dir>` / `D2R_VANILLA_ART_DIR`; without the folder it prints a warning and keeps the
+committed icons) and the skill icons (clone only), fetches the test fixtures, runs `vitest src/features/game-data`,
+`game-data --check` (bundles, item icons, skill icons), `guide:generate`, `guide:check`, prints the guide freshness
+report and a summary. It never commits. The vanilla art folder is outside git; if it is missing on this machine, say so
+in the report: new uniques, set items or bases whose art is vanilla-only then show no icon until someone with the
+folder reruns `npm run game-data:icons`.
 
 Exit code 1 means a step failed (the summary lists each step's result). Stop, show the failing step and its output,
 diagnose with the list under "When things go wrong", and ask the owner before changing anything. A fixture download
@@ -63,12 +68,33 @@ removed patch/config changes a guide fact: `grep -ln esr-loader content/guide/no
 3. Spot-check the changed bundles. Each array element is one JSON line, so changed entries are the `+`/`-` lines of
    `git diff -U0`. List them by name, e.g.:
    `git diff -U0 public/game-data/runewords.json | node -e "require('fs').readFileSync(0,'utf8').split('\n').filter(l=>/^[+-] {2,}\{/.test(l)).forEach(l=>{const o=JSON.parse(l.slice(1).trim().replace(/,$/,''));console.log(l[0],o.name??o.key)})"`
-   (same for `affixes.json`, `bases.json`, `sources.json`). Check `counts.sourcesUnknown` and list the `unknown`
+   (same for `affixes.json`, `bases.json`, `sources.json`, `sets.json`). Check `counts.sourcesUnknown` and list the `unknown`
    sources: `node -e "const s=require('./public/game-data/sources.json');console.log(s.items.filter(i=>i.labels.some(l=>l.kind==='unknown')).map(i=>i.name))"`.
-4. Explain every count change with the release diff (e.g. "+2 runewords: patch note adds X and Y", "+14 affixes:
+   Then the bundles added in v1.33.0:
+   - `skills.json` / `skilldetails.json`: list added, removed and renamed skill ids (`git diff -U0` as above on
+     `skilldetails.json`, key `id`). Builds store skill points by skill id and the Skills page deep-links use `?skill=<id>`,
+     so a renamed id is a finding to report (builds keep the old id and show the points nowhere). Explain changes in
+     `counts.skillDetails`, `skillDetailsItemSkills`, `skillGrants`; `skillGrantsUndescribed` must stay 0 (an item grants a
+     skill without a skilldesc row = the page cannot show it). A warning `skilldetails: unknown skill in oskill "X" (Item)`
+     is genuine ESR data (today: "Axe Swarm" on Ember of Creation); a new one means the item references a skill that
+     does not exist in skills.txt, report it.
+   - `tiers.json`: `counts.tierCodes` (1067 at 3.2.24) moves only when weapons.txt / armor.txt rows are added or removed;
+     a change in `tierCodesMythical` (61) means new Mythical bases. The integrity test pins the total.
+   - `icons.json` + `icons/`: `itemIcons` / `uniqueIcons` / `setIcons` / `miscIcons` / `tintedIcons` grow with the new
+     items; `vanillaIcons` can only grow when the vanilla art folder is present. New files under `public/game-data/icons/`
+     are expected; list any new unique/set/base that got no icon (`generate-item-icons.ts` prints "no art" lines) so the
+     owner can ask the mod author for the missing art. `skillIcons` = the icon keys of skilldetails.json (325 at 3.2.24).
+4. The app reads the docs-data version live from `d2rloader/metadata.json` (`metadata.modVersion`, raw GitHub) and
+   compares it with the manifest's `esrVersion`: check that the clone's `d2rloader/metadata.json` says the new version.
+   If the author forgot to bump it, every user will see "Docs data is ESR <old>; game-file data is ESR <new>" in amber
+   until it is fixed upstream; report it as a finding (the owner can ask the author). Also
+   `curl -sI https://easternsunresurrected.com/runewords.htm | grep -i last-modified` must be on or after the release
+   day; if the docs site was not regenerated, the HTM-based pages (runewords, uniques, socketables, gemwords,
+   ascendancies) lag the game files and the report must say so.
+5. Explain every count change with the release diff (e.g. "+2 runewords: patch note adds X and Y", "+14 affixes:
    magicsuffix.txt rows added"). Anything you cannot explain → investigate (table diff, generator warnings) before
    moving on, and report it.
-5. Check the generated recipe blocks that rewrite rows generically; they fall back to raw rows instead of failing
+6. Check the generated recipe blocks that rewrite rows generically; they fall back to raw rows instead of failing
    when the cubemain shape changes. List every `::recipes` block with its row count:
    `node -e "const g=require('./public/guide/guide.json');const w=b=>Array.isArray(b)?b.flatMap(w):b&&typeof b==='object'?[b,...Object.values(b).flatMap(w)]:[];for(const n of g.notes)for(const b of w(n.body))if(b.kind==='recipes')console.log(n.slug,'|',b.caption,'|',b.rows.length)"`
    and compare with `git show HEAD:public/guide/guide.json` through the same command. Expected shapes: `rune-conversion`
@@ -77,7 +103,7 @@ removed patch/config changes a guide fact: `grep -ln esr-loader content/guide/no
    has 3 rows whose rune ranges are read from the rows. `legendary-consumables` (enhancement-order) shows the Halo as
    "The same item + A copy of the item (Branded)". A block that grew to the 12-row cap or lost its generic rows is a
    finding to report, not to hide.
-6. The Drop Finder (`https://easternsunresurrected.com/drop-finder.html`, linked under every `::source` block and by
+7. The Drop Finder (`https://easternsunresurrected.com/drop-finder.html`, linked under every `::source` block and by
    `dropfinder:` links) is not in the clone, so the diff cannot see it move:
    `curl -sS -o /dev/null -w '%{http_code}\n' https://easternsunresurrected.com/drop-finder.html` must print 200
    (warning only when offline).
@@ -125,7 +151,9 @@ commit attribution rules; pre-commit hooks run Prettier/ESLint. Never push.
 
 - ESR version/tag/commit before → after.
 - What changed for players (the step 2 summary, short).
-- What changed in the bundles: files, count deltas with their explanation, warnings.
+- What changed in the bundles: files, count deltas with their explanation, warnings; new or missing item icons, new or
+  renamed skills, whether `d2rloader/metadata.json` and the docs site are at the new version, whether the vanilla art
+  folder was available.
 - Guide: notes edited, build errors fixed, glossary/stub additions.
 - Still needing in-game verification by the owner: the `draft`, `review` and `old` lists from a fresh
   `npm run guide:report`, plus `volatility: high` notes. The owner runs `npm run guide:verify -- <slug>` after checking.
@@ -134,7 +162,8 @@ commit attribution rules; pre-commit hooks run Prettier/ESLint. Never push.
 ## When things go wrong
 
 - **ESR clone dirty / on another branch**: the update aborts. Show `git -C <clone> status`; ask before cleaning or
-  checking out `main`. Never reset the clone without approval.
+  checking out `main`. Never reset the clone without approval. Untracked `.DS_Store` files (Finder) are ignored by the
+  update (change after v1.33.0); `generate-game-data.ts` still prints its "uncommitted changes" warning for them, which is harmless.
 - **Tag not found**: confirm the tag name with the owner (`git ls-remote --tags <ESR remote>`; no `v` prefix); fall back
   to `main` only if they agree.
 - **Release diff shows nothing / missing files**: the manifest commit may be absent from a shallow clone or a path may
@@ -142,8 +171,12 @@ commit attribution rules; pre-commit hooks run Prettier/ESLint. Never push.
 - **New generation warnings** (string conflicts, duplicate bases, unresolved stats): find the rows in the table diff,
   explain them; if they look like a parser gap, report it as a follow-up instead of patching code silently.
 - **Integrity test fails** (`src/features/game-data/bundleIntegrity.test.ts` expects fixed counts such as 369 weapons /
-  255 armors): if the release diff explains the new count, propose updating the expected numbers (and the counts in
-  `docs/features/GAME-DATA.md`); otherwise investigate.
+  255 armors, 1067 tier codes, spot codes like `p01` normal / `m01` mythical, and compares the committed
+  `skilldetails.json`, `tiers.json` and icon indexes with a fresh build from the clone): if the release diff explains the
+  new count, propose updating the expected numbers (and the counts in `docs/features/GAME-DATA.md`, `SKILLS.md`,
+  `UNIQUE-ITEMS.md`); otherwise investigate. A mismatch between committed and regenerated skill icons or item icons
+  means a generator was not rerun: `npm run game-data:icons` (needs the vanilla art folder) and
+  `npm run game-data:skill-icons`.
 - **Other game-data tests fail** (name oracle, runeword matching): compare with the HTM fixtures; a renamed item in the
   docs vs the tables is a data mismatch to report, not to hide.
 - **`game-data --check` / `guide:check` fails**: output is non-deterministic or stale; re-run the generator once and

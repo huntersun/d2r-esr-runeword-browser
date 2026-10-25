@@ -80,9 +80,11 @@ export function cloneEsr(esrDir: string, tag: string | undefined): void {
  * release tag. Fetching main auto-follows tags that point at the fetched commits.
  */
 export function updateEsr(esrDir: string, tag: string | undefined): void {
-  const dirty = git(esrDir, ['status', '--porcelain']);
-  if (dirty === null) throw new Error(`Not a git checkout: ${esrDir}`);
-  if (dirty !== '') throw new Error(`The ESR clone has uncommitted changes; clean it first (git -C ${esrDir} status).`);
+  const status = git(esrDir, ['status', '--porcelain']);
+  if (status === null) throw new Error(`Not a git checkout: ${esrDir}`);
+  // Finder drops .DS_Store files into browsed folders; they never affect the generated data
+  const dirty = status.split('\n').filter((line) => line !== '' && !line.endsWith('.DS_Store'));
+  if (dirty.length > 0) throw new Error(`The ESR clone has uncommitted changes; clean it first (git -C ${esrDir} status).`);
   // Sparse clones made before ESR_SPARSE_PATHS grew pick up the new paths here.
   if (git(esrDir, ['config', '--get', 'core.sparseCheckout']) === 'true') {
     gitLoud(['-C', esrDir, 'sparse-checkout', 'set', '--no-cone', ...ESR_SPARSE_PATHS]);
