@@ -19,7 +19,7 @@ src/
 │   │   └── models.ts           # Type definitions for all entities
 │   ├── api/                    # Data fetching
 │   │   ├── remoteConfig.ts     # Remote URLs
-│   │   ├── changelogApi.ts     # Version checking
+│   │   ├── versionApi.ts       # Version checking (GitHub mod metadata, changelog fallback)
 │   │   ├── gemsApi.ts          # Fetch gems.htm
 │   │   ├── gemwordsApi.ts      # Fetch gemwords.htm
 │   │   ├── runewordsApi.ts     # Fetch runewords.htm

@@ -51,6 +51,11 @@ describe('isVersionDifferent', () => {
     expect(isVersionDifferent('3.11.09', '3.12')).toBe(true);
   });
 
+  it('should be true for the changelog-era 3.2.02 vs the metadata 3.2.24', () => {
+    expect(isVersionDifferent('3.2.02', '3.2.24')).toBe(true);
+    expect(compareVersions('3.2.02', '3.2.24')).toBe(-1);
+  });
+
   it('should be false when only the patch notation differs but the value is equal', () => {
     expect(isVersionDifferent('3.12.0', '3.12')).toBe(false);
   });

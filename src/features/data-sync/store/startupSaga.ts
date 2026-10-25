@@ -1,7 +1,7 @@
 import { call, put } from 'redux-saga/effects';
 import { db, openDatabase } from '@/core/db';
 import type { Metadata } from '@/core/db';
-import { fetchLatestVersion, type ChangelogVersion } from '@/core/api';
+import { fetchLatestVersion, type EsrVersionInfo } from '@/core/api';
 import { isVersionDifferent } from '@/core/utils';
 import { startupUseCached, startupNeedsFetch, setNetworkWarning, fatalError, initDataLoad } from './dataSyncSlice';
 import { checkCacheCompleteness, hasAnyCachedData, type CacheCompleteness } from './cacheStatus';
@@ -43,13 +43,13 @@ export function* handleStartupCheck() {
     // Step 1: Check what we have cached
     const cached: CachedDataCheck = (yield call(checkCachedData)) as CachedDataCheck;
 
-    // Step 2: Try to fetch latest version from changelog
-    let remoteVersion: ChangelogVersion | null = null;
+    // Step 2: Try to fetch the latest ESR version (mod metadata on GitHub, changelog page as fallback)
+    let remoteVersion: EsrVersionInfo | null = null;
 
     try {
-      console.log('[HTML] Fetching remote version from changelog...');
-      remoteVersion = (yield call(fetchLatestVersion)) as ChangelogVersion;
-      console.log('[HTML] Remote ESR version:', remoteVersion.version);
+      console.log('[HTML] Fetching remote ESR version...');
+      remoteVersion = (yield call(fetchLatestVersion)) as EsrVersionInfo;
+      console.log('[HTML] Remote ESR version:', remoteVersion.version, 'source:', remoteVersion.source);
     } catch {
       // Network error during version check
       console.log('[HTML] Network error during version check');

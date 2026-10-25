@@ -6,6 +6,8 @@ export interface InitDataLoadPayload {
   readonly force?: boolean;
   /** Remote ESR version already fetched during the startup check; absent on force refresh. */
   readonly esrVersion?: string;
+  /** ISO `Last-Modified` of the docs site's runewords.htm; absent when the header is missing. */
+  readonly docsLastModified?: string;
 }
 
 export interface FetchedHtmlData {
@@ -19,6 +21,8 @@ export interface FetchedHtmlData {
   readonly ascendanciesHtml: string;
   /** Remote ESR version fetched during the startup check; absent on force refresh. */
   readonly esrVersion?: string;
+  /** ISO `Last-Modified` of the docs site's runewords.htm; absent when the header is missing. */
+  readonly docsLastModified?: string;
 }
 
 interface DataSyncState {

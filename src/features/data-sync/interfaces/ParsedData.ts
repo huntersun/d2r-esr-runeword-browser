@@ -13,4 +13,6 @@ export interface ParsedData {
   readonly ascendancies: Ascendancy[];
   /** Remote ESR version fetched during the startup check; absent on force refresh. */
   readonly esrVersion?: string;
+  /** ISO `Last-Modified` of the docs site's runewords.htm; absent when the header is missing. */
+  readonly docsLastModified?: string;
 }

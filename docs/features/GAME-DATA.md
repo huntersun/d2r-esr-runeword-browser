@@ -751,8 +751,11 @@ One header entry ("Game Data", `end: false`). All screens are lazy-loaded from `
 code-splitting guard test covers it). The child routes are in `public/sitemap.xml`.
 
 **Version banner** (`components/GameDataVersionBanner.tsx`): "Game files: ESR {esrVersion} (tag {esrTag} @ {commit7},
-generated {YYYY-MM-DD})" from `loadManifest()`. When Dexie `metadata.esrVersion` (the HTM docs version) exists and differs,
-an amber note says "Docs data is ESR X; game-file data is ESR Y — some details may differ." It never says which is newer.
+generated {YYYY-MM-DD})" from `loadManifest()`, then "Docs data: ESR X (site updated D Mon YYYY)" from Dexie metadata
+(`esrVersion`, `docsLastModified`; the line is left out while the docs version is unknown). When the docs version differs
+from the manifest's, an amber note says "Docs data is ESR X; game-file data is ESR Y — some details may differ." Both
+normally come from `metadata.modVersion` of `d2rloader/metadata.json` (the clone's copy vs the live GitHub copy), so they
+compare like with like; the docs side may fall back to the changelog page, so the note never says which is newer.
 
 `hooks/useGameData(files)` returns `{ status: 'loading' | 'ready' | 'error', data, error, retry }` on top of
 `loadGameDataFile` (module-level promise cache; failed promises are evicted so `retry` refetches). Loading shows the same

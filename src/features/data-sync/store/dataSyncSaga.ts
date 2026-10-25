@@ -4,14 +4,15 @@ import { toast } from 'sonner';
 import {
   fetchGemsHtml,
   fetchGemwordsHtml,
-  fetchRunewordsHtml,
+  fetchRunewordsPage,
   fetchUniqueWeaponsHtml,
   fetchUniqueArmorsHtml,
   fetchUniqueOthersHtml,
   fetchUniqueMythicalsHtml,
   fetchAscendanciesHtml,
   fetchLatestVersion,
-  type ChangelogVersion,
+  type EsrVersionInfo,
+  type HtmPage,
 } from '@/core/api';
 import { db } from '@/core/db';
 import appVersion from '@/assets/version.json';
@@ -55,17 +56,20 @@ import type { ParsedData } from '../interfaces';
 function* handleFetchHtml(action: PayloadAction<InitDataLoadPayload | undefined>) {
   try {
     console.log('[HTML] Fetching HTML files...', { force: action.payload?.force ?? false });
-    const [gemsHtml, gemwordsHtml, runewordsHtml, uniqueWeaponsHtml, uniqueArmorsHtml, uniqueOthersHtml, mythicalsHtml, ascendanciesHtml] =
+    const [gemsHtml, gemwordsHtml, runewordsPage, uniqueWeaponsHtml, uniqueArmorsHtml, uniqueOthersHtml, mythicalsHtml, ascendanciesHtml] =
       (yield all([
         call(fetchGemsHtml),
         call(fetchGemwordsHtml),
-        call(fetchRunewordsHtml),
+        call(fetchRunewordsPage),
         call(fetchUniqueWeaponsHtml),
         call(fetchUniqueArmorsHtml),
         call(fetchUniqueOthersHtml),
         call(fetchUniqueMythicalsHtml),
         call(fetchAscendanciesHtml),
-      ])) as [string, string, string, string, string, string, string, string];
+      ])) as [string, string, HtmPage, string, string, string, string, string];
+    const runewordsHtml = runewordsPage.html;
+    // The docs site regenerates every page at once, so one page's Last-Modified dates the whole set
+    const docsLastModified = runewordsPage.lastModified ?? undefined;
     console.log('[HTML] Fetched HTML files', {
       gemsHtmlLength: gemsHtml.length,
       gemwordsHtmlLength: gemwordsHtml.length,
@@ -75,6 +79,7 @@ function* handleFetchHtml(action: PayloadAction<InitDataLoadPayload | undefined>
       uniqueOthersHtmlLength: uniqueOthersHtml.length,
       mythicalsHtmlLength: mythicalsHtml.length,
       ascendanciesHtmlLength: ascendanciesHtml.length,
+      docsLastModified: docsLastModified ?? 'unknown',
     });
     yield put(
       fetchHtmlSuccess({
@@ -87,6 +92,7 @@ function* handleFetchHtml(action: PayloadAction<InitDataLoadPayload | undefined>
         mythicalsHtml,
         ascendanciesHtml,
         esrVersion: action.payload?.esrVersion,
+        docsLastModified,
       })
     );
   } catch (error) {
@@ -281,6 +287,7 @@ function* handleParseData(action: PayloadAction<FetchedHtmlData>) {
         mythicalUniques,
         ascendancies,
         esrVersion: action.payload.esrVersion,
+        docsLastModified: action.payload.docsLastModified,
       })
     );
   } catch (error) {
@@ -291,8 +298,19 @@ function* handleParseData(action: PayloadAction<FetchedHtmlData>) {
 
 function* handleStoreData(action: PayloadAction<ParsedData>) {
   try {
-    const { gems, esrRunes, lodRunes, kanjiRunes, crystals, runewords, gemwords, htmUniqueItems, mythicalUniques, ascendancies } =
-      action.payload;
+    const {
+      gems,
+      esrRunes,
+      lodRunes,
+      kanjiRunes,
+      crystals,
+      runewords,
+      gemwords,
+      htmUniqueItems,
+      mythicalUniques,
+      ascendancies,
+      docsLastModified,
+    } = action.payload;
 
     // Sanity check: parsers silently return [] (or far fewer rows) when the
     // upstream HTML format drifts. Never replace a good cache with that.
@@ -326,7 +344,7 @@ function* handleStoreData(action: PayloadAction<ParsedData>) {
     let esrVersion: string | null = isPartial ? null : (action.payload.esrVersion ?? null);
     if (esrVersion === null && !isPartial) {
       try {
-        const versionInfo: ChangelogVersion = (yield call(fetchLatestVersion)) as ChangelogVersion;
+        const versionInfo: EsrVersionInfo = (yield call(fetchLatestVersion)) as EsrVersionInfo;
         esrVersion = versionInfo.version;
       } catch {
         // If we can't get version info, just continue; without the esrVersion
@@ -357,11 +375,21 @@ function* handleStoreData(action: PayloadAction<ParsedData>) {
         if (esrVersion !== null) {
           await db.metadata.put({ key: 'esrVersion', value: esrVersion });
         }
+        if (docsLastModified !== undefined) {
+          await db.metadata.put({ key: 'docsLastModified', value: docsLastModified });
+        }
         await db.metadata.put({ key: 'lastUpdated', value: new Date().toISOString() });
         await db.metadata.put({ key: 'appVersion', value: appVersion.version });
       })
     );
-    console.log('[HTML] Stored metadata with ESR version:', esrVersion ?? 'unknown', 'app version:', appVersion.version);
+    console.log(
+      '[HTML] Stored metadata with ESR version:',
+      esrVersion ?? 'unknown',
+      'docs last modified:',
+      docsLastModified ?? 'unknown',
+      'app version:',
+      appVersion.version
+    );
 
     console.log('[HTML] Store complete:', {
       gems: gems.length,

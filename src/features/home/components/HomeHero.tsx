@@ -1,15 +1,12 @@
+import { useDocsDataLine } from '@/core/hooks/useDocsDataLine';
 import { useManifest } from '@/features/game-data/hooks/useManifest';
-import { useDocsEsrVersion } from '../hooks/useDocsEsrVersion';
 import { HomeSearch } from './HomeSearch';
 
 /** Pitch header: title, one-line pitch, the data versions, and the cross-section search. */
 export function HomeHero() {
   const manifest = useManifest();
-  const docsVersion = useDocsEsrVersion();
-  const versions = [
-    manifest === null ? null : `Game files: ESR ${manifest.esrVersion}`,
-    docsVersion === undefined ? null : `Docs data: ESR ${docsVersion}`,
-  ].filter((line) => line !== null);
+  const docs = useDocsDataLine();
+  const versions = [manifest === null ? null : `Game files: ESR ${manifest.esrVersion}`, docs.line].filter((line) => line !== null);
 
   return (
     <section aria-labelledby="home-title" className="space-y-4 rounded-xl border bg-card px-4 py-6 sm:px-6 sm:py-8">

@@ -182,7 +182,9 @@ Key-value store for app metadata.
 
 **Used Keys:**
 
-- `esrVersion` - Current parsed version (e.g., "3.9.07 - 18/12/2025")
+- `esrVersion` - ESR version of the synced docs data (e.g., "3.2.24"), from GitHub `d2rloader/metadata.json`
+  (`metadata.modVersion`), or the changelog page's first header as a fallback
+- `docsLastModified` - ISO `Last-Modified` of the docs site's `runewords.htm` at the last sync (absent when not sent)
 - `lastUpdated` - ISO timestamp of the last successful store
 - `appVersion` - App version that wrote the cache (an app upgrade triggers a refetch)
 

@@ -71,7 +71,8 @@ string (`/?name=Enigma`, `/?search=x&sockets=4`: old Copy Link URLs and guide de
 `src/features/home/` (`HomeScreen`, lazy). Sections, top to bottom, in a `max-w-5xl` column:
 
 1. **Pitch header** (`HomeHero`): title, one-line pitch, and the data versions: "Game files: ESR …" from the game-data
-   manifest (`useManifest`) and "Docs data: ESR …" from Dexie metadata (`esrVersion`), each left out until it is known.
+   manifest (`useManifest`) and "Docs data: ESR … (site updated …)" from Dexie metadata (`esrVersion`,
+   `docsLastModified`, via `useDocsDataLine`), each left out until it is known.
 2. **Search** (`HomeSearch`): one cmdk input with an inline results list grouped Runewords / Gemwords / Uniques /
    Mythicals / Bases, max 6 each (`searchHome` / `rankNames` in `utils/homeSearch.ts`: case-insensitive substring over
    `normaliseItemName`, ranked exact, prefix, word prefix, substring, then alphabetical; duplicates collapse). Nothing
@@ -165,6 +166,7 @@ labels, keys and paths are unique, that Builds is hidden without Supabase, and t
 ```
 Game Data
 Game files: ESR 3.2.10 (tag 3.2.10 @ 10b540e, generated 2026-10-09)
+Docs data: ESR 3.2.10 (site updated 9 Oct 2026)
 [amber note when the HTM docs ESR version differs]
 [Bases] [Best Base] [Affixes] [Item Types]      <- NavLinks, same classes as the header links (navTabClasses.ts)
 ----------------------------------------------
@@ -173,8 +175,9 @@ Game files: ESR 3.2.10 (tag 3.2.10 @ 10b540e, generated 2026-10-09)
 
 Each child route is its own lazy screen wrapped in `<Suspense>` (each section's screens come from one feature module
 (`@/features/guide`, `@/features/game-data`, `@/features/loot-filter`), so they share its chunk).
-The version line comes from `public/game-data/manifest.json`; the docs version from Dexie `metadata.esrVersion`. The note
-never says which version is newer (HTM and git-tag version strings do not compare).
+The version line comes from `public/game-data/manifest.json`; the docs line from Dexie `metadata.esrVersion` and
+`metadata.docsLastModified`. Both versions normally come from `metadata.modVersion` of ESR's `d2rloader/metadata.json`;
+the docs version may fall back to the changelog page's header, so the note never says which version is newer.
 
 The Game Data child pages are separate header items (Bases under Items; Best Base, Affixes and Item Types under Tools).
 Guide and Loot Filters items are prefix-matched, so they stay active on every child page.
@@ -214,7 +217,8 @@ Opens from the right side when the cog icon is clicked.
 │                             │  [Force Refresh Data]         │
 │                             │                               │
 │                             │  App Version: 1.12.1          │
-│                             │  ESR Version: 3.9.07          │
+│                             │  Game files: ESR 3.2.24 (...) │
+│                             │  Docs data: ESR 3.2.24 · ...  │
 │                             │  Last updated: 12/21/2025     │
 │                             │─────────────────────────────── │
 │                             │  Credits                      │
@@ -237,7 +241,8 @@ Opens from the right side when the cog icon is clicked.
 - **Text Size**: 4-step slider (small / normal / large / extralarge), persisted in localStorage
 - **Diablo Font**: Toggle for thematic font rendering, persisted in localStorage
 - **Refresh Data**: Force re-fetch and parse all data
-- **Version display**: App version and current ESR version from metadata
+- **Version display**: App version, game-file ESR version (manifest, generated date) and the docs data line
+  ("Docs data: ESR … (site updated …)", left out until known)
 - **Last updated**: Timestamp of last successful parse
 - **Credits**: small muted block at the bottom: "Eastern Sun Resurrected by Celestialray" (links the ESR site) and
   "Source code on GitHub" (both URLs from `src/core/navigation/navConfig.ts`)

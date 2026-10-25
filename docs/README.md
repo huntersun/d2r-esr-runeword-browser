@@ -55,7 +55,7 @@ The app uses a single HTM-based data system. All data is fetched from the ESR do
 | Unique Others                       | `unique_others.htm`    |
 | Mythical Uniques                    | `unique_mythicals.htm` |
 | Ascendancies                        | `ascendancies.htm`     |
-| Version info                        | `changelogs.html`      |
+| Version info (fallback)             | `changelogs.html`      |
 
 ### Features
 
@@ -88,8 +88,9 @@ clone at `../Eastern_Sun_Resurrected`) into JSON committed under `public/game-da
 `materials.json`, `sets.json`, `skills.json`, `crafting.json`; the last two feed the builds feature only), plus item
 icons from the mod's HD sprites, with the vanilla D2R art extracted from a game install as the fallback (`npm run game-data:icons`: `icons.json` + `icons/*.webp`: bases, uniques, set items and socketables, shown on the Bases, Sets, Unique Items and Socketables pages and in builds).
 The browser fetches these lazily;
-they never go through the HTM parsers or IndexedDB. The game-file version (ESR git tag, e.g. `3.2.10`) is independent of
-the HTM changelog version. See [Game Data](./features/GAME-DATA.md).
+they never go through the HTM parsers or IndexedDB. The game-file version is `metadata.modVersion` of the cloned
+repo's `d2rloader/metadata.json`; the docs-data version is the same field read live from GitHub at startup (the
+changelog page is only a fallback), so the two normally match. See [Game Data](./features/GAME-DATA.md).
 
 After an ESR release, run `npm run game-data:update`: it clones or pulls the ESR repo, regenerates the bundles, refreshes
 the test fixtures, runs the game-data tests and the staleness check, and prints a summary. Flags and the manual fallback

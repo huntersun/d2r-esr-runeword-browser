@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Spinner } from '@/components/ui/spinner';
 import { db } from '@/core/db';
+import { useDocsDataLine } from '@/core/hooks/useDocsDataLine';
+import { useManifest } from '@/features/game-data/hooks/useManifest';
 import {
   selectIsDrawerOpen,
   closeDrawer,
@@ -42,11 +44,8 @@ export function SettingsDrawer() {
   const isUsingCachedData = useSelector(selectIsUsingCachedData);
   const textSizeIndex = TEXT_SIZE_VALUES.indexOf(textSize);
 
-  // Live query for metadata
-  const version = useLiveQuery(async () => {
-    const meta = await db.metadata.get('esrVersion');
-    return meta?.value ?? 'Unknown';
-  });
+  const docs = useDocsDataLine();
+  const manifest = useManifest();
 
   const lastUpdated = useLiveQuery(async () => {
     const meta = await db.metadata.get('lastUpdated');
@@ -159,7 +158,12 @@ export function SettingsDrawer() {
           {/* Info Section */}
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>App Version: {appVersion.version}</p>
-            <p>ESR Version: {version}</p>
+            {manifest !== null && (
+              <p>
+                Game files: ESR {manifest.esrVersion} (generated {manifest.generatedAt.slice(0, 10)})
+              </p>
+            )}
+            {docs.line !== null && <p>{docs.line}</p>}
             <p>Last updated: {lastUpdated}</p>
             {isUsingCachedData ? <p className="text-warning">Using cached data</p> : null}
           </div>

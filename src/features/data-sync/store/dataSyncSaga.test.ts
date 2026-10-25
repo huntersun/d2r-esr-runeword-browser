@@ -134,6 +134,28 @@ describe('dataSyncSaga store step', () => {
     expect(await db.runewords.count()).toBe(10);
     expect(toast.warning).not.toHaveBeenCalled();
   });
+
+  it('stores the docs Last-Modified date alongside the ESR version', async () => {
+    const store = createTestStore();
+
+    store.dispatch(parseDataSuccess({ ...fullParsedData(), esrVersion: '3.2.24', docsLastModified: '2026-10-21T09:49:06.000Z' }));
+
+    await vi.waitFor(async () => {
+      expect((await db.metadata.get('docsLastModified'))?.value).toBe('2026-10-21T09:49:06.000Z');
+    });
+    expect((await db.metadata.get('esrVersion'))?.value).toBe('3.2.24');
+  });
+
+  it('omits docsLastModified when the header was missing', async () => {
+    const store = createTestStore();
+
+    store.dispatch(parseDataSuccess({ ...fullParsedData(), esrVersion: '3.2.24' }));
+
+    await vi.waitFor(() => {
+      expect(store.getState().dataSync.isInitialized).toBe(true);
+    });
+    expect(await db.metadata.get('docsLastModified')).toBeUndefined();
+  });
 });
 
 describe('dataSyncSaga fetch failure', () => {

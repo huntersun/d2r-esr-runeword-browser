@@ -53,11 +53,11 @@ Use `all()` for independent operations (multiple fetches, database writes):
 
 ```typescript
 // Fetch all HTML files in parallel (dataSyncSaga.ts)
-const [gemsHtml, gemwordsHtml, runewordsHtml, uniqueWeaponsHtml, uniqueArmorsHtml, uniqueOthersHtml, mythicalsHtml, ascendanciesHtml] =
+const [gemsHtml, gemwordsHtml, runewordsPage, uniqueWeaponsHtml, uniqueArmorsHtml, uniqueOthersHtml, mythicalsHtml, ascendanciesHtml] =
   yield all([
     call(fetchGemsHtml),
     call(fetchGemwordsHtml),
-    call(fetchRunewordsHtml),
+    call(fetchRunewordsPage), // { html, lastModified }: the Last-Modified header becomes metadata.docsLastModified
     call(fetchUniqueWeaponsHtml),
     call(fetchUniqueArmorsHtml),
     call(fetchUniqueOthersHtml),
