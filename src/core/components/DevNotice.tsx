@@ -13,7 +13,7 @@ export function DevNotice({ icon: Icon, title, children }: DevNoticeProps) {
   return (
     <div
       role="note"
-      className="mx-auto flex max-w-6xl items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-300"
+      className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-300"
     >
       <Icon className="mt-0.5 size-3.5 shrink-0" aria-hidden />
       <p>

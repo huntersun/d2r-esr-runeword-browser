@@ -14,6 +14,7 @@ import { SectionLabel } from '../components/SectionLabel';
 import { FOCUS_RING, GUIDE_PROSE_FONT } from '../components/styles';
 import { VisitedMark } from '../components/VisitedMark';
 import { useVisitedNotes } from '../hooks/useVisitedNotes';
+import { PageShell } from '@/components/PageShell';
 
 interface SpineStepProps {
   readonly step: GuideSpineStep;
@@ -105,12 +106,12 @@ function Spine({ guide }: SpineProps) {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold">Guide</h1>
-          <p className="text-sm text-muted-foreground">Your path through Eastern Sun Resurrected</p>
-        </div>
+    <PageShell
+      width="narrow"
+      className="space-y-6"
+      title="Guide"
+      meta="Your path through Eastern Sun Resurrected"
+      actions={
         <Link
           to="/guide/map"
           className={cn('inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-primary hover:underline', FOCUS_RING)}
@@ -118,8 +119,8 @@ function Spine({ guide }: SpineProps) {
           <MapIcon className="size-4 shrink-0" aria-hidden />
           See every note on one map
         </Link>
-      </div>
-
+      }
+    >
       <GuideStartCards bundle={guide.bundle} />
 
       <GuideSearch notes={notes} />
@@ -184,7 +185,7 @@ function Spine({ guide }: SpineProps) {
           </button>
         </p>
       )}
-    </div>
+    </PageShell>
   );
 }
 

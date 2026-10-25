@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { SearchHelpButton } from '@/components/SearchHelpButton';
+import { FilterPanel } from '@/components/FilterPanel';
+import { FilterGroupHeader } from '@/components/FilterGroup';
 import { useShareUrl } from '../hooks/useShareUrl';
 import {
   toggleCategory,
@@ -67,63 +69,71 @@ export function SocketableFilters() {
   const allSelected = Object.values(enabledCategories).every(Boolean);
 
   return (
-    <div className="space-y-4 mb-6">
-      {/* Category checkboxes */}
-      <div className="flex flex-wrap items-center gap-4">
-        {(Object.keys(CATEGORY_LABELS) as Array<keyof EnabledCategories>).map((category) => (
-          <label key={category} className="flex items-center gap-2 cursor-pointer">
-            <Checkbox
-              checked={enabledCategories[category]}
-              onCheckedChange={() => {
-                handleCategoryToggle(category);
-              }}
+    <FilterPanel>
+      {/* Search row */}
+      <div className="flex flex-wrap items-end gap-4">
+        <div className="flex-1 min-w-64 max-w-md space-y-1">
+          <div className="flex items-center gap-1">
+            <p className="text-xs text-muted-foreground">
+              Search by words or <code className="bg-muted px-1 rounded">"exact phrases"</code>
+            </p>
+            <SearchHelpButton examples={SEARCH_EXAMPLES} />
+          </div>
+          <Label htmlFor="search" className="sr-only">
+            Search
+          </Label>
+          <InputGroup>
+            <InputGroupInput
+              id="search"
+              type="text"
+              placeholder="Search by name or bonus text..."
+              value={localSearchText}
+              onChange={handleSearchChange}
             />
-            <span className="text-sm">{CATEGORY_LABELS[category]}</span>
-          </label>
-        ))}
-        <Button variant="outline" size="sm" onClick={handleSelectAll} disabled={allSelected}>
-          All
-        </Button>
-        <label className="flex items-center gap-2 cursor-pointer">
-          <Checkbox
-            checked={onlyHighestQuality}
-            onCheckedChange={() => {
-              dispatch(toggleOnlyHighestQuality());
-            }}
-          />
-          <span className="text-sm">Only highest gem / crystal</span>
-        </label>
+            {localSearchText && (
+              <InputGroupAddon align="inline-end">
+                <InputGroupButton variant="ghost" size="icon-xs" onClick={handleClearSearch} aria-label="Clear search">
+                  <X className="size-4" />
+                </InputGroupButton>
+              </InputGroupAddon>
+            )}
+          </InputGroup>
+        </div>
+
+        {/* Copy Link button */}
         <CopyLinkButton getShareUrl={getShareUrl} />
       </div>
 
-      {/* Search input */}
-      <div className="max-w-md space-y-1">
-        <div className="flex items-center gap-1">
-          <p className="text-xs text-muted-foreground">
-            Search by words or <code className="bg-muted px-1 rounded">"exact phrases"</code>
-          </p>
-          <SearchHelpButton examples={SEARCH_EXAMPLES} />
+      {/* Category checkboxes */}
+      <div className="space-y-2">
+        <FilterGroupHeader label="Categories">
+          <Button variant="outline" size="sm" onClick={handleSelectAll} disabled={allSelected}>
+            All
+          </Button>
+        </FilterGroupHeader>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          {(Object.keys(CATEGORY_LABELS) as Array<keyof EnabledCategories>).map((category) => (
+            <label key={category} className="flex items-center gap-2 cursor-pointer">
+              <Checkbox
+                checked={enabledCategories[category]}
+                onCheckedChange={() => {
+                  handleCategoryToggle(category);
+                }}
+              />
+              <span className="text-sm">{CATEGORY_LABELS[category]}</span>
+            </label>
+          ))}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox
+              checked={onlyHighestQuality}
+              onCheckedChange={() => {
+                dispatch(toggleOnlyHighestQuality());
+              }}
+            />
+            <span className="text-sm">Only highest gem / crystal</span>
+          </label>
         </div>
-        <Label htmlFor="search" className="sr-only">
-          Search
-        </Label>
-        <InputGroup>
-          <InputGroupInput
-            id="search"
-            type="text"
-            placeholder="Search by name or bonus text..."
-            value={localSearchText}
-            onChange={handleSearchChange}
-          />
-          {localSearchText && (
-            <InputGroupAddon align="inline-end">
-              <InputGroupButton variant="ghost" size="icon-xs" onClick={handleClearSearch} aria-label="Clear search">
-                <X className="size-4" />
-              </InputGroupButton>
-            </InputGroupAddon>
-          )}
-        </InputGroup>
       </div>
-    </div>
+    </FilterPanel>
   );
 }

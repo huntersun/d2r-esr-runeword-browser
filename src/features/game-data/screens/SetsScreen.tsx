@@ -2,6 +2,8 @@ import { useSearchParams } from 'react-router-dom';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { CopyLinkHelpButton } from '@/components/CopyLinkHelpButton';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
+import { FilterPanel } from '@/components/FilterPanel';
+import { ResultsBar } from '@/components/ResultsBar';
 import { ExactNameChip } from '@/core/components/ExactNameChip';
 import { NumberFilterInput } from '@/core/components/RecipeCommonFilters';
 import { useDebouncedFilterValue } from '@/core/hooks/useDebouncedFilterValue';
@@ -101,74 +103,79 @@ function SetsBrowser({ bundle }: { readonly bundle: SetsBundle }) {
         <DocsLink href={setDocsUrl({ className: null })}>official Sets page</DocsLink>.
       </p>
 
-      <div className="flex flex-wrap items-end gap-4">
-        <EnhanceSearch
-          value={search}
-          onChange={setSearch}
-          onClear={() => {
-            commitSearch('');
-          }}
-          placeholder="Search sets, items or bonuses..."
-          hint="Search set and item names and bonuses;"
-        />
-        <NumberFilterInput
-          id="sets-max-level"
-          hint="Max required level."
-          label="Max Req Level"
-          placeholder="Max Req Lvl"
-          max={MAX_REQ_LEVEL_RANGE.max}
-          value={maxLevel}
-          onChange={setMaxLevel}
-          onClear={() => {
-            commitMaxLevel(null);
-          }}
-          clearLabel="Clear max required level"
-        />
-        <div className="space-y-1">
-          <div className="flex items-center gap-1">
-            <p className="text-xs text-muted-foreground">Share this view.</p>
-            <CopyLinkHelpButton />
+      <FilterPanel>
+        <div className="flex flex-wrap items-end gap-4">
+          <EnhanceSearch
+            value={search}
+            onChange={setSearch}
+            onClear={() => {
+              commitSearch('');
+            }}
+            placeholder="Search sets, items or bonuses..."
+            hint="Search set and item names and bonuses;"
+          />
+          <NumberFilterInput
+            id="sets-max-level"
+            hint="Max required level."
+            label="Max Req Level"
+            placeholder="Max Req Lvl"
+            max={MAX_REQ_LEVEL_RANGE.max}
+            value={maxLevel}
+            onChange={setMaxLevel}
+            onClear={() => {
+              commitMaxLevel(null);
+            }}
+            clearLabel="Clear max required level"
+          />
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              <p className="text-xs text-muted-foreground">Share this view.</p>
+              <CopyLinkHelpButton />
+            </div>
+            <CopyLinkButton getShareUrl={getShareUrl} />
           </div>
-          <CopyLinkButton getShareUrl={getShareUrl} />
         </div>
-      </div>
 
-      {state.name === null ? (
-        <div className="space-y-2">
-          <PillRow label="Pieces">
-            <Pills
-              label="Pieces"
-              options={pieces}
-              value={state.pieces === null ? ALL : String(state.pieces)}
-              onChange={(value) => {
-                update({ pieces: value === ALL ? null : Number(value) }, false);
-              }}
-            />
-          </PillRow>
-          <PillRow label="Class">
-            <Pills
-              label="Class"
-              options={classes}
-              value={state.cls ?? ALL}
-              onChange={(value) => {
-                update({ cls: value === ALL ? null : value }, false);
-              }}
-            />
-          </PillRow>
-        </div>
-      ) : (
-        <ExactNameChip
-          name={state.name}
-          onClear={() => {
-            update({ name: null }, false);
-          }}
-          scrollOnMount
-        />
-      )}
+        {state.name === null && (
+          <div className="space-y-2">
+            <PillRow label="Pieces">
+              <Pills
+                label="Pieces"
+                options={pieces}
+                value={state.pieces === null ? ALL : String(state.pieces)}
+                onChange={(value) => {
+                  update({ pieces: value === ALL ? null : Number(value) }, false);
+                }}
+              />
+            </PillRow>
+            <PillRow label="Class">
+              <Pills
+                label="Class"
+                options={classes}
+                value={state.cls ?? ALL}
+                onChange={(value) => {
+                  update({ cls: value === ALL ? null : value }, false);
+                }}
+              />
+            </PillRow>
+          </div>
+        )}
+      </FilterPanel>
 
-      <p className="text-xs text-muted-foreground">
-        Showing {formatCount(shown.length)} of {formatCount(sets.length)} sets
-      </p>
+      <ResultsBar
+        summary={`Showing ${formatCount(shown.length)} of ${formatCount(sets.length)} sets`}
+        chips={
+          state.name !== null && (
+            <ExactNameChip
+              name={state.name}
+              onClear={() => {
+                update({ name: null }, false);
+              }}
+              scrollOnMount
+            />
+          )
+        }
+      />
 
       {shown.length === 0 ? (
         <EmptyState

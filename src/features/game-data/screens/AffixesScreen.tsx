@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
+import { ResultsBar } from '@/components/ResultsBar';
 import type { Affix, BaseItem, TypesBundle } from '../engine/schema';
 import { eligibleAffixes } from '../engine/affixEligibility';
 import type { ComboOption } from '../components/ComboPicker';
@@ -100,9 +101,7 @@ function BrowseResults({ affixes, typeNames, classNames }: BrowseResultsProps) {
 
   return (
     <>
-      <p className="mb-4 text-sm text-muted-foreground">
-        Showing {filtered.length} of {affixes.length} affixes
-      </p>
+      <ResultsBar summary={`Showing ${String(filtered.length)} of ${String(affixes.length)} affixes`} />
       {filtered.length === 0 ? (
         <p className="text-muted-foreground py-8 text-center">No affixes found. Try adjusting your filters.</p>
       ) : (

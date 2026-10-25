@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { PageShell } from '@/components/PageShell';
 import { TAB_ACTIVE, TAB_BASE, TAB_INACTIVE } from '@/core/components/navTabClasses';
 import { GameDataVersionBanner } from '../components/GameDataVersionBanner';
 
@@ -16,10 +17,10 @@ const SUB_PAGES = [
 
 export function GameDataLayout() {
   return (
-    <div>
-      <div className="mb-4 space-y-2 border-b pb-3">
-        <h1 className="text-2xl font-bold">Game Data</h1>
-        <GameDataVersionBanner />
+    <PageShell
+      title="Game Data"
+      meta={<GameDataVersionBanner />}
+      nav={
         <nav className="flex flex-wrap gap-1" aria-label="Game data pages">
           {SUB_PAGES.map((page) => (
             <NavLink key={page.to} to={page.to} className={({ isActive }) => cn(TAB_BASE, isActive ? TAB_ACTIVE : TAB_INACTIVE)}>
@@ -27,8 +28,9 @@ export function GameDataLayout() {
             </NavLink>
           ))}
         </nav>
-      </div>
+      }
+    >
       <Outlet />
-    </div>
+    </PageShell>
   );
 }

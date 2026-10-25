@@ -4,6 +4,8 @@ import { useFilteredAscendancies } from '../hooks/useFilteredAscendancies';
 import { useUrlInitialize } from '../hooks/useUrlInitialize';
 import { Spinner } from '@/components/ui/spinner';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
+import { PageShell } from '@/components/PageShell';
+import { ResultsBar } from '@/components/ResultsBar';
 
 export function AscendanciesScreen() {
   useUrlInitialize();
@@ -19,11 +21,10 @@ export function AscendanciesScreen() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Ascendancies ({items.length})</h1>
+    <PageShell title="Ascendancies" count={items.length}>
       <AscendancyFilters />
 
-      <p className="text-sm text-muted-foreground mb-4">Showing {items.length} ascendancies</p>
+      <ResultsBar summary={`Showing ${String(items.length)} ascendancies`} />
 
       {items.length === 0 ? (
         <p className="text-muted-foreground py-8 text-center">No ascendancies found. Try adjusting your search.</p>
@@ -36,6 +37,6 @@ export function AscendanciesScreen() {
       )}
 
       <ScrollToTopButton />
-    </div>
+    </PageShell>
   );
 }

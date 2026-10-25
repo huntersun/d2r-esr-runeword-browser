@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { CopyLinkHelpButton } from '@/components/CopyLinkHelpButton';
 import { SearchHelpButton } from '@/components/SearchHelpButton';
+import { FilterPanel } from '@/components/FilterPanel';
 import { NumberFilterInput } from '@/core/components/RecipeCommonFilters';
 import { useDebouncedFilterValue } from '@/core/hooks/useDebouncedFilterValue';
 import { isClassCode, type ClassInfo } from '../engine/schema';
@@ -71,7 +72,7 @@ export function AffixFilters({ classes, typeOptions, rollMode, getShareUrl }: Af
   );
 
   return (
-    <div className="space-y-4 mb-6">
+    <FilterPanel>
       <div className="flex flex-wrap items-end gap-4">
         <div className="flex-1 min-w-64 max-w-md space-y-1">
           <div className="flex items-center gap-1">
@@ -238,7 +239,7 @@ export function AffixFilters({ classes, typeOptions, rollMode, getShareUrl }: Af
       </div>
 
       {!rollMode && <AffixTypePicker typeOptions={typeOptions} selected={filters.types} />}
-    </div>
+    </FilterPanel>
   );
 }
 

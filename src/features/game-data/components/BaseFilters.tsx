@@ -8,6 +8,8 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
+import { FilterGroup, FilterGroupHeader, FilterGroupList } from '@/components/FilterGroup';
+import { FilterPanel } from '@/components/FilterPanel';
 import { CopyLinkHelpButton } from '@/components/CopyLinkHelpButton';
 import { SearchHelpButton } from '@/components/SearchHelpButton';
 import { NumberFilterInput } from '@/core/components/RecipeCommonFilters';
@@ -75,7 +77,7 @@ export function BaseFilters({ classes, typeGroups, typeNames, getShareUrl }: Bas
   );
 
   return (
-    <div className="space-y-4 mb-6">
+    <FilterPanel>
       <div className="flex flex-wrap items-end gap-4">
         <div className="flex-1 min-w-64 max-w-md space-y-1">
           <div className="flex items-center gap-1">
@@ -270,7 +272,7 @@ export function BaseFilters({ classes, typeGroups, typeNames, getShareUrl }: Bas
       </div>
 
       <TypePicker typeGroups={typeGroups} typeNames={typeNames} selected={filters.types} />
-    </div>
+    </FilterPanel>
   );
 }
 
@@ -289,8 +291,7 @@ function TypePicker({ typeGroups, typeNames, selected }: TypePickerProps) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <span className="font-medium text-sm">Item Types:</span>
+      <FilterGroupHeader label="Item Types">
         <span className="text-xs text-muted-foreground">
           {selected.length === 0 ? 'all (none selected)' : `${String(selected.length)} selected`}
         </span>
@@ -305,33 +306,24 @@ function TypePicker({ typeGroups, typeNames, selected }: TypePickerProps) {
             </button>
           </Badge>
         ))}
-      </div>
-      <div className="space-y-1.5">
+      </FilterGroupHeader>
+      <FilterGroupList>
         {typeGroups.map((group) => {
           const codes = group.types.map((type) => type.code);
           const selectedCount = codes.filter((code) => selected.includes(code)).length;
           const groupChecked = selectedCount === 0 ? false : selectedCount === codes.length ? true : 'indeterminate';
           return (
-            <div key={group.label} className="grid grid-cols-1 md:grid-cols-[10rem_1fr] items-start gap-x-3 gap-y-1">
-              <label className="flex h-7 items-center gap-1.5 cursor-pointer shrink-0">
-                <Checkbox
-                  checked={groupChecked}
-                  onCheckedChange={() => dispatch(setBaseTypeGroup({ codes, selected: groupChecked !== true }))}
-                />
-                <span className="font-bold text-sm text-muted-foreground">{group.label}:</span>
-              </label>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                {group.types.map((type) => (
-                  <label key={type.code} className="flex h-7 cursor-pointer items-center gap-1">
-                    <Checkbox checked={selected.includes(type.code)} onCheckedChange={() => dispatch(toggleBaseType(type.code))} />
-                    <span className="text-sm">{type.name}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
+            <FilterGroup
+              key={group.label}
+              label={group.label}
+              checked={groupChecked}
+              onToggleGroup={() => dispatch(setBaseTypeGroup({ codes, selected: groupChecked !== true }))}
+              options={group.types.map((type) => ({ id: type.code, label: type.name, checked: selected.includes(type.code) }))}
+              onToggle={(code) => dispatch(toggleBaseType(code))}
+            />
           );
         })}
-      </div>
+      </FilterGroupList>
     </div>
   );
 }

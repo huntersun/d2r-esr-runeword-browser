@@ -184,7 +184,7 @@ export function LootFilterEditorScreen() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div>
       <div className="mb-4 space-y-3 border-b pb-3">
         <Button asChild variant="link" size="sm" className="h-auto p-0 text-muted-foreground">
           <Link to="/loot-filters">

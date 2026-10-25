@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import type { UnknownAction } from '@reduxjs/toolkit';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
+import { FilterGroup, FilterGroupHeader, FilterGroupList } from '@/components/FilterGroup';
 import { groupItemTypesByCategory, type GroupedItemTypes } from '@/core/constants/itemTypeCategories';
 import type { RootState } from '@/core/store';
 
@@ -42,29 +42,15 @@ function ItemGroupSection({ group, selectedItemTypes, actions }: ItemGroupSectio
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[8rem_1fr] items-start gap-x-3 gap-y-1">
-      <label className="flex h-7 items-center gap-1.5 cursor-pointer shrink-0">
-        <Checkbox
-          checked={groupState === 'all' ? true : groupState === 'some' ? 'indeterminate' : false}
-          onCheckedChange={handleGroupToggle}
-        />
-        <span className="font-bold text-sm text-muted-foreground">{group.label}:</span>
-      </label>
-
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        {group.itemTypes.map((itemType) => (
-          <label key={itemType} className="flex h-7 cursor-pointer items-center gap-1">
-            <Checkbox
-              checked={selectedItemTypes[itemType] ?? true}
-              onCheckedChange={() => {
-                dispatch(actions.toggleItemType(itemType));
-              }}
-            />
-            <span className="text-sm">{itemType}</span>
-          </label>
-        ))}
-      </div>
-    </div>
+    <FilterGroup
+      label={group.label}
+      checked={groupState === 'all' ? true : groupState === 'some' ? 'indeterminate' : false}
+      onToggleGroup={handleGroupToggle}
+      options={group.itemTypes.map((itemType) => ({ id: itemType, label: itemType, checked: selectedItemTypes[itemType] ?? true }))}
+      onToggle={(itemType) => {
+        dispatch(actions.toggleItemType(itemType));
+      }}
+    />
   );
 }
 
@@ -85,20 +71,19 @@ export function ItemTypeFilter({ itemTypes, selectSelectedItemTypes, actions }: 
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <span className="font-medium text-sm">Item Types:</span>
+      <FilterGroupHeader label="Item Types">
         <Button variant="outline" size="sm" onClick={() => dispatch(actions.selectAllItemTypes())} disabled={allSelected}>
           All
         </Button>
         <Button variant="outline" size="sm" onClick={() => dispatch(actions.deselectAllItemTypes())} disabled={noneSelected}>
           None
         </Button>
-      </div>
-      <div className="space-y-1.5">
+      </FilterGroupHeader>
+      <FilterGroupList>
         {groups.map((group) => (
           <ItemGroupSection key={group.label} group={group} selectedItemTypes={selectedItemTypes} actions={actions} />
         ))}
-      </div>
+      </FilterGroupList>
     </div>
   );
 }

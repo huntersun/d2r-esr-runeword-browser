@@ -5,6 +5,8 @@ import { useUrlInitialize } from '../hooks/useUrlInitialize';
 import { buildHtmUniqueItemFavoriteId } from '../utils/htmUniqueItemFavorites';
 import { Spinner } from '@/components/ui/spinner';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
+import { PageShell } from '@/components/PageShell';
+import { ResultsBar } from '@/components/ResultsBar';
 import { FavoritesToggleButton } from '@/core/components/FavoritesToggleButton';
 import { useItemFavorites } from '@/features/favorites';
 import type { HtmUniqueItem } from '@/core/db';
@@ -42,23 +44,22 @@ export function HtmUniqueItemsScreen() {
   const filteredItems = favorites.filterItems(items);
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Unique Items ({filteredItems.length})</h1>
+    <PageShell title="Unique Items" count={filteredItems.length}>
       <HtmUniqueItemFilters />
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <p className="text-sm text-muted-foreground">Showing {filteredItems.length} unique items</p>
-          {exactName !== null && <ExactNameChip name={exactName} onClear={clearExactName} scrollOnMount={nameFromUrl} />}
-        </div>
-        {favorites.isAuthenticated && (
-          <FavoritesToggleButton
-            favoriteCount={favorites.favoriteCount}
-            showFavoritesOnly={favorites.showFavoritesOnly}
-            onToggle={favorites.toggleShowFavoritesOnly}
-          />
-        )}
-      </div>
+      <ResultsBar
+        summary={`Showing ${String(filteredItems.length)} unique items`}
+        chips={exactName !== null && <ExactNameChip name={exactName} onClear={clearExactName} scrollOnMount={nameFromUrl} />}
+        actions={
+          favorites.isAuthenticated && (
+            <FavoritesToggleButton
+              favoriteCount={favorites.favoriteCount}
+              showFavoritesOnly={favorites.showFavoritesOnly}
+              onToggle={favorites.toggleShowFavoritesOnly}
+            />
+          )
+        }
+      />
 
       {filteredItems.length === 0 ? (
         <p className="text-muted-foreground py-8 text-center">
@@ -87,6 +88,6 @@ export function HtmUniqueItemsScreen() {
       )}
 
       <ScrollToTopButton />
-    </div>
+    </PageShell>
   );
 }

@@ -2,6 +2,9 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { CopyLinkHelpButton } from '@/components/CopyLinkHelpButton';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
+import { FilterPanel } from '@/components/FilterPanel';
+import { ResultsBar } from '@/components/ResultsBar';
+import { SectionHeader } from '@/components/SectionHeader';
 import { ExactNameChip } from '@/core/components/ExactNameChip';
 import { useDebouncedFilterValue } from '@/core/hooks/useDebouncedFilterValue';
 import { buildShareUrl } from '@/core/utils/filterUrlParams';
@@ -63,6 +66,8 @@ function MaterialsBrowser({ bundle }: { readonly bundle: MaterialsBundle }) {
   const tree = buildMaterialsTree(bundle);
   const shown = filterMaterialsTree(tree, state, familyLabel);
   const getShareUrl = () => buildShareUrl(MATERIALS_ROUTE, encodeMaterialsState({ ...state, search }));
+  const shownItems = shown.reduce((sum, view) => sum + itemCount(view), 0);
+  const totalItems = tree.reduce((sum, view) => sum + itemCount(view), 0);
   const variants = bundle.items.reduce((sum, item) => sum + (item.variants ?? 1), 0);
   const groupOptions = [
     { value: ALL_GROUPS, label: 'All', count: bundle.items.length },
@@ -80,43 +85,52 @@ function MaterialsBrowser({ bundle }: { readonly bundle: MaterialsBundle }) {
         use it and the guide notes about it. Sources are derived from the game files and may be incomplete.
       </p>
 
-      <div className="flex flex-wrap items-end gap-4">
-        <EnhanceSearch
-          value={search}
-          onChange={setSearch}
-          onClear={() => {
-            commitSearch('');
-          }}
-          placeholder="Search items, sources or recipes..."
-          hint="Search names, sources and recipe families;"
-        />
-        <div className="space-y-1">
-          <div className="flex items-center gap-1">
-            <p className="text-xs text-muted-foreground">Share this view.</p>
-            <CopyLinkHelpButton />
+      <FilterPanel>
+        <div className="flex flex-wrap items-end gap-4">
+          <EnhanceSearch
+            value={search}
+            onChange={setSearch}
+            onClear={() => {
+              commitSearch('');
+            }}
+            placeholder="Search items, sources or recipes..."
+            hint="Search names, sources and recipe families;"
+          />
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              <p className="text-xs text-muted-foreground">Share this view.</p>
+              <CopyLinkHelpButton />
+            </div>
+            <CopyLinkButton getShareUrl={getShareUrl} />
           </div>
-          <CopyLinkButton getShareUrl={getShareUrl} />
         </div>
-      </div>
 
-      {state.name === null ? (
-        <Pills
-          label="Item groups"
-          options={groupOptions}
-          value={state.group ?? ALL_GROUPS}
-          onChange={(value) => {
-            update({ group: value === ALL_GROUPS ? null : value }, false);
-          }}
-        />
-      ) : (
-        <ExactNameChip
-          name={state.name}
-          onClear={() => {
-            update({ name: null }, false);
-          }}
-          scrollOnMount
-        />
-      )}
+        {state.name === null && (
+          <Pills
+            label="Item groups"
+            options={groupOptions}
+            value={state.group ?? ALL_GROUPS}
+            onChange={(value) => {
+              update({ group: value === ALL_GROUPS ? null : value }, false);
+            }}
+          />
+        )}
+      </FilterPanel>
+
+      <ResultsBar
+        summary={`Showing ${formatCount(shownItems)} of ${formatCount(totalItems)} items`}
+        chips={
+          state.name !== null && (
+            <ExactNameChip
+              name={state.name}
+              onClear={() => {
+                update({ name: null }, false);
+              }}
+              scrollOnMount
+            />
+          )
+        }
+      />
 
       {shown.length === 0 ? (
         <EmptyState
@@ -129,10 +143,7 @@ function MaterialsBrowser({ bundle }: { readonly bundle: MaterialsBundle }) {
         <div className="space-y-8">
           {shown.map((view) => (
             <section key={view.group.code} aria-labelledby={`materials-${view.group.code}`} className="space-y-3">
-              <h2 id={`materials-${view.group.code}`} className="flex items-baseline gap-2 border-b pb-1 text-lg font-semibold">
-                {view.group.label}
-                <span className="text-sm font-normal text-muted-foreground">{formatCount(itemCount(view))}</span>
-              </h2>
+              <SectionHeader id={`materials-${view.group.code}`} title={view.group.label} count={formatCount(itemCount(view))} />
               {view.blocks.map((block) => (
                 <div key={block.code} className="space-y-1">
                   {view.blocks.length > 1 && <h3 className="px-1 text-sm font-medium text-muted-foreground">{block.label}</h3>}

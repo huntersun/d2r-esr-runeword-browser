@@ -1,15 +1,13 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { PageHeader } from '@/components/PageHeader';
+import { PageShell } from '@/components/PageShell';
 import { Spinner } from '@/components/ui/spinner';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 import { db } from '@/core/db';
-import { openSignInDialog, selectIsAuthenticated } from '@/features/auth';
 import { BuildCard } from '../components/BuildCard';
+import { CreateBuildButton } from '../components/CreateBuildButton';
 import { BuildCardSkeleton } from '../components/BuildCardSkeleton';
 import { BuildFilters } from '../components/BuildFilters';
 import { LoadMoreError } from '../components/LoadMoreError';
@@ -39,7 +37,6 @@ export function BuildsScreen() {
   const loadMoreError = useSelector(selectBuildsLoadMoreError);
   const hasActiveFilters = useSelector(selectBuildsHasActiveFilters);
   const likedBuildIds = useSelector(selectLikedBuildIdSet);
-  const isAuthenticated = useSelector(selectIsAuthenticated);
 
   const esrVersionMeta = useLiveQuery(() => db.metadata.get('esrVersion'));
   const currentEsrVersion = esrVersionMeta?.value ?? null;
@@ -56,8 +53,7 @@ export function BuildsScreen() {
   const sentinelRef = useInfiniteScroll(handleLoadMore, builds.length > 0 && hasMore && !loadingMore && !loading && loadMoreError === null);
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <PageHeader title="Builds" />
+    <PageShell title="Builds" actions={<CreateBuildButton />}>
       <BuildFilters />
 
       {error !== null && builds.length === 0 ? (
@@ -90,23 +86,7 @@ export function BuildsScreen() {
           ) : (
             <>
               <p className="text-muted-foreground">No builds yet. Be the first to share a build!</p>
-              {isAuthenticated ? (
-                <Button asChild>
-                  <Link to="/builds/new">
-                    <Plus className="size-4" />
-                    Create Build
-                  </Link>
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => {
-                    dispatch(openSignInDialog());
-                  }}
-                >
-                  <Plus className="size-4" />
-                  Create Build
-                </Button>
-              )}
+              <CreateBuildButton />
             </>
           )}
         </div>
@@ -130,6 +110,6 @@ export function BuildsScreen() {
       )}
 
       <ScrollToTopButton />
-    </div>
+    </PageShell>
   );
 }

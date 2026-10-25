@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { FilterPanel } from '@/components/FilterPanel';
 import type { BaseItem } from '../engine/schema';
 import { AFFIX_LEVEL_RANGE } from '../constants/affixes';
 import { selectAffixFilters, setAffixBase, setAffixIlvl, setAffixIncludeAutomagic, setAffixQuality } from '../store/gameDataSlice';
@@ -24,7 +25,7 @@ export function AffixRollPanel({ baseOptions, base, alvl }: AffixRollPanelProps)
   const { ilvl, quality, includeAutomagic } = useSelector(selectAffixFilters);
 
   return (
-    <div className="mb-6 space-y-3 rounded-lg border p-4">
+    <FilterPanel label="What can roll on a base?">
       <div className="flex flex-wrap items-end gap-4">
         <div className="min-w-64 max-w-xl flex-1 space-y-1">
           <Label htmlFor="affixes-base" className="text-xs font-normal text-muted-foreground">
@@ -99,6 +100,6 @@ export function AffixRollPanel({ baseOptions, base, alvl }: AffixRollPanelProps)
           )}
         </>
       )}
-    </div>
+    </FilterPanel>
   );
 }

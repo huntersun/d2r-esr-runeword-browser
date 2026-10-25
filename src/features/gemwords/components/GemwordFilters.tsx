@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { writePersistentJson } from '@/core/hooks/usePersistentState';
 import { Button } from '@/components/ui/button';
+import { FilterPanel } from '@/components/FilterPanel';
 import { RecipeCommonFilters } from '@/core/components/RecipeCommonFilters';
 import { GemCheckboxGroup } from './GemCheckboxGroup';
 import { useGemGroups } from '../hooks/useGemGroups';
@@ -85,7 +86,7 @@ export function GemwordFilters() {
   };
 
   return (
-    <div className="space-y-4 mb-6">
+    <FilterPanel>
       <RecipeCommonFilters
         selectors={FILTER_SELECTORS}
         actions={FILTER_ACTIONS}
@@ -122,6 +123,6 @@ export function GemwordFilters() {
         </div>
         <GemCheckboxGroup />
       </div>
-    </div>
+    </FilterPanel>
   );
 }

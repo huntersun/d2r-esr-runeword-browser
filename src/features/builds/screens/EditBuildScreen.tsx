@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
-import { PageHeader } from '@/components/PageHeader';
+import { PageShell } from '@/components/PageShell';
 import { Spinner } from '@/components/ui/spinner';
 import { RequestState } from '@/core/types';
 import { selectAuthInitialized, selectAuthUserId, selectIsAuthenticated } from '@/features/auth';
@@ -128,8 +128,7 @@ export function EditBuildScreen() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <PageHeader title="Edit Build" />
+    <PageShell title="Edit Build">
       <BuildForm
         // Remount per build so the form's initial state can't carry over from a
         // previously-edited build if the route changes without an unmount.
@@ -143,6 +142,6 @@ export function EditBuildScreen() {
           void navigate(`/build/${build.id}`);
         }}
       />
-    </div>
+    </PageShell>
   );
 }

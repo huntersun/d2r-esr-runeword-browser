@@ -1,5 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { Checkbox } from '@/components/ui/checkbox';
+import { FilterGroupList } from '@/components/FilterGroup';
+import { cn } from '@/lib/utils';
 import { useRuneGroups } from '../hooks/useRuneGroups';
 import { toggleRune, toggleRuneGroup, selectSelectedRunes } from '../store/runewordsSlice';
 import { ESR_TIER_TEXT_COLORS, CATEGORY_TEXT_COLORS } from '../constants/tierColors';
@@ -21,13 +23,21 @@ function getTierState(runes: readonly string[], category: string, selectedRunes:
   return 'some';
 }
 
-interface RuneGroupSectionProps {
-  readonly group: RuneGroup;
-  readonly labelClassName?: string;
-  readonly runeClassName?: string;
-}
+/**
+ * Rune columns per group kind, as fixed-width grids so the wrapped lines line up and no line holds a single rune.
+ * Tuned for the current group sizes (ESR tiers 7, LoD tiers 11, Kanji 14) at 390 / 768 / 1024 / 1280 px:
+ * ESR 5 → 7 per line, LoD 4 → 6 → 11 → 6 (two-column layout from xl), Kanji 3 → 5 → 7 → 4.
+ */
+const RUNE_COLUMNS: Record<RuneGroup['category'], string> = {
+  esrRunes: 'grid-cols-[repeat(5,3.25rem)] md:grid-cols-[repeat(7,3.25rem)]',
+  lodRunes:
+    'grid-cols-[repeat(4,3.75rem)] md:grid-cols-[repeat(6,3.75rem)] lg:grid-cols-[repeat(11,3.75rem)] xl:grid-cols-[repeat(6,3.75rem)]',
+  kanjiRunes:
+    'grid-cols-[repeat(3,5.25rem)] md:grid-cols-[repeat(5,5.25rem)] lg:grid-cols-[repeat(7,5.25rem)] xl:grid-cols-[repeat(4,5.25rem)]',
+};
 
-function RuneGroupSection({ group, labelClassName, runeClassName }: RuneGroupSectionProps) {
+/** One rune group, laid out like `FilterGroup` (10rem label column from md, label on its own line on phones). */
+function RuneGroupSection({ group }: { readonly group: RuneGroup }) {
   const dispatch = useDispatch();
   const selectedRunes = useSelector(selectSelectedRunes);
 
@@ -40,31 +50,33 @@ function RuneGroupSection({ group, labelClassName, runeClassName }: RuneGroupSec
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+    <div className="grid grid-cols-1 items-start gap-x-3 md:grid-cols-[10rem_minmax(0,1fr)]">
       {/* Tier header with 3-way checkbox */}
-      <label className={`flex items-center gap-1.5 cursor-pointer shrink-0 ${labelClassName ?? ''}`}>
+      <label className="flex h-7 shrink-0 cursor-pointer items-center gap-1.5">
         <Checkbox
           checked={tierState === 'all' ? true : tierState === 'some' ? 'indeterminate' : false}
           onCheckedChange={handleTierToggle}
         />
-        <span className={`font-medium text-sm ${textColorClass}`}>{group.label}:</span>
+        <span className={cn('text-sm font-semibold', textColorClass)}>{group.label}:</span>
       </label>
 
       {/* Individual rune checkboxes */}
-      {group.runes.map((rune) => {
-        const key = `${group.category}:${rune}`;
-        return (
-          <label key={key} className={`flex items-center gap-1 cursor-pointer ${runeClassName ?? ''}`}>
-            <Checkbox
-              checked={selectedRunes[key] ?? true}
-              onCheckedChange={() => {
-                dispatch(toggleRune({ rune, category: group.category }));
-              }}
-            />
-            <span className={`text-sm ${textColorClass}`}>{rune.replace(' Rune', '')}</span>
-          </label>
-        );
-      })}
+      <div className={cn('grid gap-x-2 pl-5.5 md:pl-0', RUNE_COLUMNS[group.category])}>
+        {group.runes.map((rune) => {
+          const key = `${group.category}:${rune}`;
+          return (
+            <label key={key} className="flex h-7 min-w-0 cursor-pointer items-center gap-1">
+              <Checkbox
+                checked={selectedRunes[key] ?? true}
+                onCheckedChange={() => {
+                  dispatch(toggleRune({ rune, category: group.category }));
+                }}
+              />
+              <span className={cn('whitespace-nowrap text-sm', textColorClass)}>{rune.replace(' Rune', '')}</span>
+            </label>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -79,36 +91,27 @@ export function RuneCheckboxGroup() {
   const kanjiGroups = runeGroups.filter((g) => g.category === 'kanjiRunes');
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-4">
+    // One column (ESR, then LoD + Kanji) up to lg; from xl the ESR block takes the width it needs and LoD + Kanji the rest
+    <div className="grid grid-cols-1 gap-x-6 gap-y-4 xl:grid-cols-[max-content_minmax(0,1fr)]">
       {/* Left column: ESR Runes */}
-      <div className="space-y-1.5">
+      <FilterGroupList>
         {esrGroups.map((group) => (
-          <RuneGroupSection
-            key={`${group.category}-${String(group.tier)}`}
-            group={group}
-            labelClassName="md:min-w-24"
-            runeClassName="md:min-w-11"
-          />
+          <RuneGroupSection key={`${group.category}-${String(group.tier)}`} group={group} />
         ))}
-      </div>
+      </FilterGroupList>
 
       {/* Right column: LoD + Kanji Runes */}
-      <div>
-        <div className="space-y-1.5">
+      <div className="space-y-4">
+        <FilterGroupList>
           {lodGroups.map((group) => (
-            <RuneGroupSection
-              key={`${group.category}-${String(group.tier)}`}
-              group={group}
-              labelClassName="md:min-w-22"
-              runeClassName="md:min-w-14"
-            />
+            <RuneGroupSection key={`${group.category}-${String(group.tier)}`} group={group} />
           ))}
-        </div>
-        <div className="space-y-1.5 mt-4">
+        </FilterGroupList>
+        <FilterGroupList>
           {kanjiGroups.map((group) => (
             <RuneGroupSection key={`${group.category}-${String(group.tier)}`} group={group} />
           ))}
-        </div>
+        </FilterGroupList>
       </div>
     </div>
   );

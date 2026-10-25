@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { CopyLinkHelpButton } from '@/components/CopyLinkHelpButton';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
+import { FilterPanel } from '@/components/FilterPanel';
 import { db } from '@/core/db';
 import type { Runeword } from '@/core/db/models';
 import type { BaseItem, ItemTypeInfo, TxtRuneword, TxtRunewordsBundle, TypesBundle } from '../engine/schema';
@@ -115,7 +116,7 @@ function BestBaseFinder({ typesBundle, bases, txtBundle, htmRunewords }: BestBas
 
   return (
     <div>
-      <div className="mb-6 space-y-4">
+      <FilterPanel>
         <div className="flex flex-wrap items-end gap-4">
           <div className="min-w-64 max-w-xl flex-1 space-y-1">
             <Label htmlFor="best-base-runeword" className="text-xs font-normal text-muted-foreground">
@@ -143,7 +144,7 @@ function BestBaseFinder({ typesBundle, bases, txtBundle, htmRunewords }: BestBas
           </div>
         </div>
         <CharacterForm classes={typesBundle.classes} />
-      </div>
+      </FilterPanel>
 
       {options.selected === null && (
         <p className="py-8 text-center text-muted-foreground">Pick a runeword to see which bases can hold it.</p>

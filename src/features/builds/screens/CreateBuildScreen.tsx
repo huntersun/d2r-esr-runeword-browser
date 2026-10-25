@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { PageHeader } from '@/components/PageHeader';
+import { PageShell } from '@/components/PageShell';
 import { Spinner } from '@/components/ui/spinner';
 import { RequestState } from '@/core/types';
 import { selectAuthInitialized, selectIsAuthenticated } from '@/features/auth';
@@ -51,8 +51,7 @@ export function CreateBuildScreen() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <PageHeader title="Create Build" />
+    <PageShell title="Create Build">
       <BuildForm
         initialValues={EMPTY_BUILD_FORM}
         submitLabel="Save Build"
@@ -63,6 +62,6 @@ export function CreateBuildScreen() {
           void navigate('/builds');
         }}
       />
-    </div>
+    </PageShell>
   );
 }

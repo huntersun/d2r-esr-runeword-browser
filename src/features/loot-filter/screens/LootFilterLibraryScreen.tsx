@@ -74,7 +74,7 @@ export function LootFilterLibraryScreen() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="space-y-6">
       <div className="space-y-3 border-b pb-4">
         <h1 className="text-2xl font-bold">Loot Filters</h1>
         <div className="max-w-3xl space-y-2 text-sm text-muted-foreground">

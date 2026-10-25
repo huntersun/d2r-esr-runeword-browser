@@ -100,7 +100,7 @@ function GuideMap({ guide }: MapProps) {
   const order = groups.flatMap((group) => group.notes.map((note) => note.slug));
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 lg:max-w-6xl">
+    <div className="mx-auto max-w-2xl space-y-6 lg:max-w-7xl">
       <header className="space-y-1">
         <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm text-muted-foreground">
           <Link to="/guide" className="hover:text-foreground hover:underline">

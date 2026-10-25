@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { SearchHelpButton } from '@/components/SearchHelpButton';
+import { FilterPanel } from '@/components/FilterPanel';
 import { HtmCategoryFilter } from './HtmCategoryFilter';
 import { AcquisitionFilter } from './AcquisitionFilter';
 import { MaxReqLevelInput } from './MaxReqLevelInput';
@@ -35,7 +36,7 @@ export function HtmUniqueItemFilters() {
   };
 
   return (
-    <div className="space-y-4 mb-6">
+    <FilterPanel>
       {/* Search row */}
       <div className="flex flex-wrap items-end gap-4">
         {/* Search input */}
@@ -86,6 +87,6 @@ export function HtmUniqueItemFilters() {
 
       {/* Category Filter */}
       <HtmCategoryFilter />
-    </div>
+    </FilterPanel>
   );
 }

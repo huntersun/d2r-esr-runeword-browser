@@ -24,6 +24,10 @@ Unified view of all socketable items (gems, runes, crystals) with filtering.
 
 ## Filter Controls
 
+All controls sit in the shared filter panel (`FilterPanel`), search first like every other list page: the search
+row (search, Copy Link), then the "Categories: [All]" row with the category checkboxes and "Only highest gem /
+crystal". A "Showing N socketables" line (with the exact-name chip) sits between the panel and the cards.
+
 ### Checkbox Group
 
 - 5 checkboxes: Gems, ESR Runes, LoD Runes, Kanji Runes, Crystals
@@ -48,7 +52,7 @@ Unified view of all socketable items (gems, runes, crystals) with filtering.
 
 ### Item Count
 
-Item count is displayed in the page title showing the number of visible items.
+Item count is displayed in the page title ("Socketables (N)") showing the number of visible items.
 
 ## Display
 

@@ -157,9 +157,12 @@ labels, keys and paths are unique, that Builds is hidden without Supabase, and t
 
 `/guide`, `/game-data` and `/loot-filters` are nested routes with a lazy layout that renders a frame above an `<Outlet />`:
 
-- `GuideLayout`: the "Experimental" `DevNotice`, then the spine (index), the map (`map`) or a note (`:slug`);
-- `LootFilterLayout`: the "Under development" `DevNotice`, then the library (index) or the editor (`:id`);
-- `GameDataLayout`: a title, the game-file version line and sub-tabs (below); its index redirects to `bases`.
+- `GuideLayout`: a width-only `PageShell` with the "Experimental" `DevNotice`, then the spine (index, its own narrow
+  `PageShell` with the title), the map (`map`) or a note (`:slug`);
+- `LootFilterLayout`: a width-only `PageShell` with the "Under development" `DevNotice`, then the library (index) or the
+  editor (`:id`);
+- `GameDataLayout`: a `PageShell` with the title, the game-file version lines as its meta line and the sub-tabs as its
+  tab row (below); its index redirects to `bases`.
 
 `GameDataLayout` renders:
 

@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { Construction } from 'lucide-react';
+import { PageShell } from '@/components/PageShell';
 import { DevNotice } from '@/core/components/DevNotice';
 
 /**
@@ -8,12 +9,12 @@ import { DevNotice } from '@/core/components/DevNotice';
  */
 export function LootFilterLayout() {
   return (
-    <div className="space-y-4">
+    <PageShell className="space-y-4">
       <DevNotice icon={Construction} title="Under development.">
         This editor is still being built and tested; a downloaded filter may not behave in the game exactly as shown here. Check it in the
         ESR Launcher before relying on it.
       </DevNotice>
       <Outlet />
-    </div>
+    </PageShell>
   );
 }

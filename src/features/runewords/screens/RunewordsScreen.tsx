@@ -5,6 +5,8 @@ import { useUrlInitialize } from '../hooks/useUrlInitialize';
 import { Spinner } from '@/components/ui/spinner';
 import { SocketableLookupContext, useSocketableLookupQuery } from '@/core/hooks/useSocketableLookup';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
+import { PageShell } from '@/components/PageShell';
+import { ResultsBar } from '@/components/ResultsBar';
 import { FavoritesToggleButton } from '@/core/components/FavoritesToggleButton';
 import { useItemFavorites } from '@/features/favorites';
 import { buildRecipeFavoriteId } from '@/core/utils/recipeFavorites';
@@ -39,23 +41,22 @@ export function RunewordsScreen() {
   const filteredRunewords = favorites.filterItems(runewords);
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Runewords ({filteredRunewords.length})</h1>
+    <PageShell title="Runewords" count={filteredRunewords.length}>
       <RunewordFilters />
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <p className="text-sm text-muted-foreground">Showing {filteredRunewords.length} runewords</p>
-          {exactName !== null && <ExactNameChip name={exactName} onClear={clearExactName} scrollOnMount={nameFromUrl} />}
-        </div>
-        {favorites.isAuthenticated && (
-          <FavoritesToggleButton
-            favoriteCount={favorites.favoriteCount}
-            showFavoritesOnly={favorites.showFavoritesOnly}
-            onToggle={favorites.toggleShowFavoritesOnly}
-          />
-        )}
-      </div>
+      <ResultsBar
+        summary={`Showing ${String(filteredRunewords.length)} runewords`}
+        chips={exactName !== null && <ExactNameChip name={exactName} onClear={clearExactName} scrollOnMount={nameFromUrl} />}
+        actions={
+          favorites.isAuthenticated && (
+            <FavoritesToggleButton
+              favoriteCount={favorites.favoriteCount}
+              showFavoritesOnly={favorites.showFavoritesOnly}
+              onToggle={favorites.toggleShowFavoritesOnly}
+            />
+          )
+        }
+      />
 
       {filteredRunewords.length === 0 ? (
         <p className="text-muted-foreground py-8 text-center">
@@ -82,6 +83,6 @@ export function RunewordsScreen() {
       )}
 
       <ScrollToTopButton />
-    </div>
+    </PageShell>
   );
 }

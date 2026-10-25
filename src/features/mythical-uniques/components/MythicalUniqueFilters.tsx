@@ -8,6 +8,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { SearchHelpButton } from '@/components/SearchHelpButton';
+import { FilterPanel } from '@/components/FilterPanel';
+import { FilterGroupHeader } from '@/components/FilterGroup';
 import { db } from '@/core/db';
 import { MaxReqLevelInput } from '@/features/htm-unique-items/components/MaxReqLevelInput';
 import { useShareUrl } from '../hooks/useShareUrl';
@@ -64,7 +66,7 @@ export function MythicalUniqueFilters() {
   const isNoneSelected = selectedCategories.has(NO_CATEGORIES_MARKER);
 
   return (
-    <div className="space-y-4 mb-6">
+    <FilterPanel>
       {/* Search row */}
       <div className="flex flex-wrap items-end gap-4">
         {/* Search input */}
@@ -110,27 +112,14 @@ export function MythicalUniqueFilters() {
       {/* Category Filter */}
       {availableCategories && availableCategories.length > 0 && (
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Categories</span>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-6 px-2 text-xs"
-              disabled={isAllSelected}
-              onClick={() => dispatch(selectAllCategories())}
-            >
+          <FilterGroupHeader label="Categories">
+            <Button variant="outline" size="sm" disabled={isAllSelected} onClick={() => dispatch(selectAllCategories())}>
               All
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-6 px-2 text-xs"
-              disabled={isNoneSelected}
-              onClick={() => dispatch(deselectAllCategories())}
-            >
+            <Button variant="outline" size="sm" disabled={isNoneSelected} onClick={() => dispatch(deselectAllCategories())}>
               None
             </Button>
-          </div>
+          </FilterGroupHeader>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             {availableCategories.map((category) => (
               <label key={category} className="flex items-center gap-1.5 text-sm cursor-pointer">
@@ -146,6 +135,6 @@ export function MythicalUniqueFilters() {
           </div>
         </div>
       )}
-    </div>
+    </FilterPanel>
   );
 }

@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
+import { FilterGroup, FilterGroupHeader, FilterGroupList } from '@/components/FilterGroup';
 import {
   toggleGroup,
   selectAllCategories,
@@ -67,27 +67,13 @@ function CategoryGroupSection({ group, allCategories }: CategoryGroupSectionProp
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-      <label className="flex items-center gap-1.5 cursor-pointer shrink-0 md:min-w-32">
-        <Checkbox
-          checked={groupState === 'all' ? true : groupState === 'some' ? 'indeterminate' : false}
-          onCheckedChange={handleGroupToggle}
-        />
-        <span className="font-bold text-sm text-muted-foreground">{group.label}:</span>
-      </label>
-
-      {group.categories.map((category) => (
-        <label key={category} className="flex items-center gap-1 cursor-pointer">
-          <Checkbox
-            checked={isCategorySelected(category)}
-            onCheckedChange={() => {
-              handleCategoryToggle(category);
-            }}
-          />
-          <span className="text-sm">{category}</span>
-        </label>
-      ))}
-    </div>
+    <FilterGroup
+      label={group.label}
+      checked={groupState === 'all' ? true : groupState === 'some' ? 'indeterminate' : false}
+      onToggleGroup={handleGroupToggle}
+      options={group.categories.map((category) => ({ id: category, label: category, checked: isCategorySelected(category) }))}
+      onToggle={handleCategoryToggle}
+    />
   );
 }
 
@@ -106,20 +92,19 @@ export function HtmCategoryFilter() {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <span className="font-medium text-sm">Categories:</span>
+      <FilterGroupHeader label="Categories">
         <Button variant="outline" size="sm" onClick={() => dispatch(selectAllCategories())} disabled={isAllSelected}>
           All
         </Button>
         <Button variant="outline" size="sm" onClick={() => dispatch(deselectAllCategories())} disabled={noneSelected}>
           None
         </Button>
-      </div>
-      <div className="space-y-4">
+      </FilterGroupHeader>
+      <FilterGroupList>
         {filterGroups.map((group) => (
           <CategoryGroupSection key={group.id} group={group} allCategories={allCategories} />
         ))}
-      </div>
+      </FilterGroupList>
     </div>
   );
 }

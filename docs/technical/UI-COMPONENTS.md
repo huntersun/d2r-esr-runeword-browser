@@ -48,10 +48,110 @@ Location: `src/components/`
 
 Reusable components used across features:
 
+- `PageShell.tsx` - Page width + title row (see [Page pattern](#page-pattern))
+- `PageHeader.tsx` - The title row itself: title (+ count), actions, meta line, tab row
+- `FilterPanel.tsx` - Card surface around a page's filter controls
+- `FilterGroup.tsx` - `FilterGroup` (one labelled checkbox row), `FilterGroupList`, `FilterGroupHeader`
+- `ResultsBar.tsx` - The "Showing N …" line with chips and list toggles
+- `SectionHeader.tsx` - In-page section heading with a hairline (Build detail, Cube and Materials sections)
 - `CopyLinkButton.tsx` - Copy shareable URL to clipboard
 - `CopyLinkHelpButton.tsx` - Help info for copy link
 - `ScrollToTopButton.tsx` - Floating action button to scroll to top
 - `SearchHelpButton.tsx` - Search syntax help (quoted phrases, AND logic)
+
+## Page pattern
+
+Every browser page (Runewords, Gemwords, Unique Items, Mythicals, Ascendancies, Socketables, the Game Data tabs, Builds,
+Loot filters, guide notes) is built the same way, top to bottom:
+
+```
+PageShell            one centred width + the title row
+  PageHeader         "Title (count)"                         [actions]
+                     meta line (e.g. the Game Data version lines)
+                     tab row (Game Data sub-pages), hairline below
+  (intro paragraph)  optional, e.g. the Game Data tab descriptions
+  FilterPanel        rounded-xl card: search row first, then option rows / FilterGroup rows
+  ResultsBar         "Showing N …" · ExactNameChip            [Favorites only]
+  results            card grid / sections (SectionHeader)
+```
+
+### `PageShell`
+
+```tsx
+<PageShell title="Runewords" count={shown.length} actions={…} meta={…} nav={…} width="wide">
+  …
+</PageShell>
+```
+
+- `width`: `wide` (default, `max-w-7xl` = 1280 px, centred) or `narrow` (`max-w-2xl`, the guide spine's reading column).
+  `wide` was chosen because it is the width Builds already used, it fits three result cards per row at 1280 px (at a
+  1280 px window it is the same as the old full container) and it stops the card grids from stretching edge to edge on
+  large monitors. The home page keeps its own `max-w-5xl` landing column and is the reference for the card look.
+- `title` omitted: the shell only sets the width. Layout routes use this (`GuideLayout`, `LootFilterLayout`) and their
+  children render their own headers (the loot filter editor's inline-editable name, the guide note's breadcrumb card).
+  Nested shells are harmless (the same `mx-auto max-w-*`).
+- `count` renders as "Title (N)" inside the `h1`, so the accessible name stays "Runewords (409)".
+- `actions` sit right of the title and wrap under it on phones (Builds: "Create Build"; Guide: the map link).
+- `meta` is a muted line under the title; `nav` is a tab row with a hairline under it (`GameDataLayout`).
+
+`PageHeader` is the same title row without the width, for a screen whose layout route already sets it.
+
+### `FilterPanel`
+
+```tsx
+<FilterPanel>                      {/* aria-label "Filters" */}
+<FilterPanel label="What can roll on a base?">
+<FilterPanel title="Filters" actions={<CopyLinkButton … />}>   {/* optional header row */}
+```
+
+The home page's card surface (`rounded-xl border bg-card p-4 sm:p-6 shadow-sm`, `space-y-4` between its rows, `mb-6`).
+It is a `section` region named by `title` or `label`. It never collapses, also not on phones. Each page keeps the
+controls it had (Copy Link, Reset filters) where they were; the header row is optional and unused so far. Inside the
+panel the search row comes first; option rows (checkboxes, pills, selects) follow.
+
+### `FilterGroup`
+
+```tsx
+<FilterGroupHeader label="Item Types">
+  <Button …>All</Button> <Button …>None</Button>
+</FilterGroupHeader>
+<FilterGroupList>
+  <FilterGroup
+    label="Weapons"
+    checked={true | false | 'indeterminate'}
+    onToggleGroup={…}
+    options={[{ id: 'Axe', label: 'Axe', checked: true }, …]}
+    onToggle={(id) => …}
+  />
+</FilterGroupList>
+```
+
+One labelled checkbox row, used by the runeword/gemword item types (`ItemTypeFilter`), the unique item categories
+(`HtmCategoryFilter`) and the Bases item-type picker. The group label is `font-semibold` in the foreground colour (it
+was dimmer than its items before). From `md` the label sits in a 10rem column with the options wrapping to its right;
+on phones the label has its own line and the options wrap below it, indented under the label text. The component only
+renders; selection semantics (what the group checkbox does, "nothing selected means all") stay with each caller.
+`FilterGroupHeader` is the "Label: [All] [None]" row above a list of groups (also Mythicals' and Socketables'
+"Categories:").
+
+### `ResultsBar`
+
+```tsx
+<ResultsBar
+  summary={`Showing ${String(n)} runewords`}
+  chips={exactName !== null && <ExactNameChip … />}
+  actions={isAuthenticated && <FavoritesToggleButton … />}
+/>
+```
+
+The line between the panel and the results on every list page: muted `text-sm` summary, the exact-name chip right
+after it, list toggles on the right. On Sets and Materials the exact-name chip moved here from the panel (the pills it
+used to replace are hidden while it is set).
+
+### `SectionHeader`
+
+`title`, optional `icon`, `count` (muted, after the title), `id` (for `aria-labelledby`) and `action`. Used for the
+Build detail sections and the Cube / Materials section headings instead of hand-rolled `h2 border-b`.
 
 ### Feature Components
 

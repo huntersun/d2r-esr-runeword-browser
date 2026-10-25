@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { FlaskConical } from 'lucide-react';
+import { PageShell } from '@/components/PageShell';
 import { DevNotice } from '@/core/components/DevNotice';
 
 /**
@@ -8,12 +9,12 @@ import { DevNotice } from '@/core/components/DevNotice';
  */
 export function GuideLayout() {
   return (
-    <div className="space-y-4">
+    <PageShell className="space-y-4">
       <DevNotice icon={FlaskConical} title="Experimental.">
         This guide is still being written and reviewed; some notes are unverified drafts and may be out of date. When in doubt, trust the
         official ESR documentation.
       </DevNotice>
       <Outlet />
-    </div>
+    </PageShell>
   );
 }

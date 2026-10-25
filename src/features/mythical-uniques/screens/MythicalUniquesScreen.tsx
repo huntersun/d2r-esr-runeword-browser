@@ -7,6 +7,8 @@ import { useSelector } from 'react-redux';
 import { ExactNameChip } from '@/core/components/ExactNameChip';
 import { Spinner } from '@/components/ui/spinner';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
+import { PageShell } from '@/components/PageShell';
+import { ResultsBar } from '@/components/ResultsBar';
 import { useItemSources } from '@/features/game-data/hooks/useItemSources';
 
 export function MythicalUniquesScreen() {
@@ -25,14 +27,13 @@ export function MythicalUniquesScreen() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Mythical Uniques ({items.length})</h1>
+    <PageShell title="Mythical Uniques" count={items.length}>
       <MythicalUniqueFilters />
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <p className="text-sm text-muted-foreground">Showing {items.length} mythical uniques</p>
-        {exactName !== null && <ExactNameChip name={exactName} onClear={clearExactName} scrollOnMount={nameFromUrl} />}
-      </div>
+      <ResultsBar
+        summary={`Showing ${String(items.length)} mythical uniques`}
+        chips={exactName !== null && <ExactNameChip name={exactName} onClear={clearExactName} scrollOnMount={nameFromUrl} />}
+      />
 
       {items.length === 0 ? (
         <p className="text-muted-foreground py-8 text-center">No mythical uniques found. Try adjusting your filters.</p>
@@ -47,6 +48,6 @@ export function MythicalUniquesScreen() {
       )}
 
       <ScrollToTopButton />
-    </div>
+    </PageShell>
   );
 }

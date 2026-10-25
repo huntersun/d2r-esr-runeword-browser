@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
+import { ResultsBar } from '@/components/ResultsBar';
 import type { BaseAutomod, BaseItem, TypesBundle } from '../engine/schema';
 import { BASES_PAGE_SIZE } from '../constants/bases';
 import { BaseCard } from '../components/BaseCard';
@@ -78,9 +79,7 @@ function BasesBrowser({ typesBundle, bases, automods }: BasesBrowserProps) {
     <div>
       {filtersBar}
 
-      <p className="mb-4 text-sm text-muted-foreground">
-        Showing {filtered.length} of {bases.length} bases
-      </p>
+      <ResultsBar summary={`Showing ${String(filtered.length)} of ${String(bases.length)} bases`} />
 
       {filtered.length === 0 ? (
         <p className="text-muted-foreground py-8 text-center">No bases found. Try adjusting your filters.</p>
@@ -122,10 +121,14 @@ function FamiliesView({ bases, types, filters, typeNames, onSelect }: FamiliesVi
 
   return (
     <>
-      <p className="mb-4 text-sm text-muted-foreground">
-        Showing {families} of {totalFamilies} {totalFamilies === 1 ? 'family' : 'families'} ({matching} of {members} {basesWord(members)}{' '}
-        matching the filters) and {loners} {basesWord(loners)} without a family
-      </p>
+      <ResultsBar
+        summary={
+          <>
+            Showing {families} of {totalFamilies} {totalFamilies === 1 ? 'family' : 'families'} ({matching} of {members}{' '}
+            {basesWord(members)} matching the filters) and {loners} {basesWord(loners)} without a family
+          </>
+        }
+      />
       {families === 0 && loners === 0 ? (
         <p className="text-muted-foreground py-8 text-center">No bases found. Try adjusting your filters.</p>
       ) : (

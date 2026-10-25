@@ -1,5 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
+import { FilterPanel } from '@/components/FilterPanel';
 import { RecipeCommonFilters } from '@/core/components/RecipeCommonFilters';
 import { RuneCheckboxGroup } from './RuneCheckboxGroup';
 import { TierPointsFilter } from './TierPointsFilter';
@@ -44,7 +45,7 @@ export function RunewordFilters() {
   const noRunesSelected = Object.keys(selectedRunes).length > 0 && Object.values(selectedRunes).every((v) => !v);
 
   return (
-    <div className="space-y-4 mb-6">
+    <FilterPanel>
       <RecipeCommonFilters
         selectors={FILTER_SELECTORS}
         actions={FILTER_ACTIONS}
@@ -71,6 +72,6 @@ export function RunewordFilters() {
         </div>
         <RuneCheckboxGroup />
       </div>
-    </div>
+    </FilterPanel>
   );
 }

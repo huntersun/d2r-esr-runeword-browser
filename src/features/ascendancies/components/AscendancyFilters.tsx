@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { SearchHelpButton } from '@/components/SearchHelpButton';
+import { FilterPanel } from '@/components/FilterPanel';
 import { useShareUrl } from '../hooks/useShareUrl';
 import { setSearchText, selectSearchText } from '../store';
 
@@ -36,7 +37,7 @@ export function AscendancyFilters() {
   };
 
   return (
-    <div className="space-y-4 mb-6">
+    <FilterPanel>
       <div className="flex flex-wrap items-end gap-4">
         {/* Search input */}
         <div className="flex-1 min-w-64 max-w-md space-y-1">
@@ -74,6 +75,6 @@ export function AscendancyFilters() {
         {/* Copy Link button */}
         <CopyLinkButton getShareUrl={getShareUrl} />
       </div>
-    </div>
+    </FilterPanel>
   );
 }

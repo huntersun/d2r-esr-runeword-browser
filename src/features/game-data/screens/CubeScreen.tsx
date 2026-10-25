@@ -4,6 +4,8 @@ import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { CopyLinkHelpButton } from '@/components/CopyLinkHelpButton';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 import { Card, CardContent } from '@/components/ui/card';
+import { FilterPanel } from '@/components/FilterPanel';
+import { SectionHeader } from '@/components/SectionHeader';
 import { useDebouncedFilterValue } from '@/core/hooks/useDebouncedFilterValue';
 import { buildShareUrl } from '@/core/utils/filterUrlParams';
 import type { CubeBundle } from '../engine/schema';
@@ -79,46 +81,48 @@ function CubeBrowser({ bundle }: { readonly bundle: CubeBundle }) {
         class are merged into one line.
       </p>
 
-      <div className="flex flex-wrap items-end gap-4">
-        <EnhanceSearch
-          value={search}
-          onChange={setSearch}
-          onClear={() => {
-            commitSearch('');
-          }}
-          placeholder="Search items, bonuses or recipes..."
-          hint="Search items, bonuses and families;"
-        />
-        <div className="space-y-1">
-          <div className="flex items-center gap-1">
-            <p className="text-xs text-muted-foreground">Share this view.</p>
-            <CopyLinkHelpButton />
-          </div>
-          <CopyLinkButton getShareUrl={getShareUrl} />
-        </div>
-      </div>
-
-      {state.family === null ? (
-        <FamilyIndex
-          tree={filtered}
-          searching={state.search !== ''}
-          onFocus={(family) => {
-            focus(family);
-          }}
-        />
-      ) : (
-        <p id={FOCUS_ANCHOR} className="scroll-mt-20 text-sm">
-          <button
-            type="button"
-            className="font-medium text-primary underline decoration-primary/40 underline-offset-2 hover:decoration-primary"
-            onClick={() => {
-              focus(null);
+      <FilterPanel>
+        <div className="flex flex-wrap items-end gap-4">
+          <EnhanceSearch
+            value={search}
+            onChange={setSearch}
+            onClear={() => {
+              commitSearch('');
             }}
-          >
-            ← Show all families
-          </button>
-        </p>
-      )}
+            placeholder="Search items, bonuses or recipes..."
+            hint="Search items, bonuses and families;"
+          />
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              <p className="text-xs text-muted-foreground">Share this view.</p>
+              <CopyLinkHelpButton />
+            </div>
+            <CopyLinkButton getShareUrl={getShareUrl} />
+          </div>
+        </div>
+
+        {state.family === null ? (
+          <FamilyIndex
+            tree={filtered}
+            searching={state.search !== ''}
+            onFocus={(family) => {
+              focus(family);
+            }}
+          />
+        ) : (
+          <p id={FOCUS_ANCHOR} className="scroll-mt-20 text-sm">
+            <button
+              type="button"
+              className="font-medium text-primary underline decoration-primary/40 underline-offset-2 hover:decoration-primary"
+              onClick={() => {
+                focus(null);
+              }}
+            >
+              ← Show all families
+            </button>
+          </p>
+        )}
+      </FilterPanel>
 
       {state.family === null && state.search === '' && <HiddenRowsCards bundle={bundle} />}
 
@@ -128,7 +132,7 @@ function CubeBrowser({ bundle }: { readonly bundle: CubeBundle }) {
         <div className="space-y-8">
           {shown.map(({ section, families }) => (
             <div key={section.id} className="space-y-5">
-              <h2 className="border-b pb-1 text-lg font-semibold">{section.label}</h2>
+              <SectionHeader title={section.label} />
               {families.map((view) => (
                 <CubeFamilySection
                   // Remount on a new search so "Show all" starts closed
@@ -160,7 +164,7 @@ interface FamilyIndexProps {
 function FamilyIndex({ tree, searching, onFocus }: FamilyIndexProps) {
   if (tree.length === 0) return null;
   return (
-    <nav aria-label="Recipe families" className="rounded-md border bg-muted/20 p-3">
+    <nav aria-label="Recipe families" className="border-t pt-4">
       <dl className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-[minmax(0,11rem)_minmax(0,1fr)]">
         {tree.map(({ section, families }) => {
           const docs = sectionDocsUrl(section);

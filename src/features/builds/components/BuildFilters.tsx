@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Plus, Search, X } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { openSignInDialog, selectIsAuthenticated } from '@/features/auth';
+import { FilterPanel } from '@/components/FilterPanel';
+import { selectIsAuthenticated } from '@/features/auth';
 import { CHARACTER_CLASSES, type CharacterClass } from '../constants';
 import type { BuildSortMode } from '../types';
 import {
@@ -54,26 +54,8 @@ export function BuildFilters() {
   };
 
   return (
-    <div className="mb-4 flex flex-col gap-3">
+    <FilterPanel>
       <div className="flex flex-wrap items-center gap-2">
-        {isAuthenticated ? (
-          <Button asChild>
-            <Link to="/builds/new">
-              <Plus className="size-4" />
-              Create Build
-            </Link>
-          </Button>
-        ) : (
-          <Button
-            onClick={() => {
-              dispatch(openSignInDialog());
-            }}
-          >
-            <Plus className="size-4" />
-            Create Build
-          </Button>
-        )}
-
         <InputGroup className="max-w-xs flex-1">
           <InputGroupAddon>
             <Search className="size-4" />
@@ -144,6 +126,6 @@ export function BuildFilters() {
           </Button>
         </div>
       )}
-    </div>
+    </FilterPanel>
   );
 }

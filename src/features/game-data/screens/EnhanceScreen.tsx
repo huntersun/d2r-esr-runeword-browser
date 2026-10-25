@@ -2,6 +2,7 @@ import { useSearchParams } from 'react-router-dom';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { CopyLinkHelpButton } from '@/components/CopyLinkHelpButton';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
+import { FilterPanel } from '@/components/FilterPanel';
 import { TAB_ACTIVE, TAB_BASE, TAB_INACTIVE } from '@/core/components/navTabClasses';
 import { useDebouncedFilterValue } from '@/core/hooks/useDebouncedFilterValue';
 import { buildShareUrl } from '@/core/utils/filterUrlParams';
@@ -77,23 +78,25 @@ function EnhanceBrowser({ bundle }: { readonly bundle: EnhanceBundle }) {
         ))}
       </nav>
 
-      <div className="flex flex-wrap items-end gap-4">
-        <EnhanceSearch
-          value={search}
-          onChange={setSearch}
-          onClear={() => {
-            commitSearch('');
-          }}
-          placeholder={SEARCH_PLACEHOLDERS[state.tab]}
-        />
-        <div className="space-y-1">
-          <div className="flex items-center gap-1">
-            <p className="text-xs text-muted-foreground">Share this view.</p>
-            <CopyLinkHelpButton />
+      <FilterPanel>
+        <div className="flex flex-wrap items-end gap-4">
+          <EnhanceSearch
+            value={search}
+            onChange={setSearch}
+            onClear={() => {
+              commitSearch('');
+            }}
+            placeholder={SEARCH_PLACEHOLDERS[state.tab]}
+          />
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              <p className="text-xs text-muted-foreground">Share this view.</p>
+              <CopyLinkHelpButton />
+            </div>
+            <CopyLinkButton getShareUrl={getShareUrl} />
           </div>
-          <CopyLinkButton getShareUrl={getShareUrl} />
         </div>
-      </div>
+      </FilterPanel>
 
       {state.tab === 'corruption' && (
         <EnhanceCorruption

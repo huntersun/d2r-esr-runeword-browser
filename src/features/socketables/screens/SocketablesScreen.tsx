@@ -7,6 +7,8 @@ import { selectEnabledCategories, selectExactName } from '../store/socketablesSl
 import { ExactNameChip } from '@/core/components/ExactNameChip';
 import { Spinner } from '@/components/ui/spinner';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
+import { PageShell } from '@/components/PageShell';
+import { ResultsBar } from '@/components/ResultsBar';
 import { useItemSources } from '@/features/game-data/hooks/useItemSources';
 
 export function SocketablesScreen() {
@@ -27,15 +29,13 @@ export function SocketablesScreen() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Socketables</h1>
+    <PageShell title="Socketables" count={socketables.length}>
       <SocketableFilters />
 
-      {exactName !== null && (
-        <div className="mb-4">
-          <ExactNameChip name={exactName} onClear={clearExactName} scrollOnMount={nameFromUrl} />
-        </div>
-      )}
+      <ResultsBar
+        summary={`Showing ${String(socketables.length)} socketables`}
+        chips={exactName !== null && <ExactNameChip name={exactName} onClear={clearExactName} scrollOnMount={nameFromUrl} />}
+      />
 
       {socketables.length === 0 ? (
         <p className="text-muted-foreground py-8 text-center">
@@ -54,6 +54,6 @@ export function SocketablesScreen() {
       )}
 
       <ScrollToTopButton />
-    </div>
+    </PageShell>
   );
 }

@@ -799,9 +799,9 @@ with `writePersistentJson` inside `updateCharacter`, which merges a partial upda
 
 ### Bases page
 
-Filters row (search, min sockets, max req level, Copy Link), a second row (kind and tier checkboxes, class select, a
+Filter panel (`FilterPanel`): a filters row (search, min sockets, max req level, Copy Link), a second row (kind and tier checkboxes, class select, a
 Cards | Families view toggle (shadcn `Tabs`), sort select + direction toggle (disabled in the families view), Reset),
-and an item-type picker styled like the runeword `ItemTypeFilter`. The picker lists every
+and an item-type picker built from the shared `FilterGroup` rows (like the runeword `ItemTypeFilter`). The picker lists every
 type that is some base's primary `type`, grouped into Weapons / Class weapons / Armor / Class armor / Accessories / Class
 accessories; nothing selected means all types. Codes selected via a link that are not in the picker (parent types such as
 `mele`) appear as removable chips.
@@ -1016,8 +1016,9 @@ Invalid values fall back to the tab's first option; Copy Link encodes only the n
 `/game-data/cube` (`screens/CubeScreen.tsx`) loads only `cube.json` and is a static-bundle route like Enhance. Tools
 menu entry "Cube Recipes", layout tab "Cube".
 
-- **Family index**: one line per section (its label links to the official page section), the families as chips with
-  their row counts (matching rows while searching); a chip focuses the family.
+- **Family index**: inside the filter panel under the search (a hairline above it, the chips on the panel's card
+  surface like the home page chips), one line per section (its label links to the official page section), the families
+  as chips with their row counts (matching rows while searching); a chip focuses the family.
 - Two cards (no search, no focus): the corruption / anointment / Vessel rows are on the Enhance page (with their
   count), and the stocker / can bookkeeping rows are left out (count, official page link).
 - **Family sections** by official section (`components/CubeFamilySection.tsx`): label (a button that focuses it), row
@@ -1043,7 +1044,8 @@ the Cube Recipes page", N = the family's rows in cube.json).
 and Cube) plus the guide bundle (`useGuide`); the page works without the guide, only the Guide lines are then missing.
 Items menu entry "Materials", layout tab "Materials".
 
-- Group pills (All + each group with its row count) above the list; with `?name=` an exact-name chip replaces them.
+- Search, Copy Link and the group pills (All + each group with its row count) in the filter panel; with `?name=` the
+  pills are hidden and the exact-name chip sits in the "Showing N of M items" line under the panel.
 - One section per group, a small heading per block when the group has several, and one compact row per item
   (`components/MaterialRow.tsx`): name, code (muted), "N variants" for merged rows, levels ("lvl 11 · req 11"); **How
   to get**: one "Cube: <family> N" chip per madeBy family (→ `/game-data/cube?family=`), then the other source labels;
@@ -1068,8 +1070,9 @@ tier badges are a bonus: missing while their bundle loads or when it fails). Ite
 ("Sets") and set item names ("Set items"), both linking to `/game-data/sets?name=`.
 
 - Search, "Max required level" input, Copy Link; Pieces pills (All + each item count with its set count) and Class
-  pills (All, Any class, then the classes by name); with `?name=` an exact-name chip replaces the pills. "Showing N of M
-  sets" line; sets sorted by their highest required level, then name.
+  pills (All, Any class, then the classes by name), all in the filter panel; with `?name=` the pills are hidden and the
+  exact-name chip sits in the "Showing N of M sets" line under the panel; sets sorted by their highest required level,
+  then name.
 - One card per set (`components/SetCard.tsx`): green name, class badge ("Any class" when none), "N pieces", a base
   tier summary (`TierRangeBadge`: the tier when every tiered item shares it, "Normal → Elite" from the lowest to the
   highest otherwise; `setTierRange` in `utils/sets.ts` skips rings and amulets, no badge when no item has a tier), "Req Lvl
