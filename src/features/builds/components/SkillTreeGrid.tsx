@@ -16,7 +16,7 @@ interface SkillTreeGridProps {
 
 /**
  * A class skill tree as three tabs, each a 3-column x 6-row grid placed by the skill's row / col.
- * Editable with − / + buttons and a max-points shortcut when `onChange` is given; no budget, level or prerequisite rule is
+ * Editable with − / + buttons and max / clear shortcuts when `onChange` is given; no budget, level or prerequisite rule is
  * enforced (owner decision), points only count.
  */
 export function SkillTreeGrid({ tree, skillPoints, onChange, disabled = false }: SkillTreeGridProps) {
@@ -137,6 +137,20 @@ function SkillCell({ skill, tree, points, onChange, disabled }: SkillCellProps) 
             }}
           >
             {skill.maxLevel}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-6 px-1.5 text-[11px]"
+            disabled={disabled || points === 0}
+            aria-label={`Clear the points of ${skill.name}`}
+            title="Clear"
+            onClick={() => {
+              onChange(skill.id, 0);
+            }}
+          >
+            0
           </Button>
         </div>
       )}
