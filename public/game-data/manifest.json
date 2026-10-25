@@ -3,7 +3,7 @@
   "esrVersion": "3.2.24",
   "esrTag": "3.2.24",
   "esrCommit": "b0622767314f9bf65f9c3a2cdeacded0b2e04a7e",
-  "generatedAt": "2026-10-25T16:50:31.086Z",
+  "generatedAt": "2026-10-25T17:27:29.504Z",
   "files": {
     "types": {
       "hash": "cab8a44704bcb77dd1d552147ce4b2e16d2d30517780f10d4d1b55de7c1e294d",
@@ -52,6 +52,10 @@
     "crafting": {
       "hash": "c60369006f5669ab5cd122256b21f956cff89f39c4a4173c631175e3808028be",
       "bytes": 56620
+    },
+    "tiers": {
+      "hash": "bbff23c87b9b225f261e06d02970b951299e06ae85e5a8761f4848ec7f979b31",
+      "bytes": 23850
     },
     "icons": {
       "hash": "4e7f8851b9c5666541718f175833d9b7a790f05e60cca77795809ebbf6c64656",
@@ -130,6 +134,11 @@
     "craftingStacking": 31,
     "craftingRowsUsed": 717,
     "craftingRowsSkipped": 245,
+    "tierCodes": 1067,
+    "tierCodesNormal": 321,
+    "tierCodesExceptional": 331,
+    "tierCodesElite": 354,
+    "tierCodesMythical": 61,
     "itemIcons": 653,
     "uniqueIcons": 1114,
     "setIcons": 270,

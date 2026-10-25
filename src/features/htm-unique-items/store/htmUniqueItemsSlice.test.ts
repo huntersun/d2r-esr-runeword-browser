@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { Action } from '@reduxjs/toolkit';
 import { NO_CATEGORIES_MARKER } from '@/core/constants/categoryFilter';
-import htmUniqueItemsReducer, { deselectAllCategories, selectAllCategories, toggleCategory, toggleGroup } from './htmUniqueItemsSlice';
+import htmUniqueItemsReducer, {
+  deselectAllCategories,
+  selectAllCategories,
+  setTiers,
+  toggleCategory,
+  toggleGroup,
+  toggleTier,
+} from './htmUniqueItemsSlice';
 
 type HtmUniqueItemsStateShape = ReturnType<typeof htmUniqueItemsReducer>;
 
@@ -51,5 +58,22 @@ describe('htmUniqueItemsSlice toggleGroup', () => {
       NO_CATEGORIES_MARKER,
     ]);
     expect(reduce(group(['A', 'B'], false), group(['A', 'B'], true)).selectedCategories).toEqual([]);
+  });
+});
+
+describe('htmUniqueItemsSlice tiers', () => {
+  it('starts with no tier filter (all tiers)', () => {
+    expect(reduce({ type: '@@INIT' }).tiers).toEqual([]);
+  });
+
+  it('toggles tiers on and off, keeping the Normal → Mythical order', () => {
+    expect(reduce(toggleTier('elite'), toggleTier('normal')).tiers).toEqual(['normal', 'elite']);
+    expect(reduce(toggleTier('elite'), toggleTier('normal'), toggleTier('elite')).tiers).toEqual(['normal']);
+    expect(reduce(toggleTier('mythical'), toggleTier('mythical')).tiers).toEqual([]);
+  });
+
+  it('sets tiers in order without duplicates', () => {
+    expect(reduce(setTiers(['mythical', 'exceptional', 'mythical'])).tiers).toEqual(['exceptional', 'mythical']);
+    expect(reduce(toggleTier('elite'), setTiers([])).tiers).toEqual([]);
   });
 });

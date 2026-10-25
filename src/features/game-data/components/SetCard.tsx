@@ -8,7 +8,9 @@ import { DocsLink } from './CubeFamilySection';
 import { BonusLines } from './EnhanceParts';
 import { ItemIcon } from './ItemIcon';
 import { ItemSourceLine } from './ItemSourceLine';
-import { reqLevelText, SETS_ROUTE, setDifficulty, setDocsUrl, setFocusParams } from '../utils/sets';
+import { TierBadge, TierRangeBadge } from './TierBadge';
+import type { BaseTierIndex } from '../hooks/useBaseTiers';
+import { reqLevelText, SETS_ROUTE, setDifficulty, setDocsUrl, setFocusParams, setTierRange } from '../utils/sets';
 
 const SET_NAME = 'text-green-700 dark:text-green-400';
 const BADGE = 'inline-flex items-center rounded-full border px-2 py-0.5 text-xs leading-tight';
@@ -35,11 +37,14 @@ function SetItemRow({
   item,
   highlighted,
   sources,
+  tiers,
 }: {
   readonly item: SetItemInfo;
   readonly highlighted: boolean;
   readonly sources: SourceIndex | null;
+  readonly tiers: BaseTierIndex | null;
 }) {
+  const tier = tiers?.get(item.code);
   return (
     <li
       className={cn(
@@ -54,6 +59,7 @@ function SetItemRow({
             <p className={cn('font-medium', SET_NAME)}>{item.name}</p>
             <p className="text-xs text-muted-foreground">
               {item.baseName}
+              {tier !== undefined && <TierBadge tier={tier} className="ml-1 px-1.5 py-0 align-middle text-[0.7rem]" />}
               {item.category !== '' && item.category !== item.baseName && ` · ${item.category}`}
               {' · '}Lvl {item.level} · Req Lvl {item.reqLevel}
             </p>
@@ -87,12 +93,15 @@ interface SetCardProps {
   /** Indexes of the items to highlight */
   readonly highlighted: ReadonlySet<number>;
   readonly sources: SourceIndex | null;
+  /** Base tiers (from `useBaseTiers()`); null → no tier badges */
+  readonly tiers: BaseTierIndex | null;
 }
 
-/** One set: header (class, pieces, level range, links), its items, then the set-wide partial and full bonuses */
-export function SetCard({ set, highlighted, sources }: SetCardProps) {
+/** One set: header (class, pieces, tiers, level range, links), its items, then the set-wide partial and full bonuses */
+export function SetCard({ set, highlighted, sources, tiers }: SetCardProps) {
   const getShareUrl = () => buildShareUrl(SETS_ROUTE, setFocusParams(set));
   const difficulty = setDifficulty(set);
+  const tierRange = tiers === null ? null : setTierRange(set.items, tiers);
   return (
     <Card className="gap-0 overflow-hidden py-0">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b px-3 py-2.5">
@@ -103,6 +112,7 @@ export function SetCard({ set, highlighted, sources }: SetCardProps) {
           </span>
           {difficulty !== null && <span className={cn(BADGE, 'border-sky-500/40 bg-sky-500/10')}>{difficulty}</span>}
           <span className={BADGE}>{set.items.length} pieces</span>
+          {tierRange !== null && <TierRangeBadge from={tierRange.from} to={tierRange.to} />}
           <span className={BADGE}>{reqLevelText(set.reqLevel)}</span>
         </div>
         <div className="ml-auto flex items-center gap-3">
@@ -115,7 +125,13 @@ export function SetCard({ set, highlighted, sources }: SetCardProps) {
       <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)]">
         <ul className="divide-y">
           {set.items.map((item, index) => (
-            <SetItemRow key={`${String(index)}-${item.name}`} item={item} highlighted={highlighted.has(index)} sources={sources} />
+            <SetItemRow
+              key={`${String(index)}-${item.name}`}
+              item={item}
+              highlighted={highlighted.has(index)}
+              sources={sources}
+              tiers={tiers}
+            />
           ))}
         </ul>
         <div className="space-y-2 border-t p-3 lg:border-t-0 lg:border-l">

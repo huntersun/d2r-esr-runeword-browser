@@ -24,6 +24,7 @@ import {
   type SetsBundle,
   type SkillsBundle,
   type SourcesBundle,
+  type TiersBundle,
   type TxtRunewordsBundle,
   type TypesBundle,
 } from './engine/schema.ts';
@@ -48,6 +49,7 @@ const materialsText = readText('materials');
 const setsText = readText('sets');
 const skillsText = readText('skills');
 const craftingText = readText('crafting');
+const tiersText = readText('tiers');
 const { types, classes: typeClasses } = JSON.parse(typesText) as TypesBundle;
 const classCodes = typeClasses.map((cls) => cls.code);
 const { bases, automods: baseAutomods = [] } = JSON.parse(basesText) as BasesBundle;
@@ -61,6 +63,7 @@ const materials = JSON.parse(materialsText) as MaterialsBundle;
 const { sets } = JSON.parse(setsText) as SetsBundle;
 const skills = JSON.parse(skillsText) as SkillsBundle;
 const crafting = JSON.parse(craftingText) as CraftingBundle;
+const { codes: tierCodes } = JSON.parse(tiersText) as TiersBundle;
 
 describe('committed game-data bundles', () => {
   it('match the app schema', () => {
@@ -81,6 +84,7 @@ describe('committed game-data bundles', () => {
       ['sets', setsText],
       ['skills', skillsText],
       ['crafting', craftingText],
+      ['tiers', tiersText],
     ] as const) {
       expect(manifest.files[name]?.hash).toBe(createHash('sha256').update(text, 'utf8').digest('hex'));
       expect(manifest.files[name]?.bytes).toBe(Buffer.byteLength(text, 'utf8'));
@@ -597,6 +601,45 @@ describe('committed game-data bundles', () => {
     }
   });
 
+  it('list the tier of every weapon and armor row, non-spawnable unique bases and mythicals included (ESR 3.2.24)', () => {
+    const values = Object.values(tierCodes);
+    expect(manifest.counts.tierCodes).toBe(values.length);
+    for (const tier of ['normal', 'exceptional', 'elite', 'mythical'] as const) {
+      const key = `tierCodes${tier.charAt(0).toUpperCase()}${tier.slice(1)}`;
+      expect(manifest.counts[key], key).toBe(values.filter((value) => value === tier).length);
+    }
+    expect(values.length).toBe(1067);
+    // Non-spawnable unique bases (not in bases.json), a mythical, and rows without a tier
+    expect(tierCodes).toMatchObject({ hax: 'normal', p01: 'normal', q00: 'exceptional', '7ha': 'elite', '2ap': 'normal', m01: 'mythical' });
+    for (const code of ['rin', 'amu', 'jew', 'cm1', 'aq2', 'hst', 'q86']) expect(tierCodes[code], code).toBeUndefined();
+
+    // Agrees with the Bases page (where those have a real family or are mythical) and the loot filter item tiers
+    const tierOf = new Map(Object.entries(tierCodes));
+    for (const base of bases) {
+      if (base.kind === 'misc' || !tierOf.has(base.code)) continue;
+      expect(tierOf.get(base.code), base.code).toBe(base.tier);
+    }
+    expect(bases.filter((base) => base.kind !== 'misc' && !tierOf.has(base.code)).map((base) => base.code)).toEqual([
+      'gps',
+      'ops',
+      'gpm',
+      'opm',
+      'gpl',
+      'opl',
+      'aq2',
+      'cq2',
+      'q86',
+      'qdf',
+    ]);
+    for (const item of lootfilter.items) if (item.tier !== undefined) expect(tierOf.get(item.code), item.code).toBe(item.tier);
+
+    // Every set item and unique base has one except misc bases (rings, amulets, charms, jewels, stones) and quivers
+    const setCodes = sets.flatMap((set) => set.items.map((item) => item.code));
+    expect(setCodes.filter((code) => tierOf.has(code))).toHaveLength(246);
+    const uniqueCodes = new Set(lootfilter.uniques.map((unique) => unique.code));
+    expect([...uniqueCodes].filter((code) => tierOf.has(code))).toHaveLength(963);
+  });
+
   it('resolve the merc/helm name collision and class-only bases', () => {
     expect(types.find((type) => type.code === 'merc')?.name).toBe('Helm (merc)');
     expect(types.find((type) => type.code === 'helm')?.name).toBe('Helm');
@@ -647,6 +690,7 @@ describe.skipIf(!existsSync(ESR_DIR))('game data generated from the ESR clone', 
     expect(serializeBundle(generated.sets)).toBe(setsText);
     expect(serializeBundle(generated.skills)).toBe(skillsText);
     expect(serializeBundle(generated.crafting)).toBe(craftingText);
+    expect(serializeBundle(generated.tiers)).toBe(tiersText);
   });
 
   it('numbers uniques, sets, stats and sounds like the *ID / *Index comment columns where those are consistent', () => {

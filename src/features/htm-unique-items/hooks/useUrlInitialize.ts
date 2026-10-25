@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { FILTER_URL_PARAM_KEYS } from '@/core/utils/filterUrlParams';
 import { parseExactNameParam } from '@/core/utils/exactName';
 import { useExactNameFromUrl, type ExactNameFromUrl } from '@/core/hooks/useExactNameFromUrl';
-import { setSearchText, setExactName, setMaxReqLevel, setSelectedCategories, setAcquisition } from '../store';
+import { setSearchText, setExactName, setMaxReqLevel, setSelectedCategories, setAcquisition, setTiers } from '../store';
 import { hasHtmFilterParams, parseHtmUrlParams } from '../utils/urlParams';
 
 /**
@@ -48,6 +48,10 @@ export function useUrlInitialize(): ExactNameFromUrl {
       // `acq`, or the legacy `coupon=0` (→ "No coupon")
       if (filters.acquisition !== null) {
         dispatch(setAcquisition(filters.acquisition));
+      }
+
+      if (filters.tiers !== null) {
+        dispatch(setTiers(filters.tiers));
       }
 
       // Clean the URL after initialization

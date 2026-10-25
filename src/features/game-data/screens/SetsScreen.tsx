@@ -13,6 +13,7 @@ import { GameDataError } from '../components/GameDataError';
 import { GameDataLoading } from '../components/GameDataLoading';
 import { SetCard } from '../components/SetCard';
 import { useGameData } from '../hooks/useGameData';
+import { useBaseTiers } from '../hooks/useBaseTiers';
 import { useItemSources } from '../hooks/useItemSources';
 import { formatCount } from '../utils/cube';
 import {
@@ -48,6 +49,8 @@ function SetsBrowser({ bundle }: { readonly bundle: SetsBundle }) {
   const state = readSetsState(searchParams, bundle);
   // The source lines are a bonus: the cards render without them while sources.json loads (or when it fails)
   const sources = useItemSources();
+  // Tier badges likewise appear once tiers.json has loaded
+  const tiers = useBaseTiers().index;
 
   const update = (patch: Partial<SetsState>, replace = true) => {
     setSearchParams(encodeSetsState({ ...state, ...patch }), { replace });
@@ -178,7 +181,7 @@ function SetsBrowser({ bundle }: { readonly bundle: SetsBundle }) {
       ) : (
         <div className="space-y-4">
           {shown.map((view) => (
-            <SetCard key={view.set.id} set={view.set} highlighted={view.highlighted} sources={sources} />
+            <SetCard key={view.set.id} set={view.set} highlighted={view.highlighted} sources={sources} tiers={tiers} />
           ))}
         </div>
       )}

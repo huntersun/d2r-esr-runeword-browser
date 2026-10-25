@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { BaseTier } from '../constants/bases';
 import type { SetInfo, SetItemInfo } from '../engine/schema';
 import {
   ANY_CLASS,
@@ -11,6 +12,7 @@ import {
   reqLevelText,
   setDifficulty,
   setDocsUrl,
+  setTierRange,
   sortSets,
   type SetsState,
 } from './sets';
@@ -158,5 +160,29 @@ describe('set links and labels', () => {
   it('shows one level or a range', () => {
     expect(reqLevelText(ARCANNA.reqLevel)).toBe('Req Lvl 1');
     expect(reqLevelText(HARBINGER.reqLevel)).toBe('Req Lvl 60–70');
+  });
+});
+
+describe('setTierRange', () => {
+  const tierOf = new Map<string, BaseTier>([
+    ['cap', 'normal'],
+    ['xap', 'exceptional'],
+    ['uap', 'elite'],
+    ['m01', 'mythical'],
+  ]);
+  const codes = (...list: string[]) => list.map((code) => ({ code }));
+
+  it('gives one tier when every tiered item shares it, skipping items without a tier', () => {
+    expect(setTierRange(codes('xap', 'rin', 'xap', 'amu'), tierOf)).toEqual({ from: 'exceptional', to: 'exceptional' });
+  });
+
+  it('spans the lowest to the highest tier in tier order, not item order', () => {
+    expect(setTierRange(codes('uap', 'cap', 'xap'), tierOf)).toEqual({ from: 'normal', to: 'elite' });
+    expect(setTierRange(codes('m01', 'xap'), tierOf)).toEqual({ from: 'exceptional', to: 'mythical' });
+  });
+
+  it('is null when no item has a tier', () => {
+    expect(setTierRange(codes('rin', 'amu', 'zzz'), tierOf)).toBeNull();
+    expect(setTierRange([], tierOf)).toBeNull();
   });
 });

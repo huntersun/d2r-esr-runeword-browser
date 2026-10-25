@@ -99,6 +99,7 @@ function main(): void {
     sets: serializeBundle(generated.sets),
     skills: serializeBundle(generated.skills),
     crafting: serializeBundle(generated.crafting),
+    tiers: serializeBundle(generated.tiers),
   };
   const icons = readIcons();
   const manifest = buildManifest({

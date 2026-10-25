@@ -8,6 +8,7 @@ import { SearchHelpButton } from '@/components/SearchHelpButton';
 import { HtmCategoryFilter } from './HtmCategoryFilter';
 import { AcquisitionFilter } from './AcquisitionFilter';
 import { MaxReqLevelInput } from './MaxReqLevelInput';
+import { TierFilter } from './TierFilter';
 import { useShareUrl } from '../hooks/useShareUrl';
 import { setSearchText, setMaxReqLevel, selectSearchText, selectMaxReqLevel } from '../store';
 
@@ -79,6 +80,9 @@ export function HtmUniqueItemFilters() {
 
       {/* Acquisition chips */}
       <AcquisitionFilter />
+
+      {/* Base tier checkboxes */}
+      <TierFilter />
 
       {/* Category Filter */}
       <HtmCategoryFilter />

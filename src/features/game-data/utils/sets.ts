@@ -11,6 +11,7 @@ import { ESR_DOCS_URL } from '@/core/navigation/navConfig';
 import { matchesExactName, parseExactNameParam } from '@/core/utils/exactName';
 import { FILTER_URL_PARAM_KEYS, MAX_REQ_LEVEL_RANGE, parseBoundedIntParam } from '@/core/utils/filterUrlParams';
 import { parseSearchTerms } from '@/core/utils/searchTerms';
+import { BASE_TIERS, type BaseTier } from '../constants/bases';
 import { GAME_DATA_URL_PARAM_KEYS } from '../constants/urlParams';
 import type { SetInfo, SetItemInfo, SetsBundle } from '../engine/schema';
 
@@ -157,4 +158,20 @@ export function setFocusParams(set: Pick<SetInfo, 'name'>): URLSearchParams {
 /** "Req Lvl 45" or "Req Lvl 60–70" */
 export function reqLevelText({ min, max }: SetInfo['reqLevel']): string {
   return min === max ? `Req Lvl ${String(min)}` : `Req Lvl ${String(min)}–${String(max)}`;
+}
+
+/**
+ * Lowest and highest base tier of a set's items (`from === to` when they all share one); items without a tier
+ * (rings, amulets, unknown codes) are skipped, and a set with no tiered item gives null.
+ */
+export function setTierRange(
+  items: readonly Pick<SetItemInfo, 'code'>[],
+  tierOf: ReadonlyMap<string, BaseTier>
+): { from: BaseTier; to: BaseTier } | null {
+  const ranks = items.flatMap((item) => {
+    const tier = tierOf.get(item.code);
+    return tier === undefined ? [] : [BASE_TIERS.indexOf(tier)];
+  });
+  if (ranks.length === 0) return null;
+  return { from: BASE_TIERS[Math.min(...ranks)], to: BASE_TIERS[Math.max(...ranks)] };
 }

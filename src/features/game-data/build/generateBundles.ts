@@ -9,6 +9,7 @@ import type {
   SetsBundle,
   SkillsBundle,
   SourcesBundle,
+  TiersBundle,
   TxtRunewordsBundle,
   TypesBundle,
 } from '../engine/schema.ts';
@@ -24,6 +25,7 @@ import { buildSetsBundle } from './bundleSets.ts';
 import { buildSkillsBundle } from './bundleSkills.ts';
 import { buildCraftingBundle } from './bundleCrafting.ts';
 import { buildSourcesBundle } from './bundleSources.ts';
+import { buildTiersBundle } from './bundleTiers.ts';
 import { buildTypesBundle } from './bundleTypes.ts';
 import type { EsrSources } from './esrSources.ts';
 import { resolveName } from './itemNames.ts';
@@ -48,6 +50,7 @@ export interface GeneratedBundles {
   sets: SetsBundle;
   skills: SkillsBundle;
   crafting: CraftingBundle;
+  tiers: TiersBundle;
   counts: Record<string, number>;
   /** Build warnings stored in the manifest */
   warnings: string[];
@@ -188,6 +191,10 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
     renderMods,
   });
 
+  const tiers = buildTiersBundle(items);
+  const tierCodes = Object.values(tiers.bundle.codes);
+  const countTier = (tier: string) => tierCodes.filter((value) => value === tier).length;
+
   const countKind = (kind: string) => bases.bundle.bases.filter((base) => base.kind === kind).length;
   return {
     types: types.bundle,
@@ -202,6 +209,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
     sets: sets.bundle,
     skills: skills.bundle,
     crafting: crafting.bundle,
+    tiers: tiers.bundle,
     counts: {
       types: types.bundle.types.length,
       classes: types.bundle.classes.length,
@@ -274,6 +282,11 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       craftingStacking: crafting.bundle.stacking.length,
       craftingRowsUsed: crafting.rowsUsed,
       craftingRowsSkipped: crafting.rowsSkipped,
+      tierCodes: tierCodes.length,
+      tierCodesNormal: countTier('normal'),
+      tierCodesExceptional: countTier('exceptional'),
+      tierCodesElite: countTier('elite'),
+      tierCodesMythical: countTier('mythical'),
     },
     warnings: [
       ...types.warnings,
@@ -289,6 +302,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       ...sets.warnings,
       ...skills.warnings,
       ...crafting.warnings,
+      ...tiers.warnings,
     ],
     stringWarnings: [...stringWarnings],
   };

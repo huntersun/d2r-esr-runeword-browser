@@ -13,10 +13,13 @@ import { ExactNameChip } from '@/core/components/ExactNameChip';
 import { selectAcquisition, selectExactName } from '../store';
 import { ACQUISITION_OPTIONS } from '../utils/acquisition';
 import { useItemSources } from '@/features/game-data/hooks/useItemSources';
+import { useBaseTiers } from '@/features/game-data/hooks/useBaseTiers';
 
 export function HtmUniqueItemsScreen() {
   const { nameFromUrl, clearExactName } = useUrlInitialize();
-  const items = useFilteredHtmUniqueItems();
+  // Tier badges and the tier filter come from tiers.json (the cards render without badges while it loads)
+  const baseTiers = useBaseTiers();
+  const items = useFilteredHtmUniqueItems(baseTiers);
   const exactName = useSelector(selectExactName);
   const acquisition = useSelector(selectAcquisition);
   const acquisitionLabel = ACQUISITION_OPTIONS.find((option) => option.value === acquisition)?.label;
@@ -76,6 +79,7 @@ export function HtmUniqueItemsScreen() {
                 favoritePending={favorites.isPending(item)}
                 onToggleFavorite={favorites.toggle}
                 sourceIndex={sourceIndex}
+                tierIndex={baseTiers.index}
               />
             </div>
           ))}

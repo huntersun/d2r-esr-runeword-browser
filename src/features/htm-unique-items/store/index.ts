@@ -9,6 +9,8 @@ export {
   deselectAllCategories,
   setSelectedCategories,
   setAcquisition,
+  toggleTier,
+  setTiers,
   selectSearchText,
   selectExactName,
   selectMaxReqLevel,
@@ -16,4 +18,5 @@ export {
   selectSelectedCategoriesRaw,
   selectIsAllCategoriesSelected,
   selectAcquisition,
+  selectTiers,
 } from './htmUniqueItemsSlice';

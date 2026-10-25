@@ -3,6 +3,7 @@ import { createSelector } from 'reselect';
 import type { RootState } from '@/core/store/store';
 import { NO_CATEGORIES_MARKER } from '@/core/constants/categoryFilter';
 import { createCategorySelectionSelectors, setCategoriesInSelection, toggleCategoryInSelection } from '@/core/store/categorySelection';
+import { BASE_TIERS, type BaseTier } from '@/features/game-data/constants/bases';
 import type { AcquisitionFilter } from '../utils/acquisition';
 
 /**
@@ -18,6 +19,8 @@ interface HtmUniqueItemsState {
   readonly acquisition: AcquisitionFilter;
   /** Exact-name focus from the `name` URL param; set only by URL init, never by the search box */
   readonly exactName: string | null;
+  /** Base tiers to show (tiers.json); empty = all tiers, including items whose base has no tier */
+  readonly tiers: readonly BaseTier[];
 }
 
 const initialState: HtmUniqueItemsState = {
@@ -26,6 +29,7 @@ const initialState: HtmUniqueItemsState = {
   selectedCategories: [], // Empty = all selected
   acquisition: 'all',
   exactName: null,
+  tiers: [],
 };
 
 const htmUniqueItemsSlice = createSlice({
@@ -74,6 +78,16 @@ const htmUniqueItemsSlice = createSlice({
     setAcquisition(state, action: PayloadAction<AcquisitionFilter>) {
       state.acquisition = action.payload;
     },
+    toggleTier(state, action: PayloadAction<BaseTier>) {
+      const tier = action.payload;
+      // Kept in BASE_TIERS order so share links are stable
+      state.tiers = state.tiers.includes(tier)
+        ? state.tiers.filter((value) => value !== tier)
+        : BASE_TIERS.filter((value) => value === tier || state.tiers.includes(value));
+    },
+    setTiers(state, action: PayloadAction<readonly BaseTier[]>) {
+      state.tiers = BASE_TIERS.filter((tier) => action.payload.includes(tier));
+    },
   },
 });
 
@@ -87,6 +101,8 @@ export const {
   deselectAllCategories,
   setSelectedCategories,
   setAcquisition,
+  toggleTier,
+  setTiers,
 } = htmUniqueItemsSlice.actions;
 export default htmUniqueItemsSlice.reducer;
 
@@ -104,3 +120,5 @@ export const selectSelectedCategoriesRaw = createSelector([selectHtmUniqueItemsS
 export const { selectSelectedCategories, selectIsAllCategoriesSelected } = createCategorySelectionSelectors(selectSelectedCategoriesRaw);
 
 export const selectAcquisition = createSelector([selectHtmUniqueItemsState], (s) => s.acquisition);
+
+export const selectTiers = createSelector([selectHtmUniqueItemsState], (s) => s.tiers);

@@ -20,6 +20,7 @@ import {
   type SetsBundle,
   type SkillsBundle,
   type SourcesBundle,
+  type TiersBundle,
   type TxtRunewordsBundle,
   type TypesBundle,
 } from '../schema.ts';
@@ -37,6 +38,7 @@ export interface GameDataBundles {
   sets: SetsBundle;
   skills: SkillsBundle;
   crafting: CraftingBundle;
+  tiers: TiersBundle;
   icons: IconsBundle;
 }
 

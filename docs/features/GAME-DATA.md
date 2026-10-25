@@ -43,6 +43,7 @@ lazily (`src/features/game-data/engine/browser/loadGameData.ts`).
 | `sets.json`       | every set with its items, own lines, per-item and set-wide partial bonuses and full-set bonuses (see "Sets")                       |
 | `skills.json`     | the class skill trees (tabs, grid position, level and skill requirements) and the level cap, for builds (see "Skills")             |
 | `crafting.json`   | forging, D-stoning and gem meld options with rendered lines per slot family, for builds (see "Crafting options")                   |
+| `tiers.json`      | base tier of every weapons.txt / armor.txt row with one, spawnable or not, for the unique and set item tier badges (see "Tiers")   |
 | `icons.json`      | item icon index (base code / unique / set item / socketable name → WebP file under `icons/`, size); own generator ("Item icons")   |
 
 Arrays are written one element per line so diffs stay readable. Bundle URLs carry the manifest hash (`?v=<sha256>`);
@@ -63,6 +64,7 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 | `sets.json`       | ESR 3.2.24: 150 KB / 21 KB                                                     |
 | `skills.json`     | ESR 3.2.24: 31 KB / 4 KB                                                       |
 | `crafting.json`   | ESR 3.2.24: 55 KB / 6 KB                                                       |
+| `tiers.json`      | ESR 3.2.24: 23 KB / 3 KB                                                       |
 | `icons.json`      | ESR 3.2.24: 303 KB / 36 KB (+ `icons/`: 1,361 WebP files, 5.3 MB)              |
 
 ### Bases and types
@@ -376,6 +378,28 @@ Building it uncovered a parser bug: monstats.txt and sets.txt mark their Expansi
 kept the marker and every monster id after it was off by one. Mythical descriptions (`mythicaldesc`, descfunc 23,
 which reads monstats NameStr as a text holder) past row 410 showed the next row's text: 49 runeword rows (Wealth,
 Enlightenment, Thirst …) and Harbinger of Ruin's full-set line. The marker check now ignores comment columns.
+
+### Tiers
+
+`tiers.json` (`TiersBundle`, built by `build/bundleTiers.ts` from the weapons.txt and armor.txt rows) is
+`{ codes: Record<code, 'normal' | 'exceptional' | 'elite' | 'mythical'> }` for the Normal / Exceptional / Elite /
+Mythical badges of the Unique Items and Sets pages and the Unique Items tier filter (`hooks/useBaseTiers.ts`, one
+`ReadonlyMap` per loaded bundle). bases.json cannot serve them: many unique bases are non-spawnable rows (`p01` Hand
+Axe, `q00`, `7ha`, `2ap` Cap) it leaves out, and lootfilter.json (which has `tier` for those rows but not the
+mythicals) is 700 KB.
+
+- Tier (`gearTier` in `build/tiers.ts`): the row's place in a family of three distinct codes (the loot filter's
+  `distinctFamilyTier`), or `mythical` for a self-referential family at qlvl ≥ 90 (`MYTHICAL_MIN_QLVL`, shared with
+  bases.json). Spawnable and non-spawnable rows alike; the first row of a repeated code wins.
+- No entry: misc.txt rows (rings, amulets, charms, jewels, stones), self-referential rows below qlvl 90 (Magic Arrows
+  / Bolts `aq2` / `cq2`), quest rows and malformed families (`hst`, `q86`, `qdf`, the throwing potions). Unlike
+  bases.json there is no fallback to `normal`, so those 10 spawnable bases (normal on the Bases page) have no badge.
+- Consistency (bundleIntegrity.test.ts): every bases.json weapon / armor with an entry has the same tier, every
+  lootfilter.json `tier` matches, 246 of the 266 set items and 963 of the 998 distinct unique base codes have one (the
+  rest are misc bases and quivers).
+
+Counts: `tierCodes` 1067 (`tierCodesNormal` 321, `tierCodesExceptional` 331, `tierCodesElite` 354,
+`tierCodesMythical` 61; ESR 3.2.24). Adding the file did not bump `GAME_DATA_SCHEMA`.
 
 ### Skills
 
@@ -1036,17 +1060,19 @@ URL state (read on every render, written with `replace`; `utils/materials.ts`):
 ### Sets page
 
 `/game-data/sets` (`screens/SetsScreen.tsx`) loads only `sets.json` (a static-bundle route like Enhance, Cube and
-Materials) plus sources.json through `useItemSources` (the source lines are a bonus: missing while it loads or when it
-fails). Items menu entry "Sets" (after Mythicals), layout tab "Sets" (after Bases). The home search lists set names
+Materials) plus sources.json through `useItemSources` and tiers.json through `useBaseTiers` (the source lines and
+tier badges are a bonus: missing while their bundle loads or when it fails). Items menu entry "Sets" (after Mythicals), layout tab "Sets" (after Bases). The home search lists set names
 ("Sets") and set item names ("Set items"), both linking to `/game-data/sets?name=`.
 
 - Search, "Max required level" input, Copy Link; Pieces pills (All + each item count with its set count) and Class
   pills (All, Any class, then the classes by name); with `?name=` an exact-name chip replaces the pills. "Showing N of M
   sets" line; sets sorted by their highest required level, then name.
-- One card per set (`components/SetCard.tsx`): green name, class badge ("Any class" when none), "N pieces", "Req Lvl
+- One card per set (`components/SetCard.tsx`): green name, class badge ("Any class" when none), "N pieces", a base
+  tier summary (`TierRangeBadge`: the tier when every tiered item shares it, "Normal → Elite" from the lowest to the
+  highest otherwise; `setTierRange` in `utils/sets.ts` skips rings and amulets, no badge when no item has a tier), "Req Lvl
   a–b", an "Official page" link (docs/sets.htm at the class anchor, the page top for classless sets) and a Copy Link
   of `?name=<set>`. The 12 hireling sets also get a Normal / Nightmare / Hell badge from their id suffix (`-N`, `-NM`,
-  `-H`; `setDifficulty`), which the search reads too. Items as rows: name, "base · category · Lvl N · Req Lvl N", own lines (blue), the source line,
+  `-H`; `setDifficulty`), which the search reads too. Items as rows: name, "base [tier badge] · category · Lvl N · Req Lvl N" (the Bases page badge via `TierBadge`; none for rings and amulets), own lines (blue), the source line,
   and the per-item partial bonuses under green "2 items" pills (a second column from `sm`). Set-wide amber boxes "2
   items" … and "Full set" sit right of the items from `lg`, below them on narrow screens.
 - Highlighted items (amber background and left bar): the items matching the search on their own, or the item named by
@@ -1176,7 +1202,7 @@ src/features/game-data/
   build/       build only: tsv.ts, strings.ts, model.ts, esrSources.ts, bundleTypes.ts, bundleBases.ts,
                bundleRunewords.ts, bundleAffixes.ts, bundleSources.ts (+ treasureClasses.ts, pluginUniques.ts,
                itemNames.ts), bundleLootFilter.ts, bundleEnhance.ts, bundleCube.ts, bundleMaterials.ts, bundleSets.ts,
-               bundleSkills.ts, bundleCrafting.ts, itemIcons.ts, generateBundles.ts,
+               bundleSkills.ts, bundleCrafting.ts, bundleTiers.ts (+ tiers.ts), itemIcons.ts, generateBundles.ts,
                writeBundle.ts
   build/cube/  cubemain rows and texts shared with the guide: cubeRows.ts, cubeText.ts, cubeFamilies.ts, cubeCatalog.ts
   build/stats/ stat renderer (see "Stat renderer")
@@ -1194,7 +1220,8 @@ src/features/game-data/
   constants/{bases,urlParams}.ts
   store/gameDataSlice.ts           + gameDataSlice.test.ts (reducers + URL helpers)
   store/baseFiltersUrl.ts          encode/decode/hasBaseFilterParams
-  hooks/{useGameData,useBasesUrlState,useItemIcons}.ts
+  hooks/{useGameData,useBasesUrlState,useItemIcons,useBaseTiers}.ts
+  components/TierBadge.tsx         TierBadge / TierRangeBadge (unique and set item cards)
   utils/filterBases.ts             filterBases + baseMatchesFilters (+ test)
   utils/baseFamilies.ts            family model + stat line, shared with the loot-filter base browser (+ test on the bundles)
   utils/familyView.ts              families view: visible columns, kept rows, dimmed members, counts (+ test; fixtures in testBases.mock.ts)

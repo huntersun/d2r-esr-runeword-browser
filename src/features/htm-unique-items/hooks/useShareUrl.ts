@@ -1,6 +1,13 @@
 import { useSelector } from 'react-redux';
 import { buildShareUrl } from '@/core/utils/filterUrlParams';
-import { selectSearchText, selectExactName, selectMaxReqLevel, selectSelectedCategoriesRaw, selectAcquisition } from '../store';
+import {
+  selectSearchText,
+  selectExactName,
+  selectMaxReqLevel,
+  selectSelectedCategoriesRaw,
+  selectAcquisition,
+  selectTiers,
+} from '../store';
 import { buildHtmShareParams } from '../utils/urlParams';
 
 /**
@@ -13,6 +20,8 @@ export function useShareUrl(): () => string {
   const selectedCategories = useSelector(selectSelectedCategoriesRaw);
   const acquisition = useSelector(selectAcquisition);
   const exactName = useSelector(selectExactName);
+  const tiers = useSelector(selectTiers);
 
-  return () => buildShareUrl('uniques', buildHtmShareParams({ searchText, maxReqLevel, selectedCategories, acquisition, exactName }));
+  return () =>
+    buildShareUrl('uniques', buildHtmShareParams({ searchText, maxReqLevel, selectedCategories, acquisition, exactName, tiers }));
 }

@@ -124,6 +124,25 @@ replaced the exclude-only "Include Coupon Items" checkbox. The logic is in `util
 - URL: `acq=coupon|gamble|drop|nocoupon` (omitted for All). The legacy `coupon=0` is still read and maps to
   `nocoupon` (`acq` wins when both are present). Copy Link only writes `acq`.
 
+### Base Tier
+
+Checkbox row `Base tier: Normal | Exceptional | Elite` (`components/TierFilter.tsx`, the Bases page tier
+filter), and a tier badge next to the base name on every card (`TierBadge` from game-data, the Bases / Best Base badge).
+
+- The tier comes from the game-data `tiers` bundle (`useBaseTiers()`, see GAME-DATA.md → Tiers), looked up by
+  `baseItemCode` (lowercased; `utils/tierFilter.ts`: `uniqueBaseTier`, `matchesTiers`). bases.json is not enough:
+  many unique bases are non-spawnable rows (`p01` Hand Axe, `q00`, `7ha`, `2ap` Cap) it leaves out.
+- None checked = every item. With any tier checked only items whose base has one of the checked tiers are shown, so
+  rings, amulets, charms, jewels, stones and quivers (no tier, no badge) are hidden; the row then shows a "Clear"
+  button and a hint saying so. Checking all three is therefore not the same as none.
+- The screen loads `tiers.json` once and passes the index to the cards and to `useFilteredHtmUniqueItems`. Cards show
+  no badge until it has loaded; with a tier filter active the list shows the spinner meanwhile, and if the bundle fails
+  to load the tier filter is ignored. Other users of the card (guide, builds) pass no index and show no badge.
+- ESR 3.2.24 counts (of 1065): Normal 310, Exceptional 325, Elite 303, Mythical 0 (the mythical uniques are on their
+  own page, so the row has no Mythical checkbox), 127 without a tier.
+- URL: `tier=normal,elite` (the Bases page format, Normal → Mythical order, unknown values dropped; omitted when none
+  is checked).
+
 ## Redux State
 
 ```typescript
@@ -132,6 +151,8 @@ interface HtmUniqueItemsState {
   readonly maxReqLevel: number | null;
   readonly selectedCategories: readonly string[]; // Empty = all selected
   readonly acquisition: AcquisitionFilter; // 'all' | 'coupon' | 'gamble' | 'drop' | 'nocoupon'
+  readonly exactName: string | null; // `?name=` focus
+  readonly tiers: readonly BaseTier[]; // Empty = all tiers; kept in Normal → Mythical order
 }
 ```
 
@@ -141,7 +162,7 @@ interface HtmUniqueItemsState {
 - `['__none__']` = no categories selected (show nothing)
 - `['Bow', 'Sword', 'Ring']` = only show items in these categories
 
-**Actions:** `setSearchText`, `setMaxReqLevel`, `toggleCategory`, `toggleGroup`, `selectAllCategories`, `deselectAllCategories`, `setAcquisition`
+**Actions:** `setSearchText`, `setMaxReqLevel`, `toggleCategory`, `toggleGroup`, `selectAllCategories`, `deselectAllCategories`, `setAcquisition`, `toggleTier`, `setTiers`
 
 ## Mythical Uniques Filters
 
@@ -182,10 +203,11 @@ function useCategoryFilters(): readonly HtmFilterGroup[] | undefined;
 
 ### useFilteredHtmUniqueItems
 
-Returns filtered and sorted unique items based on current Redux state:
+Returns filtered and sorted unique items based on current Redux state and the base tier index (`useBaseTiers()`);
+undefined while loading, including while `tiers.json` loads with a tier filter active:
 
 ```typescript
-function useFilteredHtmUniqueItems(): readonly HtmUniqueItem[] | undefined;
+function useFilteredHtmUniqueItems(baseTiers: BaseTiersState): readonly HtmUniqueItem[] | undefined;
 ```
 
 ### useShareUrl / useUrlInitialize
@@ -201,7 +223,8 @@ src/features/htm-unique-items/
 │   ├── HtmCategoryFilter.tsx        # Grouped checkbox filter UI
 │   ├── HtmUniqueItemCard.tsx        # Item display card
 │   ├── HtmUniqueItemFilters.tsx     # All filter controls
-│   └── MaxReqLevelInput.tsx         # Max Req Lvl input (also used by Mythical Uniques)
+│   ├── MaxReqLevelInput.tsx         # Max Req Lvl input (also used by Mythical Uniques)
+│   └── TierFilter.tsx               # Base tier checkboxes
 ├── constants/
 │   └── htmCategoryGroups.ts         # Category → group mapping
 ├── hooks/
@@ -219,6 +242,7 @@ src/features/htm-unique-items/
 ├── utils/
 │   ├── acquisition.ts               # Acquisition chip logic (matchesAcquisition)
 │   ├── htmUniqueItemFavorites.ts    # Favourite ids
-│   └── urlParams.ts                 # Share URL build/parse (acq, legacy coupon)
+│   ├── tierFilter.ts                # Base tier lookup + filter (uniqueBaseTier, matchesTiers)
+│   └── urlParams.ts                 # Share URL build/parse (acq, legacy coupon, tier)
 └── index.ts
 ```

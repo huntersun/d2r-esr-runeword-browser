@@ -1,8 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import { NO_CATEGORIES_MARKER } from '@/core/constants/categoryFilter';
-import { buildHtmShareParams, hasHtmFilterParams, parseAcquisitionParam, parseHtmUrlParams, type HtmShareFilters } from './urlParams';
+import {
+  buildHtmShareParams,
+  hasHtmFilterParams,
+  parseAcquisitionParam,
+  parseHtmUrlParams,
+  parseTierParam,
+  type HtmShareFilters,
+} from './urlParams';
 
-const DEFAULTS: HtmShareFilters = { searchText: '', maxReqLevel: null, selectedCategories: [], acquisition: 'all', exactName: null };
+const DEFAULTS: HtmShareFilters = {
+  searchText: '',
+  maxReqLevel: null,
+  selectedCategories: [],
+  acquisition: 'all',
+  exactName: null,
+  tiers: [],
+};
 
 describe('buildHtmShareParams', () => {
   it('writes nothing for the default state', () => {
@@ -17,6 +31,24 @@ describe('buildHtmShareParams', () => {
 
   it('omits cats for all / none selected', () => {
     expect(buildHtmShareParams({ ...DEFAULTS, selectedCategories: [NO_CATEGORIES_MARKER] }).has('cats')).toBe(false);
+  });
+});
+
+describe('tier param', () => {
+  it('writes the selected tiers comma-separated and omits the param for all tiers', () => {
+    expect(buildHtmShareParams({ ...DEFAULTS, tiers: ['normal', 'elite'] }).get('tier')).toBe('normal,elite');
+    expect(buildHtmShareParams(DEFAULTS).has('tier')).toBe(false);
+  });
+
+  it('decodes known tiers in tier order, dropping unknown values and duplicates', () => {
+    expect(parseTierParam('elite,bogus,normal,elite')).toEqual(['normal', 'elite']);
+    expect(parseTierParam('bogus')).toBeNull();
+    expect(parseTierParam('')).toBeNull();
+    expect(parseTierParam(null)).toBeNull();
+  });
+
+  it('counts as a filter param', () => {
+    expect(hasHtmFilterParams(new URLSearchParams('tier=mythical'))).toBe(true);
   });
 });
 
@@ -55,13 +87,26 @@ describe('uniques URL round-trip', () => {
       selectedCategories: ['Ring', 'Bow'],
       acquisition,
       exactName: null,
+      tiers: ['exceptional', 'mythical'],
     };
     const parsed = parseHtmUrlParams(new URLSearchParams(buildHtmShareParams(filters).toString()));
-    expect(parsed).toEqual({ searchText: 'life "fire"', maxReqLevel: 42, categories: ['Ring', 'Bow'], acquisition });
+    expect(parsed).toEqual({
+      searchText: 'life "fire"',
+      maxReqLevel: 42,
+      categories: ['Ring', 'Bow'],
+      acquisition,
+      tiers: ['exceptional', 'mythical'],
+    });
   });
 
   it('decodes an empty URL to "keep everything"', () => {
-    expect(parseHtmUrlParams(new URLSearchParams())).toEqual({ searchText: null, maxReqLevel: null, categories: null, acquisition: null });
+    expect(parseHtmUrlParams(new URLSearchParams())).toEqual({
+      searchText: null,
+      maxReqLevel: null,
+      categories: null,
+      acquisition: null,
+      tiers: null,
+    });
   });
 
   it('rewrites a legacy coupon=0 link into the new form', () => {

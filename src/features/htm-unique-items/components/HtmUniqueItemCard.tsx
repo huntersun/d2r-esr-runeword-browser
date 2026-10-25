@@ -5,6 +5,9 @@ import type { HtmUniqueItem } from '@/core/db';
 import { ItemIcon } from '@/features/game-data/components/ItemIcon';
 import { ItemSourceLine } from '@/features/game-data/components/ItemSourceLine';
 import type { SourceIndex } from '@/features/game-data/engine/sourceLookup';
+import { TierBadge } from '@/features/game-data/components/TierBadge';
+import type { BaseTierIndex } from '@/features/game-data/hooks/useBaseTiers';
+import { uniqueBaseTier } from '../utils/tierFilter';
 
 interface HtmUniqueItemCardProps {
   readonly item: HtmUniqueItem;
@@ -14,6 +17,8 @@ interface HtmUniqueItemCardProps {
   readonly onToggleFavorite?: (item: HtmUniqueItem) => void;
   /** Name index of the game-data sources bundle (from `useItemSources()`); omitted → no source line */
   readonly sourceIndex?: SourceIndex | null;
+  /** Base tiers (from `useBaseTiers()`); omitted / null → no tier badge */
+  readonly tierIndex?: BaseTierIndex | null;
 }
 
 export function HtmUniqueItemCard({
@@ -23,7 +28,9 @@ export function HtmUniqueItemCard({
   favoritePending = false,
   onToggleFavorite,
   sourceIndex,
+  tierIndex,
 }: HtmUniqueItemCardProps) {
+  const tier = tierIndex ? uniqueBaseTier(item.baseItemCode, tierIndex) : undefined;
   return (
     <Card className="h-full">
       <CardHeader className="pb-0">
@@ -35,6 +42,7 @@ export function HtmUniqueItemCard({
               <p className="text-sm text-muted-foreground">
                 {item.baseItem}
                 {item.baseItemCode ? ` (${item.baseItemCode})` : ''}
+                {tier !== undefined && <TierBadge tier={tier} className="ml-1.5 align-middle" />}
               </p>
             </div>
           </div>

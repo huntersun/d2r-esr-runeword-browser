@@ -18,6 +18,7 @@ export type GameDataFile =
   | 'sets'
   | 'skills'
   | 'crafting'
+  | 'tiers'
   | 'icons';
 
 export interface GameDataManifest {
@@ -703,6 +704,18 @@ export interface StackingCraftOption {
 export interface CraftingBundle {
   forgings: ForgingOption[];
   stacking: StackingCraftOption[];
+}
+
+// --- tiers.json ---------------------------------------------------------------------------------------------------
+
+/**
+ * tiers.json: the base tier of every weapons.txt / armor.txt row that has one, spawnable or not, for the tier badges
+ * and filter of the unique and set item pages (their bases are often non-spawnable rows bases.json leaves out). Rows
+ * without a tier (misc.txt, arrows, bolts, quest items) have no entry.
+ */
+export interface TiersBundle {
+  /** By base code, in weapons.txt then armor.txt row order */
+  codes: Record<string, BaseItem['tier']>;
 }
 
 /**

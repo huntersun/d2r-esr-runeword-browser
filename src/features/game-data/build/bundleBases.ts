@@ -12,7 +12,7 @@ import {
 } from '../engine/schema.ts';
 import type { BuildResult } from './bundleTypes.ts';
 import type { ItemRow, ItemTypeRow } from './model.ts';
-import { familyPosition } from './tiers.ts';
+import { familyPosition, MYTHICAL_MIN_QLVL } from './tiers.ts';
 
 /**
  * misc.txt rows are only included when their type ancestors contain one of these itemtypes codes
@@ -21,9 +21,6 @@ import { familyPosition } from './tiers.ts';
  * ESR's quivers in misc.txt are not spawnable; the spawnable "Magic Arrows/Bolts" live in weapons.txt.
  */
 export const ACCESSORY_TYPES: readonly string[] = ['ring', 'amul', 'char', 'jewl', 'bowq', 'xboq'];
-
-/** Bases with a self-referential tier family at or above this qlvl are ESR Mythical bases (qlvl 96 / 100). */
-const MYTHICAL_MIN_QLVL = 90;
 
 function isPlayerFacing(row: ItemRow): boolean {
   return row.spawnable === 1 && row.quest === 0;

@@ -1,3 +1,5 @@
+import type { BaseItem } from '../engine/schema.ts';
+
 /** The three tiers of a weapons.txt / armor.txt tier family (`normcode`, `ubercode`, `ultracode`). */
 export type FamilyTier = 'normal' | 'exceptional' | 'elite';
 
@@ -22,4 +24,17 @@ export function distinctFamilyTier(code: string, normcode: string, ubercode: str
   if (new Set([normcode, ubercode, ultracode]).size !== 3) return undefined;
   const position = familyPosition(code, normcode, ubercode, ultracode);
   return position === 'self' || position === null ? undefined : position;
+}
+
+/** Bases with a self-referential tier family at or above this qlvl are ESR Mythical bases (qlvl 96 / 100). */
+export const MYTHICAL_MIN_QLVL = 90;
+
+/**
+ * The tier of a weapons.txt / armor.txt row for the unique and set item badges (tiers.json): its place in a real tier
+ * family, 'mythical' for a self-referential family at mythical qlvl, undefined otherwise (arrows, bolts, quest rows,
+ * malformed families). Unlike the Bases page (bundleBases `tierOf`) there is no fallback to 'normal'.
+ */
+export function gearTier(code: string, normcode: string, ubercode: string, ultracode: string, qlvl: number): BaseItem['tier'] | undefined {
+  if (familyPosition(code, normcode, ubercode, ultracode) === 'self') return qlvl >= MYTHICAL_MIN_QLVL ? 'mythical' : undefined;
+  return distinctFamilyTier(code, normcode, ubercode, ultracode);
 }
