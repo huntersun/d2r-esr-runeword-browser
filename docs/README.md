@@ -85,8 +85,9 @@ Favourites for runewords, gemwords, and unique items (sign-in required, synced t
 A second, build-time data source: `npm run game-data:generate` converts the ESR repo's txt game tables (from a local
 clone at `../Eastern_Sun_Resurrected`) into JSON committed under `public/game-data/` (`manifest.json`, `types.json`,
 `bases.json`, `runewords.json`, `affixes.json`, `sources.json`, `lootfilter.json`, `enhance.json`, `cube.json`,
-`materials.json`, `sets.json`, `skills.json`, `crafting.json`; the last two feed the builds feature only). The browser
-fetches these lazily;
+`materials.json`, `sets.json`, `skills.json`, `crafting.json`; the last two feed the builds feature only), plus item
+icons from the mod's HD sprites (`npm run game-data:icons`: `icons.json` + `icons/*.webp`, shown on the Bases page).
+The browser fetches these lazily;
 they never go through the HTM parsers or IndexedDB. The game-file version (ESR git tag, e.g. `3.2.10`) is independent of
 the HTM changelog version. See [Game Data](./features/GAME-DATA.md).
 

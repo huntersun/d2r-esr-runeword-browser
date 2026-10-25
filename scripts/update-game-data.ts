@@ -66,7 +66,13 @@ function main(): void {
   console.log(before ? `ESR ${before.esrVersion}, tag ${before.esrTag ?? '(none)'}, commit ${before.esrCommit.slice(0, 7)}` : '(none)');
 
   header('3/5 Generate');
-  const generated = run(process.execPath, ['scripts/generate-game-data.ts', '--esr', esrDir]);
+  let generated = run(process.execPath, ['scripts/generate-game-data.ts', '--esr', esrDir]);
+  if (generated) {
+    // The icons cover the fresh bases.json; the second generate lists the new icons.json in the manifest.
+    const icons = run(process.execPath, ['scripts/generate-item-icons.ts', '--esr', esrDir]);
+    steps.push({ name: 'icons', ok: icons });
+    generated = run(process.execPath, ['scripts/generate-game-data.ts', '--esr', esrDir]);
+  }
   steps.push({ name: 'generate', ok: generated });
   const after = readManifest();
 
@@ -87,6 +93,7 @@ function main(): void {
     const tests = run('npx', ['vitest', 'run', 'src/features/game-data'], { ...process.env, ESR_SOURCE_DIR: esrDir });
     steps.push({ name: 'tests (src/features/game-data)', ok: tests });
     steps.push({ name: 'check', ok: run(process.execPath, ['scripts/generate-game-data.ts', '--check', '--esr', esrDir]) });
+    steps.push({ name: 'icons:check', ok: run(process.execPath, ['scripts/generate-item-icons.ts', '--check', '--esr', esrDir]) });
   } else {
     console.log('Skipped: generation failed.');
   }

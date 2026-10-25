@@ -7,6 +7,7 @@ import { GAME_DATA_URL_PARAM_KEYS } from '../constants/urlParams';
 import { baseAutomodView, baseDamageLabel, type BaseAutomodView } from '../utils/baseAutomods';
 import { formatAffixLevel } from '../utils/filterAffixes';
 import { formatRange, formatSocketCaps } from '../utils/format';
+import { ItemIcon } from './ItemIcon';
 
 const DEFAULT_THRESHOLDS: ItemTypeInfo['thresholds'] = [25, 40];
 
@@ -126,26 +127,29 @@ export function BaseCard({ base, typeByCode, baseByCode, automodById, classNames
 
   return (
     <Card className="h-full gap-3 py-4">
-      <CardHeader className="px-4">
-        <div className="flex items-start justify-between gap-2">
-          <CardTitle className="min-w-0 text-lg">{base.name}</CardTitle>
-          <Badge variant="outline" className={TIER_BADGE_CLASS[base.tier]}>
-            {BASE_TIER_LABELS[base.tier]}
-          </Badge>
-        </div>
-        <div className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
-          <span>
-            {type?.name ?? base.type}
-            {type2 && ` / ${type2.name}`}
-          </span>
-          <span className="font-mono text-xs">({base.code})</span>
-          {base.cls !== null && <Badge variant="secondary">{className(base.cls)} only</Badge>}
-          {base.autoGroup !== null && automods === null && (
-            <Badge variant="outline" title="Automagic affix group without visible stats on this base">
-              Automod {base.autoGroup}
+      <CardHeader className="flex items-start gap-3 px-4">
+        <ItemIcon code={base.code} size={48} className="rounded-md bg-muted/50" />
+        <div className="grid min-w-0 flex-1 gap-2">
+          <div className="flex items-start justify-between gap-2">
+            <CardTitle className="min-w-0 text-lg">{base.name}</CardTitle>
+            <Badge variant="outline" className={TIER_BADGE_CLASS[base.tier]}>
+              {BASE_TIER_LABELS[base.tier]}
             </Badge>
-          )}
-          {base.indestructible && <Badge variant="outline">Indestructible</Badge>}
+          </div>
+          <div className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
+            <span>
+              {type?.name ?? base.type}
+              {type2 && ` / ${type2.name}`}
+            </span>
+            <span className="font-mono text-xs">({base.code})</span>
+            {base.cls !== null && <Badge variant="secondary">{className(base.cls)} only</Badge>}
+            {base.autoGroup !== null && automods === null && (
+              <Badge variant="outline" title="Automagic affix group without visible stats on this base">
+                Automod {base.autoGroup}
+              </Badge>
+            )}
+            {base.indestructible && <Badge variant="outline">Indestructible</Badge>}
+          </div>
         </div>
       </CardHeader>
 

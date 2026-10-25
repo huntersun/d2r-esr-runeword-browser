@@ -1,0 +1,1786 @@
+{
+  "esrVersion": "3.2.24",
+  "esrTag": "3.2.24",
+  "icons": {
+    "hax": {
+      "file": "axe_hand_axe.webp",
+      "w": 58,
+      "h": 128
+    },
+    "axe": {
+      "file": "axe_axe.webp",
+      "w": 76,
+      "h": 128
+    },
+    "2ax": {
+      "file": "axe_double_axe.webp",
+      "w": 59,
+      "h": 128
+    },
+    "mpi": {
+      "file": "axe_military_pick.webp",
+      "w": 77,
+      "h": 128
+    },
+    "wax": {
+      "file": "axe_war_axe.webp",
+      "w": 74,
+      "h": 128
+    },
+    "lax": {
+      "file": "axe_large_axe.webp",
+      "w": 78,
+      "h": 128
+    },
+    "bax": {
+      "file": "axe_broad_axe.webp",
+      "w": 79,
+      "h": 128
+    },
+    "btx": {
+      "file": "axe_battle_axe.webp",
+      "w": 60,
+      "h": 128
+    },
+    "gax": {
+      "file": "axe_great_axe.webp",
+      "w": 66,
+      "h": 128
+    },
+    "gix": {
+      "file": "axe_giant_axe.webp",
+      "w": 68,
+      "h": 128
+    },
+    "wnd": {
+      "file": "wand_wand.webp",
+      "w": 57,
+      "h": 128
+    },
+    "ywn": {
+      "file": "wand_yew_wand.webp",
+      "w": 56,
+      "h": 128
+    },
+    "bwn": {
+      "file": "wand_bone_wand.webp",
+      "w": 61,
+      "h": 128
+    },
+    "gwn": {
+      "file": "wand_grim_wand.webp",
+      "w": 64,
+      "h": 128
+    },
+    "gsc": {
+      "file": "scepter_grand_scepter.webp",
+      "w": 39,
+      "h": 128
+    },
+    "wsp": {
+      "file": "scepter_war_scepter.webp",
+      "w": 80,
+      "h": 128
+    },
+    "mac": {
+      "file": "mace_mace.webp",
+      "w": 32,
+      "h": 128
+    },
+    "mst": {
+      "file": "mace_morning_star.webp",
+      "w": 45,
+      "h": 128
+    },
+    "fla": {
+      "file": "mace_flail.webp",
+      "w": 71,
+      "h": 128
+    },
+    "whm": {
+      "file": "hammer_war_hammer.webp",
+      "w": 67,
+      "h": 128
+    },
+    "mau": {
+      "file": "hammer_maul.webp",
+      "w": 52,
+      "h": 128
+    },
+    "ssd": {
+      "file": "sword_short_sword.webp",
+      "w": 31,
+      "h": 128
+    },
+    "scm": {
+      "file": "sword_scimitar.webp",
+      "w": 33,
+      "h": 128
+    },
+    "sbr": {
+      "file": "sword_saber.webp",
+      "w": 39,
+      "h": 128
+    },
+    "flc": {
+      "file": "sword_falchion.webp",
+      "w": 34,
+      "h": 128
+    },
+    "bsd": {
+      "file": "sword_broad_sword.webp",
+      "w": 68,
+      "h": 128
+    },
+    "lsd": {
+      "file": "sword_long_sword.webp",
+      "w": 64,
+      "h": 128
+    },
+    "wsd": {
+      "file": "sword_war_sword.webp",
+      "w": 35,
+      "h": 128
+    },
+    "2hs": {
+      "file": "sword_two_handed_sword.webp",
+      "w": 27,
+      "h": 128
+    },
+    "clm": {
+      "file": "sword_claymore.webp",
+      "w": 28,
+      "h": 128
+    },
+    "gis": {
+      "file": "sword_giant_sword.webp",
+      "w": 27,
+      "h": 128
+    },
+    "flb": {
+      "file": "sword_flamberge.webp",
+      "w": 52,
+      "h": 128
+    },
+    "gsd": {
+      "file": "sword_great_sword.webp",
+      "w": 47,
+      "h": 128
+    },
+    "dgr": {
+      "file": "knife_dagger.webp",
+      "w": 59,
+      "h": 128
+    },
+    "dir": {
+      "file": "knife_dirk.webp",
+      "w": 60,
+      "h": 128
+    },
+    "bld": {
+      "file": "knife_blade.webp",
+      "w": 36,
+      "h": 128
+    },
+    "tkf": {
+      "file": "knife_throwing_knife.webp",
+      "w": 69,
+      "h": 128
+    },
+    "tax": {
+      "file": "axe_throwing_axe.webp",
+      "w": 69,
+      "h": 128
+    },
+    "bal": {
+      "file": "axe_balanced_axe.webp",
+      "w": 125,
+      "h": 128
+    },
+    "jav": {
+      "file": "javelin_javelin.webp",
+      "w": 41,
+      "h": 128
+    },
+    "pil": {
+      "file": "javelin_pilum.webp",
+      "w": 24,
+      "h": 128
+    },
+    "tsp": {
+      "file": "javelin_throwing_spear.webp",
+      "w": 28,
+      "h": 128
+    },
+    "spr": {
+      "file": "spear_spear.webp",
+      "w": 57,
+      "h": 128
+    },
+    "tri": {
+      "file": "spear_trident.webp",
+      "w": 52,
+      "h": 128
+    },
+    "brn": {
+      "file": "spear_brandistock.webp",
+      "w": 58,
+      "h": 128
+    },
+    "spt": {
+      "file": "spear_spetum.webp",
+      "w": 58,
+      "h": 128
+    },
+    "pik": {
+      "file": "spear_pike.webp",
+      "w": 59,
+      "h": 128
+    },
+    "bar": {
+      "file": "polearm_bardiche.webp",
+      "w": 54,
+      "h": 128
+    },
+    "scy": {
+      "file": "polearm_scythe.webp",
+      "w": 54,
+      "h": 128
+    },
+    "pax": {
+      "file": "polearm_poleaxe.webp",
+      "w": 60,
+      "h": 128
+    },
+    "hal": {
+      "file": "polearm_halberd.webp",
+      "w": 54,
+      "h": 128
+    },
+    "wsc": {
+      "file": "polearm_war_scythe.webp",
+      "w": 62,
+      "h": 128
+    },
+    "9ha": {
+      "file": "axe_hand_axe.webp",
+      "w": 58,
+      "h": 128
+    },
+    "9ax": {
+      "file": "axe_axe.webp",
+      "w": 76,
+      "h": 128
+    },
+    "92a": {
+      "file": "axe_double_axe.webp",
+      "w": 59,
+      "h": 128
+    },
+    "9mp": {
+      "file": "axe_military_pick.webp",
+      "w": 77,
+      "h": 128
+    },
+    "9wa": {
+      "file": "axe_war_axe.webp",
+      "w": 74,
+      "h": 128
+    },
+    "9la": {
+      "file": "axe_large_axe.webp",
+      "w": 78,
+      "h": 128
+    },
+    "9ba": {
+      "file": "axe_broad_axe.webp",
+      "w": 79,
+      "h": 128
+    },
+    "9bt": {
+      "file": "axe_battle_axe.webp",
+      "w": 60,
+      "h": 128
+    },
+    "9ga": {
+      "file": "axe_great_axe.webp",
+      "w": 66,
+      "h": 128
+    },
+    "9gi": {
+      "file": "axe_giant_axe.webp",
+      "w": 68,
+      "h": 128
+    },
+    "9wn": {
+      "file": "wand_wand.webp",
+      "w": 57,
+      "h": 128
+    },
+    "9yw": {
+      "file": "wand_yew_wand.webp",
+      "w": 56,
+      "h": 128
+    },
+    "9bw": {
+      "file": "wand_bone_wand.webp",
+      "w": 61,
+      "h": 128
+    },
+    "9gw": {
+      "file": "wand_grim_wand.webp",
+      "w": 64,
+      "h": 128
+    },
+    "9qs": {
+      "file": "scepter_grand_scepter.webp",
+      "w": 39,
+      "h": 128
+    },
+    "9ws": {
+      "file": "scepter_war_scepter.webp",
+      "w": 80,
+      "h": 128
+    },
+    "9ma": {
+      "file": "mace_mace.webp",
+      "w": 32,
+      "h": 128
+    },
+    "9mt": {
+      "file": "mace_morning_star.webp",
+      "w": 45,
+      "h": 128
+    },
+    "9fl": {
+      "file": "mace_flail.webp",
+      "w": 71,
+      "h": 128
+    },
+    "9wh": {
+      "file": "hammer_war_hammer.webp",
+      "w": 67,
+      "h": 128
+    },
+    "9m9": {
+      "file": "hammer_maul.webp",
+      "w": 52,
+      "h": 128
+    },
+    "9ss": {
+      "file": "sword_short_sword.webp",
+      "w": 31,
+      "h": 128
+    },
+    "9sm": {
+      "file": "sword_scimitar.webp",
+      "w": 33,
+      "h": 128
+    },
+    "9sb": {
+      "file": "sword_saber.webp",
+      "w": 39,
+      "h": 128
+    },
+    "9fc": {
+      "file": "sword_falchion.webp",
+      "w": 34,
+      "h": 128
+    },
+    "9bs": {
+      "file": "sword_broad_sword.webp",
+      "w": 68,
+      "h": 128
+    },
+    "9ls": {
+      "file": "sword_long_sword.webp",
+      "w": 64,
+      "h": 128
+    },
+    "9wd": {
+      "file": "sword_war_sword.webp",
+      "w": 35,
+      "h": 128
+    },
+    "92h": {
+      "file": "sword_two_handed_sword.webp",
+      "w": 27,
+      "h": 128
+    },
+    "9cm": {
+      "file": "sword_claymore.webp",
+      "w": 28,
+      "h": 128
+    },
+    "9gs": {
+      "file": "sword_giant_sword.webp",
+      "w": 27,
+      "h": 128
+    },
+    "9fb": {
+      "file": "sword_flamberge.webp",
+      "w": 52,
+      "h": 128
+    },
+    "9gd": {
+      "file": "sword_great_sword.webp",
+      "w": 47,
+      "h": 128
+    },
+    "9dg": {
+      "file": "knife_dagger.webp",
+      "w": 59,
+      "h": 128
+    },
+    "9di": {
+      "file": "knife_dirk.webp",
+      "w": 60,
+      "h": 128
+    },
+    "9bl": {
+      "file": "knife_blade.webp",
+      "w": 36,
+      "h": 128
+    },
+    "9tk": {
+      "file": "knife_throwing_knife.webp",
+      "w": 69,
+      "h": 128
+    },
+    "9ta": {
+      "file": "axe_throwing_axe.webp",
+      "w": 69,
+      "h": 128
+    },
+    "9b8": {
+      "file": "axe_balanced_axe.webp",
+      "w": 125,
+      "h": 128
+    },
+    "9ja": {
+      "file": "javelin_javelin.webp",
+      "w": 41,
+      "h": 128
+    },
+    "9pi": {
+      "file": "javelin_pilum.webp",
+      "w": 24,
+      "h": 128
+    },
+    "9ts": {
+      "file": "javelin_throwing_spear.webp",
+      "w": 28,
+      "h": 128
+    },
+    "9sr": {
+      "file": "spear_spear.webp",
+      "w": 57,
+      "h": 128
+    },
+    "9tr": {
+      "file": "spear_trident.webp",
+      "w": 52,
+      "h": 128
+    },
+    "9br": {
+      "file": "spear_brandistock.webp",
+      "w": 58,
+      "h": 128
+    },
+    "9st": {
+      "file": "spear_spetum.webp",
+      "w": 58,
+      "h": 128
+    },
+    "9p9": {
+      "file": "spear_pike.webp",
+      "w": 59,
+      "h": 128
+    },
+    "9b7": {
+      "file": "polearm_bardiche.webp",
+      "w": 54,
+      "h": 128
+    },
+    "9s8": {
+      "file": "polearm_scythe.webp",
+      "w": 54,
+      "h": 128
+    },
+    "9pa": {
+      "file": "polearm_poleaxe.webp",
+      "w": 60,
+      "h": 128
+    },
+    "9h9": {
+      "file": "polearm_halberd.webp",
+      "w": 54,
+      "h": 128
+    },
+    "9wc": {
+      "file": "polearm_war_scythe.webp",
+      "w": 62,
+      "h": 128
+    },
+    "ktr": {
+      "file": "h2h_katar.webp",
+      "w": 46,
+      "h": 128
+    },
+    "wrb": {
+      "file": "h2h_katar.webp",
+      "w": 46,
+      "h": 128
+    },
+    "skr": {
+      "file": "h2h_scissors_katar.webp",
+      "w": 45,
+      "h": 128
+    },
+    "9ar": {
+      "file": "h2h_katar.webp",
+      "w": 46,
+      "h": 128
+    },
+    "9wb": {
+      "file": "h2h_katar.webp",
+      "w": 46,
+      "h": 128
+    },
+    "9qr": {
+      "file": "h2h_scissors_katar.webp",
+      "w": 45,
+      "h": 128
+    },
+    "7ar": {
+      "file": "h2h_katar.webp",
+      "w": 46,
+      "h": 128
+    },
+    "7wb": {
+      "file": "h2h_katar.webp",
+      "w": 46,
+      "h": 128
+    },
+    "7qr": {
+      "file": "h2h_scissors_katar.webp",
+      "w": 45,
+      "h": 128
+    },
+    "am3": {
+      "file": "spear_maiden_spear.webp",
+      "w": 34,
+      "h": 128
+    },
+    "am4": {
+      "file": "spear_maiden_pike.webp",
+      "w": 57,
+      "h": 128
+    },
+    "am8": {
+      "file": "spear_maiden_spear.webp",
+      "w": 34,
+      "h": 128
+    },
+    "am9": {
+      "file": "spear_maiden_pike.webp",
+      "w": 57,
+      "h": 128
+    },
+    "amd": {
+      "file": "spear_maiden_spear.webp",
+      "w": 34,
+      "h": 128
+    },
+    "ame": {
+      "file": "spear_maiden_pike.webp",
+      "w": 57,
+      "h": 128
+    },
+    "0ha": {
+      "file": "axe_hand_axe.webp",
+      "w": 58,
+      "h": 128
+    },
+    "0ax": {
+      "file": "axe_axe.webp",
+      "w": 76,
+      "h": 128
+    },
+    "82a": {
+      "file": "axe_double_axe.webp",
+      "w": 59,
+      "h": 128
+    },
+    "0mp": {
+      "file": "axe_military_pick.webp",
+      "w": 77,
+      "h": 128
+    },
+    "0wa": {
+      "file": "axe_war_axe.webp",
+      "w": 74,
+      "h": 128
+    },
+    "0la": {
+      "file": "axe_large_axe.webp",
+      "w": 78,
+      "h": 128
+    },
+    "0ba": {
+      "file": "axe_broad_axe.webp",
+      "w": 79,
+      "h": 128
+    },
+    "0bt": {
+      "file": "axe_battle_axe.webp",
+      "w": 60,
+      "h": 128
+    },
+    "0ga": {
+      "file": "axe_great_axe.webp",
+      "w": 66,
+      "h": 128
+    },
+    "0gi": {
+      "file": "axe_giant_axe.webp",
+      "w": 68,
+      "h": 128
+    },
+    "0wn": {
+      "file": "wand_wand.webp",
+      "w": 57,
+      "h": 128
+    },
+    "0yw": {
+      "file": "wand_yew_wand.webp",
+      "w": 56,
+      "h": 128
+    },
+    "0bw": {
+      "file": "wand_bone_wand.webp",
+      "w": 61,
+      "h": 128
+    },
+    "0gw": {
+      "file": "wand_grim_wand.webp",
+      "w": 64,
+      "h": 128
+    },
+    "0qs": {
+      "file": "scepter_grand_scepter.webp",
+      "w": 39,
+      "h": 128
+    },
+    "0ws": {
+      "file": "scepter_war_scepter.webp",
+      "w": 80,
+      "h": 128
+    },
+    "0ma": {
+      "file": "mace_mace.webp",
+      "w": 32,
+      "h": 128
+    },
+    "0mt": {
+      "file": "mace_morning_star.webp",
+      "w": 45,
+      "h": 128
+    },
+    "0fl": {
+      "file": "mace_flail.webp",
+      "w": 71,
+      "h": 128
+    },
+    "0wh": {
+      "file": "hammer_war_hammer.webp",
+      "w": 67,
+      "h": 128
+    },
+    "0m0": {
+      "file": "hammer_maul.webp",
+      "w": 52,
+      "h": 128
+    },
+    "0ss": {
+      "file": "sword_short_sword.webp",
+      "w": 31,
+      "h": 128
+    },
+    "0sm": {
+      "file": "sword_scimitar.webp",
+      "w": 33,
+      "h": 128
+    },
+    "0sb": {
+      "file": "sword_saber.webp",
+      "w": 39,
+      "h": 128
+    },
+    "0fc": {
+      "file": "sword_falchion.webp",
+      "w": 34,
+      "h": 128
+    },
+    "0bs": {
+      "file": "sword_broad_sword.webp",
+      "w": 68,
+      "h": 128
+    },
+    "0ls": {
+      "file": "sword_long_sword.webp",
+      "w": 64,
+      "h": 128
+    },
+    "0wd": {
+      "file": "sword_war_sword.webp",
+      "w": 35,
+      "h": 128
+    },
+    "02h": {
+      "file": "sword_two_handed_sword.webp",
+      "w": 27,
+      "h": 128
+    },
+    "0cm": {
+      "file": "sword_claymore.webp",
+      "w": 28,
+      "h": 128
+    },
+    "0gs": {
+      "file": "sword_giant_sword.webp",
+      "w": 27,
+      "h": 128
+    },
+    "0fb": {
+      "file": "sword_flamberge.webp",
+      "w": 52,
+      "h": 128
+    },
+    "0gd": {
+      "file": "sword_great_sword.webp",
+      "w": 47,
+      "h": 128
+    },
+    "0dg": {
+      "file": "knife_dagger.webp",
+      "w": 59,
+      "h": 128
+    },
+    "0di": {
+      "file": "knife_dirk.webp",
+      "w": 60,
+      "h": 128
+    },
+    "0bl": {
+      "file": "knife_blade.webp",
+      "w": 36,
+      "h": 128
+    },
+    "0tk": {
+      "file": "knife_throwing_knife.webp",
+      "w": 69,
+      "h": 128
+    },
+    "0ta": {
+      "file": "axe_throwing_axe.webp",
+      "w": 69,
+      "h": 128
+    },
+    "0b6": {
+      "file": "axe_balanced_axe.webp",
+      "w": 125,
+      "h": 128
+    },
+    "0ja": {
+      "file": "javelin_javelin.webp",
+      "w": 41,
+      "h": 128
+    },
+    "0pi": {
+      "file": "javelin_pilum.webp",
+      "w": 24,
+      "h": 128
+    },
+    "0ts": {
+      "file": "javelin_throwing_spear.webp",
+      "w": 28,
+      "h": 128
+    },
+    "0sr": {
+      "file": "spear_spear.webp",
+      "w": 57,
+      "h": 128
+    },
+    "0tr": {
+      "file": "spear_trident.webp",
+      "w": 52,
+      "h": 128
+    },
+    "0br": {
+      "file": "spear_brandistock.webp",
+      "w": 58,
+      "h": 128
+    },
+    "0st": {
+      "file": "spear_spetum.webp",
+      "w": 58,
+      "h": 128
+    },
+    "0p0": {
+      "file": "spear_pike.webp",
+      "w": 59,
+      "h": 128
+    },
+    "0b7": {
+      "file": "polearm_bardiche.webp",
+      "w": 54,
+      "h": 128
+    },
+    "0s8": {
+      "file": "polearm_scythe.webp",
+      "w": 54,
+      "h": 128
+    },
+    "0pa": {
+      "file": "polearm_poleaxe.webp",
+      "w": 60,
+      "h": 128
+    },
+    "0h0": {
+      "file": "polearm_halberd.webp",
+      "w": 54,
+      "h": 128
+    },
+    "0wc": {
+      "file": "polearm_war_scythe.webp",
+      "w": 62,
+      "h": 128
+    },
+    "aq2": {
+      "file": "bow_arrows2.webp",
+      "w": 37,
+      "h": 128
+    },
+    "cq2": {
+      "file": "bow_bolts2.webp",
+      "w": 42,
+      "h": 128
+    },
+    "gsp": {
+      "file": "scepter_great_scepter.webp",
+      "w": 75,
+      "h": 128
+    },
+    "9gp": {
+      "file": "scepter_great_scepter.webp",
+      "w": 75,
+      "h": 128
+    },
+    "0gp": {
+      "file": "scepter_great_scepter.webp",
+      "w": 75,
+      "h": 128
+    },
+    "0nn": {
+      "file": "sword_katana.webp",
+      "w": 82,
+      "h": 128
+    },
+    "bts": {
+      "file": "axe_barbarian_taxe.webp",
+      "w": 30,
+      "h": 128
+    },
+    "9xb": {
+      "file": "axe_barbarian_taxe.webp",
+      "w": 30,
+      "h": 128
+    },
+    "0xb": {
+      "file": "axe_barbarian_taxe.webp",
+      "w": 30,
+      "h": 128
+    },
+    "shc": {
+      "file": "club_druid_club.webp",
+      "w": 46,
+      "h": 128
+    },
+    "9sh": {
+      "file": "club_druid_club.webp",
+      "w": 46,
+      "h": 128
+    },
+    "0sh": {
+      "file": "club_druid_club.webp",
+      "w": 46,
+      "h": 128
+    },
+    "nrd": {
+      "file": "knife_ceremonial_dagger.webp",
+      "w": 42,
+      "h": 128
+    },
+    "9rd": {
+      "file": "knife_ceremonial_dagger.webp",
+      "w": 42,
+      "h": 128
+    },
+    "0rd": {
+      "file": "knife_ceremonial_dagger.webp",
+      "w": 42,
+      "h": 128
+    },
+    "nsy": {
+      "file": "polearm_necroscythe2.webp",
+      "w": 61,
+      "h": 128
+    },
+    "9ns": {
+      "file": "polearm_necroscythe2.webp",
+      "w": 61,
+      "h": 128
+    },
+    "0ns": {
+      "file": "polearm_necroscythe2.webp",
+      "w": 61,
+      "h": 128
+    },
+    "syn": {
+      "file": "polearm_necroscythe2.webp",
+      "w": 61,
+      "h": 128
+    },
+    "9sy": {
+      "file": "polearm_necroscythe2.webp",
+      "w": 61,
+      "h": 128
+    },
+    "0sy": {
+      "file": "polearm_necroscythe2.webp",
+      "w": 61,
+      "h": 128
+    },
+    "pbe": {
+      "file": "sword_paladin_sword.webp",
+      "w": 30,
+      "h": 128
+    },
+    "9be": {
+      "file": "sword_paladin_sword.webp",
+      "w": 30,
+      "h": 128
+    },
+    "0be": {
+      "file": "sword_paladin_sword.webp",
+      "w": 30,
+      "h": 128
+    },
+    "mnb": {
+      "file": "sword_mana_blade.webp",
+      "w": 59,
+      "h": 128
+    },
+    "9mn": {
+      "file": "sword_mana_blade.webp",
+      "w": 59,
+      "h": 128
+    },
+    "0mn": {
+      "file": "sword_mana_blade.webp",
+      "w": 59,
+      "h": 128
+    },
+    "njt": {
+      "file": "sword_katana.webp",
+      "w": 82,
+      "h": 128
+    },
+    "9nj": {
+      "file": "sword_katana.webp",
+      "w": 82,
+      "h": 128
+    },
+    "kkl": {
+      "file": "h2h_brass_knuckle.webp",
+      "w": 75,
+      "h": 128
+    },
+    "9kl": {
+      "file": "h2h_brass_knuckle.webp",
+      "w": 75,
+      "h": 128
+    },
+    "0kl": {
+      "file": "h2h_brass_knuckle.webp",
+      "w": 75,
+      "h": 128
+    },
+    "arm": {
+      "file": "h2h_arm.webp",
+      "w": 80,
+      "h": 128
+    },
+    "9rm": {
+      "file": "h2h_arm.webp",
+      "w": 80,
+      "h": 128
+    },
+    "0rm": {
+      "file": "h2h_arm.webp",
+      "w": 80,
+      "h": 128
+    },
+    "q86": {
+      "file": "h2h_scissors_katar.webp",
+      "w": 45,
+      "h": 128
+    },
+    "m04": {
+      "file": "wand_grim_wand.webp",
+      "w": 64,
+      "h": 128
+    },
+    "m05": {
+      "file": "polearm_necroscythe2.webp",
+      "w": 61,
+      "h": 128
+    },
+    "m09": {
+      "file": "sword_mana_blade.webp",
+      "w": 59,
+      "h": 128
+    },
+    "m12": {
+      "file": "scepter_great_scepter.webp",
+      "w": 75,
+      "h": 128
+    },
+    "m13": {
+      "file": "h2h_scissors_katar.webp",
+      "w": 45,
+      "h": 128
+    },
+    "m14": {
+      "file": "knife_ceremonial_dagger.webp",
+      "w": 42,
+      "h": 128
+    },
+    "m16": {
+      "file": "sword_saber.webp",
+      "w": 39,
+      "h": 128
+    },
+    "m18": {
+      "file": "sword_great_sword.webp",
+      "w": 47,
+      "h": 128
+    },
+    "m32": {
+      "file": "javelin_throwing_spear.webp",
+      "w": 28,
+      "h": 128
+    },
+    "m33": {
+      "file": "javelin_javelin.webp",
+      "w": 41,
+      "h": 128
+    },
+    "m34": {
+      "file": "club_druid_club.webp",
+      "w": 46,
+      "h": 128
+    },
+    "m35": {
+      "file": "sword_paladin_sword.webp",
+      "w": 30,
+      "h": 128
+    },
+    "m37": {
+      "file": "sword_katana.webp",
+      "w": 82,
+      "h": 128
+    },
+    "m38": {
+      "file": "axe_barbarian_taxe.webp",
+      "w": 30,
+      "h": 128
+    },
+    "srk": {
+      "file": "knife_shuriken.webp",
+      "w": 121,
+      "h": 128
+    },
+    "fsk": {
+      "file": "knife_shuriken.webp",
+      "w": 121,
+      "h": 128
+    },
+    "kgk": {
+      "file": "knife_shuriken.webp",
+      "w": 121,
+      "h": 128
+    },
+    "m39": {
+      "file": "knife_shuriken.webp",
+      "w": 121,
+      "h": 128
+    },
+    "vob": {
+      "file": "sword_warlock_blade.webp",
+      "w": 37,
+      "h": 128
+    },
+    "nsw": {
+      "file": "sword_warlock_blade.webp",
+      "w": 37,
+      "h": 128
+    },
+    "abb": {
+      "file": "sword_warlock_blade.webp",
+      "w": 37,
+      "h": 128
+    },
+    "m61": {
+      "file": "sword_warlock_blade.webp",
+      "w": 37,
+      "h": 128
+    },
+    "fhl": {
+      "file": "helmet_full_helm.webp",
+      "w": 95,
+      "h": 128
+    },
+    "msk": {
+      "file": "helmet_mask.webp",
+      "w": 128,
+      "h": 110
+    },
+    "plt": {
+      "file": "armor_plate_mail.webp",
+      "w": 128,
+      "h": 121
+    },
+    "ltp": {
+      "file": "armor_light_plate.webp",
+      "w": 94,
+      "h": 128
+    },
+    "lrg": {
+      "file": "shield_large_shield.webp",
+      "w": 106,
+      "h": 128
+    },
+    "kit": {
+      "file": "shield_kite_shield.webp",
+      "w": 99,
+      "h": 128
+    },
+    "mgl": {
+      "file": "glove_bracers_m.webp",
+      "w": 128,
+      "h": 114
+    },
+    "tgl": {
+      "file": "glove_light_gauntlets.webp",
+      "w": 128,
+      "h": 119
+    },
+    "hgl": {
+      "file": "glove_gaunlets_h.webp",
+      "w": 127,
+      "h": 128
+    },
+    "mbt": {
+      "file": "boot_chain_boots.webp",
+      "w": 121,
+      "h": 128
+    },
+    "tbt": {
+      "file": "boot_light_plate_boots.webp",
+      "w": 109,
+      "h": 128
+    },
+    "hbt": {
+      "file": "boot_plate_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "hbl": {
+      "file": "belt_girdle_h.webp",
+      "w": 128,
+      "h": 71
+    },
+    "bsh": {
+      "file": "shield_bone_shield.webp",
+      "w": 64,
+      "h": 128
+    },
+    "xhl": {
+      "file": "helmet_full_helm.webp",
+      "w": 95,
+      "h": 128
+    },
+    "xsk": {
+      "file": "helmet_mask.webp",
+      "w": 128,
+      "h": 110
+    },
+    "xlt": {
+      "file": "armor_plate_mail.webp",
+      "w": 128,
+      "h": 121
+    },
+    "xtp": {
+      "file": "armor_light_plate.webp",
+      "w": 94,
+      "h": 128
+    },
+    "xrg": {
+      "file": "shield_large_shield.webp",
+      "w": 106,
+      "h": 128
+    },
+    "xit": {
+      "file": "shield_kite_shield.webp",
+      "w": 99,
+      "h": 128
+    },
+    "xmg": {
+      "file": "glove_bracers_m.webp",
+      "w": 128,
+      "h": 114
+    },
+    "xtg": {
+      "file": "glove_light_gauntlets.webp",
+      "w": 128,
+      "h": 119
+    },
+    "xhg": {
+      "file": "glove_gaunlets_h.webp",
+      "w": 127,
+      "h": 128
+    },
+    "xmb": {
+      "file": "boot_chain_boots.webp",
+      "w": 121,
+      "h": 128
+    },
+    "xtb": {
+      "file": "boot_light_plate_boots.webp",
+      "w": 109,
+      "h": 128
+    },
+    "xhb": {
+      "file": "boot_plate_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "zhb": {
+      "file": "belt_girdle_h.webp",
+      "w": 128,
+      "h": 71
+    },
+    "xsh": {
+      "file": "shield_bone_shield.webp",
+      "w": 64,
+      "h": 128
+    },
+    "ba3": {
+      "file": "helmet_horned_helm.webp",
+      "w": 71,
+      "h": 128
+    },
+    "ba4": {
+      "file": "helmet_assault_helmet.webp",
+      "w": 104,
+      "h": 128
+    },
+    "pa1": {
+      "file": "shield_targe.webp",
+      "w": 116,
+      "h": 128
+    },
+    "pa2": {
+      "file": "shield_rondache.webp",
+      "w": 121,
+      "h": 128
+    },
+    "pa3": {
+      "file": "shield_heraldic_shield.webp",
+      "w": 57,
+      "h": 128
+    },
+    "pa4": {
+      "file": "shield_aerin_shield.webp",
+      "w": 55,
+      "h": 128
+    },
+    "pa5": {
+      "file": "shield_crown_shield.webp",
+      "w": 125,
+      "h": 128
+    },
+    "ci0": {
+      "file": "circlet_circlet.webp",
+      "w": 128,
+      "h": 73
+    },
+    "ci2": {
+      "file": "circlet_tiara.webp",
+      "w": 128,
+      "h": 95
+    },
+    "ci3": {
+      "file": "circlet_diadem.webp",
+      "w": 128,
+      "h": 91
+    },
+    "ba8": {
+      "file": "helmet_horned_helm.webp",
+      "w": 71,
+      "h": 128
+    },
+    "ba9": {
+      "file": "helmet_assault_helmet.webp",
+      "w": 104,
+      "h": 128
+    },
+    "pa6": {
+      "file": "shield_targe.webp",
+      "w": 116,
+      "h": 128
+    },
+    "pa7": {
+      "file": "shield_rondache.webp",
+      "w": 121,
+      "h": 128
+    },
+    "pa8": {
+      "file": "shield_heraldic_shield.webp",
+      "w": 57,
+      "h": 128
+    },
+    "pa9": {
+      "file": "shield_aerin_shield.webp",
+      "w": 55,
+      "h": 128
+    },
+    "paa": {
+      "file": "shield_crown_shield.webp",
+      "w": 125,
+      "h": 128
+    },
+    "bad": {
+      "file": "helmet_horned_helm.webp",
+      "w": 71,
+      "h": 128
+    },
+    "bae": {
+      "file": "helmet_assault_helmet.webp",
+      "w": 104,
+      "h": 128
+    },
+    "pab": {
+      "file": "shield_targe.webp",
+      "w": 116,
+      "h": 128
+    },
+    "pac": {
+      "file": "shield_rondache.webp",
+      "w": 121,
+      "h": 128
+    },
+    "pad": {
+      "file": "shield_heraldic_shield.webp",
+      "w": 57,
+      "h": 128
+    },
+    "pae": {
+      "file": "shield_aerin_shield.webp",
+      "w": 55,
+      "h": 128
+    },
+    "paf": {
+      "file": "shield_crown_shield.webp",
+      "w": 125,
+      "h": 128
+    },
+    "yhl": {
+      "file": "helmet_full_helm.webp",
+      "w": 95,
+      "h": 128
+    },
+    "ysk": {
+      "file": "helmet_mask.webp",
+      "w": 128,
+      "h": 110
+    },
+    "ylt": {
+      "file": "armor_plate_mail.webp",
+      "w": 128,
+      "h": 121
+    },
+    "ytp": {
+      "file": "armor_light_plate.webp",
+      "w": 94,
+      "h": 128
+    },
+    "yrg": {
+      "file": "shield_large_shield.webp",
+      "w": 106,
+      "h": 128
+    },
+    "yit": {
+      "file": "shield_kite_shield.webp",
+      "w": 99,
+      "h": 128
+    },
+    "ymg": {
+      "file": "glove_bracers_m.webp",
+      "w": 128,
+      "h": 114
+    },
+    "ytg": {
+      "file": "glove_light_gauntlets.webp",
+      "w": 128,
+      "h": 119
+    },
+    "yhg": {
+      "file": "glove_gaunlets_h.webp",
+      "w": 127,
+      "h": 128
+    },
+    "ymb": {
+      "file": "boot_chain_boots.webp",
+      "w": 121,
+      "h": 128
+    },
+    "ytb": {
+      "file": "boot_light_plate_boots.webp",
+      "w": 109,
+      "h": 128
+    },
+    "yhb": {
+      "file": "boot_plate_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "ahb": {
+      "file": "belt_girdle_h.webp",
+      "w": 128,
+      "h": 71
+    },
+    "ysh": {
+      "file": "shield_bone_shield.webp",
+      "w": 64,
+      "h": 128
+    },
+    "cix": {
+      "file": "circlet_hachigane.webp",
+      "w": 128,
+      "h": 88
+    },
+    "eht": {
+      "file": "circlet_spirit_crown.webp",
+      "w": 95,
+      "h": 128
+    },
+    "xht": {
+      "file": "circlet_spirit_crown.webp",
+      "w": 95,
+      "h": 128
+    },
+    "yht": {
+      "file": "circlet_spirit_crown.webp",
+      "w": 95,
+      "h": 128
+    },
+    "dwc": {
+      "file": "helmet_crown_of_thieves.webp",
+      "w": 103,
+      "h": 128
+    },
+    "xdw": {
+      "file": "helmet_crown_of_thieves.webp",
+      "w": 103,
+      "h": 128
+    },
+    "ydw": {
+      "file": "helmet_crown_of_thieves.webp",
+      "w": 103,
+      "h": 128
+    },
+    "clk": {
+      "file": "armor_cloak.webp",
+      "w": 75,
+      "h": 128
+    },
+    "xlk": {
+      "file": "armor_cloak.webp",
+      "w": 75,
+      "h": 128
+    },
+    "ylk": {
+      "file": "armor_cloak.webp",
+      "w": 75,
+      "h": 128
+    },
+    "rob": {
+      "file": "armor_cape.webp",
+      "w": 64,
+      "h": 128
+    },
+    "xrb": {
+      "file": "armor_robe.webp",
+      "w": 64,
+      "h": 128
+    },
+    "yrb": {
+      "file": "armor_archmage_robe2.webp",
+      "w": 80,
+      "h": 128
+    },
+    "shl": {
+      "file": "armor_spiked_armor.webp",
+      "w": 128,
+      "h": 78
+    },
+    "xhh": {
+      "file": "armor_spiked_armor.webp",
+      "w": 128,
+      "h": 78
+    },
+    "yhh": {
+      "file": "armor_spiked_armor.webp",
+      "w": 128,
+      "h": 78
+    },
+    "elv": {
+      "file": "armor_elven_chain.webp",
+      "w": 79,
+      "h": 128
+    },
+    "xlv": {
+      "file": "armor_elven_chain.webp",
+      "w": 79,
+      "h": 128
+    },
+    "ylv": {
+      "file": "armor_elven_chain.webp",
+      "w": 79,
+      "h": 128
+    },
+    "fts": {
+      "file": "shield_fortress_shield.webp",
+      "w": 90,
+      "h": 128
+    },
+    "xft": {
+      "file": "shield_fortress_shield.webp",
+      "w": 90,
+      "h": 128
+    },
+    "yft": {
+      "file": "shield_fortress_shield.webp",
+      "w": 90,
+      "h": 128
+    },
+    "irg": {
+      "file": "glove_iron_guards.webp",
+      "w": 126,
+      "h": 128
+    },
+    "xig": {
+      "file": "glove_iron_guards.webp",
+      "w": 126,
+      "h": 128
+    },
+    "yig": {
+      "file": "glove_iron_guards.webp",
+      "w": 126,
+      "h": 128
+    },
+    "dbt": {
+      "file": "boot_crystal_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "xbt": {
+      "file": "boot_crystal_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "ybt": {
+      "file": "boot_crystal_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "msb": {
+      "file": "belt_muscle_wrap.webp",
+      "w": 128,
+      "h": 61
+    },
+    "xms": {
+      "file": "belt_muscle_wrap.webp",
+      "w": 128,
+      "h": 61
+    },
+    "yms": {
+      "file": "belt_muscle_wrap.webp",
+      "w": 128,
+      "h": 61
+    },
+    "ci4": {
+      "file": "circlet_faceguard.webp",
+      "w": 112,
+      "h": 128
+    },
+    "m20": {
+      "file": "circlet_diadem.webp",
+      "w": 128,
+      "h": 91
+    },
+    "m60": {
+      "file": "armor_light_plate.webp",
+      "w": 94,
+      "h": 128
+    },
+    "amu": {
+      "file": "amulet_amulet.webp",
+      "w": 88,
+      "h": 86
+    },
+    "rin": {
+      "file": "ring_ring.webp",
+      "w": 87,
+      "h": 85
+    },
+    "cm1": {
+      "file": "charm_charm_small.webp",
+      "w": 87,
+      "h": 89
+    },
+    "cm2": {
+      "file": "charm_charm_medium.webp",
+      "w": 56,
+      "h": 128
+    },
+    "cm3": {
+      "file": "charm_charm_large.webp",
+      "w": 45,
+      "h": 128
+    },
+    "zrn": {
+      "file": "ring_ama_ring.webp",
+      "w": 97,
+      "h": 95
+    },
+    "srn": {
+      "file": "ring_sorceress_ring.webp",
+      "w": 92,
+      "h": 65
+    },
+    "nrn": {
+      "file": "ring_necro_ring.webp",
+      "w": 89,
+      "h": 89
+    },
+    "prn": {
+      "file": "ring_pala_ring.webp",
+      "w": 90,
+      "h": 84
+    },
+    "brg": {
+      "file": "ring_barb_ring.webp",
+      "w": 97,
+      "h": 76
+    },
+    "drn": {
+      "file": "ring_druid_ring.webp",
+      "w": 87,
+      "h": 100
+    },
+    "arn": {
+      "file": "ring_assassin_ring.webp",
+      "w": 71,
+      "h": 82
+    },
+    "wrn": {
+      "file": "ring_warlock_ring.webp",
+      "w": 86,
+      "h": 91
+    },
+    "zam": {
+      "file": "amulet_ama_amulet.webp",
+      "w": 66,
+      "h": 97
+    },
+    "sam": {
+      "file": "amulet_sorceress_amulet.webp",
+      "w": 72,
+      "h": 94
+    },
+    "nam": {
+      "file": "amulet_necro_amulet.webp",
+      "w": 90,
+      "h": 93
+    },
+    "pam": {
+      "file": "amulet_pala_amulet.webp",
+      "w": 98,
+      "h": 97
+    },
+    "bam": {
+      "file": "amulet_barb_amulet.webp",
+      "w": 98,
+      "h": 79
+    },
+    "dam": {
+      "file": "amulet_druid_amulet.webp",
+      "w": 66,
+      "h": 97
+    },
+    "aam": {
+      "file": "amulet_assassin_amulet.webp",
+      "w": 87,
+      "h": 97
+    },
+    "wam": {
+      "file": "amulet_warlock_amulet.webp",
+      "w": 51,
+      "h": 98
+    },
+    "cm4": {
+      "file": "charm_odd_charm.webp",
+      "w": 59,
+      "h": 128
+    },
+    "cm7": {
+      "file": "charm_charm_medium.webp",
+      "w": 56,
+      "h": 128
+    },
+    "cm8": {
+      "file": "charm_odd_charm.webp",
+      "w": 59,
+      "h": 128
+    },
+    "mam": {
+      "file": "amulet_amulet.webp",
+      "w": 88,
+      "h": 86
+    },
+    "mrn": {
+      "file": "ring_ring.webp",
+      "w": 87,
+      "h": 85
+    },
+    "c11": {
+      "file": "charm_odd_charm.webp",
+      "w": 59,
+      "h": 128
+    }
+  }
+}

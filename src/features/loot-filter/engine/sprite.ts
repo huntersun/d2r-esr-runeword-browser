@@ -2,7 +2,7 @@
  * Decoder for D2R HD `.sprite` files (the minimap icons a filter ships in its `icons` folder).
  *
  * Layout, as observed in the author's goldstar.sprite / goldstar.lowend.sprite:
- * - bytes 0–3: magic `SpA1`; u16 at 4: version (31); u16 at 6: width again;
+ * - bytes 0–3: magic `SpA1` (about 40% of ESR's HD item sprites use `SPa1` with an otherwise identical layout); u16 at 4: version (31); u16 at 6: width again;
  * - i32 at 8: width, i32 at 12: height, i32 at 16: 0, i32 at 20: frame count; zeros to byte 40;
  * - from byte 40: frames of raw pixels, `width × height × 4` bytes each, in RGBA order (the gold star's
  *   opaque pixels average about R 187, G 131, B 37, so red comes first; BGRA would make it blue).
@@ -18,7 +18,8 @@ export interface DecodedSprite {
 }
 
 const HEADER_SIZE = 40;
-const MAGIC = 'SpA1';
+/** Both spellings occur in shipped files; anything else is rejected */
+const MAGICS: readonly string[] = ['SpA1', 'SPa1'];
 const MAX_SIDE = 4096;
 
 export function decodeSprite(bytes: ArrayBuffer | Uint8Array): DecodedSprite {
@@ -26,7 +27,9 @@ export function decodeSprite(bytes: ArrayBuffer | Uint8Array): DecodedSprite {
   if (data.byteLength < HEADER_SIZE) throw new Error('Not a .sprite file: it is shorter than the 40-byte header');
   const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
   const magic = String.fromCharCode(...data.subarray(0, 4));
-  if (magic !== MAGIC) throw new Error(`Not a .sprite file: expected "${MAGIC}" at the start, found ${JSON.stringify(magic)}`);
+  if (!MAGICS.includes(magic)) {
+    throw new Error(`Not a .sprite file: expected "${MAGICS.join('" or "')}" at the start, found ${JSON.stringify(magic)}`);
+  }
   const width = view.getInt32(8, true);
   const height = view.getInt32(12, true);
   const frames = view.getInt32(20, true);

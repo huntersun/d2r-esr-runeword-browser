@@ -40,6 +40,22 @@ describe('decodeSprite', () => {
     expect(decodeSprite(buffer).width).toBe(100);
   });
 
+  it('accepts the SPa1 magic spelling used by many HD item sprites', () => {
+    const bytes = new Uint8Array(readFileSync(resolve(ICONS, 'goldstar.lowend.sprite')));
+    const variant = bytes.slice();
+    variant.set([0x53, 0x50, 0x61, 0x31], 0); // "SPa1"
+    const sprite = decodeSprite(variant);
+    expect(sprite).toMatchObject({ width: 100, height: 100, frames: 1 });
+    expect(sprite.rgba).toEqual(decodeSprite(bytes).rgba);
+  });
+
+  it('decodes only the declared frame when a file carries extra pixel data', () => {
+    const bytes = new Uint8Array(readFileSync(resolve(ICONS, 'goldstar.lowend.sprite')));
+    const longer = new Uint8Array(bytes.byteLength + 64);
+    longer.set(bytes);
+    expect(decodeSprite(longer).rgba).toHaveLength(100 * 100 * 4);
+  });
+
   it('rejects a bad magic, a short header and a truncated frame', () => {
     const bytes = new Uint8Array(readFileSync(resolve(ICONS, 'goldstar.lowend.sprite')));
     const bad = bytes.slice();

@@ -26,6 +26,7 @@ export function HomeFooter() {
       <p>
         Eastern Sun Resurrected by Celestialray. This is an unofficial fan site; game data comes from the ESR documentation and game files.
       </p>
+      <p>Item art © Blizzard Entertainment and the Eastern Sun Resurrected team, used with permission.</p>
     </footer>
   );
 }

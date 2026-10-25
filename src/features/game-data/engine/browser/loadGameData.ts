@@ -14,6 +14,7 @@ import {
   type EnhanceBundle,
   type GameDataFile,
   type GameDataManifest,
+  type IconsBundle,
   type LootFilterDataBundle,
   type MaterialsBundle,
   type SetsBundle,
@@ -36,6 +37,7 @@ export interface GameDataBundles {
   sets: SetsBundle;
   skills: SkillsBundle;
   crafting: CraftingBundle;
+  icons: IconsBundle;
 }
 
 export class GameDataSchemaError extends Error {
@@ -63,7 +65,7 @@ export class GameDataFetchError extends Error {
 let manifestPromise: Promise<GameDataManifest> | null = null;
 const filePromises = new Map<GameDataFile, Promise<unknown>>();
 
-function gameDataUrl(path: string): string {
+export function gameDataUrl(path: string): string {
   return `${import.meta.env.BASE_URL}game-data/${path}`;
 }
 

@@ -43,6 +43,7 @@ lazily (`src/features/game-data/engine/browser/loadGameData.ts`).
 | `sets.json`       | every set with its items, own lines, per-item and set-wide partial bonuses and full-set bonuses (see "Sets")                       |
 | `skills.json`     | the class skill trees (tabs, grid position, level and skill requirements) and the level cap, for builds (see "Skills")             |
 | `crafting.json`   | forging, D-stoning and gem meld options with rendered lines per slot family, for builds (see "Crafting options")                   |
+| `icons.json`      | item icon index (code → WebP file under `icons/`, size), from the HD sprites; own generator (see "Item icons")                     |
 
 Arrays are written one element per line so diffs stay readable. Bundle URLs carry the manifest hash (`?v=<sha256>`);
 the manifest itself is always revalidated. The shape is defined in `src/features/game-data/engine/schema.ts`
@@ -62,6 +63,7 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 | `sets.json`       | ESR 3.2.24: 150 KB / 21 KB                                                     |
 | `skills.json`     | ESR 3.2.24: 31 KB / 4 KB                                                       |
 | `crafting.json`   | ESR 3.2.24: 55 KB / 6 KB                                                       |
+| `icons.json`      | ESR 3.2.24: 31 KB / 3 KB (+ `icons/`: 130 WebP files, 497 KB)                  |
 
 ### Bases and types
 
@@ -442,6 +444,54 @@ D-stoning, 8 gem meld), `craftingRowsUsed` 717, `craftingRowsSkipped` 245. One e
 vps" row with the same ingredients (the VS rows name `hh2`, not the Void Shard). Adding the file did not bump
 `GAME_DATA_SCHEMA`.
 
+### Item icons
+
+Prototype (Bases page only). `scripts/generate-item-icons.ts` (`npm run game-data:icons`) extracts item icons from the
+HD item art the ESR clone ships; logic in `build/itemIcons.ts`, sprite decoding by the loot filter's
+`src/features/loot-filter/engine/sprite.ts` (`decodeSprite`).
+
+- **Sources**: `Eastern_Sun_Resurrected.mpq/data/hd/items/items.json` (an array of single-key objects
+  `{"hax":{"asset":"axe/hand_axe"}}`) and the sprites `…/data/hd/global/ui/items/{weapon,armor,misc}/<asset>.sprite`.
+  Sprites are raw RGBA with a 40-byte header and one frame; about 40 % carry the magic `SPa1` instead of `SpA1` (same
+  layout, both accepted), a few carry more pixel data than the header declares (only `w × h × 4` bytes are read).
+- **Resolution**: the asset is looked up in `weapon`, `armor`, `misc` (in that order) through a lowercase index of the
+  sprite directory, because 17 asset paths differ from the file name in letter case (`rune/Moon_rune` →
+  `moon_rune.sprite`) and Linux file systems are case-sensitive. Exceptional / elite bases share the normal base's asset,
+  so 356 codes map to 130 files. The first entry of a repeated code wins (none in ESR 3.2.24).
+- **Scope**: the codes of the committed `bases.json` (653). Codes whose asset is not in the clone use vanilla D2R art
+  and get no icon (297 in ESR 3.2.24, e.g. Jewel, Boots, Leather Armor, Short Spear); codes without an items.json entry
+  are counted too (0).
+- **Pipeline** per distinct asset: decode, crop to the pixels with any alpha (`opaqueBounds` / `cropRgba`), fit inside
+  128 × 128 keeping the aspect ratio, never enlarged (`fitInside`; a 1 × 3 item becomes ~43 × 128), encode WebP with
+  `sharp` (devDependency, script only: lanczos3, quality 80, alpha quality 100, effort 4; effort 6 was 50× slower for
+  4 % smaller files). Output: `public/game-data/icons/<slug>.webp` (slug = asset path lowercased, `/` → `_`) and
+  `icons.json` (`IconsBundle`: `esrVersion`, `esrTag`, `icons: { [code]: { file, w, h } }`, only codes with an image).
+  Stale `.webp` files in `icons/` are deleted.
+- **Manifest**: `generate-game-data.ts` does not build icons.json; it lists the committed file in the manifest as is
+  (hash, bytes, `counts.itemIcons`) so `loadGameDataFile('icons')` works like every other bundle. Hence
+  `game-data:icons` runs the icon generator, then `generate-game-data.ts`; `game-data:update` runs generate → icons →
+  generate (the icons follow the fresh bases.json).
+- **Check**: `--check` regenerates in memory and compares icons.json and every WebP byte for byte (plus orphans).
+  The output is deterministic on one machine; a `sharp` / libwebp upgrade may change the bytes, then regenerate.
+  `game-data:check` runs both checks.
+- **Runtime**: `hooks/useItemIcons.ts` shares one `useSyncExternalStore` store for all icons (the families table renders
+  ~600; one `useGameData` effect each would be wasteful); null while loading or after a failed load (a warning, no
+  error card). `components/ItemIcon.tsx` (`code`, `size`, `className`) always reserves a `size` × `size` box, also for
+  codes without an icon and while loading, so names line up and nothing shifts; the `<img>` (lazy, async decoding,
+  `alt=""`, URL through `gameDataUrl` so `BASE_URL` applies) gets width / height from icons.json scaled to fit the box.
+  Shown on base cards (48 px, leading, muted box) and in the families table (32 px before the name; hidden below `sm`
+  in the three tier columns, shown in the "Without a family" list). Image URLs carry no content hash (cached by name).
+- **Credits**: the home footer credits the item art to Blizzard Entertainment and the ESR team (used with permission).
+
+Counts (ESR 3.2.24): 653 codes requested, 2182 items.json entries, 1985 sprites in the clone, 356 codes with an icon,
+130 files (497 KB WebP), 297 codes with vanilla art, 0 without an items.json entry, 0 decode failures.
+
+Next steps (not built): unique and set items' own art via `hd/items/uniques.json` / `sets.json` (`{normal, uber, ultra}`
+assets keyed by a slug of the unique / set item index); misc items (runes, gems, charms already resolve through
+items.json); an optional vanilla-art folder (e.g. an `ESR_VANILLA_ART_DIR` env var pointing at extracted D2R
+`hd/global/ui/items`, used as a fallback in `resolveSprite`) to fill the 297 gaps; icon tiles in the pickers (loot
+filter, builds, best base).
+
 ## Regenerating
 
 Recommended: one command after an ESR release.
@@ -456,16 +506,19 @@ npm run game-data:update -- --esr <dir>        # use another clone directory
 `scripts/update-game-data.ts` steps:
 
 1. **ESR clone**: when the directory is missing it creates a shallow, blobless, sparse clone (excel tables, strings,
-   `d2rloader/metadata.json`, `docs/weapons.htm`, `docs/armors.htm`). Otherwise it aborts if the clone is dirty or on a
+   `d2rloader/metadata.json`, `docs/weapons.htm`, `docs/armors.htm`, the HD item art `data/hd/items/` and
+   `data/hd/global/ui/items/`). Otherwise it aborts if the clone is dirty or on a
    branch other than `main`, fetches `main` and fast-forwards (a detached HEAD from an earlier `--tag` run goes back
    to `main`); with `--tag` it fetches that tag and checks it out detached. It does not run `git fetch --tags`: on a
    shallow clone that downloads the full history of every old release; the tag pointing at the new HEAD is fetched
    instead. Works with plain (non-sparse) clones too.
 2. Records the previous `manifest.json`.
-3. Runs `generate-game-data.ts --esr <dir>`. A failure skips the verify step and exits 1.
+3. Runs `generate-game-data.ts --esr <dir>`, then `generate-item-icons.ts` and `generate-game-data.ts` again (so the
+   manifest lists the new icons.json). A failure skips the verify step and exits 1.
 4. Runs `fetch-test-fixtures.js` (skippable with `--no-fixtures`). A download failure is only a warning; tests that
    need a missing fixture skip themselves.
-5. Runs `npx vitest run src/features/game-data` (with `ESR_SOURCE_DIR` set to the clone) and `--check`.
+5. Runs `npx vitest run src/features/game-data` (with `ESR_SOURCE_DIR` set to the clone) and `--check` (game data
+   and item icons).
 6. Prints a summary: version/tag/commit before → after, changed counts (incl. warnings), generator warnings, step
    results and changed files under `public/game-data/`, then the commit command to run. It never runs `git add`/`commit`.
 
@@ -476,7 +529,8 @@ Manual fallback:
 
 ```bash
 npm run game-data:generate   # writes public/game-data/*.json
-npm run game-data:check      # exits 1 when the committed files are stale
+npm run game-data:icons      # writes public/game-data/icons/*.webp + icons.json, then the manifest
+npm run game-data:check      # exits 1 when the committed files (bundles and icons) are stale
 ```
 
 Source directory: `--esr <dir>`, else `ESR_SOURCE_DIR`, else `../Eastern_Sun_Resurrected` (relative to the repo root).
@@ -489,7 +543,8 @@ A minimal clone only needs (this is what `game-data:update` creates):
 ```bash
 git clone --depth 1 --filter=blob:none --sparse https://github.com/CelestialRayOne/Eastern_Sun_Resurrected.git
 git -C Eastern_Sun_Resurrected sparse-checkout set --no-cone /Eastern_Sun_Resurrected.mpq/data/global/excel/ \
-  /Eastern_Sun_Resurrected.mpq/data/local/lng/strings/ /d2rloader/metadata.json /docs/weapons.htm /docs/armors.htm
+  /Eastern_Sun_Resurrected.mpq/data/local/lng/strings/ /d2rloader/metadata.json /docs/weapons.htm /docs/armors.htm \
+  /Eastern_Sun_Resurrected.mpq/data/hd/items/ /Eastern_Sun_Resurrected.mpq/data/hd/global/ui/items/
 ```
 
 (`docs` is only needed for the clone-dependent name oracle test.)
@@ -994,6 +1049,7 @@ Warnings are printed and stored in `manifest.warnings`; string conflicts are pri
 
 ```
 scripts/generate-game-data.ts            CLI: arguments, git, file I/O
+scripts/generate-item-icons.ts           CLI: item icons (sharp WebP encoding, file I/O)
 src/features/game-data/
   engine/      runtime + build time: schema.ts, itemTypes.ts, sockets.ts, matchRunewords.ts, bestBase.ts,
                affixEligibility.ts
@@ -1001,7 +1057,7 @@ src/features/game-data/
   build/       build only: tsv.ts, strings.ts, model.ts, esrSources.ts, bundleTypes.ts, bundleBases.ts,
                bundleRunewords.ts, bundleAffixes.ts, bundleSources.ts (+ treasureClasses.ts, pluginUniques.ts,
                itemNames.ts), bundleLootFilter.ts, bundleEnhance.ts, bundleCube.ts, bundleMaterials.ts, bundleSets.ts,
-               bundleSkills.ts, bundleCrafting.ts, generateBundles.ts,
+               bundleSkills.ts, bundleCrafting.ts, itemIcons.ts, generateBundles.ts,
                writeBundle.ts
   build/cube/  cubemain rows and texts shared with the guide: cubeRows.ts, cubeText.ts, cubeFamilies.ts, cubeCatalog.ts
   build/stats/ stat renderer (see "Stat renderer")

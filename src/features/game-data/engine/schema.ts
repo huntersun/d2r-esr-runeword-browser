@@ -17,7 +17,8 @@ export type GameDataFile =
   | 'materials'
   | 'sets'
   | 'skills'
-  | 'crafting';
+  | 'crafting'
+  | 'icons';
 
 export interface GameDataManifest {
   schema: number;
@@ -702,4 +703,23 @@ export interface StackingCraftOption {
 export interface CraftingBundle {
   forgings: ForgingOption[];
   stacking: StackingCraftOption[];
+}
+
+/**
+ * icons.json: the item icons extracted from the HD item sprites the ESR clone ships (scripts/generate-item-icons.ts).
+ * Written by its own generator; generate-game-data.ts only lists it in the manifest.
+ */
+export interface IconsBundle {
+  esrVersion: string;
+  esrTag: string | null;
+  /** By base code; codes whose art is vanilla D2R (not in the clone) have no entry */
+  icons: Record<string, ItemIconInfo>;
+}
+
+export interface ItemIconInfo {
+  /** File name under public/game-data/icons/ (one per distinct HD asset, shared by the codes using it) */
+  file: string;
+  /** Pixel size of the image (cropped to its opaque pixels, fit inside 128×128) */
+  w: number;
+  h: number;
 }

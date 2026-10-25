@@ -6,11 +6,12 @@
  *
  * Source: --esr <dir> | ESR_SOURCE_DIR | ../Eastern_Sun_Resurrected (relative to the repo root).
  * --check regenerates in memory and exits 1 when the committed files are stale.
+ * icons.json comes from scripts/generate-item-icons.ts; when present it is only listed in the manifest (hash, count).
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-import type { GameDataManifest } from '../src/features/game-data/engine/schema.ts';
+import type { GameDataManifest, IconsBundle } from '../src/features/game-data/engine/schema.ts';
 import { readEsrSources } from '../src/features/game-data/build/esrSources.ts';
 import { generateBundles } from '../src/features/game-data/build/generateBundles.ts';
 import { buildManifest, serializeBundle } from '../src/features/game-data/build/writeBundle.ts';
@@ -26,6 +27,14 @@ function readPreviousManifest(): GameDataManifest | null {
   } catch {
     return null;
   }
+}
+
+/** The committed icons.json (written by generate-item-icons.ts), listed in the manifest as is; null when absent. */
+function readIcons(): { text: string; count: number } | null {
+  const path = join(OUTPUT_DIR, 'icons.json');
+  if (!existsSync(path)) return null;
+  const text = readFileSync(path, 'utf8');
+  return { text, count: Object.keys((JSON.parse(text) as IconsBundle).icons).length };
 }
 
 function main(): void {
@@ -71,12 +80,13 @@ function main(): void {
     skills: serializeBundle(generated.skills),
     crafting: serializeBundle(generated.crafting),
   };
+  const icons = readIcons();
   const manifest = buildManifest({
     esrVersion: sources.esrVersion,
     esrTag,
     esrCommit,
-    files,
-    counts: generated.counts,
+    files: icons === null ? files : { ...files, icons: icons.text },
+    counts: icons === null ? generated.counts : { ...generated.counts, itemIcons: icons.count },
     warnings: generated.warnings,
     previous: readPreviousManifest(),
     now: new Date(),

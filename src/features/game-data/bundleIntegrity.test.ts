@@ -17,6 +17,7 @@ import {
   type CubeBundle,
   type EnhanceBundle,
   type GameDataManifest,
+  type IconsBundle,
   type LootFilterDataBundle,
   type MaterialsBundle,
   type SetsBundle,
@@ -82,6 +83,24 @@ describe('committed game-data bundles', () => {
     ] as const) {
       expect(manifest.files[name]?.hash).toBe(createHash('sha256').update(text, 'utf8').digest('hex'));
       expect(manifest.files[name]?.bytes).toBe(Buffer.byteLength(text, 'utf8'));
+    }
+  });
+
+  it('list icons.json in the manifest, only for known base codes, with every image file present', () => {
+    const iconsText = readText('icons');
+    expect(manifest.files.icons?.hash).toBe(createHash('sha256').update(iconsText, 'utf8').digest('hex'));
+    const { icons, esrVersion } = JSON.parse(iconsText) as IconsBundle;
+    expect(esrVersion).toBe(manifest.esrVersion);
+    const codes = new Set(bases.map((base) => base.code));
+    const entries = Object.entries(icons);
+    expect(manifest.counts.itemIcons).toBe(entries.length);
+    expect(entries.length).toBeGreaterThan(300);
+    for (const [code, icon] of entries) {
+      expect(codes.has(code), code).toBe(true);
+      expect(icon.file).toMatch(/^[a-z0-9_-]+\.webp$/);
+      expect(Math.max(icon.w, icon.h)).toBeLessThanOrEqual(128);
+      expect(Math.min(icon.w, icon.h)).toBeGreaterThan(0);
+      expect(existsSync(resolve(OUTPUT_DIR, 'icons', icon.file)), icon.file).toBe(true);
     }
   });
 

@@ -5,6 +5,7 @@ import type { BaseItem } from '../engine/schema';
 import { BASE_TIER_LABELS, TIER_BADGE_CLASS } from '../constants/bases';
 import { baseStatParts } from '../utils/baseFamilies';
 import type { FamilyView, FamilyViewCell } from '../utils/familyView';
+import { ItemIcon } from './ItemIcon';
 
 interface BaseFamilyTableProps {
   readonly view: FamilyView;
@@ -57,8 +58,14 @@ function FamilyCell({ cell, onSelect }: { readonly cell: FamilyViewCell | null; 
   if (cell === null) return <td className="border-t px-2 py-1.5 align-top text-muted-foreground">—</td>;
   return (
     <td className={cn('border-t px-2 py-1.5 align-top break-words', !cell.matches && 'opacity-50')}>
-      <BaseButton base={cell.base} onSelect={onSelect} className={cn(!cell.matches && 'text-muted-foreground')} />
-      <Stats base={cell.base} />
+      <div className="flex items-start gap-2">
+        {/* Hidden on phones: three 32 px icons would squeeze the names of the three tier columns */}
+        <ItemIcon code={cell.base.code} size={32} className="hidden sm:inline-flex" />
+        <div className="min-w-0">
+          <BaseButton base={cell.base} onSelect={onSelect} className={cn(!cell.matches && 'text-muted-foreground')} />
+          <Stats base={cell.base} />
+        </div>
+      </div>
     </td>
   );
 }
@@ -123,15 +130,18 @@ export function BaseFamilyTable({ view, onSelect }: BaseFamilyTableProps) {
               <td colSpan={span} className="border-t px-2 py-2">
                 <ul className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
                   {loners.map(({ base, typeName }) => (
-                    <li key={base.code} className="min-w-0">
-                      <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                        <BaseButton base={base} onSelect={onSelect} />
-                        <Badge variant="outline" className={cn('px-1.5 py-0 text-[0.7rem]', TIER_BADGE_CLASS[base.tier])}>
-                          {BASE_TIER_LABELS[base.tier]}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">{typeName}</span>
-                      </span>
-                      <Stats base={base} />
+                    <li key={base.code} className="flex min-w-0 items-start gap-2">
+                      <ItemIcon code={base.code} size={32} />
+                      <div className="min-w-0">
+                        <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                          <BaseButton base={base} onSelect={onSelect} />
+                          <Badge variant="outline" className={cn('px-1.5 py-0 text-[0.7rem]', TIER_BADGE_CLASS[base.tier])}>
+                            {BASE_TIER_LABELS[base.tier]}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">{typeName}</span>
+                        </span>
+                        <Stats base={base} />
+                      </div>
                     </li>
                   ))}
                 </ul>
