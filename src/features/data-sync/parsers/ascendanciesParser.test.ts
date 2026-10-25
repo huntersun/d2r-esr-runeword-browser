@@ -271,6 +271,9 @@ describe('Known items', () => {
       'Damage Stance (Red): 5% Enhanced Damage and 1% Spell Damage per 75 combined Strength, Dexterity and Energy',
       'Evade Stance (Green): 10% to All Speeds and 1% Dodge per 1000 combined Strength, Dexterity and Energy',
       'Recovery Stance (Blue): +1 to All Skills and 150 Replenish Life and Mana per 1500 combined Strength, Dexterity and Energy',
+      '+90 to Strength',
+      '+90 to Dexterity',
+      '+90 to Energy',
     ]);
     expect(item!.footnotes[0]).toMatch(/^\*You need to set a hotkey for stance dancing/);
   });

@@ -129,10 +129,11 @@ describe('variant hints over real fixtures', () => {
     expect(groupCount).toBeGreaterThan(0);
   });
 
+  // The docs may have no same-name mythicals at all (Tathamet's Awakening variants carry a
+  // "(Fire Variant)" suffix since late 2026), so only the distinct-label invariant is asserted.
   it('makes every same-name mythical group display distinctly', () => {
     const mythicals = parseMythicalUniques(fixture('unique_mythicals.htm'));
     const hints = mythicalVariantHints(mythicals);
-    const groupCount = expectDistinctLabels(mythicals, (item) => [item.baseItem, ...(hints.get(item) ?? [])].join(' / '));
-    expect(groupCount).toBeGreaterThan(0);
+    expectDistinctLabels(mythicals, (item) => [item.baseItem, ...(hints.get(item) ?? [])].join(' / '));
   });
 });

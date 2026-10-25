@@ -49,11 +49,11 @@ describe('parseGemwordsHtml', () => {
     expect(holy?.columnAffixes.weaponsGloves).toEqual([]);
     expect(holy?.columnAffixes.helmsBoots.map((affix) => affix.rawText)).toEqual([
       '5% Chance to Cast Level 5 Magic Surge when Struck',
-      'Sockets cannot be removed',
+      'Socketables cannot be removed',
     ]);
     expect(holy?.columnAffixes.armorShieldsBelts.map((affix) => affix.rawText)).toEqual([
       '5% Chance to Cast Level 5 Magic Surge when Struck',
-      'Sockets cannot be removed',
+      'Socketables cannot be removed',
     ]);
   });
 
@@ -68,7 +68,7 @@ describe('parseGemwordsHtml', () => {
     // Chipped Diamond's own bonuses (e.g. "All Resists +5") — neither is the gemword's
     expect(holy?.affixes.map((affix) => affix.rawText)).toEqual([
       '5% Chance to Cast Level 5 Magic Surge when Struck',
-      'Sockets cannot be removed',
+      'Socketables cannot be removed',
     ]);
     expect(armorBonuses).not.toContain('1-2 of the following:');
     expect(armorBonuses).not.toContain('+(20 to 30) Defense');

@@ -463,9 +463,12 @@ describe('Hard-wrapped properties', () => {
     }
   });
 
-  it("Artemis' Wrath: upstream line order is reversed, so the two lines are left as they are", () => {
+  it("Artemis' Wrath: the docs hard-wrap after 'while', so the two lines are re-joined (the game string is still reversed)", () => {
     const props = findIn(weapons, "Artemis' Wrath").properties;
-    expect(props.slice(0, 2)).toEqual(['but lose 50% while not running', 'Gain 75% total physical attack damage while running,']);
+    expect(props.slice(0, 2)).toEqual([
+      'Gain 75% total physical attack damage while running, but lose 50% while not running',
+      '+(200 to 300)% Enhanced Damage',
+    ]);
   });
 
   it('synthetic: joins wrapped lines without crossing the orange boundary', () => {

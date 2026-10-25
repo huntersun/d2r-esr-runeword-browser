@@ -374,17 +374,19 @@ describe('Multi-line special properties (fixture)', () => {
   it("Imperius' Undying Wrath: keeps the 3 orange statements, re-joins only the hard-wrapped one", () => {
     const item = findItem("Imperius' Undying Wrath");
     expect(item.specialProperties).toEqual([
-      'Gain 1% Lightning Spell Damage per 100 Strength when Taking Damage for 5 Seconds',
+      'You have a 25% chance to gain 1% Lightning Spell Damage per 100 Strength when Taking Damage for 5 Seconds',
       'This effect can stack up to 25 times',
       'Lightning Spell Damage from Energy no Longer Works',
     ]);
     expect(item.properties[0]).toBe('+(2 to 4) to All Skills');
   });
 
+  // "grants 5%" + "Poison, …" are two lines in the game string as well, so they stay unmerged.
   it("Orpheus' Pillar of Hope: orange font starting with <br> is still special", () => {
     const item = findItem("Orpheus' Pillar of Hope");
     expect(item.specialProperties).toEqual([
-      'Each Stack of Underworld Empowerment grants 5% Poison, Magic and Physical Skill Damage for 2 seconds',
+      'Each Stack of Underworld Empowerment grants 5%',
+      'Poison, Magic and Physical Spell Damage for 2 seconds',
       'Maximum Stacks: 40',
     ]);
     expect(item.properties).not.toContain('Maximum Stacks: 40');

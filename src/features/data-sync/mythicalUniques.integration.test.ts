@@ -94,7 +94,8 @@ describe('Known item verification from DB', () => {
     expect(item.reqLevel).toBe(90);
     expect(item.properties.length).toBeGreaterThan(0);
     expect(item.specialProperties.length).toBeGreaterThan(0);
-    expect(item.specialProperties[0]).toContain('Skeletal Mages');
+    expect(item.specialProperties[0]).toBe('You can no longer raise Skeleton Warriors');
+    expect(item.specialProperties[1]).toContain('Skeletal Mages');
     expect(item.imageUrl).toBe('./images/mythical-uniques/mephistos_will.png');
   });
 
