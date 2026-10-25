@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.33.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.32.0...v1.33.0) (2026-10-25)
+
+
+### Features
+
+* **game-data:** base tier badges on unique items and sets ([ddd0552](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/ddd05523b2c629537b28dec2c74209bebc592572))
+* **skills:** skills page with class trees and item-granted skills ([7d7e866](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/7d7e8667cad323a77a7f96e244bca6a81a17f3c3))
+* **ui:** shared page shell, filter panel and filter group ([d7a3fde](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/d7a3fde60e8926991ea36c2b0cdf10f0e138f655))
+
+
+### Bug Fixes
+
+* **data-sync:** read the ESR version from the launcher metadata ([7feae14](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/7feae14e1e9f3b44c99675f42ec71946a669280f))
+
 ## [1.32.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.31.0...v1.32.0) (2026-10-25)
 
 
