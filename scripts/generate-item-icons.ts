@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
  * Extracts item icons from the HD item sprites the ESR clone ships into public/game-data/icons/*.webp and
- * public/game-data/icons.json (code → file and size). Scope: the codes of the committed bases.json.
+ * public/game-data/icons.json (file and size by base code, unique name and set item name). Scope: the codes of the
+ * committed bases.json, every uniqueitems.txt and setitems.txt row with a base (own art from hd/items/uniques.json /
+ * sets.json, else the base's art).
  *
  *   node scripts/generate-item-icons.ts [--esr <dir>] [--check]
  *
@@ -14,17 +16,24 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import sharp from 'sharp';
 import type { BasesBundle } from '../src/features/game-data/engine/schema.ts';
-import { readModVersion } from '../src/features/game-data/build/esrSources.ts';
+import { ESR_EXCEL_DIR, readModVersion, readStringFiles } from '../src/features/game-data/build/esrSources.ts';
+import { readUniqueOrSetRows } from '../src/features/game-data/build/itemNames.ts';
+import { buildStringTable } from '../src/features/game-data/build/strings.ts';
+import { parseTsv } from '../src/features/game-data/build/tsv.ts';
 import {
   buildIconsBundle,
   buildSpriteIndex,
   cropRgba,
   ESR_HD_ITEM_SPRITES_DIR,
   ESR_HD_ITEMS_FILE,
+  ESR_HD_SETS_FILE,
+  ESR_HD_UNIQUES_FILE,
   fitInside,
+  type NamedIconStats,
   listFilesRecursive,
   opaqueBounds,
   parseItemAssets,
+  parseNamedArt,
   planItemIcons,
 } from '../src/features/game-data/build/itemIcons.ts';
 import { serializeBundle } from '../src/features/game-data/build/writeBundle.ts';
@@ -66,7 +75,9 @@ async function main(): Promise<void> {
   const esrDir = resolveEsrDir(values.esr);
   const spritesDir = join(esrDir, ESR_HD_ITEM_SPRITES_DIR);
   const itemsFile = join(esrDir, ESR_HD_ITEMS_FILE);
-  if (!existsSync(spritesDir) || !existsSync(itemsFile)) {
+  const uniquesFile = join(esrDir, ESR_HD_UNIQUES_FILE);
+  const setsFile = join(esrDir, ESR_HD_SETS_FILE);
+  if (!existsSync(spritesDir) || !existsSync(itemsFile) || !existsSync(uniquesFile) || !existsSync(setsFile)) {
     console.error(`HD item art not found in the ESR clone: ${esrDir}`);
     console.error('Run npm run game-data:update (clones it with the HD paths), or pass --esr <dir>.');
     process.exit(1);
@@ -80,8 +91,15 @@ async function main(): Promise<void> {
   const { bases } = JSON.parse(readFileSync(join(OUTPUT_DIR, 'bases.json'), 'utf8')) as BasesBundle;
   const codes = bases.map((base) => base.code);
   const { assets, duplicates } = parseItemAssets(JSON.parse(readFileSync(itemsFile, 'utf8')));
+  const uniqueArt = parseNamedArt(JSON.parse(readFileSync(uniquesFile, 'utf8')), 'uniques.json');
+  const setArt = parseNamedArt(JSON.parse(readFileSync(setsFile, 'utf8')), 'sets.json');
+  // Names resolve exactly as lootfilter.json / sets.json do (same string table, same reader)
+  const { strings } = buildStringTable(readStringFiles(esrDir));
+  const table = (name: string) => parseTsv(readFileSync(join(esrDir, ESR_EXCEL_DIR, `${name}.txt`), 'utf8'), `${name}.txt`);
+  const uniques = readUniqueOrSetRows(table('uniqueitems'), 'code', strings);
+  const sets = readUniqueOrSetRows(table('setitems'), 'item', strings);
   const index = buildSpriteIndex(listFilesRecursive(spritesDir));
-  const plan = planItemIcons(codes, assets, index);
+  const plan = planItemIcons({ codes, uniques, sets, assets, uniqueArt: uniqueArt.art, setArt: setArt.art, index });
 
   const images = new Map<string, EncodedIcon>();
   const failures: string[] = [];
@@ -92,21 +110,26 @@ async function main(): Promise<void> {
       failures.push(`${sprite}: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
-  const bundle = buildIconsBundle({ esrVersion, esrTag, codes: plan.codes, images, extension: EXTENSION });
+  const bundle = buildIconsBundle({ esrVersion, esrTag, plan, images, extension: EXTENSION });
   const bundleText = serializeBundle(bundle);
   const files = new Map([...images].map(([slug, image]) => [`${slug}.${EXTENSION}`, image.bytes]));
   const totalBytes = [...files.values()].reduce((sum, bytes) => sum + bytes.byteLength, 0);
-  const failedCodes = [...plan.codes].filter(([, slug]) => !images.has(slug)).length;
+  const failedEntries = [plan.bases, plan.uniques, plan.sets].reduce(
+    (sum, map) => sum + [...map.values()].filter((slug) => !images.has(slug)).length,
+    0
+  );
 
   console.log('\nCounts:');
   console.log(`  codes requested (bases.json): ${String(new Set(codes).size)}`);
   console.log(`  items.json entries: ${String(assets.size)} (${String(duplicates.length)} repeated codes ignored)`);
   console.log(`  sprites in the clone: ${String(index.size)}`);
-  console.log(`  codes with an icon: ${String(Object.keys(bundle.icons).length)}`);
+  console.log(`  codes with an icon: ${String(Object.keys(bundle.bases).length)}`);
   console.log(`  icons written (distinct assets): ${String(files.size)}, ${(totalBytes / 1024).toFixed(1)} KB`);
   console.log(`  codes without an items.json entry: ${String(plan.missingEntry.length)}${listCodes(plan.missingEntry)}`);
   console.log(`  codes whose art is not in the clone (vanilla): ${String(plan.missingArt.length)}`);
-  console.log(`  decode failures: ${String(failures.length)} sprites, ${String(failedCodes)} codes`);
+  printNamed('uniques (uniqueitems.txt rows with a base, by name)', uniques.length, plan.uniqueStats, uniqueArt.duplicates);
+  printNamed('set items (setitems.txt rows, by name)', sets.length, plan.setStats, setArt.duplicates);
+  console.log(`  decode failures: ${String(failures.length)} sprites, ${String(failedEntries)} entries`);
   for (const failure of failures) console.log(`    - ${failure}`);
 
   if (values.check) {
@@ -139,6 +162,14 @@ async function main(): Promise<void> {
 function listIconFiles(): string[] {
   if (!existsSync(ICONS_DIR)) return [];
   return readdirSync(ICONS_DIR).filter((name) => name.endsWith(`.${EXTENSION}`));
+}
+
+function printNamed(label: string, rows: number, stats: NamedIconStats, duplicates: readonly string[]): void {
+  console.log(`  ${label}: ${String(stats.requested)} names from ${String(rows)} rows`);
+  console.log(`    own art: ${String(stats.own)}, base art only: ${String(stats.base)}, no art: ${String(stats.none)}`);
+  console.log(`    own art entry pointing at art the clone lacks: ${String(stats.ownArtMissing)}`);
+  console.log(`    art keys no row matched: ${String(stats.unusedKeys.length)}${listCodes(stats.unusedKeys)}`);
+  if (duplicates.length > 0) console.log(`    repeated art keys (first wins): ${duplicates.join(', ')}`);
 }
 
 function listCodes(codes: readonly string[]): string {

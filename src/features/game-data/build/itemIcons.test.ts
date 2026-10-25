@@ -1,7 +1,10 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import type { UniqueOrSetRow } from './itemNames.ts';
 import {
+  artKey,
+  artKeyCandidates,
   assetSlug,
   buildIconsBundle,
   buildSpriteIndex,
@@ -10,6 +13,7 @@ import {
   listFilesRecursive,
   opaqueBounds,
   parseItemAssets,
+  parseNamedArt,
   planItemIcons,
   resolveSprite,
 } from './itemIcons.ts';
@@ -64,8 +68,16 @@ describe('sprite resolution', () => {
       ['ssd', 'sword/short_sword'],
       ['r33', 'rune/Moon_rune'],
     ]);
-    const plan = planItemIcons(['hax', '9ha', 'ssd', 'zzz', 'r33', 'hax'], assets, index);
-    expect([...plan.codes]).toEqual([
+    const plan = planItemIcons({
+      codes: ['hax', '9ha', 'ssd', 'zzz', 'r33', 'hax'],
+      uniques: [],
+      sets: [],
+      assets,
+      uniqueArt: new Map(),
+      setArt: new Map(),
+      index,
+    });
+    expect([...plan.bases]).toEqual([
       ['hax', 'axe_hand_axe'],
       ['9ha', 'axe_hand_axe'],
       ['r33', 'rune_moon_rune'],
@@ -98,6 +110,103 @@ describe('sprite resolution', () => {
   });
 });
 
+describe('unique and set item art', () => {
+  const index = buildSpriteIndex([
+    'weapon/axe/hand_axe.sprite',
+    'weapon/axe/the_gnasher.sprite',
+    'weapon/bow/mythical_buriza.sprite',
+    'armor/helmet/cap.sprite',
+  ]);
+  const assets = new Map([
+    ['hax', 'axe/hand_axe'],
+    ['cap', 'helmet/cap'],
+    ['lbt', 'boot/boots'],
+  ]);
+  const row = (index: string, name: string, code: string, disabled = false): UniqueOrSetRow => ({
+    id: 0,
+    index,
+    name,
+    code,
+    disabled,
+  });
+
+  it('slugs a txt index or an art key the same way', () => {
+    expect(artKey("Civerb's Ward")).toBe('civerbs_ward');
+    expect(artKey('Buriza-Do Kyanon')).toBe('buriza_do_kyanon');
+    expect(artKey('BlackKnights_Holy_Signet')).toBe(artKey("BlackKnight's Holy Signet"));
+    expect(artKey('scourge of_the_twin_seas')).toBe('scourge_of_the_twin_seas');
+    expect(artKeyCandidates('Stormshield_lod')).toEqual(['stormshield_lod', 'stormshield']);
+    expect(artKeyCandidates('Cutthroat1')).toEqual(['cutthroat1', 'cutthroat_1']);
+  });
+
+  it('parses the art maps: normal first, then uber / ultra, first key wins, `_new` aliases', () => {
+    const { art, duplicates } = parseNamedArt(
+      [
+        { The_Gnasher: { normal: 'axe/the_gnasher', uber: 'axe/x', ultra: 'axe/y' } },
+        { only_uber: { uber: 'axe/uber_only', ultra: 'axe/ultra_only' } },
+        { the_gnasher: { normal: 'axe/other' } },
+        { hellfire_torch_new: { normal: 'charm/torch' } },
+        { broken: 'nope' },
+      ],
+      'uniques.json'
+    );
+    expect([...art]).toEqual([
+      ['the_gnasher', 'axe/the_gnasher'],
+      ['only_uber', 'axe/uber_only'],
+      ['hellfire_torch_new', 'charm/torch'],
+      ['hellfire_torch', 'charm/torch'],
+    ]);
+    expect(duplicates).toEqual(['the_gnasher']);
+    expect(() => parseNamedArt({}, 'sets.json')).toThrow(/sets\.json/);
+  });
+
+  it('uses own art, else the base art, one icon per display name', () => {
+    const uniqueArt = new Map([
+      ['the_gnasher', 'axe/the_gnasher'],
+      ['plain_axe', 'axe/hand_axe'],
+      ['vanilla_own', 'axe/not_in_clone'],
+      ['mythical_buriza', 'bow/mythical_buriza'],
+      ['never_used', 'axe/the_gnasher'],
+    ]);
+    const plan = planItemIcons({
+      codes: [],
+      uniques: [
+        row('The Gnasher', 'The Gnasher', 'hax'),
+        row('Plain Axe', 'Plain Axe', 'hax'),
+        row('Vanilla Own', 'Vanilla Own', 'cap'),
+        row('Nothing', 'Nothing', 'lbt'),
+        row('Old Buriza', 'Buriza', 'hax'),
+        row('Mythical Buriza', 'Buriza', 'hax', true),
+        row('Twin', 'Twin', 'cap'),
+        row('The Gnasher', 'Twin', 'hax'),
+      ],
+      sets: [row("Civerb's Ward", "Civerb's Ward", 'cap')],
+      assets,
+      uniqueArt,
+      setArt: new Map(),
+      index,
+    });
+    expect([...plan.uniques]).toEqual([
+      ['The Gnasher', 'axe_the_gnasher'],
+      ['Plain Axe', 'axe_hand_axe'],
+      ['Vanilla Own', 'helmet_cap'],
+      // A disabled row never replaces an enabled one; an enabled row with own art replaces base art
+      ['Buriza', 'axe_hand_axe'],
+      ['Twin', 'axe_the_gnasher'],
+    ]);
+    expect(plan.uniqueStats).toEqual({
+      requested: 6,
+      own: 2,
+      base: 3,
+      none: 1,
+      ownArtMissing: 1,
+      unusedKeys: ['never_used'],
+    });
+    expect([...plan.sets]).toEqual([["Civerb's Ward", 'helmet_cap']]);
+    expect(plan.sprites.get('axe_the_gnasher')).toBe('weapon/axe/the_gnasher.sprite');
+  });
+});
+
 describe('cropping and sizing', () => {
   // 4×3 image with two opaque pixels at (1,0) and (2,2)
   const rgba = new Uint8Array(4 * 3 * 4);
@@ -126,26 +235,41 @@ describe('cropping and sizing', () => {
 });
 
 describe('buildIconsBundle', () => {
-  it('lists the codes with an encoded image, sharing the file of a shared asset', () => {
+  it('lists the entries with an encoded image, sharing the file of a shared asset', () => {
     const bundle = buildIconsBundle({
       esrVersion: '3.2.24',
       esrTag: '3.2.24',
-      codes: new Map([
-        ['hax', 'axe_hand_axe'],
-        ['9ha', 'axe_hand_axe'],
-        ['r33', 'rune_moon_rune'],
+      plan: {
+        bases: new Map([
+          ['hax', 'axe_hand_axe'],
+          ['9ha', 'axe_hand_axe'],
+          ['r33', 'rune_moon_rune'],
+        ]),
+        uniques: new Map([
+          ['The Gnasher', 'axe_the_gnasher'],
+          ['Axe Unique', 'axe_hand_axe'],
+        ]),
+        sets: new Map([["Civerb's Ward", 'rune_moon_rune']]),
+      },
+      images: new Map([
+        ['axe_hand_axe', { width: 58, height: 128 }],
+        ['axe_the_gnasher', { width: 60, height: 120 }],
       ]),
-      images: new Map([['axe_hand_axe', { width: 58, height: 128 }]]),
       extension: 'webp',
     });
     expect(bundle).toEqual({
       esrVersion: '3.2.24',
       esrTag: '3.2.24',
-      icons: {
+      bases: {
         hax: { file: 'axe_hand_axe.webp', w: 58, h: 128 },
         '9ha': { file: 'axe_hand_axe.webp', w: 58, h: 128 },
       },
+      uniques: {
+        'The Gnasher': { file: 'axe_the_gnasher.webp', w: 60, h: 120 },
+        'Axe Unique': { file: 'axe_hand_axe.webp', w: 58, h: 128 },
+      },
+      sets: {},
     });
-    expect(Object.keys(JSON.parse(serializeBundle(bundle)) as object)).toEqual(['esrVersion', 'esrTag', 'icons']);
+    expect(Object.keys(JSON.parse(serializeBundle(bundle)) as object)).toEqual(['esrVersion', 'esrTag', 'bases', 'uniques', 'sets']);
   });
 });

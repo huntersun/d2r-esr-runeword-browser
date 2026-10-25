@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ItemIcon } from '@/features/game-data/components/ItemIcon';
 import type { SetInfo, SetItemInfo } from '@/features/game-data/engine/schema';
 import { cn } from '@/lib/utils';
 import type { SetBonusGroupSnapshot } from '../buildData';
@@ -47,17 +48,22 @@ export function SetItemBuildCard({ item, set, equippedPieces }: SetItemBuildCard
   return (
     <Card className="h-full">
       <CardHeader className="pb-0">
-        <CardTitle className={cn('min-w-0 break-words text-lg', SET_NAME_CLASS)}>{item.name}</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Set:{' '}
-          <Link to={setItemPageUrl(item.name)} className={cn('underline-offset-2 hover:underline', SET_NAME_CLASS)}>
-            {set.name}
-          </Link>
-        </p>
-        <p className="text-sm text-muted-foreground">
-          {item.baseName}
-          {item.category !== '' && item.category !== item.baseName && ` · ${item.category}`} · Req Lvl {item.reqLevel}
-        </p>
+        <div className="flex min-w-0 items-start gap-3">
+          <ItemIcon item={{ kind: 'set', name: item.name, code: item.code }} size={48} className="rounded-md bg-muted/50" />
+          <div className="min-w-0 space-y-1">
+            <CardTitle className={cn('break-words text-lg', SET_NAME_CLASS)}>{item.name}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Set:{' '}
+              <Link to={setItemPageUrl(item.name)} className={cn('underline-offset-2 hover:underline', SET_NAME_CLASS)}>
+                {set.name}
+              </Link>
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {item.baseName}
+              {item.category !== '' && item.category !== item.baseName && ` · ${item.category}`} · Req Lvl {item.reqLevel}
+            </p>
+          </div>
+        </div>
       </CardHeader>
 
       <CardContent className="space-y-3">

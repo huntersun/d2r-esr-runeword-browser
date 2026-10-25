@@ -713,11 +713,18 @@ export interface IconsBundle {
   esrVersion: string;
   esrTag: string | null;
   /** By base code; codes whose art is vanilla D2R (not in the clone) have no entry */
-  icons: Record<string, ItemIconInfo>;
+  bases: Record<string, ItemIconInfo>;
+  /**
+   * By unique display name (lootfilter.json `uniques[].name`, mythical uniques included): the item's own HD art, else
+   * its base's. Names without either have no entry.
+   */
+  uniques: Record<string, ItemIconInfo>;
+  /** By set item display name (sets.json `items[].name`), own art else the base's */
+  sets: Record<string, ItemIconInfo>;
 }
 
 export interface ItemIconInfo {
-  /** File name under public/game-data/icons/ (one per distinct HD asset, shared by the codes using it) */
+  /** File name under public/game-data/icons/ (one per distinct HD asset, shared by every entry using it) */
   file: string;
   /** Pixel size of the image (cropped to its opaque pixels, fit inside 128×128) */
   w: number;

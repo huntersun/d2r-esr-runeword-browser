@@ -60,7 +60,7 @@ function FamilyCell({ cell, onSelect }: { readonly cell: FamilyViewCell | null; 
     <td className={cn('border-t px-2 py-1.5 align-top break-words', !cell.matches && 'opacity-50')}>
       <div className="flex items-start gap-2">
         {/* Hidden on phones: three 32 px icons would squeeze the names of the three tier columns */}
-        <ItemIcon code={cell.base.code} size={32} className="hidden sm:inline-flex" />
+        <ItemIcon item={{ kind: 'base', code: cell.base.code }} size={32} className="hidden sm:inline-flex" />
         <div className="min-w-0">
           <BaseButton base={cell.base} onSelect={onSelect} className={cn(!cell.matches && 'text-muted-foreground')} />
           <Stats base={cell.base} />
@@ -131,7 +131,7 @@ export function BaseFamilyTable({ view, onSelect }: BaseFamilyTableProps) {
                 <ul className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
                   {loners.map(({ base, typeName }) => (
                     <li key={base.code} className="flex min-w-0 items-start gap-2">
-                      <ItemIcon code={base.code} size={32} />
+                      <ItemIcon item={{ kind: 'base', code: base.code }} size={32} />
                       <div className="min-w-0">
                         <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                           <BaseButton base={base} onSelect={onSelect} />

@@ -1,3 +1,4 @@
+import { ItemIcon } from '@/features/game-data/components/ItemIcon';
 import type { EquipmentSlot, ItemRef, WeaponSwapSlot } from '../buildData';
 import { slotToColumn } from '../utils/buildSnapshot';
 import { SET_NAME_CLASS } from '../utils/setItems';
@@ -34,8 +35,13 @@ export function ItemRefDisplay({ item, slot, setPieces }: ItemRefDisplayProps) {
   if (item.type === 'unique' || item.type === 'mythical') {
     return (
       <div>
-        <p className="text-sm font-medium">{item.snapshot.name}</p>
-        <p className="text-xs text-muted-foreground">{item.snapshot.baseItem}</p>
+        <div className="flex min-w-0 items-start gap-2">
+          <ItemIcon item={{ kind: 'unique', name: item.snapshot.name }} size={32} className="rounded bg-muted/50" />
+          <div className="min-w-0">
+            <p className="text-sm font-medium">{item.snapshot.name}</p>
+            <p className="text-xs text-muted-foreground">{item.snapshot.baseItem}</p>
+          </div>
+        </div>
         <AffixList lines={[...(item.snapshot.specialProperties ?? []), ...item.snapshot.properties]} />
       </div>
     );
@@ -45,11 +51,14 @@ export function ItemRefDisplay({ item, slot, setPieces }: ItemRefDisplayProps) {
     const { snapshot } = item;
     return (
       <div className="space-y-1">
-        <div>
-          <p className={`text-sm font-medium ${SET_NAME_CLASS}`}>{snapshot.name}</p>
-          <p className="text-xs text-muted-foreground">
-            Set: {snapshot.setName} · {snapshot.baseItem} · Req Lvl {snapshot.reqLevel}
-          </p>
+        <div className="flex min-w-0 items-start gap-2">
+          <ItemIcon item={{ kind: 'set', name: snapshot.name }} size={32} className="rounded bg-muted/50" />
+          <div className="min-w-0">
+            <p className={`text-sm font-medium ${SET_NAME_CLASS}`}>{snapshot.name}</p>
+            <p className="text-xs text-muted-foreground">
+              Set: {snapshot.setName} · {snapshot.baseItem} · Req Lvl {snapshot.reqLevel}
+            </p>
+          </div>
         </div>
         <AffixList lines={snapshot.properties} />
         <SetPartialGroups groups={snapshot.partial} equippedPieces={setPieces} />

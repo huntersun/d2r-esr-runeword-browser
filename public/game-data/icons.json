@@ -1,7 +1,7 @@
 {
   "esrVersion": "3.2.24",
   "esrTag": "3.2.24",
-  "icons": {
+  "bases": {
     "hax": {
       "file": "axe_hand_axe.webp",
       "w": 58,
@@ -1781,6 +1781,4375 @@
       "file": "charm_odd_charm.webp",
       "w": 59,
       "h": 128
+    }
+  },
+  "uniques": {
+    "Yello Jello": {
+      "file": "charm_charm_medium3.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Lothar's Will": {
+      "file": "charm_charm_large3.webp",
+      "w": 42,
+      "h": 128
+    },
+    "Deviant Cell": {
+      "file": "charm_odd_charm.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Vlad Tepe's Sustenance": {
+      "file": "charm_charm_small.webp",
+      "w": 87,
+      "h": 89
+    },
+    "Something Wicked": {
+      "file": "charm_charm_medium3.webp",
+      "w": 52,
+      "h": 128
+    },
+    "The Unknown Hero": {
+      "file": "charm_charm_large.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Fallen Star": {
+      "file": "ring_ring.webp",
+      "w": 87,
+      "h": 85
+    },
+    "Dragon Eye": {
+      "file": "ring_dragon_eye.webp",
+      "w": 91,
+      "h": 83
+    },
+    "Ring of Vengeance": {
+      "file": "ring_ring_of_vengeance.webp",
+      "w": 86,
+      "h": 95
+    },
+    "Elemental Jewel": {
+      "file": "ring_elemental_jewel.webp",
+      "w": 80,
+      "h": 95
+    },
+    "Iron Thimble": {
+      "file": "ring_iron_thimble.webp",
+      "w": 88,
+      "h": 96
+    },
+    "Zodiac Band": {
+      "file": "ring_zodiac_band.webp",
+      "w": 95,
+      "h": 82
+    },
+    "The One Ring": {
+      "file": "ring_the_one_ring.webp",
+      "w": 95,
+      "h": 95
+    },
+    "Lily Petal": {
+      "file": "ring_ama_ring.webp",
+      "w": 97,
+      "h": 95
+    },
+    "Forget-Me-Not Petal": {
+      "file": "ring_sorceress_ring.webp",
+      "w": 92,
+      "h": 65
+    },
+    "Cactus Petal": {
+      "file": "ring_necro_ring.webp",
+      "w": 89,
+      "h": 89
+    },
+    "White Rose Petal": {
+      "file": "ring_pala_ring.webp",
+      "w": 90,
+      "h": 84
+    },
+    "Violet Petal": {
+      "file": "ring_barb_ring.webp",
+      "w": 97,
+      "h": 76
+    },
+    "Dandelion Petal": {
+      "file": "ring_druid_ring.webp",
+      "w": 87,
+      "h": 100
+    },
+    "Red Rose Petal": {
+      "file": "ring_assassin_ring.webp",
+      "w": 71,
+      "h": 82
+    },
+    "Wilting Petal": {
+      "file": "ring_warlock_ring.webp",
+      "w": 86,
+      "h": 91
+    },
+    "Elven Blessing": {
+      "file": "ring_ama_ring.webp",
+      "w": 97,
+      "h": 95
+    },
+    "Khelek's Crystal Band": {
+      "file": "ring_khelek_ring.webp",
+      "w": 78,
+      "h": 89
+    },
+    "Vorador's Essence": {
+      "file": "ring_necro_ring.webp",
+      "w": 89,
+      "h": 89
+    },
+    "Rock of Aadeyen": {
+      "file": "ring_pala_ring.webp",
+      "w": 90,
+      "h": 84
+    },
+    "Madawc's Frenzy": {
+      "file": "ring_barb_ring.webp",
+      "w": 97,
+      "h": 76
+    },
+    "Alakashar Rahl": {
+      "file": "ring_druid_ring.webp",
+      "w": 87,
+      "h": 100
+    },
+    "Lilith's Heart": {
+      "file": "ring_assassin_ring.webp",
+      "w": 71,
+      "h": 82
+    },
+    "Fellstone": {
+      "file": "ring_warlock_ring.webp",
+      "w": 86,
+      "h": 91
+    },
+    "Dfuzzz's Fingerguard": {
+      "file": "ring_ama_ring.webp",
+      "w": 97,
+      "h": 95
+    },
+    "Killashandra Ree's Black Crystal": {
+      "file": "ring_sorceress_ring.webp",
+      "w": 92,
+      "h": 65
+    },
+    "BlackMage's Knucklebone": {
+      "file": "ring_necro_ring.webp",
+      "w": 89,
+      "h": 89
+    },
+    "The Tipsy Donut": {
+      "file": "ring_pala_ring.webp",
+      "w": 90,
+      "h": 84
+    },
+    "The Mad Celt's Shining Sparkly": {
+      "file": "ring_barb_ring.webp",
+      "w": 97,
+      "h": 76
+    },
+    "Yagul's Wrath": {
+      "file": "ring_druid_ring.webp",
+      "w": 87,
+      "h": 100
+    },
+    "Killjoy's Attitude": {
+      "file": "ring_assassin_ring.webp",
+      "w": 71,
+      "h": 82
+    },
+    "Wanderer's Omen": {
+      "file": "ring_warlock_ring.webp",
+      "w": 86,
+      "h": 91
+    },
+    "Lovers' Pendant": {
+      "file": "amulet_amulet1.webp",
+      "w": 90,
+      "h": 95
+    },
+    "Eye of the Witch": {
+      "file": "amulet_amulet2.webp",
+      "w": 91,
+      "h": 95
+    },
+    "Collar of the Minotaur": {
+      "file": "amulet_amulet.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Beads of the Guardian": {
+      "file": "amulet_amulet4.webp",
+      "w": 96,
+      "h": 91
+    },
+    "Roaring Thunder": {
+      "file": "amulet_roaring_thunder.webp",
+      "w": 71,
+      "h": 92
+    },
+    "Eye of the Beholder": {
+      "file": "amulet_amulet.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Spellcasters Aide": {
+      "file": "amulet_spellcasters_aide.webp",
+      "w": 94,
+      "h": 96
+    },
+    "Talisman of Benzaiten": {
+      "file": "amulet_ama_amulet.webp",
+      "w": 66,
+      "h": 97
+    },
+    "Talisman of Fukurokuju": {
+      "file": "amulet_talisman_fukurokuju.webp",
+      "w": 64,
+      "h": 96
+    },
+    "Talisman of Ebisu": {
+      "file": "amulet_necro_amulet.webp",
+      "w": 90,
+      "h": 93
+    },
+    "Talisman of Daikokuten": {
+      "file": "amulet_pala_amulet.webp",
+      "w": 98,
+      "h": 97
+    },
+    "Talisman of Bishamonten": {
+      "file": "amulet_barb_amulet.webp",
+      "w": 98,
+      "h": 79
+    },
+    "Talisman of Hotei": {
+      "file": "amulet_druid_amulet.webp",
+      "w": 66,
+      "h": 97
+    },
+    "Talisman of Kisshoten": {
+      "file": "amulet_assassin_amulet.webp",
+      "w": 87,
+      "h": 97
+    },
+    "Talisman of Izanami": {
+      "file": "amulet_warlock_amulet.webp",
+      "w": 51,
+      "h": 98
+    },
+    "Valhalla's Pendant": {
+      "file": "amulet_ama_amulet.webp",
+      "w": 66,
+      "h": 97
+    },
+    "Jade's Locket": {
+      "file": "amulet_sorceress_amulet.webp",
+      "w": 72,
+      "h": 94
+    },
+    "Daeveran's Stone": {
+      "file": "amulet_necro_amulet.webp",
+      "w": 90,
+      "h": 93
+    },
+    "Holy Deviant": {
+      "file": "amulet_pala_amulet.webp",
+      "w": 98,
+      "h": 97
+    },
+    "Khisanth": {
+      "file": "amulet_barb_amulet.webp",
+      "w": 98,
+      "h": 79
+    },
+    "Grim Creaper": {
+      "file": "amulet_druid_amulet.webp",
+      "w": 66,
+      "h": 97
+    },
+    "Sub Sanity": {
+      "file": "amulet_assassin_amulet.webp",
+      "w": 87,
+      "h": 97
+    },
+    "Black Lotus": {
+      "file": "amulet_warlock_amulet.webp",
+      "w": 51,
+      "h": 98
+    },
+    "Plague's Last Arrowhead": {
+      "file": "amulet_ama_amulet.webp",
+      "w": 66,
+      "h": 97
+    },
+    "The Mistress' Leather Collar": {
+      "file": "amulet_leather_collar.webp",
+      "w": 94,
+      "h": 68
+    },
+    "The Cursed Donut": {
+      "file": "amulet_cursed_donut.webp",
+      "w": 73,
+      "h": 98
+    },
+    "BlackKnight's Holy Signet": {
+      "file": "amulet_pala_amulet.webp",
+      "w": 98,
+      "h": 97
+    },
+    "Smaqdoun's Painful Pride": {
+      "file": "amulet_barb_amulet.webp",
+      "w": 98,
+      "h": 79
+    },
+    "Yagul's Bloody Rage": {
+      "file": "amulet_druid_amulet.webp",
+      "w": 66,
+      "h": 97
+    },
+    "Dweia's Revenge": {
+      "file": "amulet_assassin_amulet.webp",
+      "w": 87,
+      "h": 97
+    },
+    "Morgoth's Unbound Madness": {
+      "file": "amulet_warlock_amulet.webp",
+      "w": 51,
+      "h": 98
+    },
+    "Jindujun": {
+      "file": "gem_jindujun.webp",
+      "w": 96,
+      "h": 94
+    },
+    "Bohemian Stone": {
+      "file": "gem_bohemian_stone.webp",
+      "w": 56,
+      "h": 96
+    },
+    "Icestorm Shard": {
+      "file": "gem_icestorm_shard.webp",
+      "w": 73,
+      "h": 100
+    },
+    "Lady Eboshi's Greed": {
+      "file": "gem_lady_eboshis_greed.webp",
+      "w": 96,
+      "h": 99
+    },
+    "Salamander Stone": {
+      "file": "gem_salamander_stone.webp",
+      "w": 78,
+      "h": 100
+    },
+    "Smiiiff Stone": {
+      "file": "gem_smiiiff_stone.webp",
+      "w": 72,
+      "h": 98
+    },
+    "Larias' Licentious Lament": {
+      "file": "gem_larias_licentious_lament.webp",
+      "w": 97,
+      "h": 94
+    },
+    "Sescheronya's Spark": {
+      "file": "gem_sescheronyas_spark.webp",
+      "w": 98,
+      "h": 73
+    },
+    "Ideal Craft": {
+      "file": "gem_ideal_craft.webp",
+      "w": 91,
+      "h": 91
+    },
+    "Frozen Apocalypse": {
+      "file": "gem_frozen_apocalypse.webp",
+      "w": 96,
+      "h": 97
+    },
+    "Infernal Gemstone": {
+      "file": "gem_infernal_gemstone.webp",
+      "w": 96,
+      "h": 96
+    },
+    "Electrifying Vortex": {
+      "file": "gem_electrifying_vortex.webp",
+      "w": 96,
+      "h": 98
+    },
+    "Intoxicating Crystal": {
+      "file": "gem_intoxicating_crystal.webp",
+      "w": 96,
+      "h": 97
+    },
+    "Celestial Shard": {
+      "file": "gem_celestial_shard.webp",
+      "w": 96,
+      "h": 97
+    },
+    "Demonic Voidstone": {
+      "file": "gem_demonic_voidstone.webp",
+      "w": 96,
+      "h": 97
+    },
+    "Kenji's Winged Arrows": {
+      "file": "bow_arrows2.webp",
+      "w": 37,
+      "h": 128
+    },
+    "Delthanes' Enchanted Bolts": {
+      "file": "bow_bolts2.webp",
+      "w": 42,
+      "h": 128
+    },
+    "Sting of the Scorpion King": {
+      "file": "bow_arrows2.webp",
+      "w": 37,
+      "h": 128
+    },
+    "Pandora's Quiver": {
+      "file": "bow_bolts2.webp",
+      "w": 42,
+      "h": 128
+    },
+    "Quiver of Prince Ashitaka": {
+      "file": "bow_arrows2.webp",
+      "w": 37,
+      "h": 128
+    },
+    "Casca's Deadly Bolts": {
+      "file": "bow_bolts2.webp",
+      "w": 42,
+      "h": 128
+    },
+    "Arrows of the Ice Queen": {
+      "file": "bow_arrows2.webp",
+      "w": 37,
+      "h": 128
+    },
+    "Infernal Apocalypse": {
+      "file": "bow_bolts2.webp",
+      "w": 42,
+      "h": 128
+    },
+    "Legolas' Quiver": {
+      "file": "bow_arrows2.webp",
+      "w": 37,
+      "h": 128
+    },
+    "Borgoff's Bolts": {
+      "file": "bow_bolts2.webp",
+      "w": 42,
+      "h": 128
+    },
+    "Tanaris' Judgement": {
+      "file": "quiver_tanaris_judgement.webp",
+      "w": 44,
+      "h": 128
+    },
+    "Daedalus' Bolts": {
+      "file": "quiver_daedalus_bolts.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Hijikata's Heart-blood": {
+      "file": "circlet_hachigane.webp",
+      "w": 128,
+      "h": 88
+    },
+    "The Diamond Hairband": {
+      "file": "helmet_diamond_hairband.webp",
+      "w": 128,
+      "h": 50
+    },
+    "Lunar Charm": {
+      "file": "helmet_lunar_charm.webp",
+      "w": 128,
+      "h": 95
+    },
+    "Heart of Jewels": {
+      "file": "helmet_heart_of_jewels.webp",
+      "w": 128,
+      "h": 68
+    },
+    "Krok's Basher": {
+      "file": "axe_the_gnasher.webp",
+      "w": 53,
+      "h": 128
+    },
+    "Treefeller": {
+      "file": "axe_deathspade.webp",
+      "w": 77,
+      "h": 128
+    },
+    "The Skeleton Hunter": {
+      "file": "axe_double_axe.webp",
+      "w": 59,
+      "h": 128
+    },
+    "High-General's Pick": {
+      "file": "axe_mindrend.webp",
+      "w": 87,
+      "h": 128
+    },
+    "Axe of Souls": {
+      "file": "axe_war_axe.webp",
+      "w": 74,
+      "h": 128
+    },
+    "Glowblast": {
+      "file": "axe_large_axe.webp",
+      "w": 78,
+      "h": 128
+    },
+    "Murderous Axe": {
+      "file": "axe_broad_axe.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Lord of Carnage": {
+      "file": "axe_the_chieftan.webp",
+      "w": 74,
+      "h": 128
+    },
+    "Raka's Folly": {
+      "file": "axe_brainhew.webp",
+      "w": 70,
+      "h": 128
+    },
+    "The Annihilator": {
+      "file": "axe_giant_axe.webp",
+      "w": 68,
+      "h": 128
+    },
+    "Axe of the Elements": {
+      "file": "axe_the_gnasher.webp",
+      "w": 53,
+      "h": 128
+    },
+    "The Butcher's Cleaver": {
+      "file": "axe_deathspade.webp",
+      "w": 77,
+      "h": 128
+    },
+    "Double Bite": {
+      "file": "axe_double_axe.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Sadistic Warlord": {
+      "file": "axe_mindrend.webp",
+      "w": 87,
+      "h": 128
+    },
+    "Hacker": {
+      "file": "axe_war_axe.webp",
+      "w": 74,
+      "h": 128
+    },
+    "Wolf Claw": {
+      "file": "axe_large_axe.webp",
+      "w": 78,
+      "h": 128
+    },
+    "Lifebane": {
+      "file": "axe_broad_axe.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Fleshchew": {
+      "file": "axe_stormrider.webp",
+      "w": 64,
+      "h": 128
+    },
+    "Griswold's Revenge": {
+      "file": "axe_brainhew.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Lifecleaver": {
+      "file": "axe_the_minataur.webp",
+      "w": 67,
+      "h": 128
+    },
+    "Rohmshun": {
+      "file": "axe_the_gnasher.webp",
+      "w": 53,
+      "h": 128
+    },
+    "Alea Jacta Est": {
+      "file": "axe_deathspade.webp",
+      "w": 77,
+      "h": 128
+    },
+    "Thorgrim's Saviour": {
+      "file": "axe_double_axe.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Gold Digger": {
+      "file": "axe_mindrend.webp",
+      "w": 87,
+      "h": 128
+    },
+    "Iceshard": {
+      "file": "axe_war_axe.webp",
+      "w": 74,
+      "h": 128
+    },
+    "Focus of Unlife": {
+      "file": "axe_large_axe.webp",
+      "w": 78,
+      "h": 128
+    },
+    "Wicked Axe": {
+      "file": "axe_broad_axe.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Meat Cleaver": {
+      "file": "axe_the_chieftan.webp",
+      "w": 74,
+      "h": 128
+    },
+    "Wings of the Fallen Phoenix": {
+      "file": "axe_wings_fallen_phoenix.webp",
+      "w": 56,
+      "h": 128
+    },
+    "Barbaric Devastator": {
+      "file": "axe_the_minataur.webp",
+      "w": 67,
+      "h": 128
+    },
+    "Yegg's Firedagger": {
+      "file": "knife_dagger.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Requier's Skill": {
+      "file": "knife_dirk.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Anguirel": {
+      "file": "knife_blade.webp",
+      "w": 36,
+      "h": 128
+    },
+    "Sirian's Infinite Knives": {
+      "file": "knife_dagger.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Trang'Oul's Claw": {
+      "file": "knife_dirk.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Wizardspike": {
+      "file": "knife_wizardspike.webp",
+      "w": 43,
+      "h": 128
+    },
+    "Throatslitter": {
+      "file": "knife_blade.webp",
+      "w": 36,
+      "h": 128
+    },
+    "The Horn of Balor": {
+      "file": "knife_dagger.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Rathma's Blade": {
+      "file": "knife_dirk.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Mordenkainen's Dagger": {
+      "file": "knife_blade.webp",
+      "w": 36,
+      "h": 128
+    },
+    "Hail of Bolts": {
+      "file": "javelin_javelin.webp",
+      "w": 41,
+      "h": 128
+    },
+    "LED": {
+      "file": "javelin_pilum.webp",
+      "w": 24,
+      "h": 128
+    },
+    "Flying Impaler": {
+      "file": "javelin_throwing_spear.webp",
+      "w": 28,
+      "h": 128
+    },
+    "Gilded Spikes": {
+      "file": "javelin_javelin.webp",
+      "w": 41,
+      "h": 128
+    },
+    "Septic Needle": {
+      "file": "javelin_pilum.webp",
+      "w": 24,
+      "h": 128
+    },
+    "Olympus Hand": {
+      "file": "javelin_throwing_spear.webp",
+      "w": 28,
+      "h": 128
+    },
+    "The Opilus Apprentice": {
+      "file": "javelin_javelin.webp",
+      "w": 41,
+      "h": 128
+    },
+    "Olympian's Javelin": {
+      "file": "javelin_pilum.webp",
+      "w": 24,
+      "h": 128
+    },
+    "Moby's Demise": {
+      "file": "javelin_throwing_spear.webp",
+      "w": 28,
+      "h": 128
+    },
+    "Bonemash": {
+      "file": "mace_bonemash.webp",
+      "w": 41,
+      "h": 128
+    },
+    "Arc's Skewer": {
+      "file": "mace_bloodrise.webp",
+      "w": 43,
+      "h": 128
+    },
+    "Grimbold's Flail": {
+      "file": "mace_flail.webp",
+      "w": 71,
+      "h": 128
+    },
+    "Silver Rule": {
+      "file": "hammer_silver_rule.webp",
+      "w": 57,
+      "h": 128
+    },
+    "Bul-Kathos' Rage": {
+      "file": "hammer_maul.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Dreamflange": {
+      "file": "mace_mace.webp",
+      "w": 32,
+      "h": 128
+    },
+    "Starshine": {
+      "file": "mace_bloodrise.webp",
+      "w": 43,
+      "h": 128
+    },
+    "Demonfever": {
+      "file": "mace_flail.webp",
+      "w": 71,
+      "h": 128
+    },
+    "Schaefer's Hammer": {
+      "file": "hammer_war_hammer.webp",
+      "w": 67,
+      "h": 128
+    },
+    "Vulcan's Piledriver": {
+      "file": "hammer_vulcan_piledriver.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Caveman's Fury": {
+      "file": "club_caveman_fury.webp",
+      "w": 37,
+      "h": 128
+    },
+    "Darth Maul": {
+      "file": "club_darth_maul.webp",
+      "w": 42,
+      "h": 128
+    },
+    "Caesar's Revenge": {
+      "file": "mace_caesar_revenge.webp",
+      "w": 49,
+      "h": 128
+    },
+    "Butcher's Tenderizer": {
+      "file": "mace_bloodrise.webp",
+      "w": 43,
+      "h": 128
+    },
+    "Thunder Star": {
+      "file": "mace_flail.webp",
+      "w": 71,
+      "h": 128
+    },
+    "Miller's Hammer": {
+      "file": "hammer_millers_hammer.webp",
+      "w": 72,
+      "h": 128
+    },
+    "Hammer of Bogardan": {
+      "file": "hammer_maul.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Thor's Hammer": {
+      "file": "hammer_mjolnir.webp",
+      "w": 81,
+      "h": 128
+    },
+    "Eron's Bardiche": {
+      "file": "polearm_bardiche.webp",
+      "w": 54,
+      "h": 128
+    },
+    "Blade of Oblivion": {
+      "file": "polearm_scythe.webp",
+      "w": 54,
+      "h": 128
+    },
+    "Hewson's Poleaxe": {
+      "file": "polearm_poleaxe.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Infidel's Rule": {
+      "file": "polearm_halberd.webp",
+      "w": 54,
+      "h": 128
+    },
+    "Eternal Rest": {
+      "file": "polearm_war_scythe.webp",
+      "w": 62,
+      "h": 128
+    },
+    "Defender of the Highlands": {
+      "file": "polearm_bardiche.webp",
+      "w": 54,
+      "h": 128
+    },
+    "Reaver of Darkness": {
+      "file": "polearm_scythe.webp",
+      "w": 54,
+      "h": 128
+    },
+    "Partizan of Light": {
+      "file": "polearm_poleaxe.webp",
+      "w": 60,
+      "h": 128
+    },
+    "The Will of Hatred": {
+      "file": "polearm_halberd.webp",
+      "w": 54,
+      "h": 128
+    },
+    "Instrument of Destruction": {
+      "file": "polearm_war_scythe.webp",
+      "w": 62,
+      "h": 128
+    },
+    "Call of the Guardian": {
+      "file": "polearm_bardiche.webp",
+      "w": 54,
+      "h": 128
+    },
+    "Soul Reaver": {
+      "file": "polearm_scythe.webp",
+      "w": 54,
+      "h": 128
+    },
+    "Sultan's Conqueror": {
+      "file": "polearm_poleaxe.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Keeper of the Tides": {
+      "file": "polearm_halberd.webp",
+      "w": 54,
+      "h": 128
+    },
+    "Eternal Reign": {
+      "file": "polearm_war_scythe.webp",
+      "w": 62,
+      "h": 128
+    },
+    "Blessed Avenger": {
+      "file": "scepter_grand_scepter.webp",
+      "w": 39,
+      "h": 128
+    },
+    "Redeemer of the Light": {
+      "file": "scepter_great_scepter.webp",
+      "w": 75,
+      "h": 128
+    },
+    "Demon Bane": {
+      "file": "scepter_war_scepter.webp",
+      "w": 80,
+      "h": 128
+    },
+    "Demon Slayer": {
+      "file": "scepter_grand_scepter.webp",
+      "w": 39,
+      "h": 128
+    },
+    "Liberation": {
+      "file": "scepter_great_scepter.webp",
+      "w": 75,
+      "h": 128
+    },
+    "Redemption": {
+      "file": "scepter_war_scepter.webp",
+      "w": 80,
+      "h": 128
+    },
+    "Judgement": {
+      "file": "scepter_grand_scepter.webp",
+      "w": 39,
+      "h": 128
+    },
+    "Instrument of Purification": {
+      "file": "scepter_great_scepter.webp",
+      "w": 75,
+      "h": 128
+    },
+    "Scepter of the Sorcerer-Kings": {
+      "file": "scepter_war_scepter.webp",
+      "w": 80,
+      "h": 128
+    },
+    "Supercharged Rod": {
+      "file": "spear_spear.webp",
+      "w": 57,
+      "h": 128
+    },
+    "Poseidon's Trident": {
+      "file": "spear_trident.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Forzan's Rage": {
+      "file": "spear_brandistock.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Rogerio's Lance": {
+      "file": "spear_spetum.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Uthuala's Crest": {
+      "file": "spear_pike.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Zerae's Point": {
+      "file": "spear_spear.webp",
+      "w": 57,
+      "h": 128
+    },
+    "Gift of the Sea": {
+      "file": "spear_trident.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Kaihlanna's Pride": {
+      "file": "spear_brandistock.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Tears of Pain": {
+      "file": "spear_spetum.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Illusionary Pain": {
+      "file": "spear_pike.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Backbiter": {
+      "file": "spear_spear.webp",
+      "w": 57,
+      "h": 128
+    },
+    "Defense of Atlantis": {
+      "file": "spear_trident.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Dragon's Breath": {
+      "file": "spear_brandistock.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Storm Seeker": {
+      "file": "spear_spetum.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Rotting Splinter": {
+      "file": "spear_pike.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Umbar's Blade": {
+      "file": "sword_short_sword.webp",
+      "w": 31,
+      "h": 128
+    },
+    "The Rising Sun": {
+      "file": "amulet_the_rising_sun.webp",
+      "w": 73,
+      "h": 98
+    },
+    "Tavern's Blade": {
+      "file": "sword_saber.webp",
+      "w": 39,
+      "h": 128
+    },
+    "Ironslice": {
+      "file": "sword_gleamscythe.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Rainbow's Power": {
+      "file": "sword_rainbow_power.webp",
+      "w": 61,
+      "h": 128
+    },
+    "Numenorean Iron": {
+      "file": "sword_griswolds_edge.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Storm's Charge": {
+      "file": "sword_hellplague.webp",
+      "w": 80,
+      "h": 128
+    },
+    "Tribesman's Focus": {
+      "file": "sword_war_sword.webp",
+      "w": 35,
+      "h": 128
+    },
+    "Darkteflan": {
+      "file": "sword_two_handed_sword.webp",
+      "w": 27,
+      "h": 128
+    },
+    "Devilish Fear": {
+      "file": "sword_claymore.webp",
+      "w": 28,
+      "h": 128
+    },
+    "Falcon's Pride": {
+      "file": "sword_giant_sword.webp",
+      "w": 27,
+      "h": 128
+    },
+    "Blizzard's Sword": {
+      "file": "sword_flamberge.webp",
+      "w": 52,
+      "h": 128
+    },
+    "The Barbaric Totem": {
+      "file": "sword_great_sword.webp",
+      "w": 47,
+      "h": 128
+    },
+    "Magma Spike": {
+      "file": "sword_short_sword.webp",
+      "w": 31,
+      "h": 128
+    },
+    "Scourge of the Twin Seas": {
+      "file": "sword_scimitar.webp",
+      "w": 33,
+      "h": 128
+    },
+    "Soulforge": {
+      "file": "sword_hexfire.webp",
+      "w": 37,
+      "h": 128
+    },
+    "The Desert Wind": {
+      "file": "sword_gleamscythe.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Frost Shard": {
+      "file": "sword_ginthers_rift.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Zakarum Blade": {
+      "file": "sword_griswolds_edge.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Celestial Avenger": {
+      "file": "sword_long_sword.webp",
+      "w": 64,
+      "h": 128
+    },
+    "Mithril Sword": {
+      "file": "sword_war_sword.webp",
+      "w": 35,
+      "h": 128
+    },
+    "The Vampire": {
+      "file": "sword_two_handed_sword.webp",
+      "w": 27,
+      "h": 128
+    },
+    "Black Death": {
+      "file": "sword_claymore.webp",
+      "w": 28,
+      "h": 128
+    },
+    "Stone Brenner": {
+      "file": "sword_giant_sword.webp",
+      "w": 27,
+      "h": 128
+    },
+    "Inarius' Fall": {
+      "file": "sword_flamberge.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Terminus Est": {
+      "file": "sword_great_sword.webp",
+      "w": 47,
+      "h": 128
+    },
+    "Slave Warrior's Edge": {
+      "file": "sword_short_sword.webp",
+      "w": 31,
+      "h": 128
+    },
+    "Twinkle": {
+      "file": "sword_scimitar.webp",
+      "w": 33,
+      "h": 128
+    },
+    "Icing Death": {
+      "file": "sword_hexfire.webp",
+      "w": 37,
+      "h": 128
+    },
+    "The Executioner's Blade": {
+      "file": "sword_gleamscythe.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Diamondedge": {
+      "file": "sword_lightsabre.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Glacial Form": {
+      "file": "sword_glacial_form.webp",
+      "w": 84,
+      "h": 128
+    },
+    "Soul Singer": {
+      "file": "sword_hellplague.webp",
+      "w": 80,
+      "h": 128
+    },
+    "Rome's Victory": {
+      "file": "sword_war_sword.webp",
+      "w": 35,
+      "h": 128
+    },
+    "Blade of Righteousness": {
+      "file": "sword_two_handed_sword.webp",
+      "w": 27,
+      "h": 128
+    },
+    "Reins of Power": {
+      "file": "sword_claymore.webp",
+      "w": 28,
+      "h": 128
+    },
+    "Mitsurugi's Aide": {
+      "file": "sword_giant_sword.webp",
+      "w": 27,
+      "h": 128
+    },
+    "Blackened Blade of Arkanon": {
+      "file": "sword_blacktongue.webp",
+      "w": 25,
+      "h": 128
+    },
+    "The Fires of Sunlight": {
+      "file": "sword_fires_of_sunlight.webp",
+      "w": 53,
+      "h": 128
+    },
+    "The Grandfather": {
+      "file": "sword_the_patriarch.webp",
+      "w": 60,
+      "h": 128
+    },
+    "The Trainee's Shuriken": {
+      "file": "knife_throwing_knife.webp",
+      "w": 69,
+      "h": 128
+    },
+    "The Lumberjack's Toy": {
+      "file": "axe_throwing_axe.webp",
+      "w": 69,
+      "h": 128
+    },
+    "The Miner": {
+      "file": "axe_balanced_axe.webp",
+      "w": 125,
+      "h": 128
+    },
+    "Morgue": {
+      "file": "knife_throwing_knife.webp",
+      "w": 69,
+      "h": 128
+    },
+    "Battle Hymn": {
+      "file": "axe_throwing_axe.webp",
+      "w": 69,
+      "h": 128
+    },
+    "Minotaur's Sidearm": {
+      "file": "axe_balanced_axe.webp",
+      "w": 125,
+      "h": 128
+    },
+    "The Assassin's Stiletto": {
+      "file": "knife_throwing_knife.webp",
+      "w": 69,
+      "h": 128
+    },
+    "Dark Knight's Dread": {
+      "file": "axe_throwing_axe.webp",
+      "w": 69,
+      "h": 128
+    },
+    "Hephasto's Last Project": {
+      "file": "axe_balanced_axe.webp",
+      "w": 125,
+      "h": 128
+    },
+    "The Green Lantern": {
+      "file": "wand_iros_torch.webp",
+      "w": 53,
+      "h": 128
+    },
+    "Necromonic Tool": {
+      "file": "wand_yew_wand.webp",
+      "w": 56,
+      "h": 128
+    },
+    "Lucrecius' Power": {
+      "file": "wand_gravenspine.webp",
+      "w": 56,
+      "h": 128
+    },
+    "Wand of Spirits": {
+      "file": "wand_blackhand_key.webp",
+      "w": 42,
+      "h": 128
+    },
+    "Cinderspark": {
+      "file": "wand_cinderspark.webp",
+      "w": 28,
+      "h": 128
+    },
+    "Rusalka's Femur": {
+      "file": "wand_yew_wand.webp",
+      "w": 56,
+      "h": 128
+    },
+    "Wand of Rathma": {
+      "file": "wand_gravenspine.webp",
+      "w": 56,
+      "h": 128
+    },
+    "Skull of Horazon": {
+      "file": "wand_blackhand_key.webp",
+      "w": 42,
+      "h": 128
+    },
+    "Arm of the Skeleton": {
+      "file": "wand_arm_skeleton.webp",
+      "w": 28,
+      "h": 128
+    },
+    "Secret of the Ooze": {
+      "file": "wand_yew_wand.webp",
+      "w": 56,
+      "h": 128
+    },
+    "Essence of Trang-Oul": {
+      "file": "wand_gravenspine.webp",
+      "w": 56,
+      "h": 128
+    },
+    "Song of the Damned": {
+      "file": "wand_blackhand_key.webp",
+      "w": 42,
+      "h": 128
+    },
+    "Rod of Zerae": {
+      "file": "spear_maiden_spear.webp",
+      "w": 34,
+      "h": 128
+    },
+    "Lance of Celestia": {
+      "file": "spear_maiden_pike.webp",
+      "w": 57,
+      "h": 128
+    },
+    "The Dragoon Shaft": {
+      "file": "spear_maiden_spear.webp",
+      "w": 34,
+      "h": 128
+    },
+    "Lycander's Flank": {
+      "file": "spear_maiden_pike.webp",
+      "w": 57,
+      "h": 128
+    },
+    "Lightfoot": {
+      "file": "spear_maiden_spear.webp",
+      "w": 34,
+      "h": 128
+    },
+    "Raiden's Staff": {
+      "file": "spear_raiden_staff.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Ghoul's Touch": {
+      "file": "h2h_katar.webp",
+      "w": 46,
+      "h": 128
+    },
+    "Diamond Cuff": {
+      "file": "h2h_katar.webp",
+      "w": 46,
+      "h": 128
+    },
+    "Royal Grapple": {
+      "file": "h2h_scissors_katar.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Phalzyr's Frenzy": {
+      "file": "sword_katana.webp",
+      "w": 82,
+      "h": 128
+    },
+    "Ensnare": {
+      "file": "h2h_katar.webp",
+      "w": 46,
+      "h": 128
+    },
+    "Quill Giant's Spine": {
+      "file": "h2h_katar.webp",
+      "w": 46,
+      "h": 128
+    },
+    "Warpfist": {
+      "file": "h2h_scissors_katar.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Solistus' Masamune Edge": {
+      "file": "sword_katana.webp",
+      "w": 82,
+      "h": 128
+    },
+    "Clavo Platino": {
+      "file": "h2h_katar.webp",
+      "w": 46,
+      "h": 128
+    },
+    "Excalibria": {
+      "file": "h2h_katar.webp",
+      "w": 46,
+      "h": 128
+    },
+    "Sleight of Hand": {
+      "file": "h2h_scissors_katar.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Muramasa Sword": {
+      "file": "sword_katana.webp",
+      "w": 82,
+      "h": 128
+    },
+    "Ace in the Hole": {
+      "file": "sword_warlock_blade.webp",
+      "w": 37,
+      "h": 128
+    },
+    "The Penitent": {
+      "file": "sword_warlock_blade.webp",
+      "w": 37,
+      "h": 128
+    },
+    "Delirium": {
+      "file": "sword_warlock_blade.webp",
+      "w": 37,
+      "h": 128
+    },
+    "Larzuk's Aim": {
+      "file": "axe_barbarian_taxe.webp",
+      "w": 30,
+      "h": 128
+    },
+    "Malah's Aid": {
+      "file": "axe_barbarian_taxe.webp",
+      "w": 30,
+      "h": 128
+    },
+    "Rising Sun": {
+      "file": "axe_barbarian_taxe.webp",
+      "w": 30,
+      "h": 128
+    },
+    "Woodfist's Arm": {
+      "file": "club_druid_club.webp",
+      "w": 46,
+      "h": 128
+    },
+    "Rakanishu's Staff": {
+      "file": "club_druid_club.webp",
+      "w": 46,
+      "h": 128
+    },
+    "Spirit of the Forest": {
+      "file": "club_spirit_of_the_forest.webp",
+      "w": 43,
+      "h": 128
+    },
+    "Jugalator": {
+      "file": "knife_ceremonial_dagger.webp",
+      "w": 42,
+      "h": 128
+    },
+    "Master of Puppets": {
+      "file": "polearm_necroscythe2.webp",
+      "w": 61,
+      "h": 128
+    },
+    "The Touch of Death": {
+      "file": "polearm_necroscythe2.webp",
+      "w": 61,
+      "h": 128
+    },
+    "Jr Eyes": {
+      "file": "knife_ceremonial_dagger.webp",
+      "w": 42,
+      "h": 128
+    },
+    "Blade of the Reaper": {
+      "file": "polearm_necroscythe2.webp",
+      "w": 61,
+      "h": 128
+    },
+    "Death's Scythe": {
+      "file": "polearm_necroscythe2.webp",
+      "w": 61,
+      "h": 128
+    },
+    "The Last Rites": {
+      "file": "knife_ceremonial_dagger.webp",
+      "w": 42,
+      "h": 128
+    },
+    "Bone Reaver": {
+      "file": "polearm_necroscythe2.webp",
+      "w": 61,
+      "h": 128
+    },
+    "Blade of Corruption": {
+      "file": "polearm_necroscythe2.webp",
+      "w": 61,
+      "h": 128
+    },
+    "Sunblade": {
+      "file": "sword_paladin_sword.webp",
+      "w": 30,
+      "h": 128
+    },
+    "Excalibur": {
+      "file": "sword_paladin_sword.webp",
+      "w": 30,
+      "h": 128
+    },
+    "Holy Avenger": {
+      "file": "sword_paladin_sword.webp",
+      "w": 30,
+      "h": 128
+    },
+    "Infinite Thought": {
+      "file": "sword_mana_blade.webp",
+      "w": 59,
+      "h": 128
+    },
+    "The Secret of Mana": {
+      "file": "sword_mana_blade.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Blade of the Fallen Angel": {
+      "file": "sword_mana_blade.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Sparhawk's Spirit": {
+      "file": "circlet_spirit_crown.webp",
+      "w": 95,
+      "h": 128
+    },
+    "The Wanderer's Guard": {
+      "file": "helmet_duskdeep.webp",
+      "w": 88,
+      "h": 128
+    },
+    "Fearful Bane": {
+      "file": "helmet_mask.webp",
+      "w": 128,
+      "h": 110
+    },
+    "Albrieght's Bonemask": {
+      "file": "helmet_wormskull.webp",
+      "w": 104,
+      "h": 128
+    },
+    "Crown of the Mountain King": {
+      "file": "helmet_crown_of_thieves.webp",
+      "w": 103,
+      "h": 128
+    },
+    "The Eagle Helm": {
+      "file": "helmet_eagle_helm.webp",
+      "w": 102,
+      "h": 128
+    },
+    "Spirit of Life": {
+      "file": "circlet_spirit_of_life.webp",
+      "w": 128,
+      "h": 114
+    },
+    "Veil of Steel": {
+      "file": "helmet_full_helm.webp",
+      "w": 95,
+      "h": 128
+    },
+    "Burial Mask of Marduuk": {
+      "file": "helmet_mask.webp",
+      "w": 128,
+      "h": 110
+    },
+    "The Borgov's Skull": {
+      "file": "helmet_wormskull.webp",
+      "w": 104,
+      "h": 128
+    },
+    "Dwarven Spirits": {
+      "file": "helmet_crown_of_thieves.webp",
+      "w": 103,
+      "h": 128
+    },
+    "Beowulf's Mask": {
+      "file": "helmet_beowulf_mask.webp",
+      "w": 90,
+      "h": 128
+    },
+    "Arthur's Crown": {
+      "file": "circlet_spirit_crown.webp",
+      "w": 95,
+      "h": 128
+    },
+    "Visor of the Tropics": {
+      "file": "helmet_visor_of_the_tropics.webp",
+      "w": 82,
+      "h": 128
+    },
+    "Diablo's Horns": {
+      "file": "helmet_diablos_horns.webp",
+      "w": 128,
+      "h": 110
+    },
+    "Death's Cowl": {
+      "file": "helmet_deaths_cowl.webp",
+      "w": 104,
+      "h": 128
+    },
+    "Bruenor's Cranium": {
+      "file": "circlet_bruenors_cranium.webp",
+      "w": 128,
+      "h": 112
+    },
+    "The Rainbow Cloak": {
+      "file": "armor_rainbow_cloak.webp",
+      "w": 78,
+      "h": 128
+    },
+    "Zuez' Padding": {
+      "file": "armor_zuez_padding.webp",
+      "w": 82,
+      "h": 128
+    },
+    "Darkmage's Robe": {
+      "file": "armor_cape.webp",
+      "w": 64,
+      "h": 128
+    },
+    "Flashpoint Armor": {
+      "file": "armor_plate_mail.webp",
+      "w": 128,
+      "h": 121
+    },
+    "Ironlord's Plate": {
+      "file": "armor_ironlord_plate.webp",
+      "w": 90,
+      "h": 128
+    },
+    "Frozen Soulbearer": {
+      "file": "armor_frozen_soulbearer.webp",
+      "w": 81,
+      "h": 128
+    },
+    "Spikes of the Rhyno": {
+      "file": "armor_spiked_armor.webp",
+      "w": 128,
+      "h": 78
+    },
+    "Corrupted Sanctuary": {
+      "file": "armor_elven_chain.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Shroud of Azalin": {
+      "file": "armor_cloak.webp",
+      "w": 75,
+      "h": 128
+    },
+    "Robe of the White Mage": {
+      "file": "armor_robe_white_mage.webp",
+      "w": 83,
+      "h": 128
+    },
+    "Palashia's Defense": {
+      "file": "armor_palashia_defense.webp",
+      "w": 68,
+      "h": 128
+    },
+    "Robe of the Phoenix": {
+      "file": "armor_robe_of_the_phoenix.webp",
+      "w": 87,
+      "h": 128
+    },
+    "Armor of the Wind": {
+      "file": "armor_armor_of_the_wind.webp",
+      "w": 96,
+      "h": 128
+    },
+    "Wisdom's Wrap": {
+      "file": "armor_robe.webp",
+      "w": 64,
+      "h": 128
+    },
+    "Arkaine's Valor": {
+      "file": "armor_plate_mail.webp",
+      "w": 128,
+      "h": 121
+    },
+    "Templar Protector": {
+      "file": "armor_light_plate.webp",
+      "w": 94,
+      "h": 128
+    },
+    "The Iron Maiden": {
+      "file": "armor_spiked_armor.webp",
+      "w": 128,
+      "h": 78
+    },
+    "Drizzt's Mithril": {
+      "file": "armor_elven_chain.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Lothar's Cape": {
+      "file": "armor_cloak.webp",
+      "w": 75,
+      "h": 128
+    },
+    "Atlastrust": {
+      "file": "armor_haemosus_adament.webp",
+      "w": 88,
+      "h": 128
+    },
+    "Kaija's Gown": {
+      "file": "armor_archmage_robe2.webp",
+      "w": 80,
+      "h": 128
+    },
+    "Blanchwood Vest": {
+      "file": "armor_blanchwood_vest.webp",
+      "w": 85,
+      "h": 128
+    },
+    "Aakta's Defense": {
+      "file": "armor_aaktas_defense.webp",
+      "w": 86,
+      "h": 128
+    },
+    "Robes of Power": {
+      "file": "armor_light_plate.webp",
+      "w": 94,
+      "h": 128
+    },
+    "Deflective Spikes": {
+      "file": "armor_spiked_armor.webp",
+      "w": 128,
+      "h": 78
+    },
+    "Izeal's Vise": {
+      "file": "armor_goldskin.webp",
+      "w": 88,
+      "h": 128
+    },
+    "Silvasa's Dress": {
+      "file": "armor_elven_chain.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Stargate": {
+      "file": "shield_umbral_disk.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Mercenary's Brace": {
+      "file": "shield_large_shield.webp",
+      "w": 106,
+      "h": 128
+    },
+    "Raven's Shield": {
+      "file": "shield_steelclash.webp",
+      "w": 85,
+      "h": 128
+    },
+    "Skullbear's Soul": {
+      "file": "shield_skullbear_soul.webp",
+      "w": 84,
+      "h": 128
+    },
+    "Phrozen Heart": {
+      "file": "shield_phrozen_heart.webp",
+      "w": 83,
+      "h": 128
+    },
+    "Karcheus' Ward": {
+      "file": "shield_mosers_blessed_circle.webp",
+      "w": 121,
+      "h": 128
+    },
+    "The Face of the Sun": {
+      "file": "shield_stormchaser.webp",
+      "w": 118,
+      "h": 128
+    },
+    "The Shield of Pain": {
+      "file": "shield_shield_of_pain.webp",
+      "w": 85,
+      "h": 128
+    },
+    "Tortured Souls": {
+      "file": "shield_tortured_souls.webp",
+      "w": 99,
+      "h": 128
+    },
+    "Wall of the Ancient Oak": {
+      "file": "shield_ancient_oak.webp",
+      "w": 73,
+      "h": 128
+    },
+    "Link's Mirror": {
+      "file": "shield_fortress_shield.webp",
+      "w": 90,
+      "h": 128
+    },
+    "Elzix's Treasure": {
+      "file": "shield_mosers_blessed_circle.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Cyclop's Protector": {
+      "file": "shield_cyclop_protector.webp",
+      "w": 73,
+      "h": 128
+    },
+    "Dragon's Breach": {
+      "file": "shield_steelclash.webp",
+      "w": 85,
+      "h": 128
+    },
+    "Icon of Sin": {
+      "file": "shield_icon_of_sin.webp",
+      "w": 95,
+      "h": 128
+    },
+    "Guardian Angel": {
+      "file": "shield_fortress_shield.webp",
+      "w": 90,
+      "h": 128
+    },
+    "Gloves of Firebrand": {
+      "file": "glove_bracers_m.webp",
+      "w": 128,
+      "h": 114
+    },
+    "Darkflight Hand": {
+      "file": "glove_light_gauntlets.webp",
+      "w": 128,
+      "h": 119
+    },
+    "Heartrand's Gaunts": {
+      "file": "glove_gaunlets_h.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Fireheart's Hand": {
+      "file": "glove_iron_guards.webp",
+      "w": 126,
+      "h": 128
+    },
+    "Shiva's Touch": {
+      "file": "glove_bracers_m.webp",
+      "w": 128,
+      "h": 114
+    },
+    "Runefusion": {
+      "file": "glove_light_gauntlets.webp",
+      "w": 128,
+      "h": 119
+    },
+    "Suffocation of Indifference": {
+      "file": "glove_gaunlets_h.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Lockheart's Grip": {
+      "file": "glove_iron_guards.webp",
+      "w": 126,
+      "h": 128
+    },
+    "Death's Grip": {
+      "file": "glove_bracers_m.webp",
+      "w": 128,
+      "h": 114
+    },
+    "Iron Fist": {
+      "file": "glove_light_gauntlets.webp",
+      "w": 128,
+      "h": 119
+    },
+    "Herculean Grip": {
+      "file": "glove_gaunlets_h.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Greiz's Legion": {
+      "file": "glove_iron_guards.webp",
+      "w": 126,
+      "h": 128
+    },
+    "Orcish Walkgarb": {
+      "file": "boot_chain_boots.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Vindalay's Sole": {
+      "file": "boot_light_plate_boots.webp",
+      "w": 109,
+      "h": 128
+    },
+    "Lightmaster's Walk": {
+      "file": "boot_plate_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Zhoul's Slippers": {
+      "file": "boot_crystal_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Chillcobble": {
+      "file": "boot_chain_boots.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Boots of the Valiant": {
+      "file": "boot_light_plate_boots.webp",
+      "w": 109,
+      "h": 128
+    },
+    "Haste of Athulua": {
+      "file": "boot_plate_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Wren's Reinforced Tech Boots": {
+      "file": "boot_crystal_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Boots of Aether": {
+      "file": "boot_chain_boots.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Hermes' Gift": {
+      "file": "boot_light_plate_boots.webp",
+      "w": 109,
+      "h": 128
+    },
+    "The Heel of Blood": {
+      "file": "boot_plate_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Spirits of the Dead": {
+      "file": "boot_crystal_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Harness of the Gods": {
+      "file": "belt_girdle_h.webp",
+      "w": 128,
+      "h": 71
+    },
+    "Goldark's Strap": {
+      "file": "belt_muscle_wrap.webp",
+      "w": 128,
+      "h": 61
+    },
+    "Timeloop": {
+      "file": "belt_girdle_h.webp",
+      "w": 128,
+      "h": 71
+    },
+    "Circle of the Ancients": {
+      "file": "belt_muscle_wrap.webp",
+      "w": 128,
+      "h": 61
+    },
+    "Girdle of Giant Strength": {
+      "file": "belt_girdle_h.webp",
+      "w": 128,
+      "h": 71
+    },
+    "The Belt of Zeus": {
+      "file": "belt_muscle_wrap.webp",
+      "w": 128,
+      "h": 61
+    },
+    "The Raging Bull": {
+      "file": "helmet_horned_helm.webp",
+      "w": 71,
+      "h": 128
+    },
+    "Army of One": {
+      "file": "helmet_assault_helmet.webp",
+      "w": 104,
+      "h": 128
+    },
+    "The Crimson Faceplate": {
+      "file": "helmet_horned_helm.webp",
+      "w": 71,
+      "h": 128
+    },
+    "Phase Visor": {
+      "file": "helmet_assault_helmet.webp",
+      "w": 104,
+      "h": 128
+    },
+    "Arreat's Face": {
+      "file": "helmet_assault_helmet.webp",
+      "w": 104,
+      "h": 128
+    },
+    "Wyrm's Wrap": {
+      "file": "helmet_horned_helm.webp",
+      "w": 71,
+      "h": 128
+    },
+    "Larzuk's Innovation": {
+      "file": "helmet_assault_helmet.webp",
+      "w": 104,
+      "h": 128
+    },
+    "Ravenlord": {
+      "file": "helmet_ravenlord.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Necromancer's Essense": {
+      "file": "helmet_necromancers_essence.webp",
+      "w": 107,
+      "h": 128
+    },
+    "Mojabi's Face": {
+      "file": "helmet_mojabi_face.webp",
+      "w": 117,
+      "h": 128
+    },
+    "Beast of the Night": {
+      "file": "helmet_beast_of_the_night.webp",
+      "w": 92,
+      "h": 128
+    },
+    "Corpsefire's Head": {
+      "file": "shield_corpsefire_head.webp",
+      "w": 95,
+      "h": 128
+    },
+    "Radament's Rotting Skull": {
+      "file": "shield_radaments_skull.webp",
+      "w": 90,
+      "h": 128
+    },
+    "Dogma": {
+      "file": "shield_targe.webp",
+      "w": 116,
+      "h": 128
+    },
+    "Archer's Bane": {
+      "file": "shield_rondache.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Diablo's Crest": {
+      "file": "shield_heraldic_shield.webp",
+      "w": 57,
+      "h": 128
+    },
+    "The Bishop": {
+      "file": "shield_aerin_shield.webp",
+      "w": 55,
+      "h": 128
+    },
+    "King's Blessing": {
+      "file": "shield_crown_shield.webp",
+      "w": 125,
+      "h": 128
+    },
+    "Gorgon Slayer": {
+      "file": "shield_gorgon_slayer.webp",
+      "w": 117,
+      "h": 128
+    },
+    "Hadriel's Barricade": {
+      "file": "shield_rondache.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Wall of the Crusader": {
+      "file": "shield_heraldic_shield.webp",
+      "w": 57,
+      "h": 128
+    },
+    "Herald of Zakarum": {
+      "file": "shield_aerin_shield.webp",
+      "w": 55,
+      "h": 128
+    },
+    "Imperial War Guard": {
+      "file": "shield_crown_shield.webp",
+      "w": 125,
+      "h": 128
+    },
+    "Faith": {
+      "file": "shield_targe.webp",
+      "w": 116,
+      "h": 128
+    },
+    "Godspeed": {
+      "file": "shield_rondache.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Heaven's Gate": {
+      "file": "shield_heraldic_shield.webp",
+      "w": 57,
+      "h": 128
+    },
+    "Leader of the Light": {
+      "file": "shield_aerin_shield.webp",
+      "w": 55,
+      "h": 128
+    },
+    "Black Hole": {
+      "file": "shield_black_hole.webp",
+      "w": 125,
+      "h": 128
+    },
+    "Sightless Archer": {
+      "file": "circlet_faceguard.webp",
+      "w": 112,
+      "h": 128
+    },
+    "Manifer of Slugger": {
+      "file": "h2h_brass_knuckle.webp",
+      "w": 75,
+      "h": 128
+    },
+    "Tattooed Palm": {
+      "file": "h2h_brass_knuckle.webp",
+      "w": 75,
+      "h": 128
+    },
+    "Thundergod's Anger": {
+      "file": "h2h_thundergods_anger.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Character Augmenter": {
+      "file": "charm_damage_augmenter.webp",
+      "w": 94,
+      "h": 96
+    },
+    "Ore": {
+      "file": "quest_ore.webp",
+      "w": 95,
+      "h": 80
+    },
+    "Burning Sleeve": {
+      "file": "h2h_arm.webp",
+      "w": 80,
+      "h": 128
+    },
+    "Black Gypsum": {
+      "file": "h2h_arm.webp",
+      "w": 80,
+      "h": 128
+    },
+    "Protection Circuit": {
+      "file": "h2h_arm.webp",
+      "w": 80,
+      "h": 128
+    },
+    "The Gnasher": {
+      "file": "axe_the_gnasher.webp",
+      "w": 53,
+      "h": 128
+    },
+    "Deathspade": {
+      "file": "axe_deathspade.webp",
+      "w": 77,
+      "h": 128
+    },
+    "Bladebone": {
+      "file": "axe_double_axe.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Skull Splitter": {
+      "file": "axe_mindrend.webp",
+      "w": 87,
+      "h": 128
+    },
+    "Rakescar": {
+      "file": "axe_war_axe.webp",
+      "w": 74,
+      "h": 128
+    },
+    "Axe of Fechmar": {
+      "file": "axe_large_axe.webp",
+      "w": 78,
+      "h": 128
+    },
+    "Goreshovel": {
+      "file": "axe_broad_axe.webp",
+      "w": 79,
+      "h": 128
+    },
+    "The Chieftain": {
+      "file": "axe_the_chieftan.webp",
+      "w": 74,
+      "h": 128
+    },
+    "Brainhew": {
+      "file": "axe_brainhew.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Humongous": {
+      "file": "axe_giant_axe.webp",
+      "w": 68,
+      "h": 128
+    },
+    "Torch of Iro": {
+      "file": "wand_iros_torch.webp",
+      "w": 53,
+      "h": 128
+    },
+    "Maelstrom": {
+      "file": "wand_yew_wand.webp",
+      "w": 56,
+      "h": 128
+    },
+    "Gravenspine": {
+      "file": "wand_gravenspine.webp",
+      "w": 56,
+      "h": 128
+    },
+    "Ume's Lament": {
+      "file": "wand_grim_wand.webp",
+      "w": 64,
+      "h": 128
+    },
+    "Rusthandle": {
+      "file": "scepter_grand_scepter.webp",
+      "w": 39,
+      "h": 128
+    },
+    "Stormeye": {
+      "file": "scepter_war_scepter.webp",
+      "w": 80,
+      "h": 128
+    },
+    "Crushflange": {
+      "file": "mace_mace.webp",
+      "w": 32,
+      "h": 128
+    },
+    "Bloodrise": {
+      "file": "mace_bloodrise.webp",
+      "w": 43,
+      "h": 128
+    },
+    "The General's Tan Do Li Ga": {
+      "file": "mace_flail.webp",
+      "w": 71,
+      "h": 128
+    },
+    "Ironstone": {
+      "file": "hammer_war_hammer.webp",
+      "w": 67,
+      "h": 128
+    },
+    "Bonesnap": {
+      "file": "hammer_maul.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Rixot's Keen": {
+      "file": "sword_short_sword.webp",
+      "w": 31,
+      "h": 128
+    },
+    "Blood Crescent": {
+      "file": "sword_scimitar.webp",
+      "w": 33,
+      "h": 128
+    },
+    "Skewer of Krintiz": {
+      "file": "sword_saber.webp",
+      "w": 39,
+      "h": 128
+    },
+    "Gleamscythe": {
+      "file": "sword_gleamscythe.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Griswold's Edge": {
+      "file": "sword_griswolds_edge.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Hellplague": {
+      "file": "sword_hellplague.webp",
+      "w": 80,
+      "h": 128
+    },
+    "Culwen's Point": {
+      "file": "sword_war_sword.webp",
+      "w": 35,
+      "h": 128
+    },
+    "Shadowfang": {
+      "file": "sword_shadowfang.webp",
+      "w": 33,
+      "h": 128
+    },
+    "Soulflay": {
+      "file": "sword_claymore.webp",
+      "w": 28,
+      "h": 128
+    },
+    "Kinemil's Awl": {
+      "file": "sword_kinemils_awl.webp",
+      "w": 29,
+      "h": 128
+    },
+    "Blacktongue": {
+      "file": "sword_blacktongue.webp",
+      "w": 25,
+      "h": 128
+    },
+    "Ripsaw": {
+      "file": "sword_flamberge.webp",
+      "w": 52,
+      "h": 128
+    },
+    "The Patriarch": {
+      "file": "sword_the_patriarch.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Gull": {
+      "file": "knife_dagger.webp",
+      "w": 59,
+      "h": 128
+    },
+    "The Diggler": {
+      "file": "knife_dirk.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Spectral Shard": {
+      "file": "knife_blade.webp",
+      "w": 36,
+      "h": 128
+    },
+    "The Dragon Chang": {
+      "file": "spear_spear.webp",
+      "w": 57,
+      "h": 128
+    },
+    "Razortine": {
+      "file": "spear_razortine.webp",
+      "w": 53,
+      "h": 128
+    },
+    "Bloodthief": {
+      "file": "spear_brandistock.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Lance of Yaggai": {
+      "file": "spear_spetum.webp",
+      "w": 58,
+      "h": 128
+    },
+    "The Tannr Gorerod": {
+      "file": "spear_pike.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Dimoak's Hew": {
+      "file": "polearm_bardiche.webp",
+      "w": 54,
+      "h": 128
+    },
+    "Soul Harvest": {
+      "file": "polearm_soul_harvest.webp",
+      "w": 70,
+      "h": 128
+    },
+    "The Battlebranch": {
+      "file": "polearm_poleaxe.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Woestave": {
+      "file": "polearm_halberd.webp",
+      "w": 54,
+      "h": 128
+    },
+    "The Grim Reaper": {
+      "file": "polearm_war_scythe.webp",
+      "w": 62,
+      "h": 128
+    },
+    "Duskdeep": {
+      "file": "helmet_duskdeep.webp",
+      "w": 88,
+      "h": 128
+    },
+    "Wormskull": {
+      "file": "helmet_wormskull.webp",
+      "w": 104,
+      "h": 128
+    },
+    "The Face of Horror": {
+      "file": "helmet_mask.webp",
+      "w": 128,
+      "h": 110
+    },
+    "Boneflesh": {
+      "file": "armor_plate_mail.webp",
+      "w": 128,
+      "h": 121
+    },
+    "Goldskin": {
+      "file": "armor_goldskin.webp",
+      "w": 88,
+      "h": 128
+    },
+    "Heavenly Garb": {
+      "file": "armor_light_plate.webp",
+      "w": 94,
+      "h": 128
+    },
+    "Umbral Disk": {
+      "file": "shield_umbral_disk.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Stormguild": {
+      "file": "shield_large_shield.webp",
+      "w": 106,
+      "h": 128
+    },
+    "Wall of the Eyeless": {
+      "file": "shield_wall_of_the_eyeless.webp",
+      "w": 98,
+      "h": 128
+    },
+    "Steelclash": {
+      "file": "shield_steelclash.webp",
+      "w": 85,
+      "h": 128
+    },
+    "Chance Guards": {
+      "file": "glove_bracers_m.webp",
+      "w": 128,
+      "h": 114
+    },
+    "Magefist": {
+      "file": "glove_light_gauntlets.webp",
+      "w": 128,
+      "h": 119
+    },
+    "Frostburn": {
+      "file": "glove_gaunlets_h.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Treads of Cthon": {
+      "file": "boot_chain_boots.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Goblin Toe": {
+      "file": "boot_light_plate_boots.webp",
+      "w": 109,
+      "h": 128
+    },
+    "Tearhaunch": {
+      "file": "boot_plate_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Bladebuckle": {
+      "file": "belt_girdle_h.webp",
+      "w": 128,
+      "h": 71
+    },
+    "Nokozan Relic": {
+      "file": "amulet_nokozan_relic.webp",
+      "w": 85,
+      "h": 98
+    },
+    "The Eye of Etlich": {
+      "file": "amulet_the_eye_of_etlich.webp",
+      "w": 72,
+      "h": 97
+    },
+    "The Mahim-Oak Curio": {
+      "file": "amulet_the_mahim_oak_curio.webp",
+      "w": 62,
+      "h": 97
+    },
+    "Nagelring": {
+      "file": "ring_nagelring.webp",
+      "w": 93,
+      "h": 77
+    },
+    "Manald Heal": {
+      "file": "ring_manald_heal.webp",
+      "w": 84,
+      "h": 89
+    },
+    "The Stone of Jordan": {
+      "file": "ring_stone_of_jordan.webp",
+      "w": 98,
+      "h": 54
+    },
+    "Coldkill": {
+      "file": "axe_the_gnasher.webp",
+      "w": 53,
+      "h": 128
+    },
+    "Butcher's Pupil": {
+      "file": "axe_deathspade.webp",
+      "w": 77,
+      "h": 128
+    },
+    "Islestrike": {
+      "file": "axe_double_axe.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Pompeii's Wrath": {
+      "file": "axe_mindrend.webp",
+      "w": 87,
+      "h": 128
+    },
+    "Guardian Naga": {
+      "file": "axe_war_axe.webp",
+      "w": 74,
+      "h": 128
+    },
+    "Warlord's Trust": {
+      "file": "axe_large_axe.webp",
+      "w": 78,
+      "h": 128
+    },
+    "Spellsteel": {
+      "file": "axe_broad_axe.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Stormrider": {
+      "file": "axe_stormrider.webp",
+      "w": 64,
+      "h": 128
+    },
+    "Boneslayer Blade": {
+      "file": "axe_brainhew.webp",
+      "w": 70,
+      "h": 128
+    },
+    "The Minotaur": {
+      "file": "axe_the_minataur.webp",
+      "w": 67,
+      "h": 128
+    },
+    "Suicide Branch": {
+      "file": "wand_wand.webp",
+      "w": 57,
+      "h": 128
+    },
+    "Carin Shard": {
+      "file": "wand_yew_wand.webp",
+      "w": 56,
+      "h": 128
+    },
+    "Arm of King Leoric": {
+      "file": "wand_gravenspine.webp",
+      "w": 56,
+      "h": 128
+    },
+    "Blackhand Key": {
+      "file": "wand_blackhand_key.webp",
+      "w": 42,
+      "h": 128
+    },
+    "The Fetid Sprinkler": {
+      "file": "scepter_grand_scepter.webp",
+      "w": 39,
+      "h": 128
+    },
+    "Hand of Blessed Light": {
+      "file": "scepter_war_scepter.webp",
+      "w": 80,
+      "h": 128
+    },
+    "Sureshrill Frost": {
+      "file": "mace_mace.webp",
+      "w": 32,
+      "h": 128
+    },
+    "Moonfall": {
+      "file": "mace_bloodrise.webp",
+      "w": 43,
+      "h": 128
+    },
+    "Baezil's Vortex": {
+      "file": "mace_flail.webp",
+      "w": 71,
+      "h": 128
+    },
+    "Earthshaker": {
+      "file": "hammer_war_hammer.webp",
+      "w": 67,
+      "h": 128
+    },
+    "Bloodtree Stump": {
+      "file": "hammer_maul.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Bloodletter": {
+      "file": "sword_short_sword.webp",
+      "w": 31,
+      "h": 128
+    },
+    "Coldsteel Eye": {
+      "file": "sword_scimitar.webp",
+      "w": 33,
+      "h": 128
+    },
+    "Hexfire": {
+      "file": "sword_hexfire.webp",
+      "w": 37,
+      "h": 128
+    },
+    "Blade of Ali Baba": {
+      "file": "sword_falchion.webp",
+      "w": 34,
+      "h": 128
+    },
+    "Ginther's Rift": {
+      "file": "sword_ginthers_rift.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Headstriker": {
+      "file": "sword_broad_sword.webp",
+      "w": 68,
+      "h": 128
+    },
+    "Plague Bearer": {
+      "file": "sword_long_sword.webp",
+      "w": 64,
+      "h": 128
+    },
+    "The Atlantean": {
+      "file": "sword_war_sword.webp",
+      "w": 35,
+      "h": 128
+    },
+    "Crainte Vomir": {
+      "file": "sword_shadowfang.webp",
+      "w": 33,
+      "h": 128
+    },
+    "Bing Sz Wang": {
+      "file": "sword_claymore.webp",
+      "w": 28,
+      "h": 128
+    },
+    "The Vile Husk": {
+      "file": "sword_kinemils_awl.webp",
+      "w": 29,
+      "h": 128
+    },
+    "Cloudcrack": {
+      "file": "sword_blacktongue.webp",
+      "w": 25,
+      "h": 128
+    },
+    "Todesfaelle Flamme": {
+      "file": "sword_flamberge.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Swordguard": {
+      "file": "sword_the_patriarch.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Spineripper": {
+      "file": "knife_dagger.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Heart Carver": {
+      "file": "knife_dirk.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Stormspike": {
+      "file": "knife_stormspike.webp",
+      "w": 37,
+      "h": 128
+    },
+    "The Impaler": {
+      "file": "spear_spear.webp",
+      "w": 57,
+      "h": 128
+    },
+    "Kelpie Snare": {
+      "file": "spear_razortine.webp",
+      "w": 53,
+      "h": 128
+    },
+    "Soulfeast Tine": {
+      "file": "spear_soulfeast_tine.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Hone Sundan": {
+      "file": "spear_spetum.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Spire of Honor": {
+      "file": "spear_pike.webp",
+      "w": 59,
+      "h": 128
+    },
+    "The Meat Scraper": {
+      "file": "polearm_bardiche.webp",
+      "w": 54,
+      "h": 128
+    },
+    "Athena's Wrath": {
+      "file": "polearm_scythe.webp",
+      "w": 54,
+      "h": 128
+    },
+    "Pierre Tombale Couant": {
+      "file": "polearm_poleaxe.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Husoldal Evo": {
+      "file": "polearm_halberd.webp",
+      "w": 54,
+      "h": 128
+    },
+    "Grim's Burning Dead": {
+      "file": "polearm_war_scythe.webp",
+      "w": 62,
+      "h": 128
+    },
+    "Buriza-Do Kyanon": {
+      "file": "bow_mythical_buriza_do_kyanon.webp",
+      "w": 67,
+      "h": 128
+    },
+    "Darksight Helm": {
+      "file": "helmet_duskdeep.webp",
+      "w": 88,
+      "h": 128
+    },
+    "Crown of Thieves": {
+      "file": "helmet_crown_of_thieves.webp",
+      "w": 103,
+      "h": 128
+    },
+    "Blackhorn's Face": {
+      "file": "helmet_mask.webp",
+      "w": 128,
+      "h": 110
+    },
+    "Vampire Gaze": {
+      "file": "helmet_wormskull.webp",
+      "w": 104,
+      "h": 128
+    },
+    "Que-Hegan's Wisdom": {
+      "file": "armor_light_plate.webp",
+      "w": 94,
+      "h": 128
+    },
+    "Moser's Blessed Circle": {
+      "file": "shield_mosers_blessed_circle.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Stormchaser": {
+      "file": "shield_stormchaser.webp",
+      "w": 118,
+      "h": 128
+    },
+    "Tiamat's Rebuke": {
+      "file": "shield_steelclash.webp",
+      "w": 85,
+      "h": 128
+    },
+    "Lidless Wall": {
+      "file": "shield_lidless_wall.webp",
+      "w": 99,
+      "h": 128
+    },
+    "Ghoulhide": {
+      "file": "glove_bracers_m.webp",
+      "w": 128,
+      "h": 114
+    },
+    "Lava Gout": {
+      "file": "glove_light_gauntlets.webp",
+      "w": 128,
+      "h": 119
+    },
+    "Hellmouth": {
+      "file": "glove_gaunlets_h.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Silkweave": {
+      "file": "boot_chain_boots.webp",
+      "w": 121,
+      "h": 128
+    },
+    "War Traveler": {
+      "file": "boot_light_plate_boots.webp",
+      "w": 109,
+      "h": 128
+    },
+    "Gore Rider": {
+      "file": "boot_plate_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Thundergod's Vigor": {
+      "file": "belt_girdle_h.webp",
+      "w": 128,
+      "h": 71
+    },
+    "Blackoak Shield": {
+      "file": "shield_umbral_disk.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Stormshield": {
+      "file": "shield_steelclash.webp",
+      "w": 85,
+      "h": 128
+    },
+    "Hellslayer": {
+      "file": "axe_the_chieftan.webp",
+      "w": 74,
+      "h": 128
+    },
+    "Messerschmidt's Reaver": {
+      "file": "axe_brainhew.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Baranar's Star": {
+      "file": "mace_bloodrise.webp",
+      "w": 43,
+      "h": 128
+    },
+    "Lightsabre": {
+      "file": "sword_lightsabre.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Doombringer": {
+      "file": "sword_blacktongue.webp",
+      "w": 25,
+      "h": 128
+    },
+    "Constricting Ring": {
+      "file": "ring_constricting_ring.webp",
+      "w": 96,
+      "h": 68
+    },
+    "Stormspire": {
+      "file": "polearm_war_scythe.webp",
+      "w": 62,
+      "h": 128
+    },
+    "Bul-Kathos' Wedding Band": {
+      "file": "ring_bul_kathos_wedding_band.webp",
+      "w": 98,
+      "h": 97
+    },
+    "The Cat's Eye": {
+      "file": "amulet_the_cats_eye.webp",
+      "w": 54,
+      "h": 97
+    },
+    "Crescent Moon": {
+      "file": "amulet_amulet.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Mara's Kaleidoscope": {
+      "file": "amulet_maras_kaleidoscope.webp",
+      "w": 87,
+      "h": 98
+    },
+    "Atma's Scarab": {
+      "file": "amulet_atma_scarab.webp",
+      "w": 62,
+      "h": 96
+    },
+    "Dwarf Star": {
+      "file": "ring_dwarf_star.webp",
+      "w": 86,
+      "h": 82
+    },
+    "Raven Frost": {
+      "file": "ring_raven_frost.webp",
+      "w": 96,
+      "h": 61
+    },
+    "Highlord's Wrath": {
+      "file": "amulet_highlords_wrath.webp",
+      "w": 89,
+      "h": 98
+    },
+    "Saracen's Chance": {
+      "file": "amulet_saracens_chance.webp",
+      "w": 66,
+      "h": 98
+    },
+    "The Scalper": {
+      "file": "axe_throwing_axe.webp",
+      "w": 69,
+      "h": 128
+    },
+    "Bloodmoon": {
+      "file": "sword_hexfire.webp",
+      "w": 37,
+      "h": 128
+    },
+    "Djinn Slayer": {
+      "file": "sword_scimitar.webp",
+      "w": 33,
+      "h": 128
+    },
+    "Deathbit": {
+      "file": "knife_throwing_knife.webp",
+      "w": 69,
+      "h": 128
+    },
+    "Razor's Edge": {
+      "file": "axe_the_gnasher.webp",
+      "w": 53,
+      "h": 128
+    },
+    "Tomb Reaver": {
+      "file": "polearm_poleaxe.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Death's Web": {
+      "file": "wand_grim_wand.webp",
+      "w": 64,
+      "h": 128
+    },
+    "Nature's Peace": {
+      "file": "ring_natures_peace.webp",
+      "w": 90,
+      "h": 97
+    },
+    "Seraph's Hymn": {
+      "file": "amulet_seraphs_hymn.webp",
+      "w": 98,
+      "h": 98
+    },
+    "Horizon's Tornado": {
+      "file": "mace_flail.webp",
+      "w": 71,
+      "h": 128
+    },
+    "Stone Crusher": {
+      "file": "hammer_war_hammer.webp",
+      "w": 67,
+      "h": 128
+    },
+    "Jade Talon": {
+      "file": "h2h_katar.webp",
+      "w": 46,
+      "h": 128
+    },
+    "Shadow Dancer": {
+      "file": "boot_plate_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Soul Drainer": {
+      "file": "glove_bracers_m.webp",
+      "w": 128,
+      "h": 114
+    },
+    "Rune Master": {
+      "file": "axe_double_axe.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Death Cleaver": {
+      "file": "axe_war_axe.webp",
+      "w": 74,
+      "h": 128
+    },
+    "Executioner's Justice": {
+      "file": "axe_giant_axe.webp",
+      "w": 68,
+      "h": 128
+    },
+    "Stoneraven": {
+      "file": "spear_maiden_spear.webp",
+      "w": 34,
+      "h": 128
+    },
+    "Wisp Projector": {
+      "file": "ring_wisp.webp",
+      "w": 81,
+      "h": 97
+    },
+    "Gargoyle's Bite": {
+      "file": "javelin_throwing_spear.webp",
+      "w": 28,
+      "h": 128
+    },
+    "Lacerator": {
+      "file": "axe_balanced_axe.webp",
+      "w": 125,
+      "h": 128
+    },
+    "Viperfork": {
+      "file": "spear_brandistock.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Ethereal Edge": {
+      "file": "axe_broad_axe.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Demonhorn's Edge": {
+      "file": "helmet_horned_helm.webp",
+      "w": 71,
+      "h": 128
+    },
+    "The Reaper's Toll": {
+      "file": "polearm_scythe.webp",
+      "w": 54,
+      "h": 128
+    },
+    "Alma Negra": {
+      "file": "shield_rondache.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Ghostflame": {
+      "file": "knife_blade.webp",
+      "w": 36,
+      "h": 128
+    },
+    "Gimmershred": {
+      "file": "axe_throwing_axe.webp",
+      "w": 69,
+      "h": 128
+    },
+    "Griffon's Eye": {
+      "file": "circlet_diadem.webp",
+      "w": 128,
+      "h": 91
+    },
+    "Windhammer": {
+      "file": "hammer_maul.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Steel Pillar": {
+      "file": "spear_pike.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Andariel's Visage": {
+      "file": "helmet_mask.webp",
+      "w": 128,
+      "h": 110
+    },
+    "Dragonscale": {
+      "file": "shield_aerin_shield.webp",
+      "w": 55,
+      "h": 128
+    },
+    "Boneshade": {
+      "file": "wand_gravenspine.webp",
+      "w": 56,
+      "h": 128
+    },
+    "Flamebellow": {
+      "file": "sword_kinemils_awl.webp",
+      "w": 29,
+      "h": 128
+    },
+    "Kira's Guardian": {
+      "file": "circlet_tiara.webp",
+      "w": 128,
+      "h": 95
+    },
+    "Stormlash": {
+      "file": "mace_flail.webp",
+      "w": 71,
+      "h": 128
+    },
+    "Halaberd's Reign": {
+      "file": "helmet_assault_helmet.webp",
+      "w": 104,
+      "h": 128
+    },
+    "Frostwind": {
+      "file": "sword_hellplague.webp",
+      "w": 80,
+      "h": 128
+    },
+    "Marrowwalk": {
+      "file": "boot_chain_boots.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Metalgrid": {
+      "file": "amulet_amulet.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Carrion Wind": {
+      "file": "ring_carrion_wind.webp",
+      "w": 97,
+      "h": 96
+    },
+    "Astreon's Iron Ward": {
+      "file": "scepter_war_scepter.webp",
+      "w": 80,
+      "h": 128
+    },
+    "Annihilus": {
+      "file": "charm_annihilus.webp",
+      "w": 54,
+      "h": 86
+    },
+    "Arioc's Needle": {
+      "file": "spear_spear.webp",
+      "w": 57,
+      "h": 128
+    },
+    "Cranebeak": {
+      "file": "axe_mindrend.webp",
+      "w": 87,
+      "h": 128
+    },
+    "Bonehew": {
+      "file": "polearm_bardiche.webp",
+      "w": 54,
+      "h": 128
+    },
+    "Head Hunter's Glory": {
+      "file": "shield_wall_of_the_eyeless.webp",
+      "w": 98,
+      "h": 128
+    },
+    "Steelrend": {
+      "file": "glove_gaunlets_h.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Randomizing Stone": {
+      "file": "quest_randomize_stone.webp",
+      "w": 94,
+      "h": 97
+    },
+    "The Perfect Cell": {
+      "file": "charm_charm_small3.webp",
+      "w": 90,
+      "h": 84
+    },
+    "Doomfletch's Prism": {
+      "file": "bow_doomfletchs_prism.webp",
+      "w": 68,
+      "h": 128
+    },
+    "Mjolnir": {
+      "file": "hammer_mythical_mjolnir.webp",
+      "w": 112,
+      "h": 128
+    },
+    "Mephisto's Will": {
+      "file": "wand_mephistos_will.webp",
+      "w": 17,
+      "h": 128
+    },
+    "The Grim Reaper's Harvester": {
+      "file": "polearm_the_grim_reapers_harvester.webp",
+      "w": 63,
+      "h": 128
+    },
+    "Aegis of Corruption": {
+      "file": "armor_aegis_of_corruption.webp",
+      "w": 83,
+      "h": 128
+    },
+    "Imperius' Undying Wrath": {
+      "file": "orb_imperius_undying_wrath.webp",
+      "w": 42,
+      "h": 128
+    },
+    "Tal Rasha's Final Whisper": {
+      "file": "knife_tal_rashas_final_whisper.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Mephisto's Nightmare": {
+      "file": "sword_baals_vile_whisper.webp",
+      "w": 67,
+      "h": 128
+    },
+    "Headhunter": {
+      "file": "belt_headhunter.webp",
+      "w": 128,
+      "h": 69
+    },
+    "Monkey King's Bar": {
+      "file": "staff_monkey_kings_bar.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Inarius' Rod of Infinite Thought": {
+      "file": "scepter_inarius_rod.webp",
+      "w": 78,
+      "h": 128
+    },
+    "Duriel's Claws of Festering Agony": {
+      "file": "h2h_duriels_claws.webp",
+      "w": 47,
+      "h": 128
+    },
+    "Rathma's Eternal Reign": {
+      "file": "knife_rathmas_eternal_reign.webp",
+      "w": 43,
+      "h": 128
+    },
+    "Avatar of Nature's Infused Horns": {
+      "file": "pelt_avatar_of_nature_horns.webp",
+      "w": 128,
+      "h": 128
+    },
+    "Natalya's Bloodied Executioner": {
+      "file": "sword_natalyas_bloodied_executioner.webp",
+      "w": 46,
+      "h": 128
+    },
+    "Lux Aeterna, Hope of Dawn": {
+      "file": "scepter_lux_aeterna.webp",
+      "w": 41,
+      "h": 128
+    },
+    "Frostmourne": {
+      "file": "sword_frostmourne.webp",
+      "w": 43,
+      "h": 128
+    },
+    "Lich King's Essence": {
+      "file": "amulet_lich_king_essence.webp",
+      "w": 87,
+      "h": 94
+    },
+    "Eternal Hourglass of the Timeless Sands": {
+      "file": "charm_eternal_hourglass.webp",
+      "w": 68,
+      "h": 128
+    },
+    "Tathamet's Awakening": {
+      "file": "circlet_tathamets_awakening.webp",
+      "w": 128,
+      "h": 90
+    },
+    "Mythical Highlord's Wrath": {
+      "file": "amulet_mythical_highlords_wrath.webp",
+      "w": 82,
+      "h": 98
+    },
+    "Vessel of Souls": {
+      "file": "amulet_vessel_of_souls.webp",
+      "w": 72,
+      "h": 97
+    },
+    "Battlemage Ascendancy Stone": {
+      "file": "charm_battlemage_stone.webp",
+      "w": 89,
+      "h": 90
+    },
+    "Awakened Ascendancy Stone": {
+      "file": "charm_awakened_stone.webp",
+      "w": 89,
+      "h": 90
+    },
+    "Blademaster Ascendancy Stone": {
+      "file": "charm_blademaster_stone.webp",
+      "w": 89,
+      "h": 90
+    },
+    "Nomad Ascendancy Stone": {
+      "file": "charm_nomad_stone.webp",
+      "w": 89,
+      "h": 91
+    },
+    "Ironbolt Ascendancy Stone": {
+      "file": "charm_ironbolt_stone.webp",
+      "w": 87,
+      "h": 89
+    },
+    "Arcanist Ascendancy Stone": {
+      "file": "charm_arcanist_stone.webp",
+      "w": 88,
+      "h": 90
+    },
+    "Soul Warden Ascendancy Stone": {
+      "file": "charm_soul_warden_stone.webp",
+      "w": 88,
+      "h": 90
+    },
+    "Sharpshooter Ascendancy Stone": {
+      "file": "charm_sharpshooter_stone.webp",
+      "w": 87,
+      "h": 89
+    },
+    "Starborn Ascendancy Stone": {
+      "file": "charm_starborn_stone.webp",
+      "w": 87,
+      "h": 89
+    },
+    "Bloodmage Ascendancy Stone": {
+      "file": "charm_bloodmage_stone.webp",
+      "w": 87,
+      "h": 88
+    },
+    "Lifebreaker Ascendancy Stone": {
+      "file": "charm_lifebreaker_stone.webp",
+      "w": 89,
+      "h": 91
+    },
+    "Worldshaper Ascendancy Stone": {
+      "file": "charm_worldshaper_stone.webp",
+      "w": 87,
+      "h": 91
+    },
+    "Stance Dancer Ascendancy Stone": {
+      "file": "charm_stance_dancer_stone.webp",
+      "w": 88,
+      "h": 89
+    },
+    "Mana Warden Ascendancy Stone": {
+      "file": "charm_mana_warden_stone.webp",
+      "w": 87,
+      "h": 89
+    },
+    "Berserker Ascendancy Stone": {
+      "file": "charm_berserker_stone.webp",
+      "w": 87,
+      "h": 88
+    },
+    "Iris of End Times": {
+      "file": "quiver_iris_of_end_times.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Rain of Pain": {
+      "file": "quiver_rain_of_pain.webp",
+      "w": 44,
+      "h": 128
+    },
+    "Kill Ledger": {
+      "file": "charm_kill_ledger.webp",
+      "w": 91,
+      "h": 90
+    },
+    "Gheed's Fortune": {
+      "file": "charm_charm_large.webp",
+      "w": 45,
+      "h": 128
+    },
+    "The Triune's Harbinger of Apocalypse": {
+      "file": "staff_the_triune_harbinger.webp",
+      "w": 34,
+      "h": 128
+    },
+    "Orion": {
+      "file": "bow_orion.webp",
+      "w": 42,
+      "h": 128
+    },
+    "Athulua's Final Hunt": {
+      "file": "javelin_athulua_final_hunt.webp",
+      "w": 40,
+      "h": 128
+    },
+    "Rathma's Endlessly Bleeding Spine": {
+      "file": "javelin_rathma_endlessly_bleeding_spine.webp",
+      "w": 28,
+      "h": 128
+    },
+    "Yaerius' Celestial Beacon": {
+      "file": "javelin_yaerius_celestial_beacon.webp",
+      "w": 47,
+      "h": 128
+    },
+    "Ancient Totem of Scosglen": {
+      "file": "club_ancient_totem_of_scosglen.webp",
+      "w": 45,
+      "h": 128
+    },
+    "El'druin, Excalibur of the Light": {
+      "file": "sword_eldruin_excalibur_of_the_light.webp",
+      "w": 28,
+      "h": 128
+    },
+    "Rathma's Eternal Skull": {
+      "file": "charm_rathma_eternal_skull.webp",
+      "w": 80,
+      "h": 98
+    },
+    "Orpheus' Pillar of Hope": {
+      "file": "staff_orpheus_pillar_of_hope.webp",
+      "w": 30,
+      "h": 128
+    },
+    "Tsukuyomi's Dying Light": {
+      "file": "sword_tsukuyomi_dying_light.webp",
+      "w": 88,
+      "h": 128
+    },
+    "The Ties That Bind": {
+      "file": "ring_the_ties_that_bind_fire.webp",
+      "w": 86,
+      "h": 70
+    },
+    "Void Crescent of a Thousand Cuts": {
+      "file": "axe_void_crescent.webp",
+      "w": 34,
+      "h": 128
+    },
+    "Hellfire Torch": {
+      "file": "torch_torch.webp",
+      "w": 34,
+      "h": 128
+    },
+    "Quick Death": {
+      "file": "knife_shuriken.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Sunset of the Eastern Sun": {
+      "file": "knife_shuriken.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Death's Game": {
+      "file": "knife_shuriken.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Baal's Vile Whisper": {
+      "file": "knife_baals_vile_whisper_shuriken.webp",
+      "w": 125,
+      "h": 128
+    },
+    "Ember of Creation": {
+      "file": "gem_ember_of_creation.webp",
+      "w": 63,
+      "h": 95
+    },
+    "The Soul Engine": {
+      "file": "armor_the_soul_engine.webp",
+      "w": 67,
+      "h": 128
+    },
+    "Dreadfang": {
+      "file": "sword_two_handed_sword.webp",
+      "w": 27,
+      "h": 128
+    },
+    "Wraithstep": {
+      "file": "boot_light_plate_boots.webp",
+      "w": 109,
+      "h": 128
+    },
+    "Bloodpact Shard": {
+      "file": "knife_dirk.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Sling": {
+      "file": "ring_ring.webp",
+      "w": 87,
+      "h": 85
+    },
+    "Opalvein": {
+      "file": "ring_ring.webp",
+      "w": 87,
+      "h": 85
+    },
+    "Entropy Locket": {
+      "file": "amulet_amulet.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Hellwarden's Will": {
+      "file": "helmet_mask.webp",
+      "w": 128,
+      "h": 110
+    },
+    "Voidforge": {
+      "file": "sword_voidforge.webp",
+      "w": 57,
+      "h": 128
+    },
+    "The Perfect Cello": {
+      "file": "charm_charm_small.webp",
+      "w": 87,
+      "h": 89
+    },
+    "Cold Rupture": {
+      "file": "charm_charm_large.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Flame Rift": {
+      "file": "charm_charm_large.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Crack of the Heavens": {
+      "file": "charm_charm_large.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Rotting Fissure": {
+      "file": "charm_charm_large.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Bone Break": {
+      "file": "charm_charm_large.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Black Cleft": {
+      "file": "charm_charm_large.webp",
+      "w": 45,
+      "h": 128
+    }
+  },
+  "sets": {
+    "Achilles' Force": {
+      "file": "glove_gaunlets_h.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Achilles' Girdle": {
+      "file": "belt_girdle_h.webp",
+      "w": 128,
+      "h": 71
+    },
+    "Achilles' Heel": {
+      "file": "boot_plate_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Helm of Spirits": {
+      "file": "circlet_spirit_crown.webp",
+      "w": 95,
+      "h": 128
+    },
+    "Optic Amulet": {
+      "file": "amulet_optic_amulet.webp",
+      "w": 94,
+      "h": 97
+    },
+    "Tharn's Ward": {
+      "file": "helmet_duskdeep.webp",
+      "w": 88,
+      "h": 128
+    },
+    "The Acolyte's Spirit": {
+      "file": "ring_ring5.webp",
+      "w": 95,
+      "h": 82
+    },
+    "Wanderer's Waltz": {
+      "file": "boot_crystal_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Band of War": {
+      "file": "amulet_amulet4.webp",
+      "w": 96,
+      "h": 91
+    },
+    "Band of Death": {
+      "file": "ring_ring.webp",
+      "w": 87,
+      "h": 85
+    },
+    "Band of Pestilence": {
+      "file": "ring_ring.webp",
+      "w": 87,
+      "h": 85
+    },
+    "Shepherd's Blessing": {
+      "file": "glove_light_gauntlets.webp",
+      "w": 128,
+      "h": 119
+    },
+    "Tasselhoff's Jerkin": {
+      "file": "armor_elven_chain.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Tasselhoff's Breaches": {
+      "file": "boot_light_plate_boots.webp",
+      "w": 109,
+      "h": 128
+    },
+    "Arctic Mitts": {
+      "file": "glove_light_gauntlets.webp",
+      "w": 128,
+      "h": 119
+    },
+    "Gabrielle's Pointed Staff": {
+      "file": "spear_maiden_spear.webp",
+      "w": 34,
+      "h": 128
+    },
+    "Gabrielle's Revelation": {
+      "file": "circlet_spirit_crown.webp",
+      "w": 95,
+      "h": 128
+    },
+    "Lixo's Flight": {
+      "file": "circlet_faceguard.webp",
+      "w": 112,
+      "h": 128
+    },
+    "Lixo's Jewel": {
+      "file": "ring_ring.webp",
+      "w": 87,
+      "h": 85
+    },
+    "Aanna's Touch": {
+      "file": "spear_pike.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Aanna's Dress": {
+      "file": "armor_plate_mail.webp",
+      "w": 128,
+      "h": 121
+    },
+    "Aanna's Skill": {
+      "file": "glove_light_gauntlets.webp",
+      "w": 128,
+      "h": 119
+    },
+    "Aanna's March": {
+      "file": "boot_light_plate_boots.webp",
+      "w": 109,
+      "h": 128
+    },
+    "Alaziel's Protector": {
+      "file": "armor_alaziel_armor.webp",
+      "w": 92,
+      "h": 128
+    },
+    "Alaziel's Buckler": {
+      "file": "shield_mosers_blessed_circle.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Alaziel's Grip": {
+      "file": "glove_bracers_m.webp",
+      "w": 128,
+      "h": 114
+    },
+    "Noir's Anticipation": {
+      "file": "circlet_spirit_crown.webp",
+      "w": 95,
+      "h": 128
+    },
+    "Noir's Tenacity": {
+      "file": "glove_iron_guards.webp",
+      "w": 126,
+      "h": 128
+    },
+    "Noir's Stride": {
+      "file": "boot_crystal_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Milea's Crown": {
+      "file": "circlet_diadem.webp",
+      "w": 128,
+      "h": 91
+    },
+    "Milea's Maim": {
+      "file": "spear_maiden_spear.webp",
+      "w": 34,
+      "h": 128
+    },
+    "Death's Touch": {
+      "file": "h2h_katar.webp",
+      "w": 46,
+      "h": 128
+    },
+    "Death's Guard": {
+      "file": "armor_cloak.webp",
+      "w": 75,
+      "h": 128
+    },
+    "Vega's Beauty": {
+      "file": "circlet_vegas_beauty.webp",
+      "w": 97,
+      "h": 128
+    },
+    "Motoko's Power": {
+      "file": "sword_katana.webp",
+      "w": 82,
+      "h": 128
+    },
+    "Motoko's Kimono": {
+      "file": "armor_motokos_kimono.webp",
+      "w": 91,
+      "h": 128
+    },
+    "Motoko's Charm": {
+      "file": "amulet_amulet4.webp",
+      "w": 96,
+      "h": 91
+    },
+    "Alora's Silhouette": {
+      "file": "armor_cloak.webp",
+      "w": 75,
+      "h": 128
+    },
+    "Alora's Vestige": {
+      "file": "boot_chain_boots.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Sascha's Deadly Point": {
+      "file": "h2h_katar.webp",
+      "w": 46,
+      "h": 128
+    },
+    "Sascha's Bosom": {
+      "file": "armor_spiked_armor.webp",
+      "w": 128,
+      "h": 78
+    },
+    "Sascha's Jagged Strike": {
+      "file": "h2h_scissors_katar.webp",
+      "w": 45,
+      "h": 128
+    },
+    "Ihsan's Gaze": {
+      "file": "helmet_ihsan_helm.webp",
+      "w": 128,
+      "h": 87
+    },
+    "Ihsan's Spine": {
+      "file": "armor_cloak.webp",
+      "w": 75,
+      "h": 128
+    },
+    "Ihsan's Clutch": {
+      "file": "glove_gaunlets_h.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Ihsan's Coil": {
+      "file": "belt_muscle_wrap.webp",
+      "w": 128,
+      "h": 61
+    },
+    "Borik's Nightblade": {
+      "file": "sword_katana.webp",
+      "w": 82,
+      "h": 128
+    },
+    "Borik's Dark Binding": {
+      "file": "armor_spiked_armor.webp",
+      "w": 128,
+      "h": 78
+    },
+    "Infernal Torch": {
+      "file": "wand_grim_wand.webp",
+      "w": 64,
+      "h": 128
+    },
+    "Rathol's Gaze": {
+      "file": "helmet_mask.webp",
+      "w": 128,
+      "h": 110
+    },
+    "Rathol's Touch": {
+      "file": "polearm_necroscythe2.webp",
+      "w": 61,
+      "h": 128
+    },
+    "Wrathamon's Skull": {
+      "file": "helmet_wrathamons_skull.webp",
+      "w": 88,
+      "h": 128
+    },
+    "Ebola": {
+      "file": "amulet_amulet.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Wrathamon's Scythe of Doom": {
+      "file": "polearm_necroscythe2.webp",
+      "w": 61,
+      "h": 128
+    },
+    "Wrathamon's Cloak of Night": {
+      "file": "armor_wrathamon_cloak.webp",
+      "w": 58,
+      "h": 128
+    },
+    "The Lich's Pate": {
+      "file": "helmet_mask.webp",
+      "w": 128,
+      "h": 110
+    },
+    "The Lich's Curse": {
+      "file": "wand_yew_wand.webp",
+      "w": 56,
+      "h": 128
+    },
+    "The Lich's Cage": {
+      "file": "armor_crypt_armor.webp",
+      "w": 74,
+      "h": 128
+    },
+    "The Lich's Clutch": {
+      "file": "glove_bracers_m.webp",
+      "w": 128,
+      "h": 114
+    },
+    "Nupraptor's Skull": {
+      "file": "helmet_deaths_cowl.webp",
+      "w": 104,
+      "h": 128
+    },
+    "Nupraptor's Eradicator": {
+      "file": "knife_ceremonial_dagger.webp",
+      "w": 42,
+      "h": 128
+    },
+    "Lim-Dul's Hex": {
+      "file": "wand_blackhand_key.webp",
+      "w": 42,
+      "h": 128
+    },
+    "Lim Dul's Oath": {
+      "file": "boot_chain_boots.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Mask of the Angel of Death": {
+      "file": "helmet_ordinance_helm.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Flesh of the Angel of Chaos": {
+      "file": "armor_ordinance_armor.webp",
+      "w": 84,
+      "h": 128
+    },
+    "Reaver of the Angel of Annihilation": {
+      "file": "polearm_necroscythe2.webp",
+      "w": 61,
+      "h": 128
+    },
+    "Berserker's Hatchet": {
+      "file": "axe_hand_axe.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Messerschmidt's Reaver": {
+      "file": "axe_the_chieftan.webp",
+      "w": 74,
+      "h": 128
+    },
+    "Messerschmidt's Burning Palm": {
+      "file": "glove_bracers_m.webp",
+      "w": 128,
+      "h": 114
+    },
+    "Messerschmidt's Brace": {
+      "file": "boot_light_plate_boots.webp",
+      "w": 109,
+      "h": 128
+    },
+    "Blood Baron": {
+      "file": "sword_the_patriarch.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Kain's Wings": {
+      "file": "glove_iron_guards.webp",
+      "w": 126,
+      "h": 128
+    },
+    "Kain's Life": {
+      "file": "ring_ring.webp",
+      "w": 87,
+      "h": 85
+    },
+    "Krakerag's Point": {
+      "file": "sword_war_sword.webp",
+      "w": 35,
+      "h": 128
+    },
+    "Krakerag's Slay": {
+      "file": "sword_giant_sword.webp",
+      "w": 27,
+      "h": 128
+    },
+    "Darkshade's Haze": {
+      "file": "helmet_assault_helmet.webp",
+      "w": 104,
+      "h": 128
+    },
+    "Darkshade's Skewer": {
+      "file": "mace_bloodrise.webp",
+      "w": 43,
+      "h": 128
+    },
+    "Darkshade's Evisceration": {
+      "file": "mace_flail.webp",
+      "w": 71,
+      "h": 128
+    },
+    "Darkshade's Binding": {
+      "file": "belt_girdle_h.webp",
+      "w": 128,
+      "h": 71
+    },
+    "Sarevok's Malicious Stare": {
+      "file": "helmet_assault_helmet.webp",
+      "w": 104,
+      "h": 128
+    },
+    "Sarevok's Master": {
+      "file": "sword_great_sword.webp",
+      "w": 47,
+      "h": 128
+    },
+    "Worldstone Shard": {
+      "file": "ring_barb_ring.webp",
+      "w": 97,
+      "h": 76
+    },
+    "Milabrega's Rod": {
+      "file": "scepter_war_scepter.webp",
+      "w": 80,
+      "h": 128
+    },
+    "Milabrega's Orb": {
+      "file": "shield_umbral_disk.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Anduin's Vanquisher": {
+      "file": "hammer_war_hammer.webp",
+      "w": 67,
+      "h": 128
+    },
+    "Anduin's Protector": {
+      "file": "shield_aerin_shield.webp",
+      "w": 55,
+      "h": 128
+    },
+    "Malek's Strike": {
+      "file": "sword_paladin_sword.webp",
+      "w": 30,
+      "h": 128
+    },
+    "Malek's Pride": {
+      "file": "armor_elven_chain.webp",
+      "w": 79,
+      "h": 128
+    },
+    "Malek's Grip": {
+      "file": "belt_muscle_wrap.webp",
+      "w": 128,
+      "h": 61
+    },
+    "Lancelot's Prediction": {
+      "file": "sword_paladin_sword.webp",
+      "w": 30,
+      "h": 128
+    },
+    "Griffith's Stare": {
+      "file": "helmet_griffith_helmet.webp",
+      "w": 115,
+      "h": 128
+    },
+    "Griffith's Charm": {
+      "file": "amulet_behelit.webp",
+      "w": 48,
+      "h": 91
+    },
+    "Griffith's Parry": {
+      "file": "sword_hexfire.webp",
+      "w": 37,
+      "h": 128
+    },
+    "Griffith's Protection": {
+      "file": "armor_light_plate.webp",
+      "w": 94,
+      "h": 128
+    },
+    "Darien's Wit": {
+      "file": "helmet_full_helm.webp",
+      "w": 95,
+      "h": 128
+    },
+    "Darien's Band": {
+      "file": "belt_girdle_h.webp",
+      "w": 128,
+      "h": 71
+    },
+    "Arcanna's Sign": {
+      "file": "amulet_amulet.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Arcanna's Flesh": {
+      "file": "armor_light_plate.webp",
+      "w": 94,
+      "h": 128
+    },
+    "Tara's Vision": {
+      "file": "circlet_taras_circlet.webp",
+      "w": 128,
+      "h": 67
+    },
+    "Tara's Gown": {
+      "file": "armor_cape.webp",
+      "w": 64,
+      "h": 128
+    },
+    "Tara's Mirror": {
+      "file": "shield_taras_mirror.webp",
+      "w": 95,
+      "h": 128
+    },
+    "Naj's Light Plate": {
+      "file": "armor_plate_mail.webp",
+      "w": 128,
+      "h": 121
+    },
+    "Divada's Focus": {
+      "file": "sword_mana_blade.webp",
+      "w": 59,
+      "h": 128
+    },
+    "Divada's Shawl": {
+      "file": "armor_robe.webp",
+      "w": 64,
+      "h": 128
+    },
+    "Raistlin's Glance": {
+      "file": "circlet_raistlin_mask.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Raistlin's Mark": {
+      "file": "amulet_amulet4.webp",
+      "w": 96,
+      "h": 91
+    },
+    "Robes of the Arch-Magi": {
+      "file": "armor_light_plate.webp",
+      "w": 94,
+      "h": 128
+    },
+    "Jade Star": {
+      "file": "amulet_sorceress_amulet.webp",
+      "w": 72,
+      "h": 94
+    },
+    "Jade Crest": {
+      "file": "ring_sorceress_ring.webp",
+      "w": 92,
+      "h": 65
+    },
+    "Arion's Heart": {
+      "file": "armor_archmage_robe2.webp",
+      "w": 80,
+      "h": 128
+    },
+    "Hsarus' Iron Heel": {
+      "file": "boot_chain_boots.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Blackwing's Force": {
+      "file": "sword_giant_sword.webp",
+      "w": 27,
+      "h": 128
+    },
+    "Blackwing's Clench": {
+      "file": "glove_light_gauntlets.webp",
+      "w": 128,
+      "h": 119
+    },
+    "Blackwing's Icewoven Strap": {
+      "file": "boot_chain_boots.webp",
+      "w": 121,
+      "h": 128
+    },
+    "Danarak's Mallet": {
+      "file": "hammer_maul.webp",
+      "w": 52,
+      "h": 128
+    },
+    "Keeper of the Fire": {
+      "file": "sword_ginthers_rift.webp",
+      "w": 60,
+      "h": 128
+    },
+    "Gaia's Carapace": {
+      "file": "armor_gaia_carapace.webp",
+      "w": 94,
+      "h": 128
+    },
+    "Persephone's Heel": {
+      "file": "boot_plate_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Jaheira's Force": {
+      "file": "amulet_druid_amulet.webp",
+      "w": 66,
+      "h": 97
+    },
+    "Jaheira's Volition": {
+      "file": "armor_plate_mail.webp",
+      "w": 128,
+      "h": 121
+    },
+    "Jaheira's Caress": {
+      "file": "glove_gaunlets_h.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Hide of the Tarrasque": {
+      "file": "armor_light_plate.webp",
+      "w": 94,
+      "h": 128
+    },
+    "Claws of the Dragon": {
+      "file": "glove_iron_guards.webp",
+      "w": 126,
+      "h": 128
+    },
+    "Rogue's Suit-N (merc only)": {
+      "file": "armor_rogue_armor.webp",
+      "w": 81,
+      "h": 128
+    },
+    "Mercenary's Pike-N (merc only)": {
+      "file": "spear_spetum.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Iron Wolf's Broad Sword-N (merc only)": {
+      "file": "sword_griswolds_edge.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Iron Wolf's Robes-N (merc only)": {
+      "file": "armor_robe.webp",
+      "w": 64,
+      "h": 128
+    },
+    "Iron Wolf's Guard-N (merc only)": {
+      "file": "shield_iron_wolf_shield.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Barbarian's Point-N (merc only)": {
+      "file": "sword_blacktongue.webp",
+      "w": 25,
+      "h": 128
+    },
+    "Barbarian's Visage-N (merc only)": {
+      "file": "helmet_horned_helm.webp",
+      "w": 71,
+      "h": 128
+    },
+    "Rogue's Suit-NM (merc only)": {
+      "file": "armor_rogue_armor.webp",
+      "w": 81,
+      "h": 128
+    },
+    "Mercenary's Pike-NM (merc only)": {
+      "file": "spear_spetum.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Iron Wolf's Broad Sword-NM (merc only)": {
+      "file": "sword_broad_sword.webp",
+      "w": 68,
+      "h": 128
+    },
+    "Iron Wolf's Robes-NM (merc only)": {
+      "file": "armor_robe.webp",
+      "w": 64,
+      "h": 128
+    },
+    "Iron Wolf's Guard-NM (merc only)": {
+      "file": "shield_iron_wolf_shield.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Barbarian's Point-NM (merc only)": {
+      "file": "sword_blacktongue.webp",
+      "w": 25,
+      "h": 128
+    },
+    "Barbarian's Visage-NM (merc only)": {
+      "file": "helmet_horned_helm.webp",
+      "w": 71,
+      "h": 128
+    },
+    "Rogue's Suit-H (merc only)": {
+      "file": "armor_rogue_armor.webp",
+      "w": 81,
+      "h": 128
+    },
+    "Mercenary's Pike-H (merc only)": {
+      "file": "spear_spetum.webp",
+      "w": 58,
+      "h": 128
+    },
+    "Iron Wolf's Broad Sword-H (merc only)": {
+      "file": "sword_griswolds_edge.webp",
+      "w": 70,
+      "h": 128
+    },
+    "Iron Wolf's Robes-H (merc only)": {
+      "file": "armor_robe.webp",
+      "w": 64,
+      "h": 128
+    },
+    "Iron Wolf's Guard-H (merc only)": {
+      "file": "shield_iron_wolf_shield.webp",
+      "w": 127,
+      "h": 128
+    },
+    "Barbarian's Point-H (merc only)": {
+      "file": "sword_blacktongue.webp",
+      "w": 25,
+      "h": 128
+    },
+    "Barbarian's Visage-H (merc only)": {
+      "file": "helmet_horned_helm.webp",
+      "w": 71,
+      "h": 128
+    },
+    "Cow King's Steel Horns": {
+      "file": "helmet_crown_of_thieves.webp",
+      "w": 103,
+      "h": 128
+    },
+    "Cow King's Steel Hoofs": {
+      "file": "boot_crystal_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Tyrael's Faith": {
+      "file": "shield_steelclash.webp",
+      "w": 85,
+      "h": 128
+    },
+    "The Dark One's Slicer": {
+      "file": "sword_warlock_blade.webp",
+      "w": 37,
+      "h": 128
+    },
+    "The Dark One's Shroud": {
+      "file": "armor_cape.webp",
+      "w": 64,
+      "h": 128
+    },
+    "Blade of the Kingslayer": {
+      "file": "sword_warlock_blade.webp",
+      "w": 37,
+      "h": 128
+    },
+    "The Secret of Grief": {
+      "file": "ring_ring.webp",
+      "w": 87,
+      "h": 85
+    },
+    "The Future Undone": {
+      "file": "glove_bracers_m.webp",
+      "w": 128,
+      "h": 114
+    },
+    "Phylactery": {
+      "file": "amulet_amulet.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Power of the Void": {
+      "file": "wand_yew_wand.webp",
+      "w": 56,
+      "h": 128
+    },
+    "Eye of the Abyssal Dominion": {
+      "file": "ring_warlock_ring.webp",
+      "w": 86,
+      "h": 91
+    },
+    "March of the Abyssal Dominion": {
+      "file": "boot_plate_boots.webp",
+      "w": 113,
+      "h": 128
+    },
+    "Harbinger of Ruin's Merciless Rule": {
+      "file": "sword_warlock_blade.webp",
+      "w": 37,
+      "h": 128
+    },
+    "Harbinger of Ruin's Smoldering Gemstone": {
+      "file": "amulet_warlock_amulet.webp",
+      "w": 51,
+      "h": 98
+    },
+    "Harbinger of Ruin's Inevitable Conquest": {
+      "file": "belt_muscle_wrap.webp",
+      "w": 128,
+      "h": 61
     }
   }
 }

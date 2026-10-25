@@ -86,22 +86,37 @@ describe('committed game-data bundles', () => {
     }
   });
 
-  it('list icons.json in the manifest, only for known base codes, with every image file present', () => {
+  it('list icons.json in the manifest, keyed by known base codes, unique names and set item names, with every image file present', () => {
     const iconsText = readText('icons');
     expect(manifest.files.icons?.hash).toBe(createHash('sha256').update(iconsText, 'utf8').digest('hex'));
-    const { icons, esrVersion } = JSON.parse(iconsText) as IconsBundle;
-    expect(esrVersion).toBe(manifest.esrVersion);
+    const icons = JSON.parse(iconsText) as IconsBundle;
+    expect(icons.esrVersion).toBe(manifest.esrVersion);
+    expect(Object.keys(icons)).toEqual(['esrVersion', 'esrTag', 'bases', 'uniques', 'sets']);
+    expect(manifest.counts.itemIcons).toBe(Object.keys(icons.bases).length);
+    expect(manifest.counts.uniqueIcons).toBe(Object.keys(icons.uniques).length);
+    expect(manifest.counts.setIcons).toBe(Object.keys(icons.sets).length);
+    expect(Object.keys(icons.bases).length).toBeGreaterThan(300);
+    expect(Object.keys(icons.uniques).length).toBeGreaterThan(600);
+    expect(Object.keys(icons.sets).length).toBeGreaterThan(130);
+
     const codes = new Set(bases.map((base) => base.code));
-    const entries = Object.entries(icons);
-    expect(manifest.counts.itemIcons).toBe(entries.length);
-    expect(entries.length).toBeGreaterThan(300);
-    for (const [code, icon] of entries) {
-      expect(codes.has(code), code).toBe(true);
-      expect(icon.file).toMatch(/^[a-z0-9_-]+\.webp$/);
-      expect(Math.max(icon.w, icon.h)).toBeLessThanOrEqual(128);
-      expect(Math.min(icon.w, icon.h)).toBeGreaterThan(0);
-      expect(existsSync(resolve(OUTPUT_DIR, 'icons', icon.file)), icon.file).toBe(true);
+    const uniqueNames = new Set(lootfilter.uniques.map((unique) => unique.name));
+    const setItemNames = new Set(lootfilter.sets.map((item) => item.name));
+    for (const [section, known] of [
+      ['bases', codes],
+      ['uniques', uniqueNames],
+      ['sets', setItemNames],
+    ] as const) {
+      for (const [key, icon] of Object.entries(icons[section])) {
+        expect(known.has(key), `${section}: ${key}`).toBe(true);
+        expect(icon.file).toMatch(/^[a-z0-9_-]+\.webp$/);
+        expect(Math.max(icon.w, icon.h)).toBeLessThanOrEqual(128);
+        expect(Math.min(icon.w, icon.h)).toBeGreaterThan(0);
+        expect(existsSync(resolve(OUTPUT_DIR, 'icons', icon.file)), icon.file).toBe(true);
+      }
     }
+    // Every set item the Sets page shows is a setitems.txt row, so it can be looked up by its name
+    for (const item of sets.flatMap((set) => set.items)) expect(setItemNames.has(item.name), item.name).toBe(true);
   });
 
   it('contain the player-facing weapons and armors', () => {

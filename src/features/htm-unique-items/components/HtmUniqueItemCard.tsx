@@ -2,6 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FavoriteButton } from '@/core/components/FavoriteButton';
 import type { HtmUniqueItem } from '@/core/db';
+import { ItemIcon } from '@/features/game-data/components/ItemIcon';
 import { ItemSourceLine } from '@/features/game-data/components/ItemSourceLine';
 import type { SourceIndex } from '@/features/game-data/engine/sourceLookup';
 
@@ -27,7 +28,16 @@ export function HtmUniqueItemCard({
     <Card className="h-full">
       <CardHeader className="pb-0">
         <div className="flex items-start justify-between gap-2">
-          <CardTitle className="min-w-0 break-words text-lg text-amber-700 dark:text-amber-400">{item.name}</CardTitle>
+          <div className="flex min-w-0 items-start gap-3">
+            <ItemIcon item={{ kind: 'unique', name: item.name, code: item.baseItemCode }} size={48} className="rounded-md bg-muted/50" />
+            <div className="min-w-0 space-y-1">
+              <CardTitle className="break-words text-lg text-amber-700 dark:text-amber-400">{item.name}</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {item.baseItem}
+                {item.baseItemCode ? ` (${item.baseItemCode})` : ''}
+              </p>
+            </div>
+          </div>
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">
             {onToggleFavorite && (
               <FavoriteButton
@@ -44,10 +54,6 @@ export function HtmUniqueItemCard({
             <Badge variant="outline">Lvl {item.reqLevel}</Badge>
           </div>
         </div>
-        <p className="text-sm text-muted-foreground">
-          {item.baseItem}
-          {item.baseItemCode ? ` (${item.baseItemCode})` : ''}
-        </p>
         {item.isAncientCoupon && <p className="text-xs text-purple-600 dark:text-purple-400 font-medium">Ancient Coupon Unique</p>}
         {item.gambleItem && <p className="text-xs text-muted-foreground">Gamble: {item.gambleItem}</p>}
       </CardHeader>

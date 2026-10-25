@@ -1,3 +1,4 @@
+import { ItemIcon } from '@/features/game-data/components/ItemIcon';
 import type { EquipmentSlot, ItemRef, RunewordItemRef, WeaponSwapSlot } from '../buildData';
 import { useRunewordBases } from '../hooks/useRunewordBases';
 import { useSocketFillerCatalog } from '../hooks/useSocketFillerCatalog';
@@ -26,10 +27,14 @@ function RunewordBaseLine({ item, slot }: { readonly item: RunewordItemRef; read
   const state = useRunewordBases(item, slot);
   const label =
     state.status === 'ready' && state.chosenBase !== undefined ? baseSummary(state.chosenBase, state.typeNames) : (item.base?.name ?? '');
+  const code = item.base?.code;
   return (
-    <p>
-      <span className="text-xs font-medium text-muted-foreground">Base: </span>
-      {label}
+    <p className="flex items-center gap-1.5">
+      {code !== undefined && <ItemIcon item={{ kind: 'base', code }} size={24} />}
+      <span>
+        <span className="text-xs font-medium text-muted-foreground">Base: </span>
+        {label}
+      </span>
     </p>
   );
 }

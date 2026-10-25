@@ -1,3 +1,5 @@
+import type { TsvTable } from './tsv.ts';
+
 /**
  * Display text of a (colour-stripped) string-table entry. Multi-line item names are drawn bottom-up in game, so the
  * last line is the name and the lines above it are descriptors: "(Buckler, Pelta Lunata)\nAncient Coupon" →
@@ -16,4 +18,34 @@ export function displayName(text: string): string {
 export function resolveName(strings: ReadonlyMap<string, string>, key: string, fallback: string): string {
   const text = displayName(strings.get(key) ?? '');
   return text === '' ? fallback : text;
+}
+
+/** A uniqueitems.txt / setitems.txt row with a base code: its `index` key and the string-resolved display name. */
+export interface UniqueOrSetRow {
+  /** 0-based data-row number (row-numbered when the table was parsed with `keepExpansionRows`) */
+  readonly id: number;
+  /** The `index` column (string-table key and the slug source of the HD art maps) */
+  readonly index: string;
+  readonly name: string;
+  /** Base item code (`code` in uniqueitems.txt, `item` in setitems.txt) */
+  readonly code: string;
+  readonly disabled: boolean;
+}
+
+/** The rows of uniqueitems.txt (`codeColumn` = `code`) or setitems.txt (`item`) that name a base; others are skipped. */
+export function readUniqueOrSetRows(table: TsvTable, codeColumn: 'code' | 'item', strings: ReadonlyMap<string, string>): UniqueOrSetRow[] {
+  const entries: UniqueOrSetRow[] = [];
+  table.rows.forEach((row, id) => {
+    const code = row.str(codeColumn);
+    if (code === '') return;
+    const index = row.str('index');
+    entries.push({
+      id,
+      index,
+      name: resolveName(strings, index, index),
+      code,
+      disabled: row.has('disabled') && row.str('disabled') === '1',
+    });
+  });
+  return entries;
 }

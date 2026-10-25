@@ -128,7 +128,7 @@ export function BaseCard({ base, typeByCode, baseByCode, automodById, classNames
   return (
     <Card className="h-full gap-3 py-4">
       <CardHeader className="flex items-start gap-3 px-4">
-        <ItemIcon code={base.code} size={48} className="rounded-md bg-muted/50" />
+        <ItemIcon item={{ kind: 'base', code: base.code }} size={48} className="rounded-md bg-muted/50" />
         <div className="grid min-w-0 flex-1 gap-2">
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="min-w-0 text-lg">{base.name}</CardTitle>

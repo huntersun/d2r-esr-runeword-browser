@@ -1,6 +1,6 @@
 import type { LootFilterDataBundle, LootFilterItem, LootFilterUniqueOrSet } from '../engine/schema.ts';
 import type { BuildResult } from './bundleTypes.ts';
-import { resolveName } from './itemNames.ts';
+import { readUniqueOrSetRows, resolveName } from './itemNames.ts';
 import { optStr } from './model.ts';
 import { distinctFamilyTier } from './tiers.ts';
 import type { TsvTable } from './tsv.ts';
@@ -56,15 +56,8 @@ function readItemRows(tables: LootFilterTables, warnings: string[], strings: Rea
 }
 
 /** Rows with a base code, numbered by their 0-based data-row index (marker rows count but are not listed). */
-function readUniqueOrSetRows(table: TsvTable, codeColumn: string, strings: ReadonlyMap<string, string>): LootFilterUniqueOrSet[] {
-  const entries: LootFilterUniqueOrSet[] = [];
-  table.rows.forEach((row, id) => {
-    const code = row.str(codeColumn);
-    if (code === '') return;
-    const index = row.str('index');
-    entries.push({ id, name: resolveName(strings, index, index), code });
-  });
-  return entries;
+function lootFilterRows(table: TsvTable, codeColumn: 'code' | 'item', strings: ReadonlyMap<string, string>): LootFilterUniqueOrSet[] {
+  return readUniqueOrSetRows(table, codeColumn, strings).map(({ id, name, code }) => ({ id, name, code }));
 }
 
 export function buildLootFilterBundle(tables: LootFilterTables, strings: ReadonlyMap<string, string>): BuildResult<LootFilterDataBundle> {
@@ -86,8 +79,8 @@ export function buildLootFilterBundle(tables: LootFilterTables, strings: Readonl
 
   const sounds = tables.sounds.rows.map((row) => row.str('Sound'));
 
-  const uniques = readUniqueOrSetRows(tables.uniqueitems, 'code', strings);
-  const sets = readUniqueOrSetRows(tables.setitems, 'item', strings);
+  const uniques = lootFilterRows(tables.uniqueitems, 'code', strings);
+  const sets = lootFilterRows(tables.setitems, 'item', strings);
   const codes = new Set(items.map((item) => item.code));
   for (const [label, entries] of [
     ['unique', uniques],

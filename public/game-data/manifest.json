@@ -3,7 +3,7 @@
   "esrVersion": "3.2.24",
   "esrTag": "3.2.24",
   "esrCommit": "b0622767314f9bf65f9c3a2cdeacded0b2e04a7e",
-  "generatedAt": "2026-10-25T15:05:21.400Z",
+  "generatedAt": "2026-10-25T15:25:49.444Z",
   "files": {
     "types": {
       "hash": "cab8a44704bcb77dd1d552147ce4b2e16d2d30517780f10d4d1b55de7c1e294d",
@@ -54,8 +54,8 @@
       "bytes": 56620
     },
     "icons": {
-      "hash": "4f557e92ef1e0e3d16c6e4f505c6616f686d5bc19575a5f69de4208835818455",
-      "bytes": 31673
+      "hash": "bd3caac051d2650e777cd5482248ae8ab3da71155093f598009ce30a0b16775d",
+      "bytes": 121387
     }
   },
   "counts": {
@@ -130,7 +130,9 @@
     "craftingStacking": 31,
     "craftingRowsUsed": 717,
     "craftingRowsSkipped": 245,
-    "itemIcons": 356
+    "itemIcons": 356,
+    "uniqueIcons": 714,
+    "setIcons": 159
   },
   "warnings": [
     "bases: q86 (Scissors Suwayyah) is not in its own tier family [skr, 9qr, 7qr]; treated as normal",

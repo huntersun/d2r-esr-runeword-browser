@@ -6,6 +6,7 @@ import type { SetBonusGroup, SetInfo, SetItemInfo } from '../engine/schema';
 import type { SourceIndex } from '../engine/sourceLookup';
 import { DocsLink } from './CubeFamilySection';
 import { BonusLines } from './EnhanceParts';
+import { ItemIcon } from './ItemIcon';
 import { ItemSourceLine } from './ItemSourceLine';
 import { reqLevelText, SETS_ROUTE, setDifficulty, setDocsUrl, setFocusParams } from '../utils/sets';
 
@@ -47,13 +48,16 @@ function SetItemRow({
       )}
     >
       <div className="min-w-0 space-y-1">
-        <div>
-          <p className={cn('font-medium', SET_NAME)}>{item.name}</p>
-          <p className="text-xs text-muted-foreground">
-            {item.baseName}
-            {item.category !== '' && item.category !== item.baseName && ` · ${item.category}`}
-            {' · '}Lvl {item.level} · Req Lvl {item.reqLevel}
-          </p>
+        <div className="flex items-start gap-2.5">
+          <ItemIcon item={{ kind: 'set', name: item.name, code: item.code }} size={36} className="rounded-md bg-muted/50" />
+          <div className="min-w-0">
+            <p className={cn('font-medium', SET_NAME)}>{item.name}</p>
+            <p className="text-xs text-muted-foreground">
+              {item.baseName}
+              {item.category !== '' && item.category !== item.baseName && ` · ${item.category}`}
+              {' · '}Lvl {item.level} · Req Lvl {item.reqLevel}
+            </p>
+          </div>
         </div>
         <BonusLines lines={item.lines} />
         <ItemSourceLine index={sources} name={item.name} kind="set" />
