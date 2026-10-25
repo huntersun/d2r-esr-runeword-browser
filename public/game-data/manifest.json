@@ -3,7 +3,7 @@
   "esrVersion": "3.2.24",
   "esrTag": "3.2.24",
   "esrCommit": "b0622767314f9bf65f9c3a2cdeacded0b2e04a7e",
-  "generatedAt": "2026-10-25T09:53:41.394Z",
+  "generatedAt": "2026-10-25T11:01:32.773Z",
   "files": {
     "types": {
       "hash": "cab8a44704bcb77dd1d552147ce4b2e16d2d30517780f10d4d1b55de7c1e294d",
@@ -44,6 +44,14 @@
     "sets": {
       "hash": "c5a7e134c544e19960af110135a4394848750c237a9d119a15e99fed53689cde",
       "bytes": 153731
+    },
+    "skills": {
+      "hash": "18e1cb41e183a7fe50420196263699fb90b2419b2b56cfc37b6ca67dc58887ee",
+      "bytes": 32002
+    },
+    "crafting": {
+      "hash": "c60369006f5669ab5cd122256b21f956cff89f39c4a4173c631175e3808028be",
+      "bytes": 56620
     }
   },
   "counts": {
@@ -110,7 +118,14 @@
     "sets": 76,
     "setItems": 266,
     "setsHidden": 1,
-    "setItemsHidden": 4
+    "setItemsHidden": 4,
+    "skillClasses": 8,
+    "skills": 280,
+    "skillsSkipped": 0,
+    "craftingForgings": 84,
+    "craftingStacking": 31,
+    "craftingRowsUsed": 717,
+    "craftingRowsSkipped": 245
   },
   "warnings": [
     "bases: q86 (Scissors Suwayyah) is not in its own tier family [skr, 9qr, 7qr]; treated as normal",
@@ -121,6 +136,7 @@
     "bases: dropped cx1 (duplicate of cm1), cx2 (duplicate of cm2), cx3 (duplicate of cm3)",
     "affixes: p910 \"Apprentice's\" references unknown item type \"voib\"",
     "affixes: p911 \"Death Master's\" references unknown item type \"voib\"",
-    "affixes: p918 \"Death Master's\" references unknown item type \"voib\""
+    "affixes: p918 \"Death Master's\" references unknown item type \"voib\"",
+    "crafting: cubemain line 11716 \"VS + Any Weapon + vps\" is shadowed by an earlier dstone row with the same ingredients"
   ]
 }

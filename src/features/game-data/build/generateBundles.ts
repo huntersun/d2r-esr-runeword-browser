@@ -1,11 +1,13 @@
 import type {
   AffixesBundle,
   BasesBundle,
+  CraftingBundle,
   CubeBundle,
   EnhanceBundle,
   LootFilterDataBundle,
   MaterialsBundle,
   SetsBundle,
+  SkillsBundle,
   SourcesBundle,
   TxtRunewordsBundle,
   TypesBundle,
@@ -19,6 +21,8 @@ import { buildCubeNames, modRendererFor, readCube, readCubeItem } from './cube/c
 import { buildLootFilterBundle } from './bundleLootFilter.ts';
 import { buildRunewordsBundle } from './bundleRunewords.ts';
 import { buildSetsBundle } from './bundleSets.ts';
+import { buildSkillsBundle } from './bundleSkills.ts';
+import { buildCraftingBundle } from './bundleCrafting.ts';
 import { buildSourcesBundle } from './bundleSources.ts';
 import { buildTypesBundle } from './bundleTypes.ts';
 import type { EsrSources } from './esrSources.ts';
@@ -42,6 +46,8 @@ export interface GeneratedBundles {
   cube: CubeBundle;
   materials: MaterialsBundle;
   sets: SetsBundle;
+  skills: SkillsBundle;
+  crafting: CraftingBundle;
   counts: Record<string, number>;
   /** Build warnings stored in the manifest */
   warnings: string[];
@@ -166,6 +172,22 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
     renderMods,
   });
 
+  const skills = buildSkillsBundle({
+    skills: table('skills'),
+    skilldesc: table('skilldesc'),
+    experience: table('experience'),
+    classes: types.bundle.classes,
+    strings,
+  });
+
+  const crafting = buildCraftingBundle({
+    cube: cubeTables.cube,
+    nameOf: cubeTables.nameOf,
+    classes: types.bundle.classes,
+    bases: basesBundle.bases,
+    renderMods,
+  });
+
   const countKind = (kind: string) => bases.bundle.bases.filter((base) => base.kind === kind).length;
   return {
     types: types.bundle,
@@ -178,6 +200,8 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
     cube: cube.bundle,
     materials: materials.bundle,
     sets: sets.bundle,
+    skills: skills.bundle,
+    crafting: crafting.bundle,
     counts: {
       types: types.bundle.types.length,
       classes: types.bundle.classes.length,
@@ -243,6 +267,13 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       setItems: sets.bundle.sets.reduce((sum, set) => sum + set.items.length, 0),
       setsHidden: sets.hidden.sets,
       setItemsHidden: sets.hidden.items,
+      skillClasses: skills.bundle.classes.length,
+      skills: skills.bundle.classes.reduce((sum, cls) => sum + cls.tabs.reduce((tabSum, tab) => tabSum + tab.skills.length, 0), 0),
+      skillsSkipped: skills.skipped,
+      craftingForgings: crafting.bundle.forgings.length,
+      craftingStacking: crafting.bundle.stacking.length,
+      craftingRowsUsed: crafting.rowsUsed,
+      craftingRowsSkipped: crafting.rowsSkipped,
     },
     warnings: [
       ...types.warnings,
@@ -256,6 +287,8 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       ...cube.warnings,
       ...materials.warnings,
       ...sets.warnings,
+      ...skills.warnings,
+      ...crafting.warnings,
     ],
     stringWarnings: [...stringWarnings],
   };

@@ -39,6 +39,8 @@ const TABLES = [
   // lootfilter.json
   'levels',
   'sounds',
+  // skills.json
+  'experience',
 ] as const;
 export type EsrTableName = (typeof TABLES)[number];
 

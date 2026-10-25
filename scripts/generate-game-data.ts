@@ -68,6 +68,8 @@ function main(): void {
     cube: serializeBundle(generated.cube),
     materials: serializeBundle(generated.materials),
     sets: serializeBundle(generated.sets),
+    skills: serializeBundle(generated.skills),
+    crafting: serializeBundle(generated.crafting),
   };
   const manifest = buildManifest({
     esrVersion: sources.esrVersion,

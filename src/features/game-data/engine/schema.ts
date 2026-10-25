@@ -15,7 +15,9 @@ export type GameDataFile =
   | 'enhance'
   | 'cube'
   | 'materials'
-  | 'sets';
+  | 'sets'
+  | 'skills'
+  | 'crafting';
 
 export interface GameDataManifest {
   schema: number;
@@ -619,4 +621,85 @@ export interface SetInfo {
 /** sets.json: every set (sets.txt) with its items (setitems.txt) and rendered bonuses; `_old` and itemless sets left out */
 export interface SetsBundle {
   sets: SetInfo[];
+}
+
+// --- skills.json --------------------------------------------------------------------------------------------------
+
+export interface SkillInfo {
+  /** skills.txt `skill` column: the stable id, also what reqSkills reference */
+  id: string;
+  /** skilldesc.txt `str name` (strings table); the id when unresolved */
+  name: string;
+  /** skilldesc.txt `SkillRow` (1..6) and `SkillColumn` (1..3) of the skill tree */
+  row: number;
+  col: number;
+  reqLevel: number;
+  maxLevel: number;
+  /** skills.txt reqskill1..3 (skill ids of the same class), empty entries dropped */
+  reqSkills: string[];
+}
+
+export interface SkillTab {
+  /** skilldesc.txt `SkillPage` (1..3), the charstats.txt StrSkillTab{page} tab */
+  page: number;
+  /** Tab name without "+%d to " and " Skills" ("Demon", "Curses") */
+  name: string;
+  /** Sorted by row, then column */
+  skills: SkillInfo[];
+}
+
+export interface SkillClassTree {
+  code: ClassCode;
+  name: string;
+  /** Pages 1..3 */
+  tabs: SkillTab[];
+}
+
+/** skills.json: the class skill trees (skills.txt + skilldesc.txt), classes in types.json order */
+export interface SkillsBundle {
+  /** experience.txt `MaxLvl` row (the character level cap) */
+  maxLevel: number;
+  classes: SkillClassTree[];
+}
+
+// --- crafting.json ------------------------------------------------------------------------------------------------
+
+/** Equipment slot families of the builds feature (ring1/ring2 → ring, weapon swap → weapon/shield) */
+export type CraftingSlot = 'weapon' | 'shield' | 'helmet' | 'armor' | 'gloves' | 'boots' | 'belt' | 'amulet' | 'ring';
+export const CRAFTING_SLOTS: readonly CraftingSlot[] = ['weapon', 'shield', 'helmet', 'armor', 'gloves', 'boots', 'belt', 'amulet', 'ring'];
+
+export type ForgingKind = 'skill' | 'all' | 'stat' | 'rune' | 'aura';
+
+export interface ForgingOption {
+  kind: ForgingKind;
+  /** skill: class code; all: 'all'; stat: chipped gem item code; rune: rune item code; aura: aura stone item code */
+  key: string;
+  /** What the author picks: class name, "All skills", chipped gem name, rune name, aura stone name */
+  label: string;
+  /** Rendered bonus lines per slot family; a slot with no row is omitted (the forging cannot go on it) */
+  bySlot: Partial<Record<CraftingSlot, string[]>>;
+}
+
+export interface StackingCraftStep {
+  /** Rendered lines of the first (largest) step, cap/marker mods removed, e.g. ["+5% Increased Attack Speed"] */
+  lines: string[];
+  /** dstone: the per-use amounts in row order as the cap stat grows, e.g. [5,4,3,2,1]; omitted for meld */
+  steps?: number[];
+  /** Added level requirement per use (`levelreq` mod) */
+  levelReq: number;
+}
+
+export interface StackingCraftOption {
+  kind: 'dstone' | 'meld';
+  /** Dragon Stone form (dstone) or perfect gem (meld) */
+  material: { code: string; label: string };
+  /** dstone only: the extra switch ingredient some rows need (Key, Antidote Potion, ...) */
+  switchItem?: { code: string; label: string };
+  bySlot: Partial<Record<CraftingSlot, StackingCraftStep>>;
+}
+
+/** crafting.json: the forgings, D-stoning and gem melding an equipped item can be annotated with (cubemain.txt) */
+export interface CraftingBundle {
+  forgings: ForgingOption[];
+  stacking: StackingCraftOption[];
 }

@@ -9,6 +9,7 @@ import {
   GAME_DATA_SCHEMA,
   type AffixesBundle,
   type BasesBundle,
+  type CraftingBundle,
   type CubeBundle,
   type EnhanceBundle,
   type GameDataFile,
@@ -16,6 +17,7 @@ import {
   type LootFilterDataBundle,
   type MaterialsBundle,
   type SetsBundle,
+  type SkillsBundle,
   type SourcesBundle,
   type TxtRunewordsBundle,
   type TypesBundle,
@@ -32,6 +34,8 @@ export interface GameDataBundles {
   cube: CubeBundle;
   materials: MaterialsBundle;
   sets: SetsBundle;
+  skills: SkillsBundle;
+  crafting: CraftingBundle;
 }
 
 export class GameDataSchemaError extends Error {

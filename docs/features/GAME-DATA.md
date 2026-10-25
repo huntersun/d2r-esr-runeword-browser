@@ -41,6 +41,8 @@ lazily (`src/features/game-data/engine/browser/loadGameData.ts`).
 | `cube.json`       | every other player-facing cubemain.txt recipe, grouped into families by official section (see "Cube recipes")                      |
 | `materials.json`  | every misc item worth looking up, with its sources, the cube families using / making it and its Enhance roles (see "Materials")    |
 | `sets.json`       | every set with its items, own lines, per-item and set-wide partial bonuses and full-set bonuses (see "Sets")                       |
+| `skills.json`     | the class skill trees (tabs, grid position, level and skill requirements) and the level cap, for builds (see "Skills")             |
+| `crafting.json`   | forging, D-stoning and gem meld options with rendered lines per slot family, for builds (see "Crafting options")                   |
 
 Arrays are written one element per line so diffs stay readable. Bundle URLs carry the manifest hash (`?v=<sha256>`);
 the manifest itself is always revalidated. The shape is defined in `src/features/game-data/engine/schema.ts`
@@ -58,6 +60,8 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 | `cube.json`       | ESR 3.2.24: 517 KB / 55 KB                                                     |
 | `materials.json`  | ESR 3.2.24: 165 KB / 11 KB                                                     |
 | `sets.json`       | ESR 3.2.24: 150 KB / 21 KB                                                     |
+| `skills.json`     | ESR 3.2.24: 31 KB / 4 KB                                                       |
+| `crafting.json`   | ESR 3.2.24: 55 KB / 6 KB                                                       |
 
 ### Bases and types
 
@@ -370,6 +374,73 @@ Building it uncovered a parser bug: monstats.txt and sets.txt mark their Expansi
 kept the marker and every monster id after it was off by one. Mythical descriptions (`mythicaldesc`, descfunc 23,
 which reads monstats NameStr as a text holder) past row 410 showed the next row's text: 49 runeword rows (Wealth,
 Enlightenment, Thirst …) and Harbinger of Ruin's full-set line. The marker check now ignores comment columns.
+
+### Skills
+
+`skills.json` (`SkillsBundle`, built by `build/bundleSkills.ts` from skills.txt, skilldesc.txt and experience.txt, after
+the types) holds the class skill trees for the builds feature's skill allocation. No page shows it.
+
+- **Classes**: the 8 classes of types.json in its order (`code`, `name`), each with tabs 1..3. A tab `name` is the
+  types.json tab name (charstats.txt `StrSkillTab1..3`, "+%d to " already stripped) without a trailing " Skills"
+  ("Demon Skills" → "Demon"; "Curses", "Offensive Auras", "Martial Arts" stay as they are).
+- **Skill**: a skills.txt row whose `charclass` is one of the 8 codes, placed by its skilldesc.txt row: `SkillPage` is the
+  tab, `SkillRow` (1..6) / `SkillColumn` (1..3) the grid cell. `id` is the skills.txt `skill` column (stable, and what
+  `reqSkills` reference), `name` the skilldesc `str name` string (the id when missing), `reqLevel` / `maxLevel` from
+  `reqlevel` / `maxlvl`, `reqSkills` from `reqskill1..3` (blank entries dropped). Skills are sorted by row, then column.
+- **Level cap**: `maxLevel` is experience.txt's `MaxLvl` row (110 for every class; the highest value with a warning if
+  the classes differ, 99 with a warning if the row is missing).
+- **Skipped** (`skillsSkipped`, warned): class skills without a skilldesc row or with `SkillPage` 0. Also warned: a name
+  key missing from the strings, a `reqskill` naming a skill the class does not have, two skills in one tab cell.
+
+Counts: `skillClasses` 8, `skills` 280 (35 per class: the vanilla 30 + 5), `skillsSkipped` 0 (ESR 3.2.24). Adding the
+file did not bump `GAME_DATA_SCHEMA`; experience.txt joined the tables `esrSources.ts` reads.
+
+### Crafting options
+
+`crafting.json` (`CraftingBundle`, built by `build/bundleCrafting.ts` from the cubemain rows of `readCube`, after the
+bases and types) lists what an equipped item of a build can be annotated with: ids plus rendered lines (`renderMods`),
+never text the UI has to parse. Corruption and anointment outcomes are in enhance.json, not here. No page shows it.
+
+- **Rows**: the guide's cube families decide which rows count (their `match` patterns, `build/cube/cubeFamilies.ts` and
+  `cubeCatalog.ts`): `skill-forging`, `all-skill-forging`, `stat-forging`, `rune-forging` + `rune-forging-slots`,
+  `aura-forging`, `dstoning` and `gem-meld`.
+- **Slot families** (`CraftingSlot`: weapon, shield, helmet, armor, gloves, boots, belt, amulet, ring; ring 1/2 and the
+  weapon swap share one): from the first input's item type. `weap`, `shld`, `helm`, `tors`, `glov`, `boot`, `belt`,
+  `amul`, `ring` are one slot each, `armo` is the six armour slots, `any` every slot. Like the game (first matching row
+  wins), each slot takes the **first row in file order** that accepts it: the `_weap` row of a stat forging beats its
+  `any` row, the glove rune forging row (the weapon bonus) beats the `armo` row, the D-stoning torso / helm / shield rows
+  beat "Any Armor". Quality variants (`low`, `nor`, `uni`, `mag` …) of one forging repeat the same bonus; a variant with
+  another bonus on the same item type is a warning.
+- **Markers dropped**: `craftflag*`, `item_craftflag*`, `meldflag` and every `*-cap` / `*-cap-group` mod. `levelreq`
+  becomes the `levelReq` of a stacking craft.
+- **Forgings** (`ForgingOption`): `skill` (key = the class code of the bonus mod, so the chipped gem → class pairing
+  comes from the data), `all` (key `all`), `stat` / `rune` / `aura` (key = the ingredient that differs between the
+  family's rows: the chipped gem, the rune, the aura stone; label from the item name). `bySlot` lists the lines per
+  slot; a slot without a row is left out (the forging cannot go there). Skill forgings sort by class order, runes by
+  code, the others by file order.
+- **Stacking crafts** (`StackingCraftOption`): one option per (material, switch item) for D-stoning and per perfect
+  gem for melding. D-stoning rows with the same item type, ingredients and bonus stats are one group: `lines` and
+  `levelReq` come from its first row, `steps` are the amounts of its rows in file order (the `op 16` cap condition picks
+  the row as the cap stat grows: Dragon Stone on a weapon is 5, 4, 3, 2, 1). Rows repeating the same bonus under
+  another cap condition count once (Holy Symbol on a weapon has one row per cap stat). Steps that do not decrease are a
+  warning. Meld options have no `steps`. Options without a switch item come first.
+- **Skipped** (`craftingRowsSkipped`; not warned unless said): jewel and charm rows (not equipment slots); rows for a
+  weapon subtype, which the builds slot cannot tell apart from other weapons: the wand and staff rune forging rows, the
+  wand / staff / orb gem meld rows and the two-handed (`2hsw`) D-stoning rows; tiered D-stoning variants (`weap,exc`,
+  `weap,eli`, `2hsw,eli`: the untiered row is used for the slot); blocker rows (`void` output); a D-stoning group whose
+  (material, switch, slot) an earlier group already took (warned). An item type that maps to no slot and is not a known
+  subtype, jewel or charm is a warning.
+- **Known limitations**: the wand / staff / orb overrides and the per-tier summon and elemental D-stoning amounts are
+  not represented. The cap a D-stoning stops at (the `op 16` value, e.g. 500 for Spider's Silk on a weapon) is not
+  stored, only the per-use amounts. ESR has no rune forging rows for the LoD runes (only the ES runes I … Wo, r01–r46,
+  and the Kanji runes Moon … God, r84–r97). Switch item labels are the misc.txt names: `vps` reads "Stamina Potion"
+  (the descriptions say "+ vps"), `yps` "Antidote Potion".
+
+Counts (ESR 3.2.24): `craftingForgings` 84 (8 skill, 1 all, 7 stat, 60 rune, 8 aura), `craftingStacking` 31 (23
+D-stoning, 8 gem meld), `craftingRowsUsed` 717, `craftingRowsSkipped` 245. One expected warning: cubemain line 11716 "VS
+\+ Any Weapon + vps" (Forging Hammer + Stamina Potion → elemental damage) is shadowed by the earlier "FH + Any Weapon +
+vps" row with the same ingredients (the VS rows name `hh2`, not the Void Shard). Adding the file did not bump
+`GAME_DATA_SCHEMA`.
 
 ## Regenerating
 
@@ -907,7 +978,7 @@ src/features/game-data/
   build/       build only: tsv.ts, strings.ts, model.ts, esrSources.ts, bundleTypes.ts, bundleBases.ts,
                bundleRunewords.ts, bundleAffixes.ts, bundleSources.ts (+ treasureClasses.ts, pluginUniques.ts,
                itemNames.ts), bundleLootFilter.ts, bundleEnhance.ts, bundleCube.ts, bundleMaterials.ts, bundleSets.ts,
-               generateBundles.ts,
+               bundleSkills.ts, bundleCrafting.ts, generateBundles.ts,
                writeBundle.ts
   build/cube/  cubemain rows and texts shared with the guide: cubeRows.ts, cubeText.ts, cubeFamilies.ts, cubeCatalog.ts
   build/stats/ stat renderer (see "Stat renderer")
@@ -1006,7 +1077,10 @@ utils/sets.ts                          URL state, options, order, search / focus
   `build/bundleMaterials.test.ts` (inclusion and exclusion rules, container / same-name / coupon collapsing, uses via
   item types but not `any` or base types, returned inputs, source joins and the dropped stocker Cube label, enhance
   roles), `build/bundleSets.test.ts` (hidden `_old`, itemless and unknown-set rows, group N → pieces, a/b merge, class
-  resolution, level range, warnings),
+  resolution, level range, warnings), `build/bundleSkills.test.ts` (class / page filter, row-column order, tab names,
+  level cap, missing desc / name / required skill / shared cell warnings), `build/bundleCrafting.test.ts` (first row per
+  slot, class from the bonus, the differing ingredient as key, glove over armo, wand / jewel / charm / tier / void skips,
+  D-stoning steps and cap-duplicate rows, shadowed groups, gem meld without steps, row counts),
   `build/cube/cubeText.test.ts` (rem, lvl=, counted merging), `build/bundleBases.test.ts` (staffmods, range, smite/kick,
   automod eligibility and attachment on inline TSV), `build/bundleRunewords.test.ts`, `build/bundleAffixes.test.ts`,
   `build/bundleSources.test.ts` (each label rule on inline TSV; with the ESR clone, the verified examples Pelta Lunata,
@@ -1023,7 +1097,11 @@ utils/sets.ts                          URL state, options, order, search / focus
   recipes", and for materials.json: every used-in / made-by family exists in cube.json with at most its row count,
   every Enhance role is a real reagent, no base code, row-count range, spot checks of a rune, gem, organ, Dragon Stone
   and the coupon tiers; for sets.json: 76 sets, unique ids, no `_old`, level ranges, piece counts, every item in
-  sources.json, and Arcanna's Tricks / Harbinger of Ruin checked against docs/sets.htm). When the
+  sources.json, and Arcanna's Tricks / Harbinger of Ruin checked against docs/sets.htm; for skills.json: 8 classes × 3
+  tabs, 280 skills, level cap 110, unique cells, required skills within the class, the Warlock tabs and Summon Tainted;
+  for crafting.json: one skill forging per class on every slot, all-skills, the 7 stat forgings (Chipped Amethyst
+  checked), 60 rune forgings (46 ES + 14 Kanji), 8 amulet-only aura forgings, Dragon Stone weapon steps, 8 gem melds).
+  When the
   ESR clone is present it also regenerates the bundles in memory, checks they equal the committed files, and compares
   base names with the clone's `docs/weapons.htm` / `docs/armors.htm` (≥ 95 % overlap; misses are printed).
 - `runewordMatching.integration.test.ts`: skips without `test-fixtures/runewords.htm`, `runewords.json` or `types.json`;

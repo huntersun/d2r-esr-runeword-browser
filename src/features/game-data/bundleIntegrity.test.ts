@@ -12,12 +12,15 @@ import {
   type AffixesBundle,
   type BaseItem,
   type BasesBundle,
+  type CraftingBundle,
+  type CraftingSlot,
   type CubeBundle,
   type EnhanceBundle,
   type GameDataManifest,
   type LootFilterDataBundle,
   type MaterialsBundle,
   type SetsBundle,
+  type SkillsBundle,
   type SourcesBundle,
   type TxtRunewordsBundle,
   type TypesBundle,
@@ -41,7 +44,10 @@ const enhanceText = readText('enhance');
 const cubeText = readText('cube');
 const materialsText = readText('materials');
 const setsText = readText('sets');
-const { types } = JSON.parse(typesText) as TypesBundle;
+const skillsText = readText('skills');
+const craftingText = readText('crafting');
+const { types, classes: typeClasses } = JSON.parse(typesText) as TypesBundle;
+const classCodes = typeClasses.map((cls) => cls.code);
 const { bases, automods: baseAutomods = [] } = JSON.parse(basesText) as BasesBundle;
 const { runewords } = JSON.parse(runewordsText) as TxtRunewordsBundle;
 const { affixes } = JSON.parse(affixesText) as AffixesBundle;
@@ -51,6 +57,8 @@ const enhance = JSON.parse(enhanceText) as EnhanceBundle;
 const cube = JSON.parse(cubeText) as CubeBundle;
 const materials = JSON.parse(materialsText) as MaterialsBundle;
 const { sets } = JSON.parse(setsText) as SetsBundle;
+const skills = JSON.parse(skillsText) as SkillsBundle;
+const crafting = JSON.parse(craftingText) as CraftingBundle;
 
 describe('committed game-data bundles', () => {
   it('match the app schema', () => {
@@ -69,6 +77,8 @@ describe('committed game-data bundles', () => {
       ['cube', cubeText],
       ['materials', materialsText],
       ['sets', setsText],
+      ['skills', skillsText],
+      ['crafting', craftingText],
     ] as const) {
       expect(manifest.files[name]?.hash).toBe(createHash('sha256').update(text, 'utf8').digest('hex'));
       expect(manifest.files[name]?.bytes).toBe(Buffer.byteLength(text, 'utf8'));
@@ -409,6 +419,101 @@ describe('committed game-data bundles', () => {
     expect(sets.find((set) => set.id === 'Harbinger of Ruin')?.full[0]).toMatch(/^Flame Wave deals 100% more total damage/);
   });
 
+  it('list the class skill trees (ESR 3.2.24: 8 classes, 35 skills each, level cap 110)', () => {
+    expect(skills.maxLevel).toBe(110);
+    expect(skills.classes.map((cls) => cls.code)).toEqual(classCodes);
+    const all = skills.classes.flatMap((cls) => cls.tabs.flatMap((tab) => tab.skills));
+    expect(all).toHaveLength(280);
+    expect(manifest.counts.skills).toBe(all.length);
+    expect(manifest.counts.skillClasses).toBe(8);
+    for (const cls of skills.classes) {
+      expect(
+        cls.tabs.map((tab) => tab.page),
+        cls.code
+      ).toEqual([1, 2, 3]);
+      const ids = new Set(cls.tabs.flatMap((tab) => tab.skills.map((skill) => skill.id)));
+      expect(ids.size, cls.code).toBe(35);
+      for (const tab of cls.tabs) {
+        expect(tab.name, cls.code).not.toBe('');
+        expect(new Set(tab.skills.map((skill) => `${String(skill.row)}/${String(skill.col)}`)).size, tab.name).toBe(tab.skills.length);
+        for (const skill of tab.skills) {
+          expect(skill.row).toBeGreaterThanOrEqual(1);
+          expect(skill.col).toBeGreaterThanOrEqual(1);
+          expect(skill.maxLevel).toBe(20);
+          for (const req of skill.reqSkills) expect(ids.has(req), `${skill.id} → ${req}`).toBe(true);
+        }
+      }
+    }
+    const warlock = skills.classes.find((cls) => cls.code === 'war');
+    expect(warlock?.name).toBe('Warlock');
+    expect(warlock?.tabs.map((tab) => tab.name)).toEqual(['Demon', 'Eldritch', 'Chaos']);
+    const tainted = warlock?.tabs.flatMap((tab) => tab.skills).find((skill) => skill.id === 'Summon Tainted');
+    expect(tainted).toMatchObject({ name: 'Summon Tainted', reqLevel: 12, reqSkills: ['Summon Goatman'] });
+  });
+
+  it('list the forging, D-stoning and gem meld options per slot family (ESR 3.2.24)', () => {
+    const { forgings, stacking } = crafting;
+    const ofKind = (kind: string) => forgings.filter((option) => option.kind === kind);
+    expect(manifest.counts.craftingForgings).toBe(forgings.length);
+    expect(manifest.counts.craftingStacking).toBe(stacking.length);
+    const everySlot: CraftingSlot[] = ['weapon', 'shield', 'helmet', 'armor', 'gloves', 'boots', 'belt', 'amulet', 'ring'];
+
+    expect(ofKind('skill').map((option) => option.key)).toEqual(classCodes);
+    for (const option of ofKind('skill')) {
+      expect(Object.keys(option.bySlot), option.key).toEqual(everySlot);
+      expect(option.bySlot.ring?.[0], option.key).toMatch(new RegExp(`^\\+1 to ${option.label} Skill`));
+    }
+    expect(ofKind('all')).toHaveLength(1);
+    expect(Object.keys(ofKind('all')[0]?.bySlot ?? {})).toEqual(everySlot);
+
+    expect(ofKind('stat')).toHaveLength(7);
+    const amethyst = ofKind('stat').find((option) => option.label === 'Chipped Amethyst');
+    expect(amethyst?.bySlot.weapon).toEqual(['+48% Enhanced Damage']);
+    expect(amethyst?.bySlot.armor).toEqual(['+48% Enhanced Defense']);
+    expect(amethyst?.bySlot.gloves).toEqual(['+48% Enhanced Defense']);
+    expect(amethyst?.bySlot.amulet).toEqual(['+12% Chance of Crushing Blow']);
+    expect(amethyst?.bySlot.ring).toEqual(['+12% Chance of Crushing Blow']);
+
+    // ES runes (I … Wo, r01–r46) and Kanji runes (Moon … God, r84–r97); ESR has no rune forging rows for the LoD runes
+    const runes = ofKind('rune');
+    expect(runes).toHaveLength(60);
+    expect(runes.filter((option) => option.key <= 'r46')).toHaveLength(46);
+    expect(runes.filter((option) => option.key >= 'r84')).toHaveLength(14);
+    expect(runes.find((option) => option.key === 'r84')?.label).toBe('Moon Rune');
+    // The glove row (the weapon bonus) overrides the armo row on gloves
+    const runeI = runes.find((option) => option.key === 'r01');
+    expect(runeI?.bySlot.gloves).toEqual(['+15% Enhanced Damage']);
+    expect(runeI?.bySlot.boots).toEqual(['+30 Defense']);
+
+    expect(ofKind('aura')).toHaveLength(8);
+    for (const option of ofKind('aura')) expect(Object.keys(option.bySlot), option.key).toEqual(['amulet']);
+    expect(ofKind('aura')[0]?.bySlot.amulet).toEqual(['Level 10 Blessed Aim Aura When Equipped']);
+
+    for (const option of forgings) {
+      for (const lines of Object.values(option.bySlot)) expect(lines.length, `${option.kind} ${option.key}`).toBeGreaterThan(0);
+    }
+
+    const dragonStone = stacking.find(
+      (option) => option.kind === 'dstone' && option.material.code === 'ppp' && option.switchItem === undefined
+    );
+    expect(dragonStone?.material.label).toBe('Dragon Stone');
+    expect(dragonStone?.bySlot.weapon).toEqual({ lines: ['+5% Increased Attack Speed'], steps: [5, 4, 3, 2, 1], levelReq: 2 });
+    const melds = stacking.filter((option) => option.kind === 'meld');
+    expect(melds).toHaveLength(8);
+    for (const option of melds) {
+      expect(option.material.label, option.material.code).toMatch(/^Perfect /);
+      expect(Object.keys(option.bySlot), option.material.code).toEqual(['weapon', 'shield', 'helmet', 'armor', 'gloves', 'boots', 'belt']);
+      for (const step of Object.values(option.bySlot)) expect(step.steps).toBeUndefined();
+    }
+    for (const option of stacking.filter((entry) => entry.kind === 'dstone')) {
+      for (const step of Object.values(option.bySlot)) {
+        expect(step.lines.length, option.material.code).toBeGreaterThan(0);
+        expect(step.levelReq).toBeGreaterThan(0);
+        expect(step.steps?.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it('resolve the merc/helm name collision and class-only bases', () => {
     expect(types.find((type) => type.code === 'merc')?.name).toBe('Helm (merc)');
     expect(types.find((type) => type.code === 'helm')?.name).toBe('Helm');
@@ -457,6 +562,8 @@ describe.skipIf(!existsSync(ESR_DIR))('game data generated from the ESR clone', 
     expect(serializeBundle(generated.cube)).toBe(cubeText);
     expect(serializeBundle(generated.materials)).toBe(materialsText);
     expect(serializeBundle(generated.sets)).toBe(setsText);
+    expect(serializeBundle(generated.skills)).toBe(skillsText);
+    expect(serializeBundle(generated.crafting)).toBe(craftingText);
   });
 
   it('numbers uniques, sets, stats and sounds like the *ID / *Index comment columns where those are consistent', () => {
