@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.29.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.28.0...v1.29.0) (2026-10-25)
+
+
+### Features
+
+* **builds:** choose a runeword base and record socket fillers ([d432a13](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/d432a1305c7e90a85b74c61c58c7bc093e4dd150))
+* **builds:** player level and a structured skill tree ([040f055](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/040f055a21c818f1b015533cf67eb2d4256de377))
+* **builds:** structured crafting annotations on equipped items ([e4d1e77](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/e4d1e77d7b79c1b8a9b7cdb31aaba92d244bca93))
+* **game-data:** add the skills and crafting option bundles ([7079945](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/707994502b5c9276b03a4afcf8db418f5e5488d0))
+
 ## [1.28.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.27.0...v1.28.0) (2026-10-25)
 
 
