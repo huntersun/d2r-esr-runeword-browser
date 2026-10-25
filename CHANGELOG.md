@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.28.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.27.0...v1.28.0) (2026-10-25)
+
+
+### Features
+
+* **builds:** equip set items and show the active set bonuses ([9f0c20f](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/9f0c20f2cdab6663f6767ec66ddec0abbd8104c0))
+* **game-data:** add the Sets reference page ([008996a](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/008996a3228ce6703b24be8d5768da36853c6e6e))
+
+
+### Bug Fixes
+
+* **game-data:** skip Expansion marker rows whose comment column is set ([9736f1c](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/9736f1c1d22e00381a8d87f977182c6b27286a28))
+* **home:** drop the icons from the section cards ([18617af](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/18617afc67da99771d3f8ddf9a1ac47766592698))
+
+
+### Tests
+
+* **data-sync:** follow the official docs wording in the HTM fixture tests ([a8d3489](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/a8d348934f3a11a11ffa8b33a0778275a509cb50))
+
 ## [1.27.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.26.0...v1.27.0) (2026-10-24)
 
 
