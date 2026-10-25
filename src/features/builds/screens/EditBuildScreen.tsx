@@ -111,6 +111,8 @@ export function EditBuildScreen() {
     charms: buildData.charms ?? [],
     ascendancy: buildData.ascendancy ?? null,
     skills: buildData.skills ?? '',
+    level: buildData.level ?? null,
+    skillPoints: buildData.skillPoints ?? {},
   };
 
   const handleSubmit = (payload: BuildFormSubmit) => {

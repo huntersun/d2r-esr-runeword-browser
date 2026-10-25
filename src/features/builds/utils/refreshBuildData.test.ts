@@ -102,6 +102,14 @@ describe('refreshBuildData', () => {
     expect(refreshed.weaponSwapCrafts).toBe(weaponSwapCrafts);
     expect(refreshed.mercenaryCrafts).toBe(mercenaryCrafts);
   });
+
+  it('leaves the level and skill points untouched', async () => {
+    const skillPoints = { 'Summon Goatman': 20, 'Demonic Mastery': 1 };
+    const buildData: BuildData = { items: { gloves: { type: 'freetext', name: 'GG rare gloves' } }, level: 95, skillPoints };
+    const refreshed = await refreshBuildData(buildData);
+    expect(refreshed.level).toBe(95);
+    expect(refreshed.skillPoints).toBe(skillPoints);
+  });
 });
 
 describe('refreshBuildData with same-name variants', () => {

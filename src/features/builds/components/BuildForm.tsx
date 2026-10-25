@@ -21,6 +21,8 @@ import { EquipmentGrid } from './EquipmentGrid';
 import { WeaponSwapGrid } from './WeaponSwapGrid';
 import { CharmsEditor } from './CharmsEditor';
 import { AscendancyPicker } from './AscendancyPicker';
+import { SkillTreeEditor } from './SkillTreeEditor';
+import { hasSkillPoints, parseLevelText, type SkillPoints } from '../utils/skillTree';
 import type { BuildFormSubmit, BuildFormValues } from './buildFormModel';
 
 interface BuildFormProps {
@@ -55,6 +57,8 @@ export function BuildForm({ initialValues, submitLabel, saving, saved, onSubmit,
   const [charms, setCharms] = useState<CharmEntry[]>(() => toCharmEntries(initialValues.charms));
   const [ascendancy, setAscendancy] = useState<string | null>(initialValues.ascendancy);
   const [skills, setSkills] = useState(initialValues.skills);
+  const [levelText, setLevelText] = useState(initialValues.level !== null ? String(initialValues.level) : '');
+  const [skillPoints, setSkillPointsState] = useState<SkillPoints>(initialValues.skillPoints);
   const [touched, setTouched] = useState(false);
 
   const markTouched = () => {
@@ -63,7 +67,9 @@ export function BuildForm({ initialValues, submitLabel, saving, saved, onSubmit,
 
   const trimmedName = name.trim();
   const nameValid = trimmedName.length > 0 && trimmedName.length <= BUILD_NAME_MAX_LENGTH;
-  const canSave = nameValid && characterClass !== '' && !saving;
+  const level = parseLevelText(levelText);
+  const levelValid = levelText.trim() === '' || level !== undefined;
+  const canSave = nameValid && levelValid && characterClass !== '' && !saving;
 
   useUnsavedChangesPrompt(touched && !saved);
 
@@ -95,6 +101,8 @@ export function BuildForm({ initialValues, submitLabel, saving, saved, onSubmit,
       ...(cleanedCharms.length > 0 ? { charms: cleanedCharms } : {}),
       ...(ascendancy !== null ? { ascendancy } : {}),
       ...(trimmedSkills.length > 0 ? { skills: trimmedSkills } : {}),
+      ...(level !== undefined ? { level } : {}),
+      ...(hasSkillPoints(skillPoints) ? { skillPoints } : {}),
     };
     onSubmit({ name: trimmedName, description, characterClass, buildData });
   };
@@ -176,6 +184,20 @@ export function BuildForm({ initialValues, submitLabel, saving, saved, onSubmit,
         <p className="text-xs text-muted-foreground">
           {skills.length}/{SKILLS_MAX_LENGTH}
         </p>
+        <SkillTreeEditor
+          characterClass={characterClass}
+          levelText={levelText}
+          skillPoints={skillPoints}
+          disabled={saving}
+          onLevelTextChange={(text) => {
+            setLevelText(text);
+            markTouched();
+          }}
+          onSkillPointsChange={(next) => {
+            setSkillPointsState(next);
+            markTouched();
+          }}
+        />
       </section>
 
       <section className="flex flex-col gap-3">

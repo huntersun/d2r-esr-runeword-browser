@@ -351,6 +351,20 @@ type CraftAnnotation =
 - **Corruption variants.** Some outcomes have other values on Low / Normal / Superior items (`variants`); the default lines are shown with a muted "Other values on … items" note.
 - Like the notes, the lists belong to the slot: they survive the snapshot refresh (`refreshBuildData` spreads `...buildData`), stay when the item in the slot is swapped, and are cleared when the slot is emptied. `compactCrafts` drops empty lists before save. Builds without the maps read and render as before; `build_data` is JSONB, so **no migration** is needed.
 
+**Level and skill tree: `level`, `skillPoints` (optional).** Two optional top-level fields record the character level and a structured skill tree allocation from the `skills.json` game-data bundle:
+
+```json
+{ "level": 95, "skillPoints": { "Summon Goatman": 20, "Demonic Mastery": 1 } }
+```
+
+- `level`: the character level, an integer in 1..110 (`LEVEL_MAX` in `constants.ts`; `skills.json` also carries the cap as `maxLevel`, which the form uses, falling back to 110 when the bundle is unavailable).
+- `skillPoints`: skill id → points spent. Keys are `skills.json` skill ids (the stable skills.txt `skill` column, e.g. `"Summon Goatman"`), not display names.
+- **Limits** (`asBuildData`): `level` is kept only when an integer in 1..110; `skillPoints` only when an object, each entry only when the key is a non-empty string of at most 100 characters and the value a positive integer up to 99; at most 60 entries; an empty object is dropped. A malformed value drops just that value, never the build.
+- **No budget or prerequisite enforcement (owner decision).** The form only counts the points (per tab and in total) and shows each skill's required level and max level as information ("lvl 6", "x/20"); it never blocks a point because of the level, the skill's max level, prerequisites or the total. A skill above its max level shows its count in a warning colour. The only hard caps are the validator's above.
+- **Unknown ids.** Ids that are not in the build's class tree (another class's skills after a class change, or skills renamed in a later ESR version) are kept and counted in the total. The form shows "N points belong to another class" with a "Clear them" button (never cleared automatically); the detail page lists them under the tree as "Other skills: Name (n), …".
+- The free-text `skills` field stays as it is, for explanations; both are shown.
+- `refreshBuildData` spreads `...buildData`, so the snapshot refresh on save leaves both fields untouched; the JSON export includes them as stored. The form omits `level` when blank and `skillPoints` when empty. Builds without them read and render as before; `build_data` is JSONB, so **no migration** is needed.
+
 #### Full `build_data` Example
 
 ```json
@@ -389,7 +403,9 @@ type CraftAnnotation =
   },
   "charms": ["Annihilus", "Hellfire Torch", "9x Paladin Combat GCs", "Gheed's Fortune"],
   "ascendancy": "Battlemage",
-  "skills": "20 Blessed Hammer, 20 Vigor, 20 Blessed Aim, 20 Concentration, 1pt Holy Shield, rest into Holy Bolt"
+  "skills": "20 Blessed Hammer, 20 Vigor, 20 Blessed Aim, 20 Concentration, 1pt Holy Shield, rest into Holy Bolt",
+  "level": 95,
+  "skillPoints": { "Summon Goatman": 20, "Demonic Mastery": 1 }
 }
 ```
 
@@ -400,6 +416,7 @@ type CraftAnnotation =
 - **Charms**: Named list (array of strings, user adds as many as needed)
 - **Ascendancy**: Single ascendancy name (optional)
 - **Skills**: Freetext description of skill allocation (optional)
+- **Level / skill tree**: Character level and skill id → points (optional, see "Level and skill tree")
 
 **Size estimate:** Each build is ~20-50 KB with full snapshots for all 22 equipment slots. Well within Supabase free tier limits.
 
@@ -526,6 +543,8 @@ The 8 Diablo 2 Resurrected classes playable in ESR (Warlock added in ESR 3.2):
 
 Each class can have an ascendancy (see below).
 
+The `skills.json` bundle's `classes[].name` values equal these names, so a build's class maps to its skill tree by name (`utils/skillTree.ts` `classTree`; `skillTree.test.ts` asserts this against the committed bundle).
+
 ## Ascendancies in Builds
 
 ESR adds an ascendancy system where characters earn a special item granting tiered bonuses. The ascendancy feature is already implemented in the app (v1.9.0) — 15 ascendancies are parsed from `easternsunresurrected.com/ascendancies.htm`, stored in IndexedDB, and displayed on the `/ascendancies` page.
@@ -639,7 +658,7 @@ The shareable page for a single build. The URL itself (`/build/:buildId`) is the
 - **Description**: Optional freetext notes/guide from the author (above the tabs)
 - **Tabs** (shadcn `Tabs`, UI state only, default **Player**):
   - **Player**: Player Gear grid (see layout below), Weapon Swap (secondary weapon and shield), and beside them on wide screens **Charms** (list of charm names) and **Ascendancy** (name with its tier bonuses from the viewer's local parsed data)
-  - **Skills**: Freetext skill allocation description. Hidden when the build has no skills text.
+  - **Skills**: "Level N" (when set), the skill tree allocation (when `skillPoints` has entries) and the freetext skill description. The tree is read-only: the class's three tabs (each trigger shows its point count, e.g. "Demon · 21"), a "N points spent" header, and the same 3 × 6 grid as the form with allocated skills highlighted ("n/20") and unallocated ones dimmed; ids outside the class tree are listed under it as "Other skills: Name (n), …". `skills.json` is loaded once per screen (`hooks/useSkillTree.ts`), only when the build has `skillPoints`; if it fails to load (or has no tree for the class) the allocation is shown as a raw "Skill name: n" list so the data is never hidden. Hidden when the build has no skills text, no level and no skill points.
   - **Mercenary**: Mercenary Gear, same equipment grid layout. Hidden when the build has no merc gear and no merc notes.
   - The tab bar itself is hidden when Player is the only tab. The chosen tab is not persisted; if it isn't available for the build being shown, Player is used.
 - Per-slot crafting/corruption notes and the "Stats updated" diff badge stay on each slot card inside the tabs.
@@ -806,7 +825,10 @@ All sections visible on one scrollable page (no wizard, no collapsible sections)
 
 6. **Ascendancy** — Dropdown of all 15 available ascendancies (optional). Not filtered by class selection.
 
-7. **Skills** — Freetext area for describing skill allocation
+7. **Skills** — Freetext area for describing skill allocation, then the level and skill tree block (`components/SkillTreeEditor.tsx`):
+   - **Level**: number input (1..`maxLevel` from `skills.json`, 110 as fallback); blank = unset. An out-of-range or non-integer value shows a "1–110" hint and disables Save.
+   - **Skill tree**: "Pick a class to allocate skill points." until a class is chosen; a skeleton line while `skills.json` loads; "Skill tree unavailable" if it fails (the freetext still works). With a class: shadcn `Tabs` with the class's three tab names (count shown when > 0), a "N points spent" header (every stored point), and per tab a `grid-cols-3` grid where each skill sits at its `row` / `col` (inline `gridRow` / `gridColumn`, rows 1..6; empty cells stay empty). A cell shows the name (truncated), a muted "lvl {reqLevel}" (prerequisites in its `title` tooltip, and inline from `sm` up), and "−  n/20  +" buttons: − is disabled at 0, + at 99 (not at the skill's max level); a count above the max level is shown in amber. "Reset points" (shown when the class has points) clears this class's points. After a class change, ids outside the new tree raise "N points belong to another class" with a "Clear them" button.
+   - At phone width the grid stays 3 columns: text truncates and the controls wrap under the name.
 
 ### Save
 
@@ -847,6 +869,8 @@ Browser `beforeunload` prompt when navigating away from the create/edit form wit
 | Build name | Yes | 1 | 100 characters |
 | Description | No | — | 2000 characters |
 | Skills freetext | No | — | 2000 characters |
+| Level | No | 1 | 110 (integer) |
+| Skill points (per skill) | No | 1 | 99 (integer; at most 60 skills, ids ≤ 100 chars) |
 | Charm entry | Yes (per entry) | 1 | 100 characters |
 | Display name | Yes | 1 | 50 characters |
 
@@ -1223,7 +1247,7 @@ These were decided or discovered while building the feature, amending the origin
 - User following / social features
 - Build categories or tags
 - Admin moderation dashboard
-- Structured skill trees (per-class skill point allocation UI) — skills are freetext for now
+- Skill point budget / prerequisite / level enforcement in the skill tree (owner decision: points are only counted)
 - Build templates or presets
 - Build comparison (side-by-side)
 - Build duplication / "use as template"

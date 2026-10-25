@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { asBuildData, asCraftAnnotation, isItemRef } from './buildData';
+import { asBuildData, asCraftAnnotation, asLevel, asSkillPoints, isItemRef } from './buildData';
 
 const columnAffixes = { weaponsGloves: ['+1 skills'], helmsBoots: [], armorShieldsBelts: [] };
 
@@ -269,5 +269,60 @@ describe('asBuildData with crafting annotations', () => {
     const many = Array.from({ length: 10 }, (_, index) => ({ kind: 'meld', material: `m${String(index)}`, uses: 1 }));
     const list = asBuildData({ itemCrafts: { weapon: many } }).itemCrafts?.weapon;
     expect(list).toEqual(many.slice(0, 8));
+  });
+});
+
+describe('asBuildData with level and skill points', () => {
+  const skillPoints = { 'Summon Goatman': 20, 'Demonic Mastery': 1 };
+
+  it('reads a build without level / skillPoints exactly as before', () => {
+    const data = asBuildData(structuredClone(FULL_EXAMPLE));
+    expect(data.level).toBeUndefined();
+    expect(data.skillPoints).toBeUndefined();
+    expect(JSON.parse(JSON.stringify(data))).toEqual(FULL_EXAMPLE);
+  });
+
+  it('round-trips a valid level and allocation', () => {
+    const value = { ...FULL_EXAMPLE, level: 95, skillPoints };
+    expect(JSON.parse(JSON.stringify(asBuildData(structuredClone(value))))).toEqual(value);
+    expect(asBuildData({ level: 1 }).level).toBe(1);
+    expect(asBuildData({ level: 110 }).level).toBe(110);
+  });
+
+  it('drops a malformed level', () => {
+    for (const level of [0, 111, 9.5, -3, '95', null, Number.NaN, {}]) {
+      expect(asLevel(level)).toBeUndefined();
+      expect(asBuildData({ skills: 'x', level }).skills).toBe('x');
+    }
+  });
+
+  it('drops malformed entries individually and an empty result', () => {
+    const data = asBuildData({
+      items: { helmet: unique },
+      skillPoints: {
+        Zeal: 20,
+        '': 3,
+        ['x'.repeat(101)]: 3,
+        Zero: 0,
+        Negative: -1,
+        Fraction: 1.5,
+        TooMany: 100,
+        Text: '5',
+        Nothing: null,
+        Max: 99,
+      },
+    });
+    expect(data.items).toEqual({ helmet: unique });
+    expect(data.skillPoints).toEqual({ Zeal: 20, Max: 99 });
+    expect(asSkillPoints({ Zero: 0 })).toBeUndefined();
+    expect(asSkillPoints({})).toBeUndefined();
+    expect(asSkillPoints(['Zeal'])).toBeUndefined();
+    expect(asSkillPoints('Zeal')).toBeUndefined();
+    expect(asSkillPoints(null)).toBeUndefined();
+  });
+
+  it('keeps at most 60 entries', () => {
+    const many = Object.fromEntries(Array.from({ length: 70 }, (_, index) => [`skill ${String(index)}`, 1]));
+    expect(Object.keys(asSkillPoints(many) ?? {})).toHaveLength(60);
   });
 });

@@ -17,6 +17,10 @@ export interface BuildFormValues {
   readonly charms: readonly string[];
   readonly ascendancy: string | null;
   readonly skills: string;
+  /** Character level, null when unset. */
+  readonly level: number | null;
+  /** skills.json skill id → points spent. */
+  readonly skillPoints: Readonly<Record<string, number>>;
 }
 
 export const EMPTY_BUILD_FORM: BuildFormValues = {
@@ -35,6 +39,8 @@ export const EMPTY_BUILD_FORM: BuildFormValues = {
   charms: [],
   ascendancy: null,
   skills: '',
+  level: null,
+  skillPoints: {},
 };
 
 export interface BuildFormSubmit {

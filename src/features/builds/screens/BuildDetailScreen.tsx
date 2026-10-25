@@ -26,6 +26,9 @@ import { asBuildData, type EquipmentSlot, type ItemRef, type WeaponSwapSlot } fr
 import { compactItems } from '../utils/buildSnapshot';
 import { hasCrafts } from '../utils/crafts';
 import { useCraftData } from '../hooks/useCraftData';
+import { useSkillTree } from '../hooks/useSkillTree';
+import { hasSkillPoints } from '../utils/skillTree';
+import { SkillTreeDisplay } from '../components/SkillTreeDisplay';
 import { computeBuildItemDiffs } from '../utils/itemDiff';
 import { hasSetItems } from '../utils/setBonuses';
 import { SetBonusesBlock } from '../components/SetBonusesBlock';
@@ -87,6 +90,8 @@ export function BuildDetailScreen() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   // UI-only tab choice; falls back to Player when the chosen tab isn't available for this build.
   const [tab, setTab] = useState<DetailTab>('player');
+  // skills.json is only fetched when the build has a skill allocation to draw.
+  const skillData = useSkillTree(detailData !== null && hasSkillPoints(detailData.skillPoints));
 
   useEffect(() => {
     if (buildId === undefined) return;
@@ -169,7 +174,10 @@ export function BuildDetailScreen() {
   const charms = buildData.charms ?? [];
   const ascendancyName = buildData.ascendancy ?? null;
   const skills = buildData.skills ?? null;
-  const hasSkills = hasText(skills);
+  const level = buildData.level ?? null;
+  const skillPoints = buildData.skillPoints;
+  const hasSkillText = hasText(skills);
+  const hasSkills = hasSkillText || level !== null || hasSkillPoints(skillPoints);
   // Charms + ascendancy sit beside the player gear on wide screens.
   const hasPlayerAside = charms.length > 0 || ascendancyName !== null;
   const availableTabs: readonly DetailTab[] = [
@@ -377,9 +385,13 @@ export function BuildDetailScreen() {
 
           {hasSkills && (
             <TabsContent value="skills">
-              <section>
+              <section className="flex flex-col gap-4">
                 <SectionHeader title="Skills" />
-                <p className="whitespace-pre-wrap text-sm">{skills}</p>
+                {level !== null && <p className="text-sm font-medium">Level {level}</p>}
+                {hasSkillPoints(skillPoints) && (
+                  <SkillTreeDisplay characterClass={build.class} skillPoints={skillPoints} skillData={skillData} />
+                )}
+                {hasSkillText && <p className="whitespace-pre-wrap text-sm">{skills}</p>}
               </section>
             </TabsContent>
           )}

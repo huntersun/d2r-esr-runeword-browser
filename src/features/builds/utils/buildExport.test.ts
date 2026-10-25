@@ -39,6 +39,12 @@ describe('buildExportPayload', () => {
     const payload = buildExportPayload(makeBuild({ build_data: buildData }), 'https://example.test', '2026-06-08T12:00:00.000Z');
     expect(payload.build.build_data).toBe(buildData);
   });
+
+  it('exports the level and skill points as stored', () => {
+    const buildData = { level: 95, skillPoints: { 'Summon Goatman': 20, 'Demonic Mastery': 1 } };
+    const payload = buildExportPayload(makeBuild({ build_data: buildData }), 'https://example.test', '2026-06-08T12:00:00.000Z');
+    expect(payload.build.build_data).toBe(buildData);
+  });
 });
 
 describe('buildExportFilename', () => {

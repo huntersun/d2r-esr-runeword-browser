@@ -3,6 +3,7 @@
 // See builds-feature-docs/FEATURE-BUILD-SHARING.md.
 
 import type { ForgingKind } from '@/features/game-data/engine/schema';
+import { LEVEL_MAX, SKILL_ID_MAX_LENGTH, SKILL_POINTS_MAX, SKILL_POINTS_MAX_ENTRIES } from './constants';
 
 /** Per-column runeword/gemword bonuses, stored as rawText strings. */
 export interface ColumnAffixesSnapshot {
@@ -186,6 +187,11 @@ export interface BuildData {
   readonly charms?: readonly string[];
   readonly ascendancy?: string | null;
   readonly skills?: string | null;
+  // Optional character level (1..LEVEL_MAX) and structured skill tree allocation: skills.json skill
+  // id → points spent. Absent on older builds. No point budget or prerequisite rules are enforced
+  // (owner decision); ids outside the build's class tree are kept and shown as "other skills".
+  readonly level?: number;
+  readonly skillPoints?: Readonly<Record<string, number>>;
 }
 
 type UnknownRecord = Record<string, unknown>;
@@ -362,6 +368,27 @@ function craftSection(value: unknown): Record<string, readonly CraftAnnotation[]
   });
   return Object.fromEntries(entries);
 }
+
+/** A stored character level, or undefined unless an integer in 1..LEVEL_MAX. */
+export function asLevel(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= LEVEL_MAX ? value : undefined;
+}
+
+const isSkillPoints = (value: unknown): value is number => isPositiveInt(value) && value <= SKILL_POINTS_MAX;
+
+/**
+ * A stored skill point allocation, cleaned: entries kept when the key is a non-empty id of at most
+ * SKILL_ID_MAX_LENGTH characters and the value a positive integer up to SKILL_POINTS_MAX; at most
+ * SKILL_POINTS_MAX_ENTRIES kept. Undefined when absent, not an object, or nothing valid is left.
+ */
+export function asSkillPoints(value: unknown): Readonly<Record<string, number>> | undefined {
+  if (!isRecord(value)) return undefined;
+  const entries = Object.entries(value)
+    .filter((entry): entry is [string, number] => entry[0].length > 0 && entry[0].length <= SKILL_ID_MAX_LENGTH && isSkillPoints(entry[1]))
+    .slice(0, SKILL_POINTS_MAX_ENTRIES);
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+}
+
 const optionalString = (value: unknown): string | null | undefined => (typeof value === 'string' || value === null ? value : undefined);
 
 /**
@@ -369,7 +396,7 @@ const optionalString = (value: unknown): string | null | undefined => (typeof va
  * (any authenticated owner can PATCH arbitrary JSON through PostgREST), so every
  * field is validated: malformed item refs, notes and charms are dropped rather than
  * crashing the detail/edit screens. A malformed `base` / `socketed` drops just that field,
- * a malformed crafting annotation just that entry.
+ * a malformed crafting annotation just that entry, a malformed level or skill point entry just that value.
  */
 export function asBuildData(value: unknown): BuildData {
   if (!isRecord(value)) return {};
@@ -386,5 +413,7 @@ export function asBuildData(value: unknown): BuildData {
     charms: Array.isArray(value.charms) ? value.charms.filter(isString) : undefined,
     ascendancy: optionalString(value.ascendancy),
     skills: optionalString(value.skills),
+    level: asLevel(value.level),
+    skillPoints: asSkillPoints(value.skillPoints),
   };
 }
