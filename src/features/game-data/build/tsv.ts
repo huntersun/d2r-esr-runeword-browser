@@ -58,8 +58,9 @@ export interface TsvTable {
   readonly rows: readonly TsvRow[];
 }
 
-function isExpansionMarker(cells: readonly string[]): boolean {
-  return cells[0]?.trim() === 'Expansion' && cells.slice(1).every((cell) => cell.trim() === '');
+/** Comment columns (`*eol` is 0 on some marker rows: monstats, sets) do not count */
+function isExpansionMarker(cells: readonly string[], comments: ReadonlySet<number>): boolean {
+  return cells[0]?.trim() === 'Expansion' && cells.every((cell, i) => i === 0 || comments.has(i) || cell.trim() === '');
 }
 
 export interface ParseTsvOptions {
@@ -75,8 +76,10 @@ export function parseTsv(text: string, fileName = 'table', options: ParseTsvOpti
   const header = headerLine.split('\t');
   const index = new Map<string, number>();
   const columns: string[] = [];
+  const comments = new Set<number>();
   header.forEach((rawName, i) => {
     const name = rawName.trim();
+    if (name.startsWith('*')) comments.add(i);
     if (name === '' || name.startsWith('*') || index.has(name)) return;
     index.set(name, i);
     columns.push(name);
@@ -87,7 +90,7 @@ export function parseTsv(text: string, fileName = 'table', options: ParseTsvOpti
     const line = lines[lineNo] ?? '';
     if (line.trim() === '') continue;
     const cells = line.split('\t');
-    if (options.keepExpansionRows !== true && isExpansionMarker(cells)) continue;
+    if (options.keepExpansionRows !== true && isExpansionMarker(cells, comments)) continue;
     rows.push(new TsvRow(cells, index, `${fileName}:${String(lineNo + 1)}`, lineNo + 1));
   }
 

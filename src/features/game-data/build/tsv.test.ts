@@ -50,6 +50,11 @@ describe('parseTsv', () => {
     expect(() => table.rows[0]?.num('name')).toThrow(/not a number/);
   });
 
+  it('ignores comment columns when spotting a marker row (monstats and sets.txt have *eol 0 on it)', () => {
+    const table = parseTsv('name\tcode\t*eol\nAxe\taxe\t0\nExpansion\t\t0\nClub\tclub\t0\n');
+    expect(table.rows.map((row) => row.str('code'))).toEqual(['axe', 'club']);
+  });
+
   it('keeps a row whose first cell is Expansion but has other data', () => {
     const table = parseTsv('name\tcode\nExpansion\texp\n');
     expect(table.rows).toHaveLength(1);
