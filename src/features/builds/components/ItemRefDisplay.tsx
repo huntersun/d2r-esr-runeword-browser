@@ -1,9 +1,13 @@
 import type { EquipmentSlot, ItemRef, WeaponSwapSlot } from '../buildData';
 import { slotToColumn } from '../utils/buildSnapshot';
+import { SET_NAME_CLASS } from '../utils/setItems';
+import { SetPartialGroups } from './SetItemBuildCard';
 
 interface ItemRefDisplayProps {
   readonly item: ItemRef;
   readonly slot: EquipmentSlot | WeaponSwapSlot;
+  /** Set items only: pieces of the set equipped in this section (marks the partial groups active/inactive). */
+  readonly setPieces?: number;
 }
 
 function AffixList({ lines }: { readonly lines: readonly string[] }) {
@@ -18,7 +22,7 @@ function AffixList({ lines }: { readonly lines: readonly string[] }) {
 }
 
 /** Renders a single item reference (name + stats) for the build detail page. */
-export function ItemRefDisplay({ item, slot }: ItemRefDisplayProps) {
+export function ItemRefDisplay({ item, slot, setPieces }: ItemRefDisplayProps) {
   if (item.type === 'freetext') {
     return (
       <p className="text-sm font-medium">
@@ -33,6 +37,22 @@ export function ItemRefDisplay({ item, slot }: ItemRefDisplayProps) {
         <p className="text-sm font-medium">{item.snapshot.name}</p>
         <p className="text-xs text-muted-foreground">{item.snapshot.baseItem}</p>
         <AffixList lines={[...(item.snapshot.specialProperties ?? []), ...item.snapshot.properties]} />
+      </div>
+    );
+  }
+
+  if (item.type === 'set') {
+    const { snapshot } = item;
+    return (
+      <div className="space-y-1">
+        <div>
+          <p className={`text-sm font-medium ${SET_NAME_CLASS}`}>{snapshot.name}</p>
+          <p className="text-xs text-muted-foreground">
+            Set: {snapshot.setName} · {snapshot.baseItem} · Req Lvl {snapshot.reqLevel}
+          </p>
+        </div>
+        <AffixList lines={snapshot.properties} />
+        <SetPartialGroups groups={snapshot.partial} equippedPieces={setPieces} />
       </div>
     );
   }

@@ -1,4 +1,5 @@
 import { db } from '@/core/db';
+import type { SetsBundle } from '@/features/game-data/engine/schema';
 import type {
   BuildData,
   ColumnAffixesSnapshot,
@@ -6,12 +7,15 @@ import type {
   GemwordSnapshot,
   ItemRef,
   RunewordSnapshot,
+  SetItemRef,
+  SetItemSnapshot,
   UniqueSnapshot,
   WeaponSwapSlot,
 } from '../buildData';
-import { gemwordToRef, mythicalToRef, runewordToRef, uniqueToRef } from './buildSnapshot';
+import { gemwordToRef, mythicalToRef, runewordToRef, setItemToRef, uniqueToRef } from './buildSnapshot';
 import { findMythicalRecord, findUniqueRecord } from './itemLookup';
 import { propertyText } from './propertyText';
+import { findSetItem, loadSetsBundle } from './setItems';
 
 /**
  * - `unchanged`: the stored snapshot matches the current local data.
@@ -57,9 +61,29 @@ export async function resolveCurrentRef(ref: ItemRef): Promise<ItemRef | null> {
       const gemword = await db.gemwords.get([ref.name, ref.variant]);
       return gemword ? gemwordToRef(gemword) : null;
     }
+    case 'set':
+      return resolveCurrentSetRef(ref);
     case 'freetext':
       return ref;
   }
+}
+
+/**
+ * Set items come from the sets.json game-data bundle (a network fetch), not the local DB.
+ * A failed load (offline, deploy in progress) says nothing about whether the item still
+ * exists, so it returns the stored ref unchanged instead of null: the diff then shows
+ * `unchanged` rather than a false `missing`, and a refresh on edit keeps the saved snapshot.
+ */
+async function resolveCurrentSetRef(ref: SetItemRef): Promise<ItemRef | null> {
+  let bundle: SetsBundle;
+  try {
+    bundle = await loadSetsBundle();
+  } catch (error) {
+    console.error('Failed to load the sets bundle; keeping the saved set item snapshot:', error);
+    return ref;
+  }
+  const match = findSetItem(bundle, ref.name);
+  return match ? setItemToRef(match.item, match.set) : null;
 }
 
 /**
@@ -131,6 +155,20 @@ function socketableSnapshotsEqual(a: RunewordSnapshot | GemwordSnapshot, b: Rune
   return deepEqual(aRest, bRest) && deepEqual(columnTexts(aColumns), columnTexts(bColumns));
 }
 
+function setSnapshotsEqual(a: SetItemSnapshot, b: SetItemSnapshot): boolean {
+  const { properties: aProperties, partial: aPartial, ...aRest } = a;
+  const { properties: bProperties, partial: bPartial, ...bRest } = b;
+  if (!deepEqual(aRest, bRest) || propertyText(aProperties) !== propertyText(bProperties)) return false;
+  // Shapes are validated by isItemRef when read from jsonb.
+  return (
+    aPartial.length === bPartial.length &&
+    aPartial.every((group, index) => {
+      const other = bPartial[index]; // same length, so always present
+      return group.pieces === other.pieces && propertyText(group.lines) === propertyText(other.lines);
+    })
+  );
+}
+
 /**
  * Whether two item references carry equivalent snapshots (freetext compares by name).
  * Affix/property lists compare as whole text, so a line the ESR site re-wraps (split
@@ -146,6 +184,8 @@ export function refSnapshotsEqual(a: ItemRef, b: ItemRef): boolean {
     case 'runeword':
     case 'gemword':
       return b.type === a.type && socketableSnapshotsEqual(a.snapshot, b.snapshot);
+    case 'set':
+      return b.type === 'set' && setSnapshotsEqual(a.snapshot, b.snapshot);
   }
 }
 

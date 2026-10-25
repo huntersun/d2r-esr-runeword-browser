@@ -204,7 +204,7 @@ The database stores **typed item references** with full item snapshots. Each equ
 
 #### Item Reference Types
 
-There are five types of item references:
+There are six types of item references:
 
 **Unique item** — references a unique item from `htmUniqueItems`, includes a full snapshot of the item's stats at the time the build was created/edited. The stored `id` is informational only: the local auto-increment ID is reassigned on every data re-sync, so the item is resolved by snapshot `name` and, among same-name variants, by snapshot similarity (base item, category, properties, level — see `utils/itemLookup.ts`):
 ```json
@@ -284,6 +284,26 @@ Snapshot stores all three bonus columns from `columnAffixes`. Each column's affi
 ```
 
 Gemword snapshots store all three bonus columns (same as runewords) as `rawText` strings; the display picks the column for the equipment slot. Gemwords have no `runes` field — the recipe is in `gems`.
+
+**Set item** — references a set item from the static game-data bundle `public/game-data/sets.json` (generated from ESR's `sets.txt` / `setitems.txt`, not the parsed HTML in IndexedDB). Set item names are unique across the bundle, so the `name` is the key; `setId` (the `sets.txt` index) groups equipped pieces for the set bonuses, since the hireling sets share their display name across difficulties:
+```json
+{
+  "type": "set",
+  "name": "Tara's Vision",
+  "snapshot": {
+    "name": "Tara's Vision",
+    "setName": "Tara's Calling",
+    "setId": "Tara's Calling",
+    "baseItem": "Circlet",
+    "category": "Circlet",
+    "reqLevel": 16,
+    "properties": ["+10% Faster Cast Rate", "+(2 to 4) to Fire Ball (Sorceress Only)", "..."],
+    "partial": [{ "pieces": 2, "lines": ["10% Chance to Cast Level 4 Elemental Nova when Struck", "Replenish Life +17"] }, { "pieces": 3, "lines": ["..."] }]
+  }
+}
+```
+
+Snapshot fields for set items: `name`, `setName`, `setId`, `baseItem` (the base's name), `category` (the base's item type name from `types.json`), `reqLevel`, `properties` (the item's own lines) and `partial` (the item's own partial bonuses: group `pieces` is active while that many items of the set are worn). The set-wide partial and full-set bonuses are not snapshotted; the detail page reads them from the bundle. `properties` and each group's `lines` compare as whole text for the version diff, like unique properties. The bundle is fetched over the network, so a failed load never marks a set item as missing: the diff keeps the stored ref (shown as unchanged) and an edit keeps the saved snapshot.
 
 **Freetext** — user-typed name for items not in the database (rares, crafted, magic items). No snapshot:
 ```json
@@ -604,6 +624,8 @@ Equipment slots are displayed in a visual grid mimicking D2's character equipmen
 
 - **Empty slots**: Always shown in the grid with a placeholder (e.g., "---"). Keeps layout consistent and shows what's intentionally unequipped.
 - **Item stats**: Each filled slot shows the item name and its bonuses (runeword bonuses, unique item stats — same depth as existing runewords/uniques screens). No individual rune bonus breakdown for runewords.
+- **Set items**: The slot card shows the green item name, "Set: <set name>" (links to `/game-data/sets?name=<item name>`, which focuses the set and highlights the item), base · category · Req Lvl, the item's own lines, then its own partial bonuses as "2 items" / "3 items" groups, marked active or inactive from the number of pieces of that set worn in the same section.
+- **Set bonuses**: Under the player gear grid (Player tab) and under the mercenary grid (Mercenary tab), a "Set bonuses" block lists every set with at least one equipped piece: "<set name> — N of M pieces" (or "Full set"), the active set-wide partial groups, the full-set lines when complete, the active per-item bonuses, and a muted "Needs N pieces" line for the next inactive group. Pieces are counted per section (`utils/setBonuses.ts`): the player's main gear only (the weapon swap is never mixed in) and the mercenary's gear separately; a duplicated item counts once. The block loads `sets.json` only when the section has a set item; while it loads, or if it fails, the block still shows the piece counts and item bonuses without the set-wide lines.
 - **Freetext items**: Display just the typed name (no stats to look up).
 
 ### ESR Version Diff on Items
@@ -634,13 +656,14 @@ On small screens (below `md` breakpoint), the equipment grid stacks to a **verti
 
 ### Item Selection
 
-Each equipment slot uses an **inline autocomplete** picker. Clicking a slot turns it into a search input. The user types to search the app's existing local item database (**unique items**, **mythical uniques**, **runewords**, and **gemwords**). If the desired item isn't found, the user can type a custom name for rares, crafted, or magic items (stored as freetext).
+Each equipment slot uses an **inline autocomplete** picker. Clicking a slot turns it into a search input. The user types to search the app's existing local item database (**unique items**, **mythical uniques**, **runewords**, and **gemwords**) and the **set items** of the `sets.json` game-data bundle (matched by item or set name). If the desired item isn't found, the user can type a custom name for rares, crafted, or magic items (stored as freetext).
 
-**Autocomplete result presentation:** Results are **grouped by type** using `cmdk` Command component's native group support. Four sections appear in order:
+**Autocomplete result presentation:** Results are **grouped by type** using `cmdk` Command component's native group support. Five sections appear in order:
 1. **Unique Items** — from `htmUniqueItems`
 2. **Mythical Uniques** — from `mythicalUniques`
-3. **Runewords** — from `runewords`
-4. **Gemwords** — from `gemwords`
+3. **Set Items** — from `public/game-data/sets.json` (each row: green item name, base, and the set name below; the group is empty while the bundle loads or if it fails to load)
+4. **Runewords** — from `runewords`
+5. **Gemwords** — from `gemwords`
 
 Only groups with matches are shown. Empty groups are hidden.
 
@@ -659,14 +682,14 @@ Only groups with matches are shown. Empty groups are hidden.
 | Slot              | Unique categories / runeword & gemword item types (case-insensitive)                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Helmet            | Helm, Circlet, Pelt, Primal Helm, Spirit Crown, Any Armor                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| Armor             | Body Armor, Cloak, Robe, Any Armor                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Armor             | Body Armor, Armor, Cloak, Robe, Any Armor                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | Weapon / Weapon 2 | Weapon, Melee Weapon, One-Handed Melee Weapon, Two-Handed Melee Weapon, Missile Weapon, Missile, Blunt, Thrown Weapon, Paladin Item; classes Axe, Club, Druid Club, Hammer, Mace, Scepter, Sword, Paladin Sword, Voidblade, Sorceress Mana Blade, Knife, Necromancer Dagger, Throwing Axe, Throwing Knife, Javelin, Amazon Javelin, Barbarian Javs, Shuriken, Hand to Hand (1/2), Knuckle, Wand, Orb, Bow, Amazon Bow, Crossbow, Polearm, Necromancer Polearm, Spear, Amazon Spear, Staff, Assassin 2H Katana |
 | Shield / Shield 2 | Shield, Any Shield, Auric Shields, Voodoo Heads, Grimoire, Bow Quiver, Crossbow Quiver, Paladin Item, Any Armor; plus the one-handed weapon types (Weapon, Melee Weapon, One-Handed Melee Weapon, Blunt, Thrown Weapon and the one-handed classes above, i.e. all weapon classes except Orb, Bow, Amazon Bow, Crossbow, Polearm, Necromancer Polearm, Spear, Amazon Spear, Staff, Assassin 2H Katana, Two-Handed Melee Weapon, Missile Weapon, Missile)                                                       |
 | Gloves            | Gloves, Any Armor                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | Boots             | Boots, Any Armor                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Belt              | Belt, Any Armor                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| Amulet            | Amulet and any category ending in "Amulet" (LoD Amulet, Sor Amulet, ...)                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| Ring 1 / Ring 2   | Ring and any category ending in "Ring" (LoD Ring, Ama Ring, ...)                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Amulet            | Amulet, Holy Pendant, Druidic Necklace, Sorcerer's Talisman, Warlock Pendant, and any category ending in "Amulet" (LoD Amulet, Sor Amulet, ...)                                                                                                                                                                                                                                                                                                                                                               |
+| Ring 1 / Ring 2   | Ring, Barbaric Knuckle, Sorcerer's Band, Warlock Sigil, and any category ending in "Ring" (LoD Ring, Ama Ring, ...)                                                                                                                                                                                                                                                                                                                                                                                           |
 | (no slot)         | Charm, Small/Large/Grand/Odd Charm (any category ending in "Charm"), Jewel                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 
 **Mythical uniques** are grouped by section header rather than item type, so they are matched by base item first, then by section:
@@ -680,7 +703,7 @@ Only groups with matches are shown. Empty groups are hidden.
 | Mythical Unique Jewelry                                          | Amulet, Ring 1–2                                          |
 | Dedicated Drops Mythical Uniques (other bases, e.g. Frostmourne) | all slots                                                 |
 
-`slotFit.test.ts` parses the real fixtures (`test-fixtures/`) and fails, listing the offenders, if any unique category, mythical section or runeword/gemword item type is not in the mapping (or maps to no slot without being a charm/jewel). After an ESR update that adds a category, extend the table in `slotFit.ts` and this section.
+`slotFit.test.ts` parses the real fixtures (`test-fixtures/`) and fails, listing the offenders, if any unique category, mythical section or runeword/gemword item type is not in the mapping (or maps to no slot without being a charm/jewel). It also reads the committed `public/game-data/sets.json` and fails if a set item category maps to no slot, or to a slot that disagrees with the category's `bodyLoc` in `types.json`. Set item categories are `types.json` type names and use the same table as unique categories; note that "Barbaric Knuckle" and "Warlock Sigil" are class rings, and "Armor" is the body armour type. After an ESR update that adds a category, extend the table in `slotFit.ts` and this section.
 
 ```
         [Helmet: Shako    ]
@@ -699,6 +722,7 @@ When a user selects an item from the autocomplete:
 - **Mythical unique**: The reference stores the item's `id` (from `mythicalUniques`, informational only, as above) and a full snapshot — same display structure as regular uniques
 - **Runeword**: The reference stores the runeword's `name` and `variant` (compound key) and a full snapshot of its current stats
 - **Gemword**: The reference stores the gemword's `name` and `variant` (compound key) and a full snapshot — same structure as runewords, with a `gems` recipe instead of `runes`
+- **Set item**: The reference stores the item's `name` (unique across `sets.json`) and a snapshot with its set (`setName`, `setId`), own lines and own partial bonuses
 - **Freetext**: If the user's input doesn't match any item, it's stored as a freetext entry with just the typed name
 
 ### Form Layout
@@ -731,7 +755,7 @@ Single **"Save Build"** button. The build goes live immediately — no draft sta
 On save, the app automatically:
 - Sets `esr_version` to the current ESR version from local IndexedDB metadata (on create)
 - Sets `esr_version_updated` to the current ESR version (on edit)
-- Captures full item snapshots for all referenced items (unique/mythical/runeword) at the current point in time
+- Captures full item snapshots for all referenced items (unique/mythical/set/runeword/gemword) at the current point in time
 
 ### Expected Scale
 
@@ -1127,6 +1151,7 @@ These were decided or discovered while building the feature, amending the origin
 - **Account deletion is manual for now.** Automated erasure (Edge Function / `security definer` RPC) is not built yet. The Edit Profile dialog has a "Delete account" link that opens an info view explaining automatic deletion isn't available and linking to a GitHub issue (`/issues/new`) so the developer can erase the account (profile + builds + likes via the existing `ON DELETE CASCADE`) manually. The automated flow and the privacy policy's "right to erasure" wording (which still describes immediate self-service deletion) are reconciled in a later phase.
 - **Privacy policy location.** `PRIVACY_POLICY.md` now lives at the repo root (moved from `builds-feature-docs/`); the consent gate links to it on the default branch (`.../blob/master/PRIVACY_POLICY.md`), which resolves once this branch merges to `master`.
 - **Write-access hardening (migration 003).** RLS restricts which rows a client may write, but not which columns. `003_harden_write_access.sql` adds column-scoped INSERT/UPDATE grants so clients cannot write trigger-managed/immutable columns (`builds.likes_count`/`created_at`/`id`/`user_id`/`esr_version`; `profiles.avatar_url`/timestamps), and clamps the OAuth-derived `display_name` in `handle_new_user()` to the 1–50 char constraint. GDPR consent stays client-side-enforced by design (the consent gate), not in RLS.
+- **Set items as a sixth item type.** Once the `sets.json` game-data bundle existed (Sets page), set items became pickable (`SetItemRef`, see the item reference types above). Unlike the other types they resolve from a fetched static bundle rather than IndexedDB, so `utils/setItems.ts` wraps the load for Dexie `liveQuery` queriers, and a failed load keeps the stored ref (diff `unchanged`, refresh keeps the snapshot) instead of reporting the item as missing. Rich cards come from `SetItemBuildCard`; the per-section "Set bonuses" block comes from `utils/setBonuses.ts` + `SetBonusesBlock`.
 
 ## Out of Scope (For Now)
 
@@ -1147,6 +1172,5 @@ These were decided or discovered while building the feature, amending the origin
 - Markdown or rich text formatting in freetext fields
 - Profanity filter / content moderation
 - Short/vanity URLs for builds (using UUID is fine for v1)
-- Set items (not parsed or stored in the app yet)
 - In-app data export (handled manually by developer for v1)
 - Custom rate limiting (Supabase defaults suffice for v1)

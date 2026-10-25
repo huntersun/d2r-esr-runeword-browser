@@ -21,10 +21,25 @@ const gemword = {
   snapshot: { sockets: 2, gems: ['Ruby'], allowedItems: ['Helm'], columnAffixes, reqLevel: 10 },
 };
 const freetext = { type: 'freetext', name: 'Rare circlet' };
+const setItem = {
+  type: 'set',
+  name: "Tal Rasha's Lidless Eye",
+  snapshot: {
+    name: "Tal Rasha's Lidless Eye",
+    setName: "Tal Rasha's Wrappings",
+    setId: "Tal Rasha's Wrappings",
+    baseItem: 'Swirling Crystal',
+    category: 'Orb',
+    reqLevel: 65,
+    properties: ['+1 to Sorceress Skill Levels'],
+    partial: [{ pieces: 2, lines: ['+10% Faster Cast Rate'] }],
+  },
+};
 
 describe('isItemRef', () => {
   it('accepts every well-formed variant', () => {
-    expect([unique, { ...unique, type: 'mythical' }, runeword, gemword, freetext].every(isItemRef)).toBe(true);
+    expect([unique, { ...unique, type: 'mythical' }, runeword, gemword, setItem, freetext].every(isItemRef)).toBe(true);
+    expect(isItemRef({ ...setItem, snapshot: { ...setItem.snapshot, partial: [] } })).toBe(true);
   });
 
   it('rejects refs with a missing or mistyped field the UI dereferences', () => {
@@ -40,6 +55,15 @@ describe('isItemRef', () => {
       { ...runeword, snapshot: { ...runeword.snapshot, runes: undefined } },
       { ...runeword, snapshot: { ...runeword.snapshot, columnAffixes: { weaponsGloves: [] } } },
       { ...gemword, variant: 'one' },
+      { ...setItem, name: undefined },
+      { ...setItem, snapshot: null },
+      { ...setItem, snapshot: { ...setItem.snapshot, setId: undefined } },
+      { ...setItem, snapshot: { ...setItem.snapshot, setName: 3 } },
+      { ...setItem, snapshot: { ...setItem.snapshot, reqLevel: '65' } },
+      { ...setItem, snapshot: { ...setItem.snapshot, properties: 'x' } },
+      { ...setItem, snapshot: { ...setItem.snapshot, partial: undefined } },
+      { ...setItem, snapshot: { ...setItem.snapshot, partial: [{ pieces: '2', lines: [] }] } },
+      { ...setItem, snapshot: { ...setItem.snapshot, partial: [{ pieces: 2, lines: [1] }] } },
     ];
     expect(malformed.filter(isItemRef)).toEqual([]);
   });

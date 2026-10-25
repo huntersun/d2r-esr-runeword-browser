@@ -25,6 +25,8 @@ import { avatarInitials, formatProfileTag, openSignInDialog, selectAuthUserId, s
 import { asBuildData, type EquipmentSlot, type ItemRef, type WeaponSwapSlot } from '../buildData';
 import { compactItems } from '../utils/buildSnapshot';
 import { computeBuildItemDiffs } from '../utils/itemDiff';
+import { hasSetItems } from '../utils/setBonuses';
+import { SetBonusesBlock } from '../components/SetBonusesBlock';
 import { EquipmentGrid } from '../components/EquipmentGrid';
 import { WeaponSwapGrid } from '../components/WeaponSwapGrid';
 import { AscendancyDisplay } from '../components/AscendancyDisplay';
@@ -309,6 +311,7 @@ export function BuildDetailScreen() {
                       <div>
                         <h3 className="mb-2 text-sm font-semibold text-muted-foreground">Player Gear</h3>
                         <EquipmentGrid items={playerItems} diffs={diffsReady?.items} notes={buildData.itemNotes} />
+                        {hasSetItems(playerItems) && <SetBonusesBlock items={playerItems} />}
                       </div>
                     )}
                     {hasSwap && (
@@ -365,6 +368,7 @@ export function BuildDetailScreen() {
               <section>
                 <SectionHeader title="Mercenary Gear" />
                 <EquipmentGrid items={mercItems} diffs={diffsReady?.mercenary} notes={buildData.mercenaryNotes} />
+                {hasSetItems(mercItems) && <SetBonusesBlock items={mercItems} />}
               </section>
             </TabsContent>
           )}

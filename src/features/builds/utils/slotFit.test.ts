@@ -5,7 +5,8 @@ import { parseHtmUniqueItems } from '@/features/data-sync/parsers/htmUniqueItems
 import { parseMythicalUniques } from '@/features/data-sync/parsers/mythicalUniquesParser';
 import { parseRunewordsHtml } from '@/features/data-sync/parsers/runewordsParser';
 import { parseGemwordsHtml } from '@/features/data-sync/parsers/gemwordsParser';
-import { isKnownMythicalCategory, itemFitsSlot, mythicalSlots, typeSlots, type PickerSlot } from './slotFit';
+import type { SetsBundle, TypesBundle } from '@/features/game-data/engine/schema';
+import { isKnownMythicalCategory, itemFitsSlot, mythicalSlots, typeSlots, type PickerSlot, type SlotGroup } from './slotFit';
 
 const ALL_SLOTS: readonly PickerSlot[] = [
   'helmet',
@@ -53,6 +54,17 @@ describe('itemFitsSlot', () => {
   it('treats quivers, necro heads and grimoires as off-hand items', () => {
     for (const category of ['Bow Quiver', 'Voodoo Heads', 'Grimoire', 'Auric Shields']) {
       expect(slotsFor({ type: 'unique', category })).toEqual(['shield', 'shield2']);
+    }
+  });
+
+  it('maps set item categories like unique categories, incl. the class jewellery types', () => {
+    expect(slotsFor({ type: 'set', category: 'Gloves' })).toEqual(['gloves']);
+    expect(slotsFor({ type: 'set', category: 'Orb' })).toEqual(['weapon', 'weapon2']);
+    for (const category of ['Barbaric Knuckle', "Sorcerer's Band", 'Warlock Sigil']) {
+      expect(slotsFor({ type: 'set', category })).toEqual(['ring1', 'ring2']);
+    }
+    for (const category of ['Holy Pendant', 'Druidic Necklace', "Sorcerer's Talisman", 'Warlock Pendant']) {
+      expect(slotsFor({ type: 'set', category })).toEqual(['amulet']);
     }
   });
 
@@ -143,5 +155,45 @@ describe('slot mapping covers the real data', () => {
     expect(gemwords.length).toBeGreaterThan(0);
     const unmapped = unmappedTypes([...runewords, ...gemwords].flatMap((r) => r.allowedItems));
     expect(unmapped, `Unmapped runeword/gemword item types: ${unmapped.join(', ')}`).toEqual([]);
+  });
+});
+
+// ─── Committed sets.json bundle ──────────────────────────────────────────────
+
+const gameData = <T>(file: string): T => JSON.parse(readFileSync(resolve(__dirname, '../../../../public/game-data', file), 'utf-8')) as T;
+
+/** types.json `bodyLoc` → the slot groups an item of that body location may go in. */
+const BODY_LOC_SLOTS: Readonly<Record<string, readonly SlotGroup[]>> = {
+  head: ['helmet'],
+  tors: ['armor'],
+  rarm: ['weapon', 'shield'],
+  larm: ['weapon', 'shield'],
+  glov: ['gloves'],
+  feet: ['boots'],
+  belt: ['belt'],
+  neck: ['amulet'],
+  rrin: ['ring'],
+  lrin: ['ring'],
+};
+
+describe('slot mapping covers the committed sets bundle', () => {
+  const sets = gameData<SetsBundle>('sets.json').sets;
+  const types = gameData<TypesBundle>('types.json').types;
+  const categories = [...new Set(sets.flatMap((set) => set.items.map((item) => item.category)))].sort();
+
+  it('maps every set item category to at least one slot', () => {
+    expect(categories.length).toBeGreaterThan(0);
+    const unmapped = categories.filter((category) => (typeSlots(category)?.length ?? 0) === 0);
+    expect(unmapped, `Unmapped set item categories: ${unmapped.join(', ')}`).toEqual([]);
+  });
+
+  it('agrees with the body location of each category in types.json', () => {
+    const wrong = categories.filter((category) => {
+      const bodyLoc = types.find((type) => type.name === category)?.bodyLoc;
+      const allowed = bodyLoc !== undefined && bodyLoc !== null ? BODY_LOC_SLOTS[bodyLoc] : undefined;
+      if (allowed === undefined) return false;
+      return !(typeSlots(category) ?? []).every((group) => allowed.includes(group));
+    });
+    expect(wrong, `Set item categories mapped against their bodyLoc: ${wrong.join(', ')}`).toEqual([]);
   });
 });

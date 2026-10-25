@@ -25,17 +25,19 @@ interface SlotCellProps {
   readonly note?: string;
   /** When provided alongside an item, the note becomes editable. */
   readonly onNoteChange?: (text: string) => void;
+  /** Set items only: pieces of the item's set equipped in this section. */
+  readonly setPieces?: number;
 }
 
 /** One equipment slot — editable (picker + rich card preview + note) or read-only. */
-export function SlotCell({ label, slot, item, onChange, disabled, diff, note, onNoteChange }: SlotCellProps) {
+export function SlotCell({ label, slot, item, onChange, disabled, diff, note, onNoteChange, setPieces }: SlotCellProps) {
   const [showOriginal, setShowOriginal] = useState(false);
 
   if (onChange !== undefined) {
     return (
       <div className="flex flex-col gap-2">
         <EquipmentSlotPicker label={label} slot={slot} value={item} disabled={disabled} onChange={onChange} />
-        {item !== null && <BuildItemCard item={item} slot={slot} />}
+        {item !== null && <BuildItemCard item={item} slot={slot} setPieces={setPieces} />}
         {item !== null && onNoteChange !== undefined && (
           <Textarea
             value={note ?? ''}
@@ -79,7 +81,7 @@ export function SlotCell({ label, slot, item, onChange, disabled, diff, note, on
       </div>
 
       {item !== null ? (
-        <BuildItemCard item={item} slot={slot} />
+        <BuildItemCard item={item} slot={slot} setPieces={setPieces} />
       ) : (
         <Card className="p-3">
           <p className="text-sm text-muted-foreground">—</p>

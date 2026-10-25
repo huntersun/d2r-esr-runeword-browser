@@ -15,6 +15,7 @@ export type SlotCandidate =
   | { readonly type: 'unique'; readonly category: string }
   | { readonly type: 'mythical'; readonly category: string; readonly baseItem: string }
   | { readonly type: 'runeword' | 'gemword'; readonly allowedItems: readonly string[] }
+  | { readonly type: 'set'; readonly category: string }
   | { readonly type: 'freetext' };
 
 const SLOT_GROUP: Record<PickerSlot, SlotGroup> = {
@@ -45,9 +46,10 @@ const TWO_HAND: readonly SlotGroup[] = ['weapon'];
 const NONE: readonly SlotGroup[] = [];
 
 /**
- * Item type (unique category, runeword/gemword allowed item type) → slot groups, keyed
- * by lower-cased name. Unique categories and runeword types share one table because
- * several names overlap ("Helm", "Body Armor", "Sword", ...).
+ * Item type (unique category, set item category, runeword/gemword allowed item type) →
+ * slot groups, keyed by lower-cased name. They share one table because several names
+ * overlap ("Helm", "Body Armor", "Sword", ...). Set item categories are types.json
+ * type names; their slots follow the type's `bodyLoc` (checked by slotFit.test.ts).
  */
 const TYPE_SLOTS: Readonly<Partial<Record<string, readonly SlotGroup[]>>> = {
   // Helmets
@@ -58,6 +60,8 @@ const TYPE_SLOTS: Readonly<Partial<Record<string, readonly SlotGroup[]>>> = {
   'spirit crown': ['helmet'],
   // Body armour
   'body armor': ['armor'],
+  // types.json name of body armour ("tors"), used by set item categories
+  armor: ['armor'],
   cloak: ['armor'],
   robe: ['armor'],
   // Off hand
@@ -78,6 +82,15 @@ const TYPE_SLOTS: Readonly<Partial<Record<string, readonly SlotGroup[]>>> = {
   // Jewellery (class-specific rings/amulets are handled by the suffix rule below)
   amulet: ['amulet'],
   ring: ['ring'],
+  // Class jewellery item types (set item categories): rings despite the names
+  'barbaric knuckle': ['ring'],
+  "sorcerer's band": ['ring'],
+  'warlock sigil': ['ring'],
+  // ... and amulets
+  'holy pendant': ['amulet'],
+  'druidic necklace': ['amulet'],
+  "sorcerer's talisman": ['amulet'],
+  'warlock pendant': ['amulet'],
   // Generic weapon types (runewords/gemwords)
   weapon: ONE_HAND,
   'melee weapon': ONE_HAND,
@@ -191,6 +204,7 @@ export function itemFitsSlot(slot: PickerSlot, candidate: SlotCandidate): boolea
     case 'freetext':
       return true;
     case 'unique':
+    case 'set':
       return fits(typeSlots(candidate.category), group);
     case 'mythical':
       return fits(mythicalSlots(candidate.category, candidate.baseItem), group);

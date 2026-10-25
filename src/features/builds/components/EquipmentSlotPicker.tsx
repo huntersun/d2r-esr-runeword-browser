@@ -7,7 +7,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import type { ItemRef } from '../buildData';
 import { useEquipmentItems } from '../hooks/useEquipmentItems';
-import { freetextRef, gemwordToRef, itemRefName, mythicalToRef, runewordToRef, uniqueToRef } from '../utils/buildSnapshot';
+import { useSetItems } from '../hooks/useSetItems';
+import { freetextRef, gemwordToRef, itemRefName, mythicalToRef, runewordToRef, setItemToRef, uniqueToRef } from '../utils/buildSnapshot';
 import { itemFitsSlot, type PickerSlot } from '../utils/slotFit';
 import { mythicalVariantHints, uniqueVariantHints } from '../utils/variantHints';
 
@@ -24,7 +25,8 @@ interface EquipmentSlotPickerProps {
 
 /**
  * Inline autocomplete for one equipment slot. Searches the local item DB
- * (uniques, mythical uniques, runewords, gemwords) grouped by type, with a
+ * (uniques, mythical uniques, runewords, gemwords) and the sets.json game-data
+ * bundle (set items, matched by item or set name) grouped by type, with a
  * freetext fallback for items not in the database. Results are limited to items
  * that fit the slot (see utils/slotFit); "Show all items" lifts the limit.
  */
@@ -33,6 +35,8 @@ export function EquipmentSlotPicker({ label, slot, value, onChange, disabled }: 
   const [query, setQuery] = useState('');
   const [showAll, setShowAll] = useState(false);
   const items = useEquipmentItems();
+  // Loaded separately from the local DB; until it arrives (or if it fails) the group is just empty.
+  const setItems = useSetItems() ?? [];
 
   const q = query.trim().toLowerCase();
   const showResults = q.length > 0 && items !== undefined;
@@ -43,22 +47,26 @@ export function EquipmentSlotPicker({ label, slot, value, onChange, disabled }: 
   const mythicalMatches = showResults ? items.mythicals.filter((i) => nameMatches(i.name)) : [];
   const runewordMatches = showResults ? items.runewords.filter((i) => nameMatches(i.name)) : [];
   const gemwordMatches = showResults ? items.gemwords.filter((i) => nameMatches(i.name)) : [];
+  const setMatches = showResults ? setItems.filter((entry) => nameMatches(entry.item.name) || nameMatches(entry.set.name)) : [];
 
   const fitUniques = uniqueMatches.filter((i) => showAll || itemFitsSlot(slot, { type: 'unique', category: i.category }));
   const fitMythicals = mythicalMatches.filter(
     (i) => showAll || itemFitsSlot(slot, { type: 'mythical', category: i.category, baseItem: i.baseItem })
   );
+  const fitSetItems = setMatches.filter((entry) => showAll || itemFitsSlot(slot, { type: 'set', category: entry.item.category }));
   const fitRunewords = runewordMatches.filter((i) => showAll || itemFitsSlot(slot, { type: 'runeword', allowedItems: i.allowedItems }));
   const fitGemwords = gemwordMatches.filter((i) => showAll || itemFitsSlot(slot, { type: 'gemword', allowedItems: i.allowedItems }));
   const hiddenCount =
     uniqueMatches.length +
     mythicalMatches.length +
+    setMatches.length +
     runewordMatches.length +
     gemwordMatches.length -
-    (fitUniques.length + fitMythicals.length + fitRunewords.length + fitGemwords.length);
+    (fitUniques.length + fitMythicals.length + fitSetItems.length + fitRunewords.length + fitGemwords.length);
 
   const uniques = fitUniques.slice(0, MAX_PER_GROUP);
   const mythicals = fitMythicals.slice(0, MAX_PER_GROUP);
+  const setItemResults = fitSetItems.slice(0, MAX_PER_GROUP);
   const runewords = fitRunewords.slice(0, MAX_PER_GROUP);
   const gemwords = fitGemwords.slice(0, MAX_PER_GROUP);
 
@@ -173,6 +181,22 @@ export function EquipmentSlotPicker({ label, slot, value, onChange, disabled }: 
                 </CommandGroup>
               )}
 
+              {setItemResults.length > 0 && (
+                <CommandGroup heading="Set Items">
+                  {setItemResults.map(({ item, set }) => (
+                    <CommandItem
+                      key={`s-${item.name}`}
+                      value={`s-${item.name}`}
+                      onSelect={() => {
+                        select(setItemToRef(item, set));
+                      }}
+                    >
+                      <SetItemOptionLabel name={item.name} setName={set.name} baseItem={item.baseName} />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+
               {runewords.length > 0 && (
                 <CommandGroup heading="Runewords">
                   {runewords.map((rw) => (
@@ -254,6 +278,21 @@ function ItemOptionLabel({ name, baseItem, isAncientCoupon = false, hints }: Ite
           {hintText}
         </span>
       )}
+    </div>
+  );
+}
+
+/** Picker row for a set item: green name + muted base, then the set name. */
+function SetItemOptionLabel({ name, setName, baseItem }: { readonly name: string; readonly setName: string; readonly baseItem: string }) {
+  return (
+    <div className="flex min-w-0 flex-1 flex-col">
+      <span className="truncate" title={`${name} — ${baseItem}`}>
+        <span className="text-green-700 dark:text-green-400">{name}</span>
+        {baseItem !== '' && <span className="ml-1 text-xs text-muted-foreground">{baseItem}</span>}
+      </span>
+      <span className="truncate text-xs text-muted-foreground" title={setName}>
+        {setName}
+      </span>
     </div>
   );
 }

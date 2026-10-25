@@ -1,4 +1,5 @@
 import type { Gemword, HtmUniqueItem, MythicalUnique, Runeword, SocketableBonuses } from '@/core/db';
+import type { SetInfo, SetItemInfo } from '@/features/game-data/engine/schema';
 import type {
   ColumnAffixesSnapshot,
   EquipmentSlot,
@@ -7,6 +8,7 @@ import type {
   ItemRef,
   MythicalItemRef,
   RunewordItemRef,
+  SetItemRef,
   UniqueItemRef,
   WeaponSwapSlot,
 } from '../buildData';
@@ -97,6 +99,24 @@ export function gemwordToRef(item: Gemword): GemwordItemRef {
   };
 }
 
+/** Builds a set item reference + snapshot from the sets.json bundle entry and its set. */
+export function setItemToRef(item: SetItemInfo, set: SetInfo): SetItemRef {
+  return {
+    type: 'set',
+    name: item.name,
+    snapshot: {
+      name: item.name,
+      setName: set.name,
+      setId: set.id,
+      baseItem: item.baseName,
+      category: item.category,
+      reqLevel: item.reqLevel,
+      properties: item.lines,
+      partial: item.partial.map((group) => ({ pieces: group.pieces, lines: group.lines })),
+    },
+  };
+}
+
 export function freetextRef(name: string): FreetextItemRef {
   return { type: 'freetext', name: name.trim() };
 }
@@ -109,6 +129,7 @@ export function itemRefName(ref: ItemRef): string {
       return ref.snapshot.name;
     case 'runeword':
     case 'gemword':
+    case 'set':
     case 'freetext':
       return ref.name;
   }

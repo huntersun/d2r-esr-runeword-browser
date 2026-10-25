@@ -8,6 +8,7 @@ import { GemwordCard, useGemBonusMap } from '@/features/gemwords';
 import type { EquipmentSlot, ItemRef, WeaponSwapSlot } from '../buildData';
 import { itemRefKey, resolveFullItem } from '../utils/resolveItem';
 import { ItemRefDisplay } from './ItemRefDisplay';
+import { SetItemBuildCard } from './SetItemBuildCard';
 
 // Gemwords need a gem-bonus map; load it here so callers don't have to thread it
 // through the slot grids. A build has only a handful of gemwords, so the per-card
@@ -20,6 +21,8 @@ function GemwordSlotCard({ gemword }: { readonly gemword: Gemword }) {
 interface BuildItemCardProps {
   readonly item: ItemRef;
   readonly slot: EquipmentSlot | WeaponSwapSlot;
+  /** Set items only: pieces of the item's set equipped in this section (marks its partial groups active/inactive). */
+  readonly setPieces?: number;
 }
 
 /**
@@ -27,7 +30,7 @@ interface BuildItemCardProps {
  * from the viewer's current local data. Falls back to the saved snapshot text for
  * freetext items, items missing from the current ESR data, or while data loads.
  */
-export function BuildItemCard({ item, slot }: BuildItemCardProps) {
+export function BuildItemCard({ item, slot, setPieces }: BuildItemCardProps) {
   const resolved = useLiveQuery(() => resolveFullItem(item), [itemRefKey(item)]);
 
   if (resolved) {
@@ -40,13 +43,15 @@ export function BuildItemCard({ item, slot }: BuildItemCardProps) {
         return <RunewordCard runeword={resolved.runeword} />;
       case 'gemword':
         return <GemwordSlotCard gemword={resolved.gemword} />;
+      case 'set':
+        return <SetItemBuildCard item={resolved.item} set={resolved.set} equippedPieces={setPieces} />;
     }
   }
 
   // Freetext, missing item, or still loading: show the saved snapshot details.
   return (
     <Card className="h-full p-3">
-      <ItemRefDisplay item={item} slot={slot} />
+      <ItemRefDisplay item={item} slot={slot} setPieces={setPieces} />
     </Card>
   );
 }

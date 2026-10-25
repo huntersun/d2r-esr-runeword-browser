@@ -44,6 +44,28 @@ export interface GemwordSnapshot {
   readonly reqLevel: number;
 }
 
+/** One per-item set bonus group: active while `pieces` items of the set are worn. */
+export interface SetBonusGroupSnapshot {
+  readonly pieces: number;
+  readonly lines: readonly string[];
+}
+
+/** Snapshot for a set item (from the sets.json game-data bundle). */
+export interface SetItemSnapshot {
+  readonly name: string;
+  /** Display name of the set (hireling sets share it across difficulties; `setId` is unique). */
+  readonly setName: string;
+  /** sets.txt `index` of the set; groups equipped pieces for the set bonuses. */
+  readonly setId: string;
+  readonly baseItem: string;
+  readonly category: string;
+  readonly reqLevel: number;
+  /** The item's own property lines. */
+  readonly properties: readonly string[];
+  /** The item's own partial bonuses (need N items of the set). */
+  readonly partial: readonly SetBonusGroupSnapshot[];
+}
+
 export interface UniqueItemRef {
   readonly type: 'unique';
   readonly id: number;
@@ -70,12 +92,19 @@ export interface GemwordItemRef {
   readonly snapshot: GemwordSnapshot;
 }
 
+/** A set item, identified by its name (set item names are unique across sets.json). */
+export interface SetItemRef {
+  readonly type: 'set';
+  readonly name: string;
+  readonly snapshot: SetItemSnapshot;
+}
+
 export interface FreetextItemRef {
   readonly type: 'freetext';
   readonly name: string;
 }
 
-export type ItemRef = UniqueItemRef | MythicalItemRef | RunewordItemRef | GemwordItemRef | FreetextItemRef;
+export type ItemRef = UniqueItemRef | MythicalItemRef | RunewordItemRef | GemwordItemRef | SetItemRef | FreetextItemRef;
 
 export type EquipmentSlot = 'helmet' | 'armor' | 'weapon' | 'shield' | 'gloves' | 'boots' | 'belt' | 'amulet' | 'ring1' | 'ring2';
 export type WeaponSwapSlot = 'weapon2' | 'shield2';
@@ -118,6 +147,24 @@ function isUniqueSnapshot(s: UnknownRecord): boolean {
   );
 }
 
+function isSetBonusGroup(value: unknown): boolean {
+  return isRecord(value) && typeof value.pieces === 'number' && isStringArray(value.lines);
+}
+
+function isSetItemSnapshot(s: UnknownRecord): boolean {
+  return (
+    typeof s.name === 'string' &&
+    typeof s.setName === 'string' &&
+    typeof s.setId === 'string' &&
+    typeof s.baseItem === 'string' &&
+    typeof s.category === 'string' &&
+    typeof s.reqLevel === 'number' &&
+    isStringArray(s.properties) &&
+    Array.isArray(s.partial) &&
+    s.partial.every(isSetBonusGroup)
+  );
+}
+
 function isSocketableSnapshot(s: UnknownRecord, recipeKey: 'runes' | 'gems'): boolean {
   return isStringArray(s[recipeKey]) && isColumnAffixes(s.columnAffixes);
 }
@@ -139,6 +186,8 @@ export function isItemRef(value: unknown): value is ItemRef {
         typeof value.variant === 'number' &&
         isSocketableSnapshot(snapshot, value.type === 'runeword' ? 'runes' : 'gems')
       );
+    case 'set':
+      return typeof value.name === 'string' && isSetItemSnapshot(snapshot);
     default:
       return false;
   }

@@ -1,5 +1,6 @@
 import type { EquipmentSlot, ItemRef } from '../buildData';
 import type { ItemDiff } from '../utils/itemDiff';
+import { setPieceCounts } from '../utils/setBonuses';
 import { SlotCell } from './SlotCell';
 
 const SLOT_LABELS: Record<EquipmentSlot, string> = {
@@ -48,17 +49,21 @@ interface EquipmentGridProps {
 }
 
 export function EquipmentGrid({ items, onChange, disabled, diffs, notes, onNoteChange }: EquipmentGridProps) {
+  // Set pieces worn in this section only (a grid is one section: player gear or merc gear).
+  const pieceCounts = setPieceCounts(items);
   return (
     <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-3">
       {CELLS.map((cell) => {
         if (cell.kind === 'spacer') return <div key={cell.id} className="hidden md:block" />;
         const slot = cell.slot;
+        const item = items[slot] ?? null;
         return (
           <SlotCell
             key={slot}
             label={SLOT_LABELS[slot]}
             slot={slot}
-            item={items[slot] ?? null}
+            item={item}
+            setPieces={item?.type === 'set' ? pieceCounts.get(item.snapshot.setId) : undefined}
             disabled={disabled}
             diff={diffs?.[slot]}
             note={notes?.[slot]}
