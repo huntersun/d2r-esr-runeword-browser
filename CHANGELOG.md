@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.31.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.30.0...v1.31.0) (2026-10-25)
+
+
+### Features
+
+* **game-data:** families view on the Bases page ([85319cd](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/85319cda2cd1b4f66ceb4a8b3f9fb4a42127d0b8))
+
 ## [1.30.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.29.0...v1.30.0) (2026-10-25)
 
 
