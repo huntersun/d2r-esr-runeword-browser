@@ -8,6 +8,7 @@ describe('item icon lookup', () => {
     bases: { hax: axe },
     uniques: { 'The Gnasher': gnasher, "Tathamet's Awakening": axe },
     sets: { "Civerb's Ward": ward },
+    misc: { 'El Rune': axe, 'Ko Rune#r19': gnasher, 'Ko Rune#r68': ward },
   });
 
   it('finds bases by code and named items by normalised name', () => {
@@ -23,5 +24,19 @@ describe('item icon lookup', () => {
     expect(findItemIcon(index, { kind: 'unique', name: "Tathamet's Awakening (Cold Variant)" })).toBe(axe);
     expect(findItemIcon(index, { kind: 'unique', name: 'Unknown', code: 'hax' })).toBe(axe);
     expect(findItemIcon(index, { kind: 'unique', name: 'Unknown' })).toBeUndefined();
+  });
+
+  it('finds misc items by name, a name keyed per code by its code', () => {
+    expect(findItemIcon(index, { kind: 'misc', name: 'el rune' })).toBe(axe);
+    expect(findItemIcon(index, { kind: 'misc', name: 'El Rune', code: 'r51' })).toBe(axe);
+    expect(findItemIcon(index, { kind: 'misc', name: 'Ko Rune', code: 'r19' })).toBe(gnasher);
+    expect(findItemIcon(index, { kind: 'misc', name: 'Ko Rune', code: 'R68' })).toBe(ward);
+    // A split name without (or with an unknown) code has no plain entry: no icon rather than the other row's art
+    expect(findItemIcon(index, { kind: 'misc', name: 'Ko Rune' })).toBeUndefined();
+    expect(findItemIcon(index, { kind: 'misc', name: 'Ko Rune', code: 'r01' })).toBeUndefined();
+    expect(findItemIcon(index, { kind: 'misc', name: 'El Rune (12 points)' })).toBe(axe);
+    expect(findItemIcon(index, { kind: 'misc', name: 'The Gnasher' })).toBeUndefined();
+    // An icons.json without the misc section
+    expect(findItemIcon(buildItemIconIndex({ bases: {}, uniques: {}, sets: {} }), { kind: 'misc', name: 'El Rune' })).toBeUndefined();
   });
 });

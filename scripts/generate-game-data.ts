@@ -37,9 +37,9 @@ function readIcons(): { text: string; counts: Record<string, number> } | null {
   const text = readFileSync(path, 'utf8');
   const bundle = JSON.parse(text) as IconsBundle;
   const count = (section: Record<string, unknown> | undefined) => Object.keys(section ?? {}).length;
-  // Entries (all three sections) whose image came from the vanilla art folder (recoloured ones through their source file)
+  // Entries (all sections) whose image came from the vanilla art folder (recoloured ones through their source file)
   const vanillaFiles = new Set(bundle.vanilla?.files ?? []);
-  const entries = [bundle.bases, bundle.uniques, bundle.sets].flatMap((section) => Object.values(section));
+  const entries = [bundle.bases, bundle.uniques, bundle.sets, bundle.misc].flatMap((section) => Object.values(section));
   const vanillaIcons = entries.filter((icon) => vanillaFiles.has(untintedFile(icon.file))).length;
   const tinted = entries.filter((icon) => icon.tint !== undefined);
   return {
@@ -48,6 +48,7 @@ function readIcons(): { text: string; counts: Record<string, number> } | null {
       itemIcons: count(bundle.bases),
       uniqueIcons: count(bundle.uniques),
       setIcons: count(bundle.sets),
+      miscIcons: count(bundle.misc),
       vanillaIcons,
       vanillaIconFiles: vanillaFiles.size,
       tintedIcons: tinted.length,

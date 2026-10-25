@@ -58,7 +58,41 @@
       "club_felloak.webp",
       "club_spiked_club.webp",
       "club_stoutnail.webp",
+      "gem_amethyst.webp",
+      "gem_chipped_amethyst.webp",
+      "gem_chipped_diamond.webp",
+      "gem_chipped_emerald.webp",
+      "gem_chipped_ruby.webp",
+      "gem_chipped_saphire.webp",
+      "gem_chipped_skull.webp",
+      "gem_chipped_topaz.webp",
+      "gem_diamond.webp",
+      "gem_emerald.webp",
+      "gem_flawed_amethyst.webp",
+      "gem_flawed_diamond.webp",
+      "gem_flawed_emerald.webp",
+      "gem_flawed_ruby.webp",
+      "gem_flawed_saphire.webp",
+      "gem_flawed_skull.webp",
+      "gem_flawed_topaz.webp",
+      "gem_flawless_amethyst.webp",
+      "gem_flawless_diamond.webp",
+      "gem_flawless_emerald.webp",
+      "gem_flawless_ruby.webp",
+      "gem_flawless_saphire.webp",
+      "gem_flawless_skull.webp",
+      "gem_flawless_topaz.webp",
+      "gem_perfect_amethyst.webp",
       "gem_perfect_diamond.webp",
+      "gem_perfect_emerald.webp",
+      "gem_perfect_ruby.webp",
+      "gem_perfect_saphire.webp",
+      "gem_perfect_skull.webp",
+      "gem_perfect_topaz.webp",
+      "gem_ruby.webp",
+      "gem_saphire.webp",
+      "gem_skull.webp",
+      "gem_topaz.webp",
       "glove_gloves_l.webp",
       "glove_heavy_gloves.webp",
       "grimoires_ars_aldiablolos.webp",
@@ -113,6 +147,38 @@
       "potion_rancid_gas_potion.webp",
       "potion_strangling_gas_potion.webp",
       "ring_ring4.webp",
+      "rune_amn_rune.webp",
+      "rune_ber_rune.webp",
+      "rune_cham_rune.webp",
+      "rune_dol_rune.webp",
+      "rune_el_rune.webp",
+      "rune_eld_rune.webp",
+      "rune_eth_rune.webp",
+      "rune_fal_rune.webp",
+      "rune_gul_rune.webp",
+      "rune_hel_rune.webp",
+      "rune_io_rune.webp",
+      "rune_ist_rune.webp",
+      "rune_ith_rune.webp",
+      "rune_jah_rune.webp",
+      "rune_lem_rune.webp",
+      "rune_lo_rune.webp",
+      "rune_lum_rune.webp",
+      "rune_mal_rune.webp",
+      "rune_nef_rune.webp",
+      "rune_ohm_rune.webp",
+      "rune_ort_rune.webp",
+      "rune_pul_rune.webp",
+      "rune_ral_rune.webp",
+      "rune_shael_rune.webp",
+      "rune_sol_rune.webp",
+      "rune_sur_rune.webp",
+      "rune_tal_rune.webp",
+      "rune_thul_rune.webp",
+      "rune_tir_rune.webp",
+      "rune_um_rune.webp",
+      "rune_vex_rune.webp",
+      "rune_zod_rune.webp",
       "scepter_scepter.webp",
       "shield_buckler.webp",
       "shield_bverrit_keep.webp",
@@ -13810,6 +13876,898 @@
         "map": "invgreybrown",
         "color": "cred"
       }
+    }
+  },
+  "misc": {
+    "Chipped Amethyst": {
+      "file": "gem_chipped_amethyst.webp",
+      "w": 41,
+      "h": 42
+    },
+    "Flawed Amethyst": {
+      "file": "gem_flawed_amethyst.webp",
+      "w": 47,
+      "h": 52
+    },
+    "Amethyst": {
+      "file": "gem_amethyst.webp",
+      "w": 49,
+      "h": 57
+    },
+    "Flawless Amethyst": {
+      "file": "gem_flawless_amethyst.webp",
+      "w": 68,
+      "h": 69
+    },
+    "Blemished Amethyst": {
+      "file": "gem_blemished_amethyst.webp",
+      "w": 65,
+      "h": 87
+    },
+    "Perfect Amethyst": {
+      "file": "gem_perfect_amethyst.webp",
+      "w": 67,
+      "h": 80
+    },
+    "Chipped Topaz": {
+      "file": "gem_chipped_topaz.webp",
+      "w": 41,
+      "h": 42
+    },
+    "Flawed Topaz": {
+      "file": "gem_flawed_topaz.webp",
+      "w": 47,
+      "h": 52
+    },
+    "Topaz": {
+      "file": "gem_topaz.webp",
+      "w": 49,
+      "h": 57
+    },
+    "Flawless Topaz": {
+      "file": "gem_flawless_topaz.webp",
+      "w": 68,
+      "h": 69
+    },
+    "Blemished Topaz": {
+      "file": "gem_blemished_topaz.webp",
+      "w": 65,
+      "h": 86
+    },
+    "Perfect Topaz": {
+      "file": "gem_perfect_topaz.webp",
+      "w": 67,
+      "h": 80
+    },
+    "Chipped Sapphire": {
+      "file": "gem_chipped_saphire.webp",
+      "w": 41,
+      "h": 42
+    },
+    "Flawed Sapphire": {
+      "file": "gem_flawed_saphire.webp",
+      "w": 47,
+      "h": 52
+    },
+    "Sapphire": {
+      "file": "gem_saphire.webp",
+      "w": 49,
+      "h": 57
+    },
+    "Flawless Sapphire": {
+      "file": "gem_flawless_saphire.webp",
+      "w": 68,
+      "h": 69
+    },
+    "Blemished Sapphire": {
+      "file": "gem_blemished_saphire.webp",
+      "w": 65,
+      "h": 86
+    },
+    "Perfect Sapphire": {
+      "file": "gem_perfect_saphire.webp",
+      "w": 67,
+      "h": 80
+    },
+    "Chipped Emerald": {
+      "file": "gem_chipped_emerald.webp",
+      "w": 43,
+      "h": 36
+    },
+    "Flawed Emerald": {
+      "file": "gem_flawed_emerald.webp",
+      "w": 56,
+      "h": 54
+    },
+    "Emerald": {
+      "file": "gem_emerald.webp",
+      "w": 49,
+      "h": 57
+    },
+    "Flawless Emerald": {
+      "file": "gem_flawless_emerald.webp",
+      "w": 72,
+      "h": 73
+    },
+    "Blemished Emerald": {
+      "file": "gem_blemished_emerald.webp",
+      "w": 57,
+      "h": 76
+    },
+    "Perfect Emerald": {
+      "file": "gem_perfect_emerald.webp",
+      "w": 59,
+      "h": 79
+    },
+    "Chipped Ruby": {
+      "file": "gem_chipped_ruby.webp",
+      "w": 43,
+      "h": 36
+    },
+    "Flawed Ruby": {
+      "file": "gem_flawed_ruby.webp",
+      "w": 56,
+      "h": 54
+    },
+    "Ruby": {
+      "file": "gem_ruby.webp",
+      "w": 49,
+      "h": 57
+    },
+    "Flawless Ruby": {
+      "file": "gem_flawless_ruby.webp",
+      "w": 72,
+      "h": 73
+    },
+    "Blemished Ruby": {
+      "file": "gem_blemished_ruby.webp",
+      "w": 57,
+      "h": 76
+    },
+    "Perfect Ruby": {
+      "file": "gem_perfect_ruby.webp",
+      "w": 59,
+      "h": 79
+    },
+    "Chipped Diamond": {
+      "file": "gem_chipped_diamond.webp",
+      "w": 43,
+      "h": 36
+    },
+    "Flawed Diamond": {
+      "file": "gem_flawed_diamond.webp",
+      "w": 56,
+      "h": 54
+    },
+    "Diamond": {
+      "file": "gem_diamond.webp",
+      "w": 81,
+      "h": 69
+    },
+    "Flawless Diamond": {
+      "file": "gem_flawless_diamond.webp",
+      "w": 72,
+      "h": 73
+    },
+    "Blemished Diamond": {
+      "file": "gem_blemished_diamond.webp",
+      "w": 55,
+      "h": 76
+    },
+    "Perfect Diamond": {
+      "file": "gem_perfect_diamond.webp",
+      "w": 59,
+      "h": 79
+    },
+    "Chipped Skull": {
+      "file": "gem_chipped_skull.webp",
+      "w": 68,
+      "h": 75
+    },
+    "Flawed Skull": {
+      "file": "gem_flawed_skull.webp",
+      "w": 67,
+      "h": 90
+    },
+    "Skull": {
+      "file": "gem_skull.webp",
+      "w": 67,
+      "h": 91
+    },
+    "Flawless Skull": {
+      "file": "gem_flawless_skull.webp",
+      "w": 67,
+      "h": 89
+    },
+    "Blemished Skull": {
+      "file": "gem_blemished_skull.webp",
+      "w": 67,
+      "h": 90
+    },
+    "Perfect Skull": {
+      "file": "gem_perfect_skull.webp",
+      "w": 67,
+      "h": 90
+    },
+    "Chipped Obsidian": {
+      "file": "gem_chipped_onyx.webp",
+      "w": 43,
+      "h": 36
+    },
+    "Flawed Obsidian": {
+      "file": "gem_flawed_onyx.webp",
+      "w": 56,
+      "h": 54
+    },
+    "Obsidian": {
+      "file": "gem_onyx.webp",
+      "w": 81,
+      "h": 69
+    },
+    "Flawless Obsidian": {
+      "file": "gem_flawless_onyx.webp",
+      "w": 72,
+      "h": 73
+    },
+    "Blemished Obsidian": {
+      "file": "gem_blemished_onyx.webp",
+      "w": 58,
+      "h": 77
+    },
+    "Perfect Obsidian": {
+      "file": "gem_perfect_onyx.webp",
+      "w": 59,
+      "h": 79
+    },
+    "El Rune": {
+      "file": "rune_el_rune.webp",
+      "w": 87,
+      "h": 86
+    },
+    "Eld Rune": {
+      "file": "rune_eld_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Tir Rune": {
+      "file": "rune_tir_rune.webp",
+      "w": 90,
+      "h": 87
+    },
+    "Nef Rune": {
+      "file": "rune_nef_rune.webp",
+      "w": 90,
+      "h": 87
+    },
+    "Eth Rune": {
+      "file": "rune_eth_rune.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Ith Rune": {
+      "file": "rune_ith_rune.webp",
+      "w": 90,
+      "h": 87
+    },
+    "Tal Rune": {
+      "file": "rune_tal_rune.webp",
+      "w": 87,
+      "h": 86
+    },
+    "Ral Rune": {
+      "file": "rune_ral_rune.webp",
+      "w": 90,
+      "h": 87
+    },
+    "Ort Rune": {
+      "file": "rune_ort_rune.webp",
+      "w": 88,
+      "h": 89
+    },
+    "Thul Rune": {
+      "file": "rune_thul_rune.webp",
+      "w": 88,
+      "h": 91
+    },
+    "Amn Rune": {
+      "file": "rune_amn_rune.webp",
+      "w": 90,
+      "h": 90
+    },
+    "Sol Rune": {
+      "file": "rune_sol_rune.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Shael Rune": {
+      "file": "rune_shael_rune.webp",
+      "w": 88,
+      "h": 89
+    },
+    "Dol Rune": {
+      "file": "rune_dol_rune.webp",
+      "w": 92,
+      "h": 87
+    },
+    "Hel Rune": {
+      "file": "rune_hel_rune.webp",
+      "w": 90,
+      "h": 87
+    },
+    "Io Rune": {
+      "file": "rune_io_rune.webp",
+      "w": 90,
+      "h": 87
+    },
+    "Lum Rune": {
+      "file": "rune_lum_rune.webp",
+      "w": 87,
+      "h": 86
+    },
+    "Ko Rune#r68": {
+      "file": "rune_ko_lod_rune.webp",
+      "w": 90,
+      "h": 87
+    },
+    "Ko Rune#r19": {
+      "file": "rune_ko_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Fal Rune": {
+      "file": "rune_fal_rune.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Lem Rune": {
+      "file": "rune_lem_rune.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Pul Rune": {
+      "file": "rune_pul_rune.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Um Rune": {
+      "file": "rune_um_rune.webp",
+      "w": 87,
+      "h": 86
+    },
+    "Mal Rune": {
+      "file": "rune_mal_rune.webp",
+      "w": 87,
+      "h": 86
+    },
+    "Ist Rune": {
+      "file": "rune_ist_rune.webp",
+      "w": 87,
+      "h": 86
+    },
+    "Gul Rune": {
+      "file": "rune_gul_rune.webp",
+      "w": 90,
+      "h": 87
+    },
+    "Vex Rune": {
+      "file": "rune_vex_rune.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Ohm Rune": {
+      "file": "rune_ohm_rune.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Lo Rune": {
+      "file": "rune_lo_rune.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Sur Rune": {
+      "file": "rune_sur_rune.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Ber Rune": {
+      "file": "rune_ber_rune.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Jah Rune": {
+      "file": "rune_jah_rune.webp",
+      "w": 88,
+      "h": 86
+    },
+    "Cham Rune": {
+      "file": "rune_cham_rune.webp",
+      "w": 87,
+      "h": 85
+    },
+    "Zod Rune": {
+      "file": "rune_zod_rune.webp",
+      "w": 88,
+      "h": 89
+    },
+    "I Rune": {
+      "file": "rune_i_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "U Rune": {
+      "file": "rune_u_rune.webp",
+      "w": 86,
+      "h": 86
+    },
+    "Shi Rune": {
+      "file": "rune_shi_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Ka Rune": {
+      "file": "rune_ka_rune.webp",
+      "w": 86,
+      "h": 86
+    },
+    "N Rune": {
+      "file": "rune_n_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Ku Rune": {
+      "file": "rune_ku_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Yo Rune": {
+      "file": "rune_yo_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Ki Rune": {
+      "file": "rune_ki_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Ri Rune": {
+      "file": "rune_ri_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Mi Rune": {
+      "file": "rune_mi_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Ya Rune": {
+      "file": "rune_ya_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "A Rune": {
+      "file": "rune_a_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Tsu Rune": {
+      "file": "rune_tsu_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Chi Rune": {
+      "file": "rune_chi_rune.webp",
+      "w": 90,
+      "h": 93
+    },
+    "Sa Rune": {
+      "file": "rune_sa_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Yu Rune": {
+      "file": "rune_yu_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Ke Rune": {
+      "file": "rune_ke_rune.webp",
+      "w": 93,
+      "h": 88
+    },
+    "E Rune": {
+      "file": "rune_e_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Ra Rune": {
+      "file": "rune_ra_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "O Rune": {
+      "file": "rune_o_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Ho Rune": {
+      "file": "rune_ho_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Me Rune": {
+      "file": "rune_me_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Ru Rune": {
+      "file": "rune_ru_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Ta Rune": {
+      "file": "rune_ta_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "To Rune": {
+      "file": "rune_to_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Wa Rune": {
+      "file": "rune_wa_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Ha Rune": {
+      "file": "rune_ha_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Na Rune": {
+      "file": "rune_na_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Ni Rune": {
+      "file": "rune_ni_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Se Rune": {
+      "file": "rune_se_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Fu Rune": {
+      "file": "rune_fu_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Ma Rune": {
+      "file": "rune_ma_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Hi Rune": {
+      "file": "rune_hi_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Mo Rune": {
+      "file": "rune_mo_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "No Rune": {
+      "file": "rune_no_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Te Rune": {
+      "file": "rune_te_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Ro Rune": {
+      "file": "rune_ro_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "So Rune": {
+      "file": "rune_so_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Mu Rune": {
+      "file": "rune_mu_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Ne Rune": {
+      "file": "rune_ne_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Re Rune": {
+      "file": "rune_re_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Su Rune": {
+      "file": "rune_su_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "He Rune": {
+      "file": "rune_he_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Nu Rune": {
+      "file": "rune_nu_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Wo Rune": {
+      "file": "rune_wo_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Chipped Frozen Soul": {
+      "file": "gem_chipped_frozensoul.webp",
+      "w": 46,
+      "h": 63
+    },
+    "Chipped Shadow Quartz": {
+      "file": "gem_chipped_shadowquartz.webp",
+      "w": 50,
+      "h": 58
+    },
+    "Chipped Bleeding Stone": {
+      "file": "gem_chipped_bleedingstone.webp",
+      "w": 48,
+      "h": 58
+    },
+    "Chipped Burning Sulphur": {
+      "file": "gem_chipped_sulphur.webp",
+      "w": 44,
+      "h": 53
+    },
+    "Chipped Dark Azurite": {
+      "file": "gem_chipped_azurite.webp",
+      "w": 50,
+      "h": 58
+    },
+    "Chipped Bitter Peridot": {
+      "file": "gem_chipped_bitterperidot.webp",
+      "w": 50,
+      "h": 58
+    },
+    "Chipped Pulsing Opal": {
+      "file": "gem_chipped_opal.webp",
+      "w": 46,
+      "h": 63
+    },
+    "Chipped Enigmatic Cinnabar": {
+      "file": "gem_chipped_cinnabar.webp",
+      "w": 51,
+      "h": 70
+    },
+    "Chipped Tomb Jade": {
+      "file": "gem_chipped_tombjade.webp",
+      "w": 51,
+      "h": 70
+    },
+    "Chipped Solid Mercury": {
+      "file": "gem_chipped_mercury.webp",
+      "w": 46,
+      "h": 63
+    },
+    "Chipped Storm Amber": {
+      "file": "gem_chipped_stormamber.webp",
+      "w": 44,
+      "h": 56
+    },
+    "Chipped Tainted Tourmaline": {
+      "file": "gem_chipped_tourmaline.webp",
+      "w": 39,
+      "h": 60
+    },
+    "Frozen Soul": {
+      "file": "gem_normal_frozensoul.webp",
+      "w": 64,
+      "h": 91
+    },
+    "Shadow Quartz": {
+      "file": "gem_normal_shadowquartz.webp",
+      "w": 79,
+      "h": 92
+    },
+    "Bleeding Stone": {
+      "file": "gem_normal_bleedingstone.webp",
+      "w": 74,
+      "h": 88
+    },
+    "Burning Sulphur": {
+      "file": "gem_normal_sulphur.webp",
+      "w": 67,
+      "h": 78
+    },
+    "Dark Azurite": {
+      "file": "gem_normal_azurite.webp",
+      "w": 74,
+      "h": 88
+    },
+    "Bitter Peridot": {
+      "file": "gem_normal_bitterperidot.webp",
+      "w": 74,
+      "h": 88
+    },
+    "Pulsing Opal": {
+      "file": "gem_normal_opal.webp",
+      "w": 64,
+      "h": 91
+    },
+    "Enigmatic Cinnabar": {
+      "file": "gem_normal_cinnabar.webp",
+      "w": 66,
+      "h": 94
+    },
+    "Tomb Jade": {
+      "file": "gem_normal_tombjade.webp",
+      "w": 66,
+      "h": 94
+    },
+    "Solid Mercury": {
+      "file": "gem_normal_mercury.webp",
+      "w": 64,
+      "h": 91
+    },
+    "Storm Amber": {
+      "file": "gem_normal_stormamber.webp",
+      "w": 65,
+      "h": 81
+    },
+    "Tainted Tourmaline": {
+      "file": "gem_normal_tourmaline.webp",
+      "w": 62,
+      "h": 82
+    },
+    "Null Rune": {
+      "file": "rune_null_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Moon Rune": {
+      "file": "rune_moon_rune.webp",
+      "w": 85,
+      "h": 86
+    },
+    "Fire Rune": {
+      "file": "rune_fire_rune.webp",
+      "w": 85,
+      "h": 86
+    },
+    "Water Rune": {
+      "file": "rune_water_rune.webp",
+      "w": 85,
+      "h": 86
+    },
+    "Wood Rune": {
+      "file": "rune_wood_rune.webp",
+      "w": 85,
+      "h": 86
+    },
+    "Metal Rune": {
+      "file": "rune_metal_rune.webp",
+      "w": 85,
+      "h": 86
+    },
+    "Earth Rune": {
+      "file": "rune_earth_rune.webp",
+      "w": 85,
+      "h": 86
+    },
+    "Sun Rune": {
+      "file": "rune_sun_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Thunder Rune": {
+      "file": "rune_thunder_rune.webp",
+      "w": 86,
+      "h": 86
+    },
+    "Wind Rune": {
+      "file": "rune_wind_rune.webp",
+      "w": 88,
+      "h": 88
+    },
+    "Dragon Rune": {
+      "file": "rune_dragon_rune.webp",
+      "w": 85,
+      "h": 86
+    },
+    "Life Rune": {
+      "file": "rune_life_rune.webp",
+      "w": 85,
+      "h": 86
+    },
+    "Death Rune": {
+      "file": "rune_death_rune.webp",
+      "w": 85,
+      "h": 86
+    },
+    "Heaven Rune": {
+      "file": "rune_heaven_rune.webp",
+      "w": 85,
+      "h": 86
+    },
+    "God Rune": {
+      "file": "rune_god_rune.webp",
+      "w": 85,
+      "h": 86
+    },
+    "Flawed Frozen Soul": {
+      "file": "gem_flawed_frozensoul.webp",
+      "w": 54,
+      "h": 77
+    },
+    "Flawed Shadow Quartz": {
+      "file": "gem_flawed_shadowquartz.webp",
+      "w": 67,
+      "h": 79
+    },
+    "Flawed Bleeding Stone": {
+      "file": "gem_flawed_bleedingstone.webp",
+      "w": 67,
+      "h": 79
+    },
+    "Flawed Burning Sulphur": {
+      "file": "gem_flawed_sulphur.webp",
+      "w": 54,
+      "h": 65
+    },
+    "Flawed Dark Azurite": {
+      "file": "gem_flawed_azurite.webp",
+      "w": 67,
+      "h": 79
+    },
+    "Flawed Bitter Peridot": {
+      "file": "gem_flawed_bitterperidot.webp",
+      "w": 67,
+      "h": 79
+    },
+    "Flawed Pulsing Opal": {
+      "file": "gem_flawed_opal.webp",
+      "w": 54,
+      "h": 77
+    },
+    "Flawed Enigmatic Cinnabar": {
+      "file": "gem_flawed_cinnabar.webp",
+      "w": 58,
+      "h": 80
+    },
+    "Flawed Tomb Jade": {
+      "file": "gem_flawed_tombjade.webp",
+      "w": 58,
+      "h": 80
+    },
+    "Flawed Solid Mercury": {
+      "file": "gem_flawed_mercury.webp",
+      "w": 54,
+      "h": 77
+    },
+    "Flawed Storm Amber": {
+      "file": "gem_flawed_stormamber.webp",
+      "w": 54,
+      "h": 72
+    },
+    "Flawed Tainted Tourmaline": {
+      "file": "gem_flawed_tourmaline.webp",
+      "w": 55,
+      "h": 74
     }
   }
 }

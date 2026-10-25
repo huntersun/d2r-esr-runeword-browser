@@ -17,11 +17,13 @@ import {
   parseBuildConfigRoot,
   parseItemAssets,
   parseNamedArt,
+  MISC_ICON_TYPES,
   planItemIcons,
   resolveArt,
   resolveSprite,
+  selectMiscIconRows,
 } from './itemIcons.ts';
-import type { IconsBundle } from '../engine/schema.ts';
+import type { IconsBundle, LootFilterItem } from '../engine/schema.ts';
 import { serializeBundle } from './writeBundle.ts';
 
 describe('parseItemAssets', () => {
@@ -367,6 +369,107 @@ describe('two art sources (ESR clone first, vanilla folder as the fallback)', ()
   });
 });
 
+describe('misc item art (socket fillers)', () => {
+  const item = (code: string, name: string, type: string, extra: Partial<LootFilterItem> = {}): LootFilterItem => ({
+    code,
+    name,
+    kind: 'misc',
+    type,
+    spawnable: true,
+    ...extra,
+  });
+  const ancestors = new Map([
+    ['rune', ['rune', 'sock', 'misc']],
+    ['gema', ['gema', 'gem', 'sock', 'misc']],
+    ['gem0', ['gem0', 'gem', 'sock', 'misc']],
+    ['jewl', ['jewl', 'sock', 'misc']],
+    ['elix', ['elix', 'misc']],
+  ]);
+
+  it('selects the misc rows whose type or type2 descends from a scope type', () => {
+    expect(MISC_ICON_TYPES).toEqual(['gem', 'rune']);
+    const rows = selectMiscIconRows(
+      [
+        item('r01', 'El Rune', 'rune'),
+        item('gcv', 'Chipped Amethyst', 'gema', { type2: 'gem0' }),
+        item('xx1', 'Odd Gem', 'elix', { type2: 'gem0', spawnable: false }),
+        item('jew', 'Jewel', 'jewl'),
+        item('elx', 'Elixir', 'elix'),
+        item('zzz', 'Unknown Type', 'none'),
+        item('r02', 'Weapon Rune', 'rune', { kind: 'weapon' }),
+      ],
+      ancestors
+    );
+    expect(rows).toEqual([
+      { code: 'r01', name: 'El Rune', enabled: true },
+      { code: 'gcv', name: 'Chipped Amethyst', enabled: true },
+      { code: 'xx1', name: 'Odd Gem', enabled: false },
+    ]);
+    // The scope list can grow: jewels in
+    expect(selectMiscIconRows([item('jew', 'Jewel', 'jewl')], ancestors, ['jewl']).map((row) => row.code)).toEqual(['jew']);
+  });
+
+  it("keys the code's art by name, prefers spawnable rows and keys a name per code when its rows differ in art", () => {
+    const plan = planItemIcons({
+      codes: [],
+      uniques: [],
+      sets: [],
+      misc: [
+        { code: 'r68', name: 'Ko Rune', enabled: true },
+        { code: 'r19', name: 'Ko Rune', enabled: true },
+        // Same name, one row without art: the row with art
+        { code: 'r32', name: 'Fu Rune', enabled: true },
+        { code: 'r48', name: 'Fu Rune', enabled: true },
+        // A non-spawnable row loses to a spawnable one
+        { code: 'old', name: 'El Rune', enabled: false },
+        { code: 'r51', name: 'El Rune', enabled: true },
+        // Two rows with the same art: one plain key
+        { code: 'gcv', name: 'Amethyst', enabled: true },
+        { code: 'gc2', name: 'Amethyst', enabled: true },
+        { code: 'nop', name: 'No Art', enabled: true },
+        { code: 'van', name: 'Vanilla Gem', enabled: false },
+      ],
+      assets: new Map([
+        ['r68', 'rune/ko_lod_rune'],
+        ['r19', 'rune/Ko_rune'],
+        ['r32', 'rune/Fu_rune'],
+        ['old', 'rune/old_el'],
+        ['r51', 'rune/el_rune'],
+        ['gcv', 'gem/amethyst'],
+        ['gc2', 'gem/amethyst'],
+        ['nop', 'gem/missing'],
+      ]),
+      uniqueArt: new Map(),
+      setArt: new Map(),
+      index: buildSpriteIndex([
+        'misc/rune/ko_lod_rune.sprite',
+        'misc/rune/ko_rune.sprite',
+        'misc/rune/fu_rune.sprite',
+        'misc/rune/old_el.sprite',
+        'misc/rune/el_rune.sprite',
+        'misc/gem/amethyst.sprite',
+      ]),
+      vanilla: {
+        index: buildSpriteIndex(['misc/gem/vanilla_gem.sprite']),
+        assets: new Map([['van', 'gem/vanilla_gem']]),
+        uniqueArt: new Map(),
+        setArt: new Map(),
+      },
+    });
+    expect([...plan.misc]).toEqual([
+      ['Ko Rune#r68', 'rune_ko_lod_rune'],
+      ['Ko Rune#r19', 'rune_ko_rune'],
+      ['Fu Rune', 'rune_fu_rune'],
+      ['El Rune', 'rune_el_rune'],
+      ['Amethyst', 'gem_amethyst'],
+      ['Vanilla Gem', 'gem_vanilla_gem'],
+    ]);
+    expect(plan.sprites.has('rune_old_el')).toBe(false);
+    expect(plan.sprites.get('gem_vanilla_gem')).toEqual({ source: 'vanilla', path: 'misc/gem/vanilla_gem.sprite' });
+    expect(plan.miscStats).toEqual({ requested: 6, withArt: 5, vanilla: 1, noneNames: ['No Art'], splitNames: ['Ko Rune'] });
+  });
+});
+
 describe('compareWithoutVanilla', () => {
   const axe = { file: 'axe_hand_axe.webp', w: 58, h: 128 };
   const boots = { file: 'boot_boots.webp', w: 100, h: 90 };
@@ -377,6 +480,7 @@ describe('compareWithoutVanilla', () => {
     bases: { hax: axe, lbt: boots },
     uniques: { Plain: boots, Gnasher: axe },
     sets: {},
+    misc: { 'El Rune': axe },
   };
   const esrOnly: IconsBundle = {
     esrVersion: '3.2.24',
@@ -384,6 +488,7 @@ describe('compareWithoutVanilla', () => {
     bases: { hax: axe },
     uniques: { Plain: axe, Gnasher: axe },
     sets: {},
+    misc: { 'El Rune': axe },
   };
 
   it('accepts the committed vanilla-derived entries and matching clone-derived ones', () => {
@@ -397,6 +502,7 @@ describe('compareWithoutVanilla', () => {
       bases: { hax: { ...axe, w: 60 }, lbt: boots, new: axe },
       uniques: { Plain: axe },
       sets: {},
+      misc: { 'El Rune': boots },
     };
     expect(compareWithoutVanilla(committed, fresh)).toEqual([
       'esrVersion 3.2.24 ≠ 3.2.25',
@@ -405,6 +511,7 @@ describe('compareWithoutVanilla', () => {
       'bases/lbt: boot_boots.webp is now in the clone',
       'bases/new: missing',
       "uniques/Gnasher: not produced by the clone's art",
+      'misc/El Rune: axe_hand_axe.webp 58×128 ≠ boot_boots.webp 100×90',
     ]);
   });
 
@@ -469,6 +576,11 @@ describe('buildIconsBundle', () => {
           ['Axe Unique', 'axe_hand_axe'],
         ]),
         sets: new Map([["Civerb's Ward", 'rune_moon_rune']]),
+        misc: new Map([
+          ['El Rune', 'axe_hand_axe'],
+          ['Ko Rune#r19', 'axe_the_gnasher'],
+          ['Moon Rune', 'rune_moon_rune'],
+        ]),
         sprites: new Map(),
       },
       images: new Map([
@@ -489,8 +601,19 @@ describe('buildIconsBundle', () => {
         'Axe Unique': { file: 'axe_hand_axe.webp', w: 58, h: 128 },
       },
       sets: {},
+      misc: {
+        'El Rune': { file: 'axe_hand_axe.webp', w: 58, h: 128 },
+        'Ko Rune#r19': { file: 'axe_the_gnasher.webp', w: 60, h: 120 },
+      },
     });
-    expect(Object.keys(JSON.parse(serializeBundle(bundle)) as object)).toEqual(['esrVersion', 'esrTag', 'bases', 'uniques', 'sets']);
+    expect(Object.keys(JSON.parse(serializeBundle(bundle)) as object)).toEqual([
+      'esrVersion',
+      'esrTag',
+      'bases',
+      'uniques',
+      'sets',
+      'misc',
+    ]);
   });
 
   it('points recoloured unique / set entries at their variant file and records the tint', () => {
@@ -550,7 +673,9 @@ describe('buildIconsBundle', () => {
     const bundle = buildIconsBundle({ esrVersion: '3.2.24', esrTag: null, vanilla, plan, images, extension: 'webp' });
     // helmet_cap failed to decode: neither an entry nor a listed file
     expect(bundle.vanilla).toEqual({ ...vanilla, files: ['boot_boots.webp'] });
-    expect(Object.keys(bundle)).toEqual(['esrVersion', 'esrTag', 'vanilla', 'bases', 'uniques', 'sets']);
+    expect(Object.keys(bundle)).toEqual(['esrVersion', 'esrTag', 'vanilla', 'bases', 'uniques', 'sets', 'misc']);
+    // No misc rows planned: an empty section
+    expect(bundle.misc).toEqual({});
     const esrOnly = buildIconsBundle({
       esrVersion: '3.2.24',
       esrTag: null,

@@ -43,7 +43,7 @@ lazily (`src/features/game-data/engine/browser/loadGameData.ts`).
 | `sets.json`       | every set with its items, own lines, per-item and set-wide partial bonuses and full-set bonuses (see "Sets")                       |
 | `skills.json`     | the class skill trees (tabs, grid position, level and skill requirements) and the level cap, for builds (see "Skills")             |
 | `crafting.json`   | forging, D-stoning and gem meld options with rendered lines per slot family, for builds (see "Crafting options")                   |
-| `icons.json`      | item icon index (base code / unique name / set item name → WebP file under `icons/`, size); own generator (see "Item icons")       |
+| `icons.json`      | item icon index (base code / unique / set item / socketable name → WebP file under `icons/`, size); own generator ("Item icons")   |
 
 Arrays are written one element per line so diffs stay readable. Bundle URLs carry the manifest hash (`?v=<sha256>`);
 the manifest itself is always revalidated. The shape is defined in `src/features/game-data/engine/schema.ts`
@@ -63,7 +63,7 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 | `sets.json`       | ESR 3.2.24: 150 KB / 21 KB                                                     |
 | `skills.json`     | ESR 3.2.24: 31 KB / 4 KB                                                       |
 | `crafting.json`   | ESR 3.2.24: 55 KB / 6 KB                                                       |
-| `icons.json`      | ESR 3.2.24: 284 KB / 34 KB (+ `icons/`: 1,184 WebP files, 4.8 MB)              |
+| `icons.json`      | ESR 3.2.24: 303 KB / 36 KB (+ `icons/`: 1,361 WebP files, 5.3 MB)              |
 
 ### Bases and types
 
@@ -492,6 +492,20 @@ in `build/itemIcons.ts`, sprite decoding by the loot filter's `src/features/loot
   earlier one only when it ranks higher (own > base > none; within a rank the clone's art beats vanilla art, so the
   mythical Buriza-Do Kyanon's ESR art wins over the vanilla Hellcast art of the older Buriza row with the same name).
   Files are shared by asset slug across bases, uniques and set items.
+- **Misc items** (socket fillers): the scope is `MISC_ICON_TYPES` in `build/itemIcons.ts`, a list of itemtypes.txt
+  codes: `gem` (parent of every gem type, `gema` … `gemk` and the quality types `gem0` … `gem5`) and `rune` (the LoD,
+  ESR and Kanji runes, and ESR's crystals, which misc.txt also types `rune`). The rows are the committed
+  lootfilter.json `items` (misc.txt, names through the string table) whose `type` or `type2` has one of these codes in
+  its types.json ancestry (`selectMiscIconRows`); jewels (`jewl` / `cjwl`, also under `sock`), charms and the other
+  misc items are left out for now to keep the folder small (add a code to the list to widen it). Each row gets its
+  code's items.json art (mod first, vanilla fallback, as for bases). One icon per display name from the spawnable rows
+  (misc.txt has no `disabled` column; all rows when none is spawnable), rows without art skipped: "Fu Rune" is r32
+  (art) and r48 (ESR's unused "Hu Rune" row, namestr r32, no items.json entry anywhere), so r32's art. A name whose
+  rows with art differ in art is keyed per row as `name#code` instead of by the plain name, so neither row shows the
+  other's art: in 3.2.24 only Ko Rune (`Ko Rune#r19`, the ESR rune; `Ko Rune#r68`, the LoD rune, art `ko_lod_rune`).
+  Counts (3.2.24): 179 rows → 177 names, 110 from ESR art, 67 from vanilla art (the LoD runes and the vanilla gems), 0
+  without art; 178 entries, 177 new files (Perfect Diamond's file was already there: the Jewel bases use that art; +0.42 MB), icons.json +19 KB.
+  No colour transforms (misc rows have `InvTrans` 0).
 - **Scope and counts** (ESR 3.2.24, vanilla root `06a0ca43…` extracted 2026-10-25; the generator prints them per
   section): bases: 653 codes, 356 from ESR art, 297 from vanilla art (Jewel, Boots, Leather Armor, Short Spear, …),
   0 without art. Uniques: 1,390 rows → 1,114 names; 695 from ESR art, 419 from vanilla art, 0 without art (392 own art,
@@ -538,13 +552,16 @@ in `build/itemIcons.ts`, sprite decoding by the loot filter's `src/features/loot
   `icons.json` (`IconsBundle`: `esrVersion`, `esrTag`, `vanilla` (only when vanilla art was used: `rootHash` = the
   `root` line of `steam-build.config`, which identifies the game build and has no readable version number;
   `extractedAt` = that file's modification date, YYYY-MM-DD; `files` = the sorted icon files made from vanilla
-  sprites), `bases: { [code]: info }`, `uniques: { [name]: info }`, `sets: { [name]: info }`, `info` =
+  sprites), `bases: { [code]: info }`, `uniques: { [name]: info }`, `sets: { [name]: info }`,
+  `misc: { [name or name#code]: info }`, `info` =
   `{ file, w, h, tint? }`, only entries with an image). Unique names are the lootfilter.json
-  `uniques[].name` (mythicals included), set item names the sets.json `items[].name`. Stale `.webp` files in `icons/`
+  `uniques[].name` (mythicals included), set item names the sets.json `items[].name`, misc names the lootfilter.json
+  `items[].name`. Stale `.webp` files in `icons/`
   are deleted.
 - **Manifest**: `generate-game-data.ts` does not build icons.json; it lists the committed file in the manifest as is
-  (hash, bytes, `counts.itemIcons` / `uniqueIcons` / `setIcons`, plus `vanillaIcons` = entries pointing at a vanilla
-  file, recoloured ones through their untinted file (833), `vanillaIconFiles` (138), `tintedIcons` (869) and
+  (hash, bytes, `counts.itemIcons` / `uniqueIcons` / `setIcons` / `miscIcons` (178), plus `vanillaIcons` = entries
+  (all sections) pointing at a vanilla file, recoloured ones through their untinted file (900), `vanillaIconFiles`
+  (204), `tintedIcons` (869) and
   `tintedIconFiles` (692)) so `loadGameDataFile('icons')` works like every other
   bundle. Hence `game-data:icons` runs the icon generator, then `generate-game-data.ts`; `game-data:update` runs
   generate → icons → generate (the icons follow the fresh bases.json).
@@ -565,22 +582,32 @@ in `build/itemIcons.ts`, sprite decoding by the loot filter's `src/features/loot
   null while loading or after a failed load (a warning, no error card). `findItemIcon` takes a ref
   `{ kind: 'base', code }` or `{ kind: 'unique' | 'set', name, code? }`: the name, then the name without a trailing
   parenthetical (the mythicals page lists "Tathamet's Awakening (Fire Variant)" and its siblings), then the optional base
-  `code`. `components/ItemIcon.tsx` (`item`, `size`, `className`) reserves a `size` × `size` box while icons.json
+  `code`. `{ kind: 'misc', name, code? }` looks up `name#code` when a code is given, then the plain name (a trailing
+  parenthetical dropped; the socketable parsers already strip the rune "(N points)" suffix); a split name without a
+  matching code finds nothing. The Socketables page builds the ref with `socketableIconRef`
+  (`src/features/socketables/utils/socketableIcon.ts`): the name, plus a code from `SHARED_NAME_CODES` for the names
+  two categories share (Ko Rune: `esrRunes` → r19, `lodRunes` → r68). `components/ItemIcon.tsx` (`item`, `size`, `className`) reserves a `size` × `size` box while icons.json
   loads, so names do not shift when it arrives; once loaded (or after a failed load, `useItemIcons().failed`) an item
   without an icon renders nothing, and the call sites' flex gaps collapse with it; the `<img>` (lazy, async decoding, `alt=""`, URL through
   `gameDataUrl` so `BASE_URL` applies) gets width / height from icons.json scaled to fit the box. Image URLs carry no
   content hash (cached by name).
 - **Name matching** (`itemIconMatching.integration.test.ts`, fixtures): all 1,065 HTM unique names and all 41 mythical
   names are txt unique names (after the variant fallback); all 1,065 unique cards and 41 mythical names get an icon.
+  `socketableIconMatching.integration.test.ts` parses gems.htm with the five socketable parsers: all 178 socketables
+  (48 gems, 46 ESR runes, 33 LoD runes, 15 Kanji runes, 36 crystals) get an icon, the two Ko Runes different ones;
+  it also checks every code a ref carries names a misc row of that name and that every `name#code` key of a listed
+  name is reached (so a new shared name fails until `SHARED_NAME_CODES` covers it).
 - **Shown**: base cards (48 px, leading, muted box) and the families table (32 px before the name; hidden below `sm` in
   the three tier columns); Sets page item rows (36 px before the name, own art else base); unique item cards (48 px
   beside the name; name, then `baseItemCode` fallback); mythical cards only when the card has no picture from the site
   (all 41 currently have one, which already shows the same art); builds: the set item card (48 px), the unique /
   mythical cards (the browse cards above), the snapshot fallback (`ItemRefDisplay`, 32 px for unique / mythical / set)
-  and the runeword's chosen base in the choices box (24 px).
+  and the runeword's chosen base in the choices box (24 px); Socketables page cards (44 px, muted box, before the name
+  and the level line). Not on the Runewords page (too crowded), and the builds' socket fillers stay names (jewels have
+  no misc icon yet, and a filler name alone cannot tell the two Ko Runes apart).
 - **Credits**: the home footer credits the item art to Blizzard Entertainment and the ESR team (used with permission).
 
-Next steps (not built): misc items (runes, gems, charms already resolve through items.json); icon tiles in the pickers
+Next steps (not built): more misc items (jewels, charms; widen `MISC_ICON_TYPES`); icon tiles in the pickers
 (loot filter, builds, best base); the families table draws long weapons (spears, staves) as 6–8 px slivers in its
 32 px box (height-bound, so a wider box would not help).
 

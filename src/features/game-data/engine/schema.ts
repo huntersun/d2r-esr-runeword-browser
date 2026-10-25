@@ -724,6 +724,11 @@ export interface IconsBundle {
   uniques: Record<string, ItemIconInfo>;
   /** By set item display name (sets.json `items[].name`), own art else the base's */
   sets: Record<string, ItemIconInfo>;
+  /**
+   * Misc items in the icon scope (the socket fillers: gems, runes, crystals) by display name (lootfilter.json
+   * `items[].name`); a name whose rows have different art (ESR's and the LoD Ko Rune) is keyed `name#code` per row.
+   */
+  misc: Record<string, ItemIconInfo>;
 }
 
 export interface IconsVanillaSource {

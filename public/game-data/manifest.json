@@ -3,7 +3,7 @@
   "esrVersion": "3.2.24",
   "esrTag": "3.2.24",
   "esrCommit": "b0622767314f9bf65f9c3a2cdeacded0b2e04a7e",
-  "generatedAt": "2026-10-25T16:30:59.748Z",
+  "generatedAt": "2026-10-25T16:50:31.086Z",
   "files": {
     "types": {
       "hash": "cab8a44704bcb77dd1d552147ce4b2e16d2d30517780f10d4d1b55de7c1e294d",
@@ -54,8 +54,8 @@
       "bytes": 56620
     },
     "icons": {
-      "hash": "cf6e04b4efb3f2ef6113e64f1f81a117cc85dff70f040ad0b9f6e554ec3c4a56",
-      "bytes": 290882
+      "hash": "4e7f8851b9c5666541718f175833d9b7a790f05e60cca77795809ebbf6c64656",
+      "bytes": 309933
     }
   },
   "counts": {
@@ -133,8 +133,9 @@
     "itemIcons": 653,
     "uniqueIcons": 1114,
     "setIcons": 270,
-    "vanillaIcons": 833,
-    "vanillaIconFiles": 138,
+    "miscIcons": 178,
+    "vanillaIcons": 900,
+    "vanillaIconFiles": 204,
     "tintedIcons": 869,
     "tintedIconFiles": 692
   },

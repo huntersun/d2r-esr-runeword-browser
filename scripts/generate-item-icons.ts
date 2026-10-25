@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
  * Extracts item icons from HD item sprites into public/game-data/icons/*.webp and public/game-data/icons.json (file and
- * size by base code, unique name and set item name). Scope: the codes of the committed bases.json, every
- * uniqueitems.txt and setitems.txt row with a base (own art from hd/items/uniques.json / sets.json, else the base's art).
+ * size by base code, unique name, set item name and misc item name). Scope: the codes of the committed bases.json, every
+ * uniqueitems.txt and setitems.txt row with a base (own art from hd/items/uniques.json / sets.json, else the base's art)
+ * and the committed lootfilter.json misc items whose type descends from MISC_ICON_TYPES (types.json; the socket fillers).
  *
  *   node scripts/generate-item-icons.ts [--esr <dir>] [--vanilla <dir>] [--check]
  *
@@ -20,7 +21,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, wri
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import sharp from 'sharp';
-import type { BasesBundle, IconsBundle } from '../src/features/game-data/engine/schema.ts';
+import type { BasesBundle, IconsBundle, LootFilterDataBundle, TypesBundle } from '../src/features/game-data/engine/schema.ts';
 import { ESR_EXCEL_DIR, readModVersion, readStringFiles } from '../src/features/game-data/build/esrSources.ts';
 import { readUniqueOrSetRows } from '../src/features/game-data/build/itemNames.ts';
 import { buildStringTable } from '../src/features/game-data/build/strings.ts';
@@ -36,6 +37,8 @@ import {
   ESR_HD_SETS_FILE,
   ESR_HD_UNIQUES_FILE,
   fitInside,
+  type MiscIconStats,
+  MISC_ICON_TYPES,
   type NamedIconStats,
   listFilesRecursive,
   opaqueBounds,
@@ -43,6 +46,7 @@ import {
   parseItemAssets,
   parseNamedArt,
   planItemIcons,
+  selectMiscIconRows,
   VANILLA_BUILD_CONFIG_FILE,
   VANILLA_HD_ITEM_SPRITES_DIR,
   VANILLA_HD_ITEMS_FILE,
@@ -204,6 +208,9 @@ async function main(): Promise<void> {
 
   const { bases } = JSON.parse(readFileSync(join(OUTPUT_DIR, 'bases.json'), 'utf8')) as BasesBundle;
   const codes = bases.map((base) => base.code);
+  const lootfilter = JSON.parse(readFileSync(join(OUTPUT_DIR, 'lootfilter.json'), 'utf8')) as LootFilterDataBundle;
+  const { types } = JSON.parse(readFileSync(join(OUTPUT_DIR, 'types.json'), 'utf8')) as TypesBundle;
+  const misc = selectMiscIconRows(lootfilter.items, new Map(types.map((type) => [type.code, type.ancestors])));
   const { assets, duplicates } = parseItemAssets(JSON.parse(readFileSync(itemsFile, 'utf8')));
   const uniqueArt = parseNamedArt(JSON.parse(readFileSync(uniquesFile, 'utf8')), 'uniques.json');
   const setArt = parseNamedArt(JSON.parse(readFileSync(setsFile, 'utf8')), 'sets.json');
@@ -218,6 +225,7 @@ async function main(): Promise<void> {
     codes,
     uniques,
     sets,
+    misc,
     assets,
     uniqueArt: uniqueArt.art,
     setArt: setArt.art,
@@ -281,10 +289,10 @@ async function main(): Promise<void> {
     )
   );
   const usedFiles = new Set(
-    [bundle.bases, bundle.uniques, bundle.sets].flatMap((section) => Object.values(section).map((icon) => icon.file))
+    [bundle.bases, bundle.uniques, bundle.sets, bundle.misc].flatMap((section) => Object.values(section).map((icon) => icon.file))
   );
   const unusedFiles = [...files.keys()].filter((name) => !usedFiles.has(name));
-  const failedEntries = [plan.bases, plan.uniques, plan.sets].reduce(
+  const failedEntries = [plan.bases, plan.uniques, plan.sets, plan.misc].reduce(
     (sum, map) => sum + [...map.values()].filter((slug) => !images.has(slug)).length,
     0
   );
@@ -304,6 +312,7 @@ async function main(): Promise<void> {
   );
   printNamed('uniques (uniqueitems.txt rows with a base, by name)', uniques.length, plan.uniqueStats, uniqueArt.duplicates);
   printNamed('set items (setitems.txt rows, by name)', sets.length, plan.setStats, setArt.duplicates);
+  printMisc(misc.length, plan.miscStats);
   console.log(
     `  icons written (distinct assets): ${String(files.size)} (${String(vanillaFileCount)} from vanilla art), ${(totalBytes / 1024).toFixed(1)} KB`
   );
@@ -399,6 +408,16 @@ function printNamed(label: string, rows: number, stats: NamedIconStats, duplicat
   }
   console.log(`    art keys no row matched: ${String(stats.unusedKeys.length)}${listCodes(stats.unusedKeys)}`);
   if (duplicates.length > 0) console.log(`    repeated art keys (first wins): ${duplicates.join(', ')}`);
+}
+
+function printMisc(rows: number, stats: MiscIconStats): void {
+  console.log(`  misc items (types ${MISC_ICON_TYPES.join(', ')}, by name): ${String(stats.requested)} names from ${String(rows)} rows`);
+  console.log(
+    `    ${String(stats.withArt - stats.vanilla)} from ESR art, ${String(stats.vanilla)} from vanilla art, ` +
+      `${String(stats.requested - stats.withArt)} without art`
+  );
+  if (stats.noneNames.length > 0) console.log(`    without art: ${stats.noneNames.join(', ')}`);
+  if (stats.splitNames.length > 0) console.log(`    keyed per code (rows with different art): ${stats.splitNames.join(', ')}`);
 }
 
 function printTints(label: string, stats: TintStats): void {

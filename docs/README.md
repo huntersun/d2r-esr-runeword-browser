@@ -86,7 +86,7 @@ A second, build-time data source: `npm run game-data:generate` converts the ESR 
 clone at `../Eastern_Sun_Resurrected`) into JSON committed under `public/game-data/` (`manifest.json`, `types.json`,
 `bases.json`, `runewords.json`, `affixes.json`, `sources.json`, `lootfilter.json`, `enhance.json`, `cube.json`,
 `materials.json`, `sets.json`, `skills.json`, `crafting.json`; the last two feed the builds feature only), plus item
-icons from the mod's HD sprites, with the vanilla D2R art extracted from a game install as the fallback (`npm run game-data:icons`: `icons.json` + `icons/*.webp`: bases, uniques and set items, shown on the Bases, Sets, Unique Items pages and in builds).
+icons from the mod's HD sprites, with the vanilla D2R art extracted from a game install as the fallback (`npm run game-data:icons`: `icons.json` + `icons/*.webp`: bases, uniques, set items and socketables, shown on the Bases, Sets, Unique Items and Socketables pages and in builds).
 The browser fetches these lazily;
 they never go through the HTM parsers or IndexedDB. The game-file version (ESR git tag, e.g. `3.2.10`) is independent of
 the HTM changelog version. See [Game Data](./features/GAME-DATA.md).

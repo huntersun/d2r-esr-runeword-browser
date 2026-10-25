@@ -5,23 +5,33 @@ import { loadGameDataFile } from '../engine/browser/loadGameData';
 
 type IconMap = ReadonlyMap<string, ItemIconInfo>;
 
-/** icons.json indexed for lookups: bases by code, uniques and set items by normalised display name. */
+/** icons.json indexed for lookups: bases by code; uniques, set items and misc items by normalised display name. */
 export interface ItemIconIndex {
   readonly bases: IconMap;
   readonly uniques: IconMap;
   readonly sets: IconMap;
+  readonly misc: IconMap;
 }
 
-/** What an icon is looked up by. Mythical uniques are `unique`; `code` is the base fallback for an unknown name. */
+/** Separator of a code-qualified misc key in icons.json (`Ko Rune#r19`; build/itemIcons.ts `MISC_CODE_SEPARATOR`) */
+const MISC_CODE_SEPARATOR = '#';
+
+/**
+ * What an icon is looked up by. Mythical uniques are `unique`; `code` is the base fallback for an unknown name. A misc
+ * item (gem, rune, crystal) is looked up by name; `code` picks the row when the name's rows have different art.
+ */
 export type ItemIconRef =
   | { readonly kind: 'base'; readonly code: string }
-  | { readonly kind: 'unique' | 'set'; readonly name: string; readonly code?: string };
+  | { readonly kind: 'unique' | 'set'; readonly name: string; readonly code?: string }
+  | { readonly kind: 'misc'; readonly name: string; readonly code?: string };
 
 /**
  * Names go through `normaliseItemName` on both sides (the HTM pages and the builds refs spell some names with other
  * apostrophes, casing or spacing than the string table).
  */
-export function buildItemIconIndex(bundle: Pick<IconsBundle, 'bases' | 'uniques' | 'sets'>): ItemIconIndex {
+export function buildItemIconIndex(
+  bundle: Pick<IconsBundle, 'bases' | 'uniques' | 'sets'> & Partial<Pick<IconsBundle, 'misc'>>
+): ItemIconIndex {
   const byName = (section: Record<string, ItemIconInfo>): IconMap => {
     const map = new Map<string, ItemIconInfo>();
     for (const [name, info] of Object.entries(section)) {
@@ -30,7 +40,12 @@ export function buildItemIconIndex(bundle: Pick<IconsBundle, 'bases' | 'uniques'
     }
     return map;
   };
-  return { bases: new Map(Object.entries(bundle.bases)), uniques: byName(bundle.uniques), sets: byName(bundle.sets) };
+  return {
+    bases: new Map(Object.entries(bundle.bases)),
+    uniques: byName(bundle.uniques),
+    sets: byName(bundle.sets),
+    misc: byName(bundle.misc ?? {}),
+  };
 }
 
 /** The name without a trailing parenthetical: the HTM pages list "Tathamet's Awakening (Fire Variant)" and its siblings. */
@@ -41,6 +56,11 @@ export function withoutVariantSuffix(name: string): string {
 /** The icon of a ref, or undefined (unknown name / code, or vanilla art). */
 export function findItemIcon(index: ItemIconIndex, ref: ItemIconRef): ItemIconInfo | undefined {
   if (ref.kind === 'base') return index.bases.get(ref.code);
+  if (ref.kind === 'misc') {
+    const name = normaliseItemName(withoutVariantSuffix(ref.name));
+    const qualified = ref.code === undefined ? undefined : index.misc.get(`${name}${MISC_CODE_SEPARATOR}${ref.code.toLowerCase()}`);
+    return qualified ?? index.misc.get(name);
+  }
   const names = ref.kind === 'unique' ? index.uniques : index.sets;
   const own = names.get(normaliseItemName(ref.name)) ?? names.get(normaliseItemName(withoutVariantSuffix(ref.name)));
   return own ?? (ref.code === undefined ? undefined : index.bases.get(ref.code));

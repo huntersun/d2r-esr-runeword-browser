@@ -92,14 +92,17 @@ describe('committed game-data bundles', () => {
     expect(manifest.files.icons?.hash).toBe(createHash('sha256').update(iconsText, 'utf8').digest('hex'));
     const icons = JSON.parse(iconsText) as IconsBundle;
     expect(icons.esrVersion).toBe(manifest.esrVersion);
-    expect(Object.keys(icons)).toEqual(['esrVersion', 'esrTag', 'vanilla', 'bases', 'uniques', 'sets']);
+    expect(Object.keys(icons)).toEqual(['esrVersion', 'esrTag', 'vanilla', 'bases', 'uniques', 'sets', 'misc']);
     expect(manifest.counts.itemIcons).toBe(Object.keys(icons.bases).length);
     expect(manifest.counts.uniqueIcons).toBe(Object.keys(icons.uniques).length);
     expect(manifest.counts.setIcons).toBe(Object.keys(icons.sets).length);
+    expect(manifest.counts.miscIcons).toBe(Object.keys(icons.misc).length);
     // With the vanilla art as the second source almost every item has an icon (ESR 3.2.24: all of them)
     expect(Object.keys(icons.bases).length).toBeGreaterThan(640);
     expect(Object.keys(icons.uniques).length).toBeGreaterThan(1100);
     expect(Object.keys(icons.sets).length).toBeGreaterThan(260);
+    // Socket fillers (gems, runes, crystals; ESR 3.2.24: 177 names, Ko Rune keyed per code)
+    expect(Object.keys(icons.misc).length).toBeGreaterThan(170);
 
     // Vanilla provenance: the Steam build's root hash, the extraction date and the files made from vanilla sprites
     const vanilla = icons.vanilla;
@@ -110,14 +113,14 @@ describe('committed game-data bundles', () => {
     expect(vanillaFiles).toEqual([...new Set(vanillaFiles)].sort());
     for (const file of vanillaFiles) expect(existsSync(resolve(OUTPUT_DIR, 'icons', file)), file).toBe(true);
     expect(manifest.counts.vanillaIconFiles).toBe(vanillaFiles.length);
-    const entries = [icons.bases, icons.uniques, icons.sets].flatMap((section) => Object.values(section));
+    const entries = [icons.bases, icons.uniques, icons.sets, icons.misc].flatMap((section) => Object.values(section));
     // A vanilla file is used directly or through a recoloured variant made from it
     const usedFiles = new Set(entries.map((icon) => untintedFile(icon.file)));
     for (const file of vanillaFiles) expect(usedFiles.has(file), file).toBe(true);
     expect(manifest.counts.vanillaIcons).toBe(entries.filter((icon) => vanillaFiles.includes(untintedFile(icon.file))).length);
 
     // Inventory colour transforms: only unique / set entries, file named after the untinted file, map and colour
-    expect(Object.values(icons.bases).some((icon) => icon.tint !== undefined)).toBe(false);
+    expect([icons.bases, icons.misc].flatMap((section) => Object.values(section)).some((icon) => icon.tint !== undefined)).toBe(false);
     const tinted = [icons.uniques, icons.sets].flatMap((section) => Object.values(section)).filter((icon) => icon.tint !== undefined);
     for (const icon of tinted) {
       const tint = icon.tint ?? { map: '', color: '' };
@@ -136,10 +139,22 @@ describe('committed game-data bundles', () => {
     const codes = new Set(bases.map((base) => base.code));
     const uniqueNames = new Set(lootfilter.uniques.map((unique) => unique.name));
     const setItemNames = new Set(lootfilter.sets.map((item) => item.name));
+    // Misc keys: a misc item name, or `name#code` with a code of that name
+    const miscNames = new Set(lootfilter.items.filter((item) => item.kind === 'misc').map((item) => item.name));
+    const miscKeys = new Set([
+      ...miscNames,
+      ...lootfilter.items.filter((item) => item.kind === 'misc').map((item) => `${item.name}#${item.code}`),
+    ]);
+    for (const name of ['El Rune', 'Chipped Amethyst', 'Perfect Skull', 'Chipped Shadow Quartz', 'Moon Rune', 'Fu Rune']) {
+      expect(Object.hasOwn(icons.misc, name), name).toBe(true);
+    }
+    expect(Object.hasOwn(icons.misc, 'Ko Rune')).toBe(false);
+    expect(icons.misc['Ko Rune#r19']?.file).not.toBe(icons.misc['Ko Rune#r68']?.file);
     for (const [section, known] of [
       ['bases', codes],
       ['uniques', uniqueNames],
       ['sets', setItemNames],
+      ['misc', miscKeys],
     ] as const) {
       for (const [key, icon] of Object.entries(icons[section])) {
         expect(known.has(key), `${section}: ${key}`).toBe(true);

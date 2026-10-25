@@ -9,11 +9,12 @@
  *   (`{"the_gnasher":{"normal":"axe/the_gnasher",…}}`); uniques and set items without one use their base's asset;
  * - items whose asset is not in the clone use vanilla D2R art: the same asset path in the vanilla folder (same layout,
  *   `data/hd/...` instead of `Eastern_Sun_Resurrected.mpq/data/hd/...`). The clone's sprite wins when it ships one;
- *   the vanilla items.json / uniques.json / sets.json fill in codes and keys the mod's files do not list.
+ *   the vanilla items.json / uniques.json / sets.json fill in codes and keys the mod's files do not list;
+ * - misc items in scope (`MISC_ICON_TYPES`: the socket fillers) get their code's art, keyed by display name.
  */
 import { readdirSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
-import type { IconsBundle, ItemIconInfo } from '../engine/schema.ts';
+import type { IconsBundle, ItemIconInfo, LootFilterItem } from '../engine/schema.ts';
 import type { UniqueOrSetRow } from './itemNames.ts';
 import { type TintRef, untintedFile } from './itemTint.ts';
 
@@ -231,6 +232,8 @@ export interface IconPlan {
   /** Unique / set item display name → the row its icon came from and whether it is the item's own art */
   readonly uniqueChoices: ReadonlyMap<string, NamedArtChoice>;
   readonly setChoices: ReadonlyMap<string, NamedArtChoice>;
+  /** Misc item display name (or `name#code` when the name's rows differ in art) → asset slug */
+  readonly misc: ReadonlyMap<string, string>;
   /** Slug → source and real relative sprite path, one per distinct asset */
   readonly sprites: ReadonlyMap<string, ResolvedSprite>;
   /** Base codes without an items.json entry (mod or vanilla) */
@@ -239,6 +242,7 @@ export interface IconPlan {
   readonly missingArt: readonly string[];
   readonly uniqueStats: NamedIconStats;
   readonly setStats: NamedIconStats;
+  readonly miscStats: MiscIconStats;
 }
 
 export interface IconPlanInput {
@@ -252,6 +256,8 @@ export interface IconPlanInput {
   /** uniques.json / sets.json: artKey → asset */
   readonly uniqueArt: ReadonlyMap<string, string>;
   readonly setArt: ReadonlyMap<string, string>;
+  /** Misc rows in the icon scope (`selectMiscIconRows`); omitted → no misc section */
+  readonly misc?: readonly MiscIconRow[];
   readonly index: SpriteIndex;
   /** The vanilla art folder: its sprites and json maps, used where the clone's lack an asset, code or key */
   readonly vanilla?: VanillaArt;
@@ -274,6 +280,57 @@ export interface NamedArtChoice {
   readonly code: string;
   /** The row's `invtransform` colour code (blank: none) */
   readonly invTransform: string;
+}
+
+/**
+ * itemtypes.txt codes whose misc items (by the `type` / `type2` ancestry of types.json) get an icon in the `misc`
+ * section: the socket fillers the Socketables page lists. `gem` is the parent of every gem type (`gema` … `gemk` and
+ * the quality types `gem0` … `gem5`); `rune` covers the LoD, ESR and Kanji runes and ESR's crystals, which misc.txt
+ * types `rune` too. Jewels (`jewl` / `cjwl`, also under `sock`) are left out. Add a code here to widen the scope.
+ */
+export const MISC_ICON_TYPES: readonly string[] = ['gem', 'rune'];
+
+/**
+ * Separator of a code-qualified misc key (`Ko Rune#r19`): written when one display name has rows with different art
+ * (ESR's Ko Rune and the LoD Ko Rune), instead of the plain name, so neither shows the other's art.
+ */
+export const MISC_CODE_SEPARATOR = '#';
+
+/** A misc.txt row in the misc icon scope */
+export interface MiscIconRow {
+  readonly code: string;
+  readonly name: string;
+  /** `spawnable` (misc.txt has no `disabled` column); spawnable rows win a shared name */
+  readonly enabled: boolean;
+}
+
+/**
+ * The lootfilter.json items (misc.txt rows with their display names) whose `type` or `type2` descends from one of
+ * `scope` per the types.json ancestry, in file order. A type types.json lacks counts as its own only ancestor.
+ */
+export function selectMiscIconRows(
+  items: readonly LootFilterItem[],
+  ancestors: ReadonlyMap<string, readonly string[]>,
+  scope: readonly string[] = MISC_ICON_TYPES
+): MiscIconRow[] {
+  const inScope = (type: string | undefined) => type !== undefined && (ancestors.get(type) ?? [type]).some((code) => scope.includes(code));
+  return items
+    .filter((item) => item.kind === 'misc' && (inScope(item.type) || inScope(item.type2)))
+    .map((item) => ({ code: item.code, name: item.name, enabled: item.spawnable }));
+}
+
+/** How the misc items of a plan got their icon (counted per distinct display name). */
+export interface MiscIconStats {
+  /** Distinct display names */
+  readonly requested: number;
+  /** Names with an icon (plain or code-qualified keys) */
+  readonly withArt: number;
+  /** Of `withArt`: the art comes from the vanilla folder */
+  readonly vanilla: number;
+  /** The names without art, in row order */
+  readonly noneNames: readonly string[];
+  /** Names whose rows have different art, keyed per code (`name#code`) */
+  readonly splitNames: readonly string[];
 }
 
 type Rank = 0 | 1 | 2;
@@ -401,6 +458,38 @@ export function planItemIcons(input: IconPlanInput): IconPlan {
 
   const uniques = planNamed(input.uniques, input.uniqueArt, vanilla?.uniqueArt);
   const sets = planNamed(input.sets, input.setArt, vanilla?.setArt);
+
+  /*
+   * Misc items: the code's items.json art, one icon per display name from its spawnable rows (all rows when none is).
+   * Rows without art are skipped; when the remaining rows differ in art, each gets a `name#code` key instead.
+   */
+  const misc = new Map<string, string>();
+  const rowsByName = new Map<string, MiscIconRow[]>();
+  for (const row of input.misc ?? []) rowsByName.set(row.name, [...(rowsByName.get(row.name) ?? []), row]);
+  const noneNames: string[] = [];
+  const splitNames: string[] = [];
+  let miscFromVanilla = 0;
+  for (const [name, rows] of rowsByName) {
+    const enabled = rows.filter((row) => row.enabled);
+    const withArt = (enabled.length > 0 ? enabled : rows).flatMap((row) => {
+      const asset = assets.get(row.code);
+      const sprite = asset === undefined ? null : resolve(asset);
+      return asset === undefined || sprite === null ? [] : [{ row, asset, sprite }];
+    });
+    const first = withArt.at(0);
+    if (first === undefined) {
+      noneNames.push(name);
+      continue;
+    }
+    if (first.sprite.source === 'vanilla') miscFromVanilla++;
+    if (new Set(withArt.map((entry) => assetSlug(entry.asset))).size === 1) {
+      misc.set(name, addSprite(first.asset, first.sprite));
+      continue;
+    }
+    splitNames.push(name);
+    for (const entry of withArt) misc.set(`${name}${MISC_CODE_SEPARATOR}${entry.row.code}`, addSprite(entry.asset, entry.sprite));
+  }
+
   return {
     bases,
     basesFromVanilla,
@@ -413,6 +502,14 @@ export function planItemIcons(input: IconPlanInput): IconPlan {
     missingArt,
     uniqueStats: uniques.stats,
     setStats: sets.stats,
+    misc,
+    miscStats: {
+      requested: rowsByName.size,
+      withArt: rowsByName.size - noneNames.length,
+      vanilla: miscFromVanilla,
+      noneNames,
+      splitNames,
+    },
   };
 }
 
@@ -466,7 +563,7 @@ export function buildIconsBundle(input: {
   esrVersion: string;
   esrTag: string | null;
   vanilla?: { rootHash: string; extractedAt: string };
-  plan: Pick<IconPlan, 'bases' | 'uniques' | 'sets' | 'sprites'>;
+  plan: Pick<IconPlan, 'bases' | 'uniques' | 'sets' | 'sprites'> & Partial<Pick<IconPlan, 'misc'>>;
   /** Recoloured variants by unique / set item name (`planTints`); their images are in `images` under the variant slug */
   tints?: { uniques: ReadonlyMap<string, TintRef>; sets: ReadonlyMap<string, TintRef> };
   images: ReadonlyMap<string, { width: number; height: number }>;
@@ -503,6 +600,7 @@ export function buildIconsBundle(input: {
     bases: section(input.plan.bases),
     uniques: section(input.plan.uniques, input.tints?.uniques),
     sets: section(input.plan.sets, input.tints?.sets),
+    misc: section(input.plan.misc ?? new Map()),
   };
 }
 
@@ -520,7 +618,7 @@ export function compareWithoutVanilla(committed: IconsBundle, esrOnly: IconsBund
   const vanillaFiles = new Set(committed.vanilla?.files ?? []);
   const same = (a: ItemIconInfo, b: ItemIconInfo) => a.file === b.file && a.w === b.w && a.h === b.h;
   const describe = (icon: ItemIconInfo) => `${icon.file} ${String(icon.w)}×${String(icon.h)}`;
-  for (const section of ['bases', 'uniques', 'sets'] as const) {
+  for (const section of ['bases', 'uniques', 'sets', 'misc'] as const) {
     const old = committed[section];
     const fresh = esrOnly[section];
     for (const [key, committedIcon] of Object.entries(old)) {
