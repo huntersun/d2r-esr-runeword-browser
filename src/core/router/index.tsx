@@ -133,6 +133,11 @@ const GameDataMaterialsScreen = lazy(async () => {
   return { default: module.MaterialsScreen };
 });
 
+const GameDataSetsScreen = lazy(async () => {
+  const module = await import('@/features/game-data');
+  return { default: module.SetsScreen };
+});
+
 const LootFilterLayout = lazy(async () => {
   const module = await import('@/features/loot-filter');
   return { default: module.LootFilterLayout };
@@ -194,6 +199,7 @@ export const router = createBrowserRouter(
           children: [
             { index: true, element: <Navigate to="bases" replace /> },
             { path: 'bases', element: routeElement(GameDataBasesScreen) },
+            { path: 'sets', element: routeElement(GameDataSetsScreen) },
             { path: 'best-base', element: routeElement(GameDataBestBaseScreen) },
             { path: 'affixes', element: routeElement(GameDataAffixesScreen) },
             { path: 'types', element: routeElement(GameDataItemTypesScreen) },

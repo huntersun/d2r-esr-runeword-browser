@@ -5,6 +5,7 @@ import { GameDataVersionBanner } from '../components/GameDataVersionBanner';
 
 const SUB_PAGES = [
   { to: 'bases', label: 'Bases' },
+  { to: 'sets', label: 'Sets' },
   { to: 'best-base', label: 'Best Base' },
   { to: 'affixes', label: 'Affixes' },
   { to: 'types', label: 'Item Types' },

@@ -6,12 +6,13 @@ Browse and search [Eastern Sun Resurrected](https://github.com/CelestialRayOne/E
 
 ## Features
 
-- **Home** — one search box across runewords, gemwords, uniques, mythicals and bases, plus a map of everything below
+- **Home** — one search box across runewords, gemwords, uniques, mythicals, sets, set items and bases, plus a map of everything below
 - **Runewords** — search by name or affixes; filter by runes, socket count, item type, required level, and max tier points
 - **Gemwords** — the same filtering for gem-based recipes
 - **Socketables** — gems, ESR/LoD/Kanji runes, and crystals with all their bonuses
 - **Uniques** — unique weapons, armors, and other items with category filters
 - **Mythicals** — mythical unique items
+- **Sets** — every set from the game files with its items, partial bonuses per piece count and full-set bonuses
 - **Ascendancies** — all 15 ascendancies with their tier bonuses
 - **Builds** — browse, like, and share character builds (creating and liking require sign-in; only available when the optional Supabase backend is configured)
 

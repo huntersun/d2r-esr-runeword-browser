@@ -4,16 +4,18 @@ import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { selectError, selectIsInitialized } from '@/core/store';
-import { useBaseNames, useItemNames } from '../hooks/useHomeSearchSources';
+import { useBundleNames, useItemNames, type BundleNamesState } from '../hooks/useHomeSearchSources';
 import { homeResultHref, runewordsSearchHref, searchHome, type HomeSearchSources } from '../utils/homeSearch';
 
 const SEARCH_ALL_VALUE = '__search-runewords';
 const ITEM_CLASS =
   'data-[selected=true]:bg-accent data-[selected=true]:ring-1 data-[selected=true]:ring-primary/50 data-[selected=true]:ring-inset';
 
+const readySources = (names: BundleNamesState): HomeSearchSources => (names.status === 'ready' ? names.sources : {});
+
 /**
  * One input over every item list: runewords, gemwords, uniques and mythicals (Dexie, once the startup sync is done) and
- * bases (bases.json, fetched on the first keystroke). Picking a result opens its page focused on that name; Enter on
+ * bases and sets (bases.json, sets.json, fetched on the first keystroke). Picking a result opens its page focused on that name; Enter on
  * the first row (selected by default) runs the runewords free-text search.
  */
 export function HomeSearch() {
@@ -25,14 +27,15 @@ export function HomeSearch() {
   // Nothing is read or fetched until the visitor starts typing.
   const [activated, setActivated] = useState(false);
   const itemNames = useItemNames(activated && isInitialized);
-  const baseNames = useBaseNames(activated);
+  const baseNames = useBundleNames('bases', activated);
+  const setNames = useBundleNames('sets', activated);
 
   const trimmed = query.trim();
-  const sources: HomeSearchSources = { ...itemNames, ...(baseNames.status === 'ready' ? { bases: baseNames.names } : {}) };
+  const sources: HomeSearchSources = { ...itemNames, ...readySources(baseNames), ...readySources(setNames) };
   const groups = searchHome(trimmed, sources);
   const showList = open && trimmed !== '';
   const itemsPending = !isInitialized || itemNames === undefined;
-  const basesPending = baseNames.status === 'idle' || baseNames.status === 'loading';
+  const basesPending = [baseNames, setNames].some((names) => names.status === 'idle' || names.status === 'loading');
 
   const go = (href: string) => {
     setOpen(false);
@@ -94,7 +97,7 @@ export function HomeSearch() {
             {itemsPending && (
               <p className="px-3 py-2 text-xs text-muted-foreground">
                 {syncError !== null && !isInitialized
-                  ? 'Item data could not be loaded; only bases are searched.'
+                  ? 'Item data could not be loaded; only bases and sets are searched.'
                   : 'Item data is still loading…'}
               </p>
             )}
@@ -117,7 +120,7 @@ export function HomeSearch() {
             {groups.length === 0 && !itemsPending && !basesPending && (
               <p className="px-3 py-2 text-xs text-muted-foreground">No item names match; Enter searches the runeword bonuses too.</p>
             )}
-            {basesPending && <p className="px-3 py-2 text-xs text-muted-foreground">Loading bases…</p>}
+            {basesPending && <p className="px-3 py-2 text-xs text-muted-foreground">Loading bases and sets…</p>}
           </CommandList>
         )}
       </Command>

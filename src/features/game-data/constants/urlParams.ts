@@ -30,4 +30,6 @@ export const GAME_DATA_URL_PARAM_KEYS = {
   FAMILY: 'family',
   // Materials
   GROUP: 'group',
+  // Sets (CLS above is reused for the set's class)
+  PIECES: 'pieces',
 } as const;

@@ -5,7 +5,17 @@
 export const GAME_DATA_SCHEMA = 1;
 
 export type ClassCode = 'ama' | 'sor' | 'nec' | 'pal' | 'bar' | 'dru' | 'ass' | 'war';
-export type GameDataFile = 'types' | 'bases' | 'runewords' | 'affixes' | 'sources' | 'lootfilter' | 'enhance' | 'cube' | 'materials';
+export type GameDataFile =
+  | 'types'
+  | 'bases'
+  | 'runewords'
+  | 'affixes'
+  | 'sources'
+  | 'lootfilter'
+  | 'enhance'
+  | 'cube'
+  | 'materials'
+  | 'sets';
 
 export interface GameDataManifest {
   schema: number;
@@ -562,4 +572,51 @@ export interface MaterialsBundle {
   /** Labels of the cube families the items refer to, in cube.json display order */
   families: { id: string; label: string }[];
   items: MaterialItem[];
+}
+
+// --- sets.json ----------------------------------------------------------------------------------------------------
+
+/** Bonus lines that need a number of the set's items worn */
+export interface SetBonusGroup {
+  /** Set items worn (2 = the bonus of the second piece) */
+  pieces: number;
+  lines: string[];
+}
+
+export interface SetItemInfo {
+  /** Display name (strings table, setitems.txt `index` key) */
+  name: string;
+  /** Base item code */
+  code: string;
+  baseName: string;
+  /** Item type name of the base (Staff, Belt, Amulet …) */
+  category: string;
+  level: number;
+  reqLevel: number;
+  /** The item's own properties (prop1..prop9) */
+  lines: string[];
+  /** Per-item bonuses (aprop1..5 a/b): group N needs N + 1 items of the set; empty groups left out */
+  partial: SetBonusGroup[];
+}
+
+export interface SetInfo {
+  /** sets.txt `index` (unique; hireling sets share the display name across difficulties) */
+  id: string;
+  name: string;
+  /** sets.txt `UIClass`; null for a set any class can use */
+  classCode: ClassCode | null;
+  className: string | null;
+  /** Range of the items' required levels */
+  reqLevel: { min: number; max: number };
+  /** setitems.txt order */
+  items: SetItemInfo[];
+  /** Set-wide partial bonuses (PCode2..5 a/b, a and b merged); empty groups left out */
+  partial: SetBonusGroup[];
+  /** Full-set bonuses (FCode1..8) */
+  full: string[];
+}
+
+/** sets.json: every set (sets.txt) with its items (setitems.txt) and rendered bonuses; `_old` and itemless sets left out */
+export interface SetsBundle {
+  sets: SetInfo[];
 }

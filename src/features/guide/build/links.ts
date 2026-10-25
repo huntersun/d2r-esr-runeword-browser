@@ -42,6 +42,7 @@ export const APP_PAGES: readonly string[] = [
   '/mythicals',
   '/ascendancies',
   '/game-data/bases',
+  '/game-data/sets',
   '/game-data/best-base',
   '/game-data/affixes',
   '/game-data/types',

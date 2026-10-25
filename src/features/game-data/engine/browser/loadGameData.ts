@@ -15,6 +15,7 @@ import {
   type GameDataManifest,
   type LootFilterDataBundle,
   type MaterialsBundle,
+  type SetsBundle,
   type SourcesBundle,
   type TxtRunewordsBundle,
   type TypesBundle,
@@ -30,6 +31,7 @@ export interface GameDataBundles {
   enhance: EnhanceBundle;
   cube: CubeBundle;
   materials: MaterialsBundle;
+  sets: SetsBundle;
 }
 
 export class GameDataSchemaError extends Error {

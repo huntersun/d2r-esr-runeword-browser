@@ -34,6 +34,8 @@ const TABLES = [
   'treasureclassex',
   'superuniques',
   'gamble',
+  // sets.json
+  'sets',
   // lootfilter.json
   'levels',
   'sounds',

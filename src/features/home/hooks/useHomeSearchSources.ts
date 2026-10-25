@@ -28,30 +28,42 @@ export function useItemNames(enabled: boolean): ItemSources | undefined {
   }, [enabled]);
 }
 
-export type BaseNamesState =
+export type BundleNamesState =
   | { readonly status: 'idle' | 'loading' | 'error' }
-  | { readonly status: 'ready'; readonly names: readonly string[] };
+  | { readonly status: 'ready'; readonly sources: HomeSearchSources };
 
-/** Base item names from the static bases.json bundle, fetched once `enabled` (on the first keystroke). */
-export function useBaseNames(enabled: boolean): BaseNamesState {
-  const [loaded, setLoaded] = useState<BaseNamesState | null>(null);
+type NamesBundle = 'bases' | 'sets';
+
+/** The search names a static bundle contributes: base names, or set names and set item names */
+async function loadNames(file: NamesBundle): Promise<HomeSearchSources> {
+  if (file === 'bases') {
+    const bundle = await loadGameDataFile('bases');
+    return { bases: bundle.bases.map((base) => base.name) };
+  }
+  const bundle = await loadGameDataFile('sets');
+  return { sets: bundle.sets.map((set) => set.name), setItems: bundle.sets.flatMap((set) => set.items.map((item) => item.name)) };
+}
+
+/** Item names from a static game-data bundle (bases.json, sets.json), fetched once `enabled` (on the first keystroke). */
+export function useBundleNames(file: NamesBundle, enabled: boolean): BundleNamesState {
+  const [loaded, setLoaded] = useState<BundleNamesState | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
-    loadGameDataFile('bases').then(
-      (bundle) => {
-        if (!cancelled) setLoaded({ status: 'ready', names: bundle.bases.map((base) => base.name) });
+    loadNames(file).then(
+      (sources) => {
+        if (!cancelled) setLoaded({ status: 'ready', sources });
       },
       (error: unknown) => {
-        console.error('[Home] Failed to load base names for search:', error);
+        console.error(`[Home] Failed to load ${file} names for search:`, error);
         if (!cancelled) setLoaded({ status: 'error' });
       }
     );
     return () => {
       cancelled = true;
     };
-  }, [enabled]);
+  }, [file, enabled]);
 
   if (loaded !== null) return loaded;
   return { status: enabled ? 'loading' : 'idle' };

@@ -10,6 +10,7 @@ per-phase implementation notes live in `builds-feature-docs/FEATURE-GAME-DATA.md
 | ---------------------- | ---------- | -------------------- |
 | `/game-data`           | —          | redirects to `bases` |
 | `/game-data/bases`     | Bases      | done                 |
+| `/game-data/sets`      | Sets       | done                 |
 | `/game-data/types`     | Item Types | done                 |
 | `/game-data/best-base` | Best Base  | done                 |
 | `/game-data/affixes`   | Affixes    | done                 |
@@ -18,7 +19,8 @@ per-phase implementation notes live in `builds-feature-docs/FEATURE-GAME-DATA.md
 | `/game-data/materials` | Materials  | done                 |
 
 The game-file data is a second data system next to the HTM pipeline: it is never stored in IndexedDB and never parsed
-in the browser. Uniques, sets, gemwords and the runeword list stay on the HTM pipeline.
+in the browser. Uniques, gemwords and the runeword list stay on the HTM pipeline (sets come from the game files, see
+"Sets").
 
 ## Data bundles
 
@@ -38,6 +40,7 @@ lazily (`src/features/game-data/engine/browser/loadGameData.ts`).
 | `enhance.json`    | corruption, anointment and Vessel of Souls outcomes from cubemain.txt (see "Enhance")                                              |
 | `cube.json`       | every other player-facing cubemain.txt recipe, grouped into families by official section (see "Cube recipes")                      |
 | `materials.json`  | every misc item worth looking up, with its sources, the cube families using / making it and its Enhance roles (see "Materials")    |
+| `sets.json`       | every set with its items, own lines, per-item and set-wide partial bonuses and full-set bonuses (see "Sets")                       |
 
 Arrays are written one element per line so diffs stay readable. Bundle URLs carry the manifest hash (`?v=<sha256>`);
 the manifest itself is always revalidated. The shape is defined in `src/features/game-data/engine/schema.ts`
@@ -54,6 +57,7 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 | `enhance.json`    | ESR 3.2.24: 357 KB / 32 KB                                                     |
 | `cube.json`       | ESR 3.2.24: 517 KB / 55 KB                                                     |
 | `materials.json`  | ESR 3.2.24: 165 KB / 11 KB                                                     |
+| `sets.json`       | ESR 3.2.24: 150 KB / 21 KB                                                     |
 
 ### Bases and types
 
@@ -337,6 +341,36 @@ Counts: `materialsItems` 395, `materialsGroups` 16, `materialsUsedInCube` 364, `
 maps, 17 quest items, 14 organs, 5 coupon rows, 6 containers and a few small groups). Adding the file did not bump
 `GAME_DATA_SCHEMA`.
 
+### Sets
+
+`sets.json` (`SetsBundle`, built by `build/bundleSets.ts` from sets.txt and setitems.txt, after the bases and types)
+holds every set with its items and the rendered bonus lines (`renderMods`, the same renderer as runewords and affixes).
+
+- **Set**: `id` (sets.txt `index`), `name` (strings table: "Arcanna's Tricks-Sor" → "Arcanna's Tricks"; the 12
+  hireling sets share their name across the -N / -NM / -H difficulties), `classCode` / `className` from `UIClass`
+  through types.json's classes (blank = any class), `reqLevel` = min / max of the items' `lvl req`.
+- **Item** (setitems.txt order): name, base `code`, `baseName`, `category` (the base type's name: Staff, Belt …),
+  `lvl`, `lvl req`, `lines` (prop1..9) and `partial`: aprop{N}a and aprop{N}b merged into one group needing **N + 1**
+  items (every ESR row has `add func` 2, which counts the set's items worn; another value is a build warning).
+- **Set-wide**: `partial` from PCode{N}a/b (needs **N** items, a and b merged), `full` from FCode1..8. Empty groups are
+  left out.
+- **Hidden** (`setsHidden`, `setItemsHidden`): sets whose index ends in `_old` (Tyrael's Sanctuary_old) or without
+  items, and the items of a hidden or unknown set (the three Tyrael's \*\_old items and Malek's Defense, which ESR keeps
+  on a "Malek's Charge_old" set that sets.txt does not have), and disabled rows.
+- The renderer sums identical stats (as the game does), so it can differ from docs/sets.htm, which lists them one by
+  one: Naj's Mastery 2 items "+1500 Defense" (docs: +500 and +1000), Bane's Garments "All Resists +40" (docs +20),
+  Ihsan's Shade "+80 to Strength" plus +20 to the other attributes (docs "+20 to All Attributes"). Two renderer gaps
+  remain against the docs: "Freezes target" / "Hit Blinds Target" without the "+1", and `rep-dur` 100 reads "Repairs
+  100 durability per second" (docs "Repairs 1 durability in 1 seconds").
+
+Counts: `sets` 76, `setItems` 266, `setsHidden` 1, `setItemsHidden` 4 (ESR 3.2.24; 43 sets of 3 items, 28 of 4, 5 of
+5; 55 class sets, 21 for any class). Adding the file did not bump `GAME_DATA_SCHEMA`.
+
+Building it uncovered a parser bug: monstats.txt and sets.txt mark their Expansion row with `*eol` 0, so `parseTsv`
+kept the marker and every monster id after it was off by one. Mythical descriptions (`mythicaldesc`, descfunc 23,
+which reads monstats NameStr as a text holder) past row 410 showed the next row's text: 49 runeword rows (Wealth,
+Enlightenment, Thirst …) and Harbinger of Ruin's full-set line. The marker check now ignores comment columns.
+
 ## Regenerating
 
 Recommended: one command after an ESR release.
@@ -436,6 +470,7 @@ The script warns when the clone has uncommitted changes, because the output woul
 | ---------------------- | ----------------- | ----------------------------------------------------------------- |
 | `/game-data`           | `GameDataLayout`  | Redirects to `bases`. Title, version banner, sub-tabs, `<Outlet>` |
 | `/game-data/bases`     | `BasesScreen`     | Base item browser                                                 |
+| `/game-data/sets`      | `SetsScreen`      | Sets: items, per-item and set-wide partial bonuses, full set      |
 | `/game-data/best-base` | `BestBaseScreen`  | Best base finder                                                  |
 | `/game-data/affixes`   | `AffixesScreen`   | Affix browser and what-can-roll                                   |
 | `/game-data/types`     | `ItemTypesScreen` | Item type tree and socket-cap table                               |
@@ -730,6 +765,36 @@ URL state (read on every render, written with `replace`; `utils/materials.ts`):
 | `group`  | group code (`sock`, `cube`, `body` …; unknown codes show all)                                                                                                                    |
 | `name`   | exact-name focus (`normaliseItemName`), ignores the other filters; the chip's × clears it                                                                                        |
 
+### Sets page
+
+`/game-data/sets` (`screens/SetsScreen.tsx`) loads only `sets.json` (a static-bundle route like Enhance, Cube and
+Materials) plus sources.json through `useItemSources` (the source lines are a bonus: missing while it loads or when it
+fails). Items menu entry "Sets" (after Mythicals), layout tab "Sets" (after Bases). The home search lists set names
+("Sets") and set item names ("Set items"), both linking to `/game-data/sets?name=`.
+
+- Search, "Max required level" input, Copy Link; Pieces pills (All + each item count with its set count) and Class
+  pills (All, Any class, then the classes by name); with `?name=` an exact-name chip replaces the pills. "Showing N of M
+  sets" line; sets sorted by their highest required level, then name.
+- One card per set (`components/SetCard.tsx`): green name, class badge ("Any class" when none), "N pieces", "Req Lvl
+  a–b", an "Official page" link (docs/sets.htm at the class anchor, the page top for classless sets) and a Copy Link
+  of `?name=<set>`. The 12 hireling sets also get a Normal / Nightmare / Hell badge from their id suffix (`-N`, `-NM`,
+  `-H`; `setDifficulty`), which the search reads too. Items as rows: name, "base · category · Lvl N · Req Lvl N", own lines (blue), the source line,
+  and the per-item partial bonuses under green "2 items" pills (a second column from `sm`). Set-wide amber boxes "2
+  items" … and "Full set" sit right of the items from `lg`, below them on narrow screens.
+- Highlighted items (amber background and left bar): the items matching the search on their own, or the item named by
+  `?name=`.
+- Empty state: "No set matches." with a button that clears every filter.
+
+URL state (read on every render, written with `replace`; `utils/sets.ts`):
+
+| Param    | Meaning                                                                                                                      |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `search` | AND terms (quoted phrases) over the set name, class, item names, bases, categories and every bonus line; whole sets are kept |
+| `maxlvl` | the whole set is wearable: the set's highest item required level ≤ the value                                                 |
+| `pieces` | number of items in the set (unknown counts show all)                                                                         |
+| `cls`    | class code, or `any` for the sets without a class (unknown codes show all)                                                   |
+| `name`   | exact-name focus on a set name or a set item name (that item highlighted); ignores the other filters; the chip's × clears it |
+
 ## Runeword matching
 
 `engine/matchRunewords.ts` maps each HTM runeword (`name::variant`) to a txt key. Names are normalised on both sides
@@ -841,7 +906,8 @@ src/features/game-data/
   engine/browser/loadGameData.ts         browser-only loader (fetch, import.meta.env)
   build/       build only: tsv.ts, strings.ts, model.ts, esrSources.ts, bundleTypes.ts, bundleBases.ts,
                bundleRunewords.ts, bundleAffixes.ts, bundleSources.ts (+ treasureClasses.ts, pluginUniques.ts,
-               itemNames.ts), bundleLootFilter.ts, bundleEnhance.ts, bundleCube.ts, bundleMaterials.ts, generateBundles.ts,
+               itemNames.ts), bundleLootFilter.ts, bundleEnhance.ts, bundleCube.ts, bundleMaterials.ts, bundleSets.ts,
+               generateBundles.ts,
                writeBundle.ts
   build/cube/  cubemain rows and texts shared with the guide: cubeRows.ts, cubeText.ts, cubeFamilies.ts, cubeCatalog.ts
   build/stats/ stat renderer (see "Stat renderer")
@@ -923,6 +989,14 @@ components/MaterialRow.tsx             one item: how to get, used in, guide note
 utils/materials.ts                     URL state, tree, search rule, cube / enhance links, guide join (+ test)
 ```
 
+UI files (Sets):
+
+```
+screens/SetsScreen.tsx                 loader, search, max level, pieces / class pills, exact-name chip, Copy Link
+components/SetCard.tsx                 one set: header, item rows with partial bonuses and sources, set-wide boxes
+utils/sets.ts                          URL state, options, order, search / focus rule, docs and focus links (+ test)
+```
+
 ## Tests
 
 - Build: `build/tsv.test.ts`, `build/strings.test.ts`, `build/bundleEnhance.test.ts` (two-step dummy pattern, dedupe
@@ -931,7 +1005,8 @@ utils/materials.ts                     URL state, tree, search rule, cube / enha
   (hide rules, family precedence, fallback grouping, raw vs merged rows, rem / lvl=, readable conditions),
   `build/bundleMaterials.test.ts` (inclusion and exclusion rules, container / same-name / coupon collapsing, uses via
   item types but not `any` or base types, returned inputs, source joins and the dropped stocker Cube label, enhance
-  roles),
+  roles), `build/bundleSets.test.ts` (hidden `_old`, itemless and unknown-set rows, group N → pieces, a/b merge, class
+  resolution, level range, warnings),
   `build/cube/cubeText.test.ts` (rem, lvl=, counted merging), `build/bundleBases.test.ts` (staffmods, range, smite/kick,
   automod eligibility and attachment on inline TSV), `build/bundleRunewords.test.ts`, `build/bundleAffixes.test.ts`,
   `build/bundleSources.test.ts` (each label rule on inline TSV; with the ESR clone, the verified examples Pelta Lunata,
@@ -941,12 +1016,14 @@ utils/materials.ts                     URL state, tree, search rule, cube / enha
   `engine/bestBase.test.ts`, `engine/affixEligibility.test.ts`, `engine/browser/loadGameData.test.ts`
 - UI: `store/gameDataSlice.test.ts`, `store/bestBaseState.test.ts`, `utils/filterBases.test.ts`,
   `utils/typeTree.test.ts`, `utils/bestBaseResults.test.ts`, `utils/filterAffixes.test.ts`, `store/affixFilters.test.ts`,
-  `utils/baseAutomods.test.ts`, `utils/enhance.test.ts`, `utils/cube.test.ts`, `utils/materials.test.ts`
+  `utils/baseAutomods.test.ts`, `utils/enhance.test.ts`, `utils/cube.test.ts`, `utils/materials.test.ts`,
+  `utils/sets.test.ts`
 - `bundleIntegrity.test.ts`: reads the committed JSON (counts, hashes, schema, type references, affix text, the enhance
   counts and rates listed under "Enhance", the cube families, fallback limits and hidden enhance rows listed under "Cube
   recipes", and for materials.json: every used-in / made-by family exists in cube.json with at most its row count,
   every Enhance role is a real reagent, no base code, row-count range, spot checks of a rune, gem, organ, Dragon Stone
-  and the coupon tiers). When the
+  and the coupon tiers; for sets.json: 76 sets, unique ids, no `_old`, level ranges, piece counts, every item in
+  sources.json, and Arcanna's Tricks / Harbinger of Ruin checked against docs/sets.htm). When the
   ESR clone is present it also regenerates the bundles in memory, checks they equal the committed files, and compares
   base names with the clone's `docs/weapons.htm` / `docs/armors.htm` (≥ 95 % overlap; misses are printed).
 - `runewordMatching.integration.test.ts`: skips without `test-fixtures/runewords.htm`, `runewords.json` or `types.json`;

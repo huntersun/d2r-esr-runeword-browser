@@ -5,6 +5,7 @@ import type {
   EnhanceBundle,
   LootFilterDataBundle,
   MaterialsBundle,
+  SetsBundle,
   SourcesBundle,
   TxtRunewordsBundle,
   TypesBundle,
@@ -17,6 +18,7 @@ import { buildEnhanceBundle } from './bundleEnhance.ts';
 import { buildCubeNames, modRendererFor, readCube, readCubeItem } from './cube/cubeRows.ts';
 import { buildLootFilterBundle } from './bundleLootFilter.ts';
 import { buildRunewordsBundle } from './bundleRunewords.ts';
+import { buildSetsBundle } from './bundleSets.ts';
 import { buildSourcesBundle } from './bundleSources.ts';
 import { buildTypesBundle } from './bundleTypes.ts';
 import type { EsrSources } from './esrSources.ts';
@@ -39,6 +41,7 @@ export interface GeneratedBundles {
   enhance: EnhanceBundle;
   cube: CubeBundle;
   materials: MaterialsBundle;
+  sets: SetsBundle;
   counts: Record<string, number>;
   /** Build warnings stored in the manifest */
   warnings: string[];
@@ -153,6 +156,16 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
   });
   const countMaterials = (pick: (item: MaterialsBundle['items'][number]) => boolean) => materials.bundle.items.filter(pick).length;
 
+  const sets = buildSetsBundle({
+    sets: table('sets'),
+    setitems: table('setitems'),
+    bases: basesBundle.bases,
+    types: types.bundle.types,
+    classes: types.bundle.classes,
+    strings,
+    renderMods,
+  });
+
   const countKind = (kind: string) => bases.bundle.bases.filter((base) => base.kind === kind).length;
   return {
     types: types.bundle,
@@ -164,6 +177,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
     enhance: enhance.bundle,
     cube: cube.bundle,
     materials: materials.bundle,
+    sets: sets.bundle,
     counts: {
       types: types.bundle.types.length,
       classes: types.bundle.classes.length,
@@ -225,6 +239,10 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       materialsExcludedUnlisted: materials.excluded.unlisted,
       materialsExcludedQuest: materials.excluded.quest,
       materialsExcludedUnused: materials.excluded.unused,
+      sets: sets.bundle.sets.length,
+      setItems: sets.bundle.sets.reduce((sum, set) => sum + set.items.length, 0),
+      setsHidden: sets.hidden.sets,
+      setItemsHidden: sets.hidden.items,
     },
     warnings: [
       ...types.warnings,
@@ -237,6 +255,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       ...enhance.warnings,
       ...cube.warnings,
       ...materials.warnings,
+      ...sets.warnings,
     ],
     stringWarnings: [...stringWarnings],
   };

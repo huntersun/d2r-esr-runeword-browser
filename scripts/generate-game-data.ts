@@ -67,6 +67,7 @@ function main(): void {
     enhance: serializeBundle(generated.enhance),
     cube: serializeBundle(generated.cube),
     materials: serializeBundle(generated.materials),
+    sets: serializeBundle(generated.sets),
   };
   const manifest = buildManifest({
     esrVersion: sources.esrVersion,

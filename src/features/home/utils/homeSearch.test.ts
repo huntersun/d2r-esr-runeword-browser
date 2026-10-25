@@ -30,9 +30,14 @@ describe('rankNames', () => {
 
 describe('searchHome', () => {
   it('returns non-empty groups in category order and skips missing sources', () => {
-    const groups = searchHome('ring', { bases: ['Ring', 'Ring Mail'], runewords: ['Ring of Fire'], uniques: ['Sword'] });
-    expect(groups.map((g) => g.category)).toEqual(['runewords', 'bases']);
-    expect(groups[1]?.names).toEqual(['Ring', 'Ring Mail']);
+    const groups = searchHome('ring', {
+      bases: ['Ring', 'Ring Mail'],
+      setItems: ['Angelic Halo (Ring)'],
+      runewords: ['Ring of Fire'],
+      uniques: ['Sword'],
+    });
+    expect(groups.map((g) => g.category)).toEqual(['runewords', 'setItems', 'bases']);
+    expect(groups[2]?.names).toEqual(['Ring', 'Ring Mail']);
   });
 
   it('caps every group at six by default', () => {
@@ -47,6 +52,8 @@ describe('result links', () => {
     expect(homeResultHref('gemwords', 'America')).toBe('/gemwords?name=America');
     expect(homeResultHref('uniques', "Artemis' Wrath")).toBe("/uniques?name=Artemis'%20Wrath");
     expect(homeResultHref('mythicals', 'X')).toBe('/mythicals?name=X');
+    expect(homeResultHref('sets', "Arcanna's Tricks")).toBe("/game-data/sets?name=Arcanna's%20Tricks");
+    expect(homeResultHref('setItems', "Arcanna's Sign")).toBe("/game-data/sets?name=Arcanna's%20Sign");
     expect(homeResultHref('bases', 'Ring Mail')).toBe('/game-data/bases?search=%22Ring%20Mail%22');
   });
 

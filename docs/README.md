@@ -70,6 +70,7 @@ The app uses a single HTM-based data system. All data is fetched from the ESR do
 | Mythicals             | `/mythicals`                                                                          | Mythical unique items (`src/features/mythical-uniques/`)                                                                                                                                                                              |
 | Ascendancies          | `/ascendancies`                                                                       | Ascendancies with their tier bonuses (`src/features/ascendancies/`)                                                                                                                                                                   |
 | Game Data: Bases      | `/game-data/bases` (`/game-data` redirects here)                                      | Base items from the ESR txt game files: search, kind/tier/type/sockets/level/class filters, sorting, socket caps per ilvl band (`src/features/game-data/`)                                                                            |
+| Game Data: Sets       | `/game-data/sets`                                                                     | Every set from sets.txt / setitems.txt: items with own lines, per-item and set-wide partial bonuses, full-set bonuses, sources; search, max level, pieces, class, `?name=` (set or set item)                                          |
 | Game Data: Best Base  | `/game-data/best-base`                                                                | Best base finder for a runeword and a persisted character (class/level/Str/Dex), ranked per item type; `?rw=&v=` from the runeword cards, `cls`/`lvl`/`str`/`dex` override the character                                              |
 | Game Data: Affixes    | `/game-data/affixes`                                                                  | Affix browser + "what can roll" on a base (`?base=<code>&ilvl=<n>`)                                                                                                                                                                   |
 | Game Data: Item Types | `/game-data/types`                                                                    | Item type (Equiv) tree with socket caps; `?type=<code>` focuses a node                                                                                                                                                                |
@@ -83,7 +84,8 @@ Favourites for runewords, gemwords, and unique items (sign-in required, synced t
 
 A second, build-time data source: `npm run game-data:generate` converts the ESR repo's txt game tables (from a local
 clone at `../Eastern_Sun_Resurrected`) into JSON committed under `public/game-data/` (`manifest.json`, `types.json`,
-`bases.json`, `runewords.json`, `affixes.json`, `sources.json`, `lootfilter.json`). The browser fetches these lazily;
+`bases.json`, `runewords.json`, `affixes.json`, `sources.json`, `lootfilter.json`, `enhance.json`, `cube.json`,
+`materials.json`, `sets.json`). The browser fetches these lazily;
 they never go through the HTM parsers or IndexedDB. The game-file version (ESR git tag, e.g. `3.2.10`) is independent of
 the HTM changelog version. See [Game Data](./features/GAME-DATA.md).
 

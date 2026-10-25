@@ -22,6 +22,7 @@ describe('isStaticBundlePath', () => {
     '/game-data/enhance',
     '/game-data/cube',
     '/game-data/materials',
+    '/game-data/sets',
   ])('matches the prefix route %s', (pathname) => {
     expect(isStaticBundlePath(pathname)).toBe(true);
   });

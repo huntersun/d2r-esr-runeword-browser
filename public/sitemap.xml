@@ -211,6 +211,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/game-data/sets</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://istvan-panczel.github.io/d2r-esr-runeword-browser/game-data/best-base</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>

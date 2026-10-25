@@ -5,7 +5,9 @@
 import { NAME_FOCUS_PAGES } from '@/features/guide/engine/linkSchemes';
 import { normaliseItemName } from '@/core/utils/itemName';
 
-export type HomeSearchCategory = 'runewords' | 'gemwords' | 'uniques' | 'mythicals' | 'bases';
+const SETS_PAGE = '/game-data/sets';
+
+export type HomeSearchCategory = 'runewords' | 'gemwords' | 'uniques' | 'mythicals' | 'sets' | 'setItems' | 'bases';
 
 export interface HomeSearchCategoryInfo {
   readonly key: HomeSearchCategory;
@@ -18,6 +20,8 @@ export const HOME_SEARCH_CATEGORIES: readonly HomeSearchCategoryInfo[] = [
   { key: 'gemwords', label: 'Gemwords' },
   { key: 'uniques', label: 'Uniques' },
   { key: 'mythicals', label: 'Mythicals' },
+  { key: 'sets', label: 'Sets' },
+  { key: 'setItems', label: 'Set items' },
   { key: 'bases', label: 'Bases' },
 ];
 
@@ -78,6 +82,9 @@ const NAME_FOCUS_PATHS: Record<Exclude<HomeSearchCategory, 'bases'>, string> = {
   gemwords: NAME_FOCUS_PAGES.gw,
   uniques: NAME_FOCUS_PAGES.unique,
   mythicals: NAME_FOCUS_PAGES.mythical,
+  // The Sets page focuses a set, or the set of an item with that item highlighted
+  sets: SETS_PAGE,
+  setItems: SETS_PAGE,
 };
 
 /**

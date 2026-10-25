@@ -3,7 +3,7 @@
   "esrVersion": "3.2.24",
   "esrTag": "3.2.24",
   "esrCommit": "b0622767314f9bf65f9c3a2cdeacded0b2e04a7e",
-  "generatedAt": "2026-10-24T22:37:46.696Z",
+  "generatedAt": "2026-10-25T09:53:41.394Z",
   "files": {
     "types": {
       "hash": "cab8a44704bcb77dd1d552147ce4b2e16d2d30517780f10d4d1b55de7c1e294d",
@@ -14,8 +14,8 @@
       "bytes": 329778
     },
     "runewords": {
-      "hash": "4571713efa4a215778b8bcfb91ac57981f5b13b78f5c5b5343f5c927fdf9300c",
-      "bytes": 201786
+      "hash": "6da9e3092538b78a02c379a697113e4a87c8805c95b02a4e13446e664cf29fed",
+      "bytes": 201515
     },
     "affixes": {
       "hash": "2dcbd5daa6081c21133411f9e8351ea837a6ac11f92838db30ff63559d4aeeb6",
@@ -40,6 +40,10 @@
     "materials": {
       "hash": "f2bd9a4ab80fb419677b4cc1042e04b4d7769ad851b22f14fce1b6fe9d2657b9",
       "bytes": 169104
+    },
+    "sets": {
+      "hash": "c5a7e134c544e19960af110135a4394848750c237a9d119a15e99fed53689cde",
+      "bytes": 153731
     }
   },
   "counts": {
@@ -102,7 +106,11 @@
     "materialsExcludedGold": 1,
     "materialsExcludedUnlisted": 111,
     "materialsExcludedQuest": 15,
-    "materialsExcludedUnused": 8
+    "materialsExcludedUnused": 8,
+    "sets": 76,
+    "setItems": 266,
+    "setsHidden": 1,
+    "setItemsHidden": 4
   },
   "warnings": [
     "bases: q86 (Scissors Suwayyah) is not in its own tier family [skr, 9qr, 7qr]; treated as normal",

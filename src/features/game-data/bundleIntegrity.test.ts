@@ -17,6 +17,7 @@ import {
   type GameDataManifest,
   type LootFilterDataBundle,
   type MaterialsBundle,
+  type SetsBundle,
   type SourcesBundle,
   type TxtRunewordsBundle,
   type TypesBundle,
@@ -39,6 +40,7 @@ const lootfilterText = readText('lootfilter');
 const enhanceText = readText('enhance');
 const cubeText = readText('cube');
 const materialsText = readText('materials');
+const setsText = readText('sets');
 const { types } = JSON.parse(typesText) as TypesBundle;
 const { bases, automods: baseAutomods = [] } = JSON.parse(basesText) as BasesBundle;
 const { runewords } = JSON.parse(runewordsText) as TxtRunewordsBundle;
@@ -48,6 +50,7 @@ const lootfilter = JSON.parse(lootfilterText) as LootFilterDataBundle;
 const enhance = JSON.parse(enhanceText) as EnhanceBundle;
 const cube = JSON.parse(cubeText) as CubeBundle;
 const materials = JSON.parse(materialsText) as MaterialsBundle;
+const { sets } = JSON.parse(setsText) as SetsBundle;
 
 describe('committed game-data bundles', () => {
   it('match the app schema', () => {
@@ -65,6 +68,7 @@ describe('committed game-data bundles', () => {
       ['enhance', enhanceText],
       ['cube', cubeText],
       ['materials', materialsText],
+      ['sets', setsText],
     ] as const) {
       expect(manifest.files[name]?.hash).toBe(createHash('sha256').update(text, 'utf8').digest('hex'));
       expect(manifest.files[name]?.bytes).toBe(Buffer.byteLength(text, 'utf8'));
@@ -371,6 +375,40 @@ describe('committed game-data bundles', () => {
     expect(coupons.reduce((sum, item) => sum + (item.variants ?? 1), 0)).toBeGreaterThan(300);
   });
 
+  it('list every set with its items, bonuses and class (ESR 3.2.24: 76 sets, 266 items; _old sets hidden)', () => {
+    expect(sets).toHaveLength(76);
+    expect(manifest.counts.sets).toBe(sets.length);
+    expect(manifest.counts.setItems).toBe(sets.reduce((sum, set) => sum + set.items.length, 0));
+    expect(new Set(sets.map((set) => set.id)).size).toBe(sets.length);
+    const classes = new Set(types.flatMap((type) => (type.cls === null ? [] : [type.cls])));
+    const setSources = new Set(sourceItems.filter((source) => source.item === 'set').map((source) => source.name));
+    for (const set of sets) {
+      expect(set.id.endsWith('_old'), set.id).toBe(false);
+      expect(set.items.length, set.id).toBeGreaterThanOrEqual(2);
+      expect(set.full.length, set.id).toBeGreaterThan(0);
+      if (set.classCode !== null) expect(classes.has(set.classCode), set.id).toBe(true);
+      expect(set.reqLevel.min).toBe(Math.min(...set.items.map((item) => item.reqLevel)));
+      expect(set.reqLevel.max).toBe(Math.max(...set.items.map((item) => item.reqLevel)));
+      for (const group of set.partial) expect(group.pieces).toBeLessThanOrEqual(set.items.length);
+      for (const item of set.items) {
+        expect(setSources.has(item.name), item.name).toBe(true);
+        expect(item.lines.length, item.name).toBeGreaterThan(0);
+        expect(item.category, item.name).not.toBe('');
+        for (const group of item.partial) expect(group.pieces, item.name).toBeLessThanOrEqual(set.items.length);
+      }
+    }
+    // Checked against docs/sets.htm
+    const arcanna = sets.find((set) => set.id === "Arcanna's Tricks-Sor");
+    expect(arcanna?.className).toBe('Sorceress');
+    expect(arcanna?.items[0]?.partial).toEqual([
+      { pieces: 2, lines: ['+1 to All Skills', '+50% Better Chance of Getting Magic Items'] },
+      { pieces: 3, lines: ['+2.5 to Mana (Based on Character Level)'] },
+    ]);
+    expect(arcanna?.partial).toEqual([{ pieces: 2, lines: ['Increase Maximum Life +10%', 'Increase Maximum Mana +10%'] }]);
+    // A mythical description past the monstats Expansion marker row reads its own text
+    expect(sets.find((set) => set.id === 'Harbinger of Ruin')?.full[0]).toMatch(/^Flame Wave deals 100% more total damage/);
+  });
+
   it('resolve the merc/helm name collision and class-only bases', () => {
     expect(types.find((type) => type.code === 'merc')?.name).toBe('Helm (merc)');
     expect(types.find((type) => type.code === 'helm')?.name).toBe('Helm');
@@ -418,6 +456,7 @@ describe.skipIf(!existsSync(ESR_DIR))('game data generated from the ESR clone', 
     expect(serializeBundle(generated.enhance)).toBe(enhanceText);
     expect(serializeBundle(generated.cube)).toBe(cubeText);
     expect(serializeBundle(generated.materials)).toBe(materialsText);
+    expect(serializeBundle(generated.sets)).toBe(setsText);
   });
 
   it('numbers uniques, sets, stats and sounds like the *ID / *Index comment columns where those are consistent', () => {

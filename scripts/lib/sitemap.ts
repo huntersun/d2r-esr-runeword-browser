@@ -31,6 +31,7 @@ const ROUTES_AFTER_NOTES: readonly SitemapEntry[] = [
   { path: 'ascendancies', changefreq: 'weekly', priority: '0.8' },
   { path: 'builds', changefreq: 'weekly', priority: '0.7' },
   { path: 'game-data/bases', changefreq: 'monthly', priority: '0.7' },
+  { path: 'game-data/sets', changefreq: 'monthly', priority: '0.7' },
   { path: 'game-data/best-base', changefreq: 'monthly', priority: '0.6' },
   { path: 'game-data/affixes', changefreq: 'monthly', priority: '0.6' },
   { path: 'game-data/types', changefreq: 'monthly', priority: '0.6' },

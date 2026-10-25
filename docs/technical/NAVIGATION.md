@@ -29,6 +29,7 @@ All routes are children of `AppLayout` in `src/core/router/index.tsx`; every scr
 | `/game-data/enhance`    | EnhanceScreen           | Corruption, anointment and Vessel of Souls outcomes (cube recipes)                                  | `tab`, `slot`, `tier`, `search` (kept in the URL)                                                      |
 | `/game-data/cube`       | CubeScreen              | Every cube recipe from cubemain.txt, grouped by family and official section                         | `search`, `family` (focused family; kept in the URL)                                                   |
 | `/game-data/materials`  | MaterialsScreen         | Every misc item: how to get it, the cube families and Enhance recipes using it, guide notes         | `search`, `group`, `name` (kept in the URL)                                                            |
+| `/game-data/sets`       | SetsScreen              | Every set: items, per-item and set-wide partial bonuses, full-set bonuses, item sources             | `search`, `maxlvl`, `pieces`, `cls`, `name` (kept in the URL)                                          |
 | `/loot-filters`         | LootFilterLayout        | Loot filter frame: an "Under development" notice above every loot-filter page, then the child route |                                                                                                        |
 | `/loot-filters` (index) | LootFilterLibraryScreen | Loot filter library: new, upload, ESR default filter template, download (.json or .zip)             |                                                                                                        |
 | `/loot-filters/:id`     | LootFilterEditorScreen  | Loot filter editor; unknown id shows "Filter not found"                                             | `tab=rules\|styles\|settings\|json\|test`                                                              |
@@ -118,8 +119,8 @@ match every path), the others are prefixes (a path matches its prefix exactly or
 - `/guide`: the guide is a static JSON bundle (`public/guide/`), see [GUIDE.md](../features/GUIDE.md);
 - `/loot-filters`: the editor uses the game-data bundles, `public/loot-filters/` and localStorage, see
   [LOOT-FILTER.md](../features/LOOT-FILTER.md);
-- `/game-data/enhance`, `/game-data/cube` and `/game-data/materials`: only `enhance.json` / `cube.json` /
-  `materials.json` (+ the guide bundle) (the other Game Data pages stay behind the gate: Best Base matches the HTM
+- `/game-data/enhance`, `/game-data/cube`, `/game-data/materials` and `/game-data/sets`: only `enhance.json` /
+  `cube.json` / `materials.json` / `sets.json` (+ the guide bundle, or sources.json for Sets) (the other Game Data pages stay behind the gate: Best Base matches the HTM
   runewords), see [GAME-DATA.md](../features/GAME-DATA.md).
 
 ### Header Components
@@ -131,7 +132,7 @@ cards render from the same config (group `description`, link `homeLinks`):
 | Entry     | Kind  | Pages                                                                                                                                                                                                 |
 | --------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Recipes ▾ | group | Runewords (`/runewords`), Gemwords (`/gemwords`), Socketables (`/socketables`)                                                                                                                        |
-| Items ▾   | group | Uniques (`/uniques`), Mythicals (`/mythicals`), Ascendancies (`/ascendancies`), Bases (`/game-data/bases`), Materials (`/game-data/materials`)                                                        |
+| Items ▾   | group | Uniques (`/uniques`), Mythicals (`/mythicals`), Sets (`/game-data/sets`), Ascendancies (`/ascendancies`), Bases (`/game-data/bases`), Materials (`/game-data/materials`)                              |
 | Tools ▾   | group | Best Base (`/game-data/best-base`), Affixes (`/game-data/affixes`), Item Types (`/game-data/types`), Enhance (`/game-data/enhance`), Cube Recipes (`/game-data/cube`), Loot Filters (`/loot-filters`) |
 | Guide     | link  | `/guide`                                                                                                                                                                                              |
 | Builds    | link  | `/builds`, only when Supabase is configured (`requiresSupabase`, filtered by `getNavEntries`)                                                                                                         |
@@ -288,7 +289,7 @@ export const router = createBrowserRouter(
           children: [
             { index: true, element: <Navigate to="bases" replace /> },
             { path: 'bases', element: routeElement(GameDataBasesScreen) },
-            // ... best-base, affixes, types, enhance, cube, materials
+            // ... sets, best-base, affixes, types, enhance, cube, materials
           ],
         },
         // ... uniques, mythicals, ascendancies (before game-data),
