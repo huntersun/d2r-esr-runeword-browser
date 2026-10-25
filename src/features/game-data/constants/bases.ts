@@ -22,6 +22,16 @@ export const TIER_BADGE_CLASS: Record<BaseTier, string> = {
   mythical: 'border-purple-600/50 text-purple-700 dark:text-purple-400',
 };
 
+/** Bases page layout: one card per base, or one table row per normal / exceptional / elite family. */
+export const BASE_VIEWS = ['cards', 'families'] as const;
+export type BaseView = (typeof BASE_VIEWS)[number];
+
+export const BASE_VIEW_LABELS: Record<BaseView, string> = { cards: 'Cards', families: 'Families' };
+
+export function isBaseView(value: string): value is BaseView {
+  return (BASE_VIEWS as readonly string[]).includes(value);
+}
+
 export const BASE_SORT_KEYS = ['name', 'qlvl', 'reqLvl', 'dmg', 'def', 'speed'] as const;
 export type BaseSortKey = (typeof BASE_SORT_KEYS)[number];
 export type SortDir = 'asc' | 'desc';

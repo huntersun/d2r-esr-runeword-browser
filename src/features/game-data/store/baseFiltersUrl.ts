@@ -1,6 +1,6 @@
 import { FILTER_URL_PARAM_KEYS, MAX_REQ_LEVEL_RANGE, SOCKET_COUNT_RANGE, parseBoundedIntParam } from '@/core/utils/filterUrlParams';
 import { isClassCode } from '../engine/schema';
-import { BASE_KINDS, BASE_TIERS, isBaseSortKey } from '../constants/bases';
+import { BASE_KINDS, BASE_TIERS, isBaseSortKey, isBaseView, type BaseView } from '../constants/bases';
 import { GAME_DATA_URL_PARAM_KEYS } from '../constants/urlParams';
 import { DEFAULT_BASE_FILTERS, type BaseFilters, type ClassFilter } from './gameDataSlice';
 
@@ -14,6 +14,7 @@ export const BASE_FILTER_PARAM_KEYS: readonly string[] = [
   GAME_DATA_URL_PARAM_KEYS.TYPE,
   GAME_DATA_URL_PARAM_KEYS.CLS,
   GAME_DATA_URL_PARAM_KEYS.SORT,
+  GAME_DATA_URL_PARAM_KEYS.VIEW,
 ];
 
 export function hasBaseFilterParams(params: URLSearchParams): boolean {
@@ -29,7 +30,10 @@ function pickKnown<T extends string>(values: readonly string[], allowed: readonl
   return [...new Set(known)];
 }
 
-/** Non-default filters as URL params. Sort is `sort=<key>` ascending or `sort=-<key>` descending. */
+/**
+ * Non-default filters as URL params. Sort is `sort=<key>` ascending or `sort=-<key>` descending; the families view is
+ * `view=families` (cards, the default, is omitted).
+ */
 export function encodeBaseFilters(filters: BaseFilters): URLSearchParams {
   const params = new URLSearchParams();
   if (filters.search) params.set(FILTER_URL_PARAM_KEYS.SEARCH, filters.search);
@@ -42,6 +46,7 @@ export function encodeBaseFilters(filters: BaseFilters): URLSearchParams {
   if (filters.sort !== DEFAULT_BASE_FILTERS.sort || filters.sortDir !== DEFAULT_BASE_FILTERS.sortDir) {
     params.set(GAME_DATA_URL_PARAM_KEYS.SORT, `${filters.sortDir === 'desc' ? '-' : ''}${filters.sort}`);
   }
+  if (filters.view !== DEFAULT_BASE_FILTERS.view) params.set(GAME_DATA_URL_PARAM_KEYS.VIEW, filters.view);
   return params;
 }
 
@@ -49,6 +54,10 @@ function decodeClassFilter(value: string | null): ClassFilter {
   if (value === 'none') return 'none';
   if (value !== null && isClassCode(value)) return value;
   return 'any';
+}
+
+function decodeView(value: string | null): BaseView {
+  return value !== null && isBaseView(value) ? value : DEFAULT_BASE_FILTERS.view;
 }
 
 function decodeSort(value: string | null): Pick<BaseFilters, 'sort' | 'sortDir'> {
@@ -76,5 +85,6 @@ export function decodeBaseFilters(params: URLSearchParams, knownTypes?: Readonly
     maxReqLvl: parseBoundedIntParam(params.get(FILTER_URL_PARAM_KEYS.MAXLVL), MAX_REQ_LEVEL_RANGE),
     classOnly: decodeClassFilter(params.get(GAME_DATA_URL_PARAM_KEYS.CLS)),
     ...decodeSort(params.get(GAME_DATA_URL_PARAM_KEYS.SORT)),
+    view: decodeView(params.get(GAME_DATA_URL_PARAM_KEYS.VIEW)),
   };
 }

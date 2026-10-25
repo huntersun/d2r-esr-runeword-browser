@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { CopyLinkHelpButton } from '@/components/CopyLinkHelpButton';
 import { SearchHelpButton } from '@/components/SearchHelpButton';
@@ -19,7 +20,10 @@ import {
   BASE_SORT_LABELS,
   BASE_TIERS,
   BASE_TIER_LABELS,
+  BASE_VIEWS,
+  BASE_VIEW_LABELS,
   isBaseSortKey,
+  isBaseView,
 } from '../constants/bases';
 import {
   clearBaseTypes,
@@ -32,6 +36,7 @@ import {
   setBaseSort,
   setBaseSortDir,
   setBaseTypeGroup,
+  setBaseView,
   toggleBaseKind,
   toggleBaseTier,
   toggleBaseType,
@@ -50,6 +55,8 @@ interface BaseFiltersProps {
 export function BaseFilters({ classes, typeGroups, typeNames, getShareUrl }: BaseFiltersProps) {
   const dispatch = useDispatch();
   const filters = useSelector(selectBaseFilters);
+
+  const familiesView = filters.view === 'families';
 
   const [localSearch, setLocalSearch, commitSearch] = useDebouncedFilterValue(
     filters.search,
@@ -199,11 +206,35 @@ export function BaseFilters({ classes, typeGroups, typeNames, getShareUrl }: Bas
         </div>
 
         <div className="space-y-1">
+          <p id="bases-view-label" className="text-xs text-muted-foreground">
+            View
+          </p>
+          <Tabs
+            value={filters.view}
+            onValueChange={(value) => {
+              if (isBaseView(value)) dispatch(setBaseView(value));
+            }}
+          >
+            <TabsList aria-labelledby="bases-view-label" className="h-8">
+              {BASE_VIEWS.map((view) => (
+                <TabsTrigger key={view} value={view} className="px-3">
+                  {BASE_VIEW_LABELS[view]}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+
+        <div
+          className="space-y-1"
+          title={familiesView ? 'The families table keeps its own order; sorting applies to the cards view' : undefined}
+        >
           <Label htmlFor="bases-sort" className="text-xs font-normal text-muted-foreground">
             Sort by
           </Label>
           <div className="flex items-center gap-1">
             <Select
+              disabled={familiesView}
               value={filters.sort}
               onValueChange={(value) => {
                 if (isBaseSortKey(value)) dispatch(setBaseSort(value));
@@ -223,6 +254,7 @@ export function BaseFilters({ classes, typeGroups, typeNames, getShareUrl }: Bas
             <Button
               variant="outline"
               size="icon-sm"
+              disabled={familiesView}
               onClick={() => dispatch(setBaseSortDir(filters.sortDir === 'asc' ? 'desc' : 'asc'))}
               aria-label={filters.sortDir === 'asc' ? 'Sorted ascending, switch to descending' : 'Sorted descending, switch to ascending'}
               title={filters.sortDir === 'asc' ? 'Ascending' : 'Descending'}

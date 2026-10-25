@@ -5,12 +5,15 @@ import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 import type { BaseAutomod, BaseItem, TypesBundle } from '../engine/schema';
 import { BASES_PAGE_SIZE } from '../constants/bases';
 import { BaseCard } from '../components/BaseCard';
+import { BaseFamilyTable } from '../components/BaseFamilyTable';
 import { BaseFilters } from '../components/BaseFilters';
 import { GameDataError } from '../components/GameDataError';
 import { GameDataLoading } from '../components/GameDataLoading';
 import { useGameData } from '../hooks/useGameData';
 import { useBasesUrlState } from '../hooks/useBasesUrlState';
-import { selectBaseFilters, setBaseSearch } from '../store/gameDataSlice';
+import { selectBaseFilters, setBaseSearch, setBaseView, type BaseFilters as BaseFilterState } from '../store/gameDataSlice';
+import { buildBaseFamilies } from '../utils/baseFamilies';
+import { buildFamilyView } from '../utils/familyView';
 import { filterBases } from '../utils/filterBases';
 import { buildTypeGroups } from '../utils/typeGroups';
 
@@ -43,16 +46,37 @@ function BasesBrowser({ typesBundle, bases, automods }: BasesBrowserProps) {
   const typeGroups = buildTypeGroups(bases, types);
   const getShareUrl = useBasesUrlState(knownTypes);
 
-  const filtered = filterBases(bases, filters, typeNames);
-
   const handleSearch = (text: string) => {
     dispatch(setBaseSearch(text));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const filtersBar = <BaseFilters classes={classes} typeGroups={typeGroups} typeNames={typeNames} getShareUrl={getShareUrl} />;
+
+  if (filters.view === 'families') {
+    return (
+      <div>
+        {filtersBar}
+        <FamiliesView
+          bases={bases}
+          types={types}
+          filters={filters}
+          typeNames={typeNames}
+          onSelect={(base) => {
+            dispatch(setBaseView('cards'));
+            handleSearch(`"${base.name}"`);
+          }}
+        />
+        <ScrollToTopButton />
+      </div>
+    );
+  }
+
+  const filtered = filterBases(bases, filters, typeNames);
+
   return (
     <div>
-      <BaseFilters classes={classes} typeGroups={typeGroups} typeNames={typeNames} getShareUrl={getShareUrl} />
+      {filtersBar}
 
       <p className="mb-4 text-sm text-muted-foreground">
         Showing {filtered.length} of {bases.length} bases
@@ -80,6 +104,34 @@ function BasesBrowser({ typesBundle, bases, automods }: BasesBrowserProps) {
 
       <ScrollToTopButton />
     </div>
+  );
+}
+
+interface FamiliesViewProps {
+  readonly bases: readonly BaseItem[];
+  readonly types: TypesBundle['types'];
+  readonly filters: BaseFilterState;
+  readonly typeNames: ReadonlyMap<string, string>;
+  readonly onSelect: (base: BaseItem) => void;
+}
+
+function FamiliesView({ bases, types, filters, typeNames, onSelect }: FamiliesViewProps) {
+  const view = buildFamilyView(buildBaseFamilies(bases, types), filters, typeNames);
+  const { families, totalFamilies, members, matching, loners } = view.counts;
+  const basesWord = (count: number) => (count === 1 ? 'base' : 'bases');
+
+  return (
+    <>
+      <p className="mb-4 text-sm text-muted-foreground">
+        Showing {families} of {totalFamilies} {totalFamilies === 1 ? 'family' : 'families'} ({matching} of {members} {basesWord(members)}{' '}
+        matching the filters) and {loners} {basesWord(loners)} without a family
+      </p>
+      {families === 0 && loners === 0 ? (
+        <p className="text-muted-foreground py-8 text-center">No bases found. Try adjusting your filters.</p>
+      ) : (
+        <BaseFamilyTable view={view} onSelect={onSelect} />
+      )}
+    </>
   );
 }
 

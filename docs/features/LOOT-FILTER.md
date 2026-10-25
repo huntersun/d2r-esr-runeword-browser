@@ -218,7 +218,8 @@ share one draft, one search box, one "N selected" counter and one Apply / Cancel
   the tier badge; other columns get a plain label badge). Each column header is a tri-state checkbox for that column;
   group and type headers are tri-state checkboxes with "selected/total". Below `md` the columns stack and each cell
   shows its column badge.
-- **Bases tab**: every spawnable base, in the type groups of `buildTypeGroups` (Weapons, Class weapons, Armor, Class
+- **Bases tab** (`baseBrowser.ts`, a thin mapper over game-data's `utils/baseFamilies.ts` → `buildBaseFamilies`, which
+  the Bases page families view shares; imports only go loot-filter → game-data): every spawnable base, in the type groups of `buildTypeGroups` (Weapons, Class weapons, Armor, Class
   armor, Accessories, Class accessories; collapsible), one block per type. A type with exceptional or elite bases is a
   grid Normal | Exceptional | Elite with one row per family (`family` codes), ordered by the lowest member's qlvl; its
   mythical bases follow under their own "Mythical" checkbox. A base that is not its family's member for its tier

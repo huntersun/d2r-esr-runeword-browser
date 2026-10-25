@@ -2,7 +2,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/core/store/store';
 import { readPersistentJson, writePersistentJson, type PersistentStorage } from '@/core/hooks/usePersistentState';
 import type { ClassCode } from '../engine/schema';
-import type { BaseKind, BaseSortKey, BaseTier, SortDir } from '../constants/bases';
+import type { BaseKind, BaseSortKey, BaseTier, BaseView, SortDir } from '../constants/bases';
 import { AFFIX_LEVEL_RANGE, type AffixKind, type AffixQuality, type AffixSortKey } from '../constants/affixes';
 import { CHARACTER_STORAGE_KEY, DEFAULT_CHARACTER, isCharacter, patchCharacter, type Character } from './character';
 
@@ -23,6 +23,8 @@ export interface BaseFilters {
   readonly classOnly: ClassFilter;
   readonly sort: BaseSortKey;
   readonly sortDir: SortDir;
+  /** Cards (sorted) or the family table (sort ignored but kept) */
+  readonly view: BaseView;
 }
 
 /** HTM runeword (Dexie `runewords`, keyed by name + variant). */
@@ -80,6 +82,7 @@ export const DEFAULT_BASE_FILTERS: BaseFilters = {
   classOnly: 'any',
   sort: 'qlvl',
   sortDir: 'asc',
+  view: 'cards',
 };
 
 export const DEFAULT_BEST_BASE_OPTIONS: BestBaseOptions = {
@@ -131,8 +134,9 @@ const gameDataSlice = createSlice({
     setBaseFilters(state, action: PayloadAction<BaseFilters>) {
       return { ...state, bases: action.payload };
     },
+    /** Resets every base filter but keeps the view (cards / families). */
     resetBaseFilters(state) {
-      return { ...state, bases: DEFAULT_BASE_FILTERS };
+      return { ...state, bases: { ...DEFAULT_BASE_FILTERS, view: state.bases.view } };
     },
     setBaseSearch(state, action: PayloadAction<string>) {
       state.bases.search = action.payload;
@@ -169,6 +173,9 @@ const gameDataSlice = createSlice({
     },
     setBaseSortDir(state, action: PayloadAction<SortDir>) {
       state.bases.sortDir = action.payload;
+    },
+    setBaseView(state, action: PayloadAction<BaseView>) {
+      state.bases.view = action.payload;
     },
     /** Merges, clamps and persists the character (level 1–99, str/dex 0–999). */
     updateCharacter(state, action: PayloadAction<Partial<Character>>) {
@@ -258,6 +265,7 @@ export const {
   setBaseClassOnly,
   setBaseSort,
   setBaseSortDir,
+  setBaseView,
   updateCharacter,
   setIncludeUnusable,
   setEthereal,

@@ -576,6 +576,7 @@ load `types` + `bases`; Best Base also loads `runewords`.
 | `maxReqLvl`       | `reqLvl ≤ n`                                                                                                                                                                                                  |
 | `classOnly`       | `any` (no filter), `none` (only bases without a class restriction), or a class code (only that class's bases)                                                                                                 |
 | `sort`, `sortDir` | `name`, `qlvl` (default, ascending), `reqLvl`, `dmg` (average of 2H, else 1H, else throw), `def` (max defense), `speed`. Ties break by name; bases without the metric (e.g. damage on armor) always sort last |
+| `view`            | `cards` (default) or `families` (`setBaseView`); Reset filters keeps it, and the sort is kept (unused) while the families view is on                                                                          |
 
 The Item Types page `?type=` focus is URL-only.
 
@@ -597,8 +598,9 @@ with `writePersistentJson` inside `updateCharacter`, which merges a partial upda
 
 ### Bases page
 
-Filters row (search, min sockets, max req level, Copy Link), a second row (kind and tier checkboxes, class select, sort
-select + direction toggle, Reset), and an item-type picker styled like the runeword `ItemTypeFilter`. The picker lists every
+Filters row (search, min sockets, max req level, Copy Link), a second row (kind and tier checkboxes, class select, a
+Cards | Families view toggle (shadcn `Tabs`), sort select + direction toggle (disabled in the families view), Reset),
+and an item-type picker styled like the runeword `ItemTypeFilter`. The picker lists every
 type that is some base's primary `type`, grouped into Weapons / Class weapons / Armor / Class armor / Accessories / Class
 accessories; nothing selected means all types. Codes selected via a link that are not in the picker (parent types such as
 `mele`) appear as removable chips.
@@ -617,6 +619,26 @@ option shows its own lines plus name · `lvl a–b` · `req lvl r`, and lines ev
 are pulled out into "Every option also: …". More than 5 options start collapsed in a `<details>`. A base whose group
 has no visible rows keeps the "Automod N" badge instead. The first 100 results render; "Show more" adds 100 at a time (reset when filters change).
 
+#### Families view
+
+`view=families` (`components/BaseFamilyTable.tsx`) replaces the cards with one table, columns Normal | Exceptional |
+Elite, one row per family. The family model is `utils/baseFamilies.ts` (`buildBaseFamilies`, shared with the loot-filter
+base browser): type groups and types as in the type picker (`buildTypeGroups`; a type in two groups shows in the first),
+rows ordered by the lowest member's qlvl. A base sits in its family's row when it is its family's member for its own tier;
+a row belongs to its lowest member's type, so the 7 claw families whose tiers span `h2h1`/`h2h2` stay one row under
+`h2h1`. ESR 3.2.24: 194 families, all complete triples. Bases without a family (single-member rows: rings, amulets,
+charms, jewels, arrows, throwing potions, the odd `q86` Scissors Suwayyah and `qdf` Hunter's Guise; plus the 35 mythical
+bases; 71 in all) are listed last under "Without a family", each with its tier badge and type name. Each cell shows the
+name and the `baseStatParts` line (damage or defense, block, speed for weapons, required level/str/dex, max sockets as
+`N os`, qlvl). Clicking a name switches to the cards view with the search set to `"<name>"` (like the card's Family links).
+
+Filter semantics (`utils/familyView.ts` → `buildFamilyView`, pure): the tier filter hides columns (`visibleFamilyTiers`;
+none selected = all three) and the loose bases of unselected tiers; every other filter (`baseMatchesFilters` from
+`utils/filterBases.ts` without the tiers) keeps a family when at least one member in a visible column matches and dims
+the others (muted, half opacity); a loose base shows only when it matches. Sorting does not apply. The count line reads
+"Showing F of T families (M of N bases matching the filters) and L bases without a family". At phone width the three
+columns stay (`table-fixed`), stats wrap under the name; the table only scrolls horizontally below 20rem.
+
 #### URL params
 
 Read once on mount by `hooks/useBasesUrlState.ts` (same pattern as runewords `useUrlInitialize`): when any bases param is
@@ -633,6 +655,7 @@ URL. The Copy Link button builds the URL from the current filters (`encodeBaseFi
 | `type`    | types          | comma list of type codes (unknown codes dropped) |
 | `cls`     | classOnly      | `none` or a class code                           |
 | `sort`    | sort + sortDir | `dmg` ascending, `-dmg` descending               |
+| `view`    | view           | `families` (cards, the default, is omitted)      |
 
 Keys are per page (`constants/urlParams.ts`; `search`, `sockets` and `maxlvl` are the app-wide shared keys; `sockets` is a plain
 minimum here, while the recipe screens accept a range), so `cls`, `type`
@@ -997,10 +1020,12 @@ src/features/game-data/
   store/gameDataSlice.ts           + gameDataSlice.test.ts (reducers + URL helpers)
   store/baseFiltersUrl.ts          encode/decode/hasBaseFilterParams
   hooks/{useGameData,useBasesUrlState}.ts
-  utils/filterBases.ts             + test
+  utils/filterBases.ts             filterBases + baseMatchesFilters (+ test)
+  utils/baseFamilies.ts            family model + stat line, shared with the loot-filter base browser (+ test on the bundles)
+  utils/familyView.ts              families view: visible columns, kept rows, dimmed members, counts (+ test; fixtures in testBases.mock.ts)
   utils/baseAutomods.ts            automod options + shared lines, smite/kick label for base cards (+ test)
   utils/{typeGroups,typeTree,format}.ts + typeTree.test.ts
-  components/{GameDataVersionBanner,GameDataError,GameDataLoading,ComingSoon,BaseFilters,BaseCard}.tsx
+  components/{GameDataVersionBanner,GameDataError,GameDataLoading,ComingSoon,BaseFilters,BaseCard,BaseFamilyTable}.tsx
   screens/{GameDataLayout,BasesScreen,BestBaseScreen,AffixesScreen,ItemTypesScreen}.tsx
 ```
 

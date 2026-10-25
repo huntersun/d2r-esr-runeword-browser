@@ -54,31 +54,37 @@ function compareBases(a: BaseItem, b: BaseItem, sort: BaseSortKey, dir: 1 | -1):
 }
 
 /**
- * Filters and sorts bases. All filters combine with AND; empty lists mean "no filter".
+ * Whether a base passes every filter (they combine with AND; empty lists mean "no filter"). `terms` are the parsed search.
  * - search: every term (see parseSearchTerms) must appear in name, type name(s) or code
  * - types: any selected code is among `base.ancestors` (so a parent type such as `mele` matches all its subtypes)
  * - minSockets: `max(socketCaps) ≥ n`; maxReqLvl: `reqLvl ≤ n`
  * - classOnly: 'none' = only unrestricted bases, a class code = only that class's bases
  */
+export function baseMatchesFilters(
+  base: BaseItem,
+  filters: BaseFilters,
+  terms: readonly string[],
+  typeNames: ReadonlyMap<string, string>
+): boolean {
+  const { kinds, tiers, types, minSockets, maxReqLvl, classOnly } = filters;
+  if (kinds.length > 0 && !kinds.includes(base.kind)) return false;
+  if (tiers.length > 0 && !tiers.includes(base.tier)) return false;
+  if (types.length > 0 && !types.some((code) => base.ancestors.includes(code))) return false;
+  if (minSockets !== null && maxSockets(base) < minSockets) return false;
+  if (maxReqLvl !== null && base.reqLvl > maxReqLvl) return false;
+  if (classOnly === 'none' && base.cls !== null) return false;
+  if (classOnly !== 'any' && classOnly !== 'none' && base.cls !== classOnly) return false;
+  if (terms.length > 0) {
+    const text = baseSearchText(base, typeNames);
+    if (!terms.every((term) => text.includes(term))) return false;
+  }
+  return true;
+}
+
+/** Filters (`baseMatchesFilters`) and sorts bases. */
 export function filterBases(bases: readonly BaseItem[], filters: BaseFilters, typeNames: ReadonlyMap<string, string>): BaseItem[] {
   const terms = parseSearchTerms(filters.search);
-  const { kinds, tiers, types, minSockets, maxReqLvl, classOnly } = filters;
-
-  const result = bases.filter((base) => {
-    if (kinds.length > 0 && !kinds.includes(base.kind)) return false;
-    if (tiers.length > 0 && !tiers.includes(base.tier)) return false;
-    if (types.length > 0 && !types.some((code) => base.ancestors.includes(code))) return false;
-    if (minSockets !== null && maxSockets(base) < minSockets) return false;
-    if (maxReqLvl !== null && base.reqLvl > maxReqLvl) return false;
-    if (classOnly === 'none' && base.cls !== null) return false;
-    if (classOnly !== 'any' && classOnly !== 'none' && base.cls !== classOnly) return false;
-    if (terms.length > 0) {
-      const text = baseSearchText(base, typeNames);
-      if (!terms.every((term) => text.includes(term))) return false;
-    }
-    return true;
-  });
-
+  const result = bases.filter((base) => baseMatchesFilters(base, filters, terms, typeNames));
   const dir = filters.sortDir === 'desc' ? -1 : 1;
   return result.sort((a, b) => compareBases(a, b, filters.sort, dir));
 }

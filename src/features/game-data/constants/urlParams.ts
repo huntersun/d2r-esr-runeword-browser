@@ -9,6 +9,8 @@ export const GAME_DATA_URL_PARAM_KEYS = {
   CLS: 'cls',
   TYPE: 'type',
   SORT: 'sort',
+  // Bases
+  VIEW: 'view',
   // Best base
   RW: 'rw',
   VARIANT: 'v',

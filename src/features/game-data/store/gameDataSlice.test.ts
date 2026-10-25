@@ -11,6 +11,7 @@ import reducer, {
   setBaseSort,
   setBaseSortDir,
   setBaseTypeGroup,
+  setBaseView,
   toggleBaseKind,
   toggleBaseTier,
   toggleBaseType,
@@ -69,6 +70,17 @@ describe('gameDataSlice', () => {
     expect(state.bases.types).toEqual([]);
   });
 
+  it('switches the view and keeps it (and the sort) across a reset', () => {
+    let state = reducer(initial, setBaseSort('dmg'));
+    state = reducer(state, setBaseView('families'));
+    expect(state.bases).toEqual({ ...DEFAULT_BASE_FILTERS, sort: 'dmg', view: 'families' });
+    state = reducer(state, setBaseView('cards'));
+    expect(state.bases.sort).toBe('dmg');
+    state = reducer(state, setBaseView('families'));
+    state = reducer(state, resetBaseFilters());
+    expect(state.bases).toEqual({ ...DEFAULT_BASE_FILTERS, view: 'families' });
+  });
+
   it('replaces and resets the whole filter state', () => {
     const filters: BaseFilters = { ...DEFAULT_BASE_FILTERS, search: 'x', kinds: ['misc'] };
     let state = reducer(initial, setBaseFilters(filters));
@@ -94,12 +106,14 @@ describe('base filter URL params', () => {
       classOnly: 'none',
       sort: 'dmg',
       sortDir: 'desc',
+      view: 'families',
     };
     const params = encodeBaseFilters(filters);
     expect(params.get('sort')).toBe('-dmg');
     expect(params.get('kind')).toBe('weapon,armor');
     expect(params.get('sockets')).toBe('4');
     expect(params.get('maxlvl')).toBe('60');
+    expect(params.get('view')).toBe('families');
     expect(decodeBaseFilters(new URLSearchParams(params.toString()))).toEqual(filters);
   });
 
@@ -117,6 +131,14 @@ describe('base filter URL params', () => {
     const params = new URLSearchParams('cls=war&type=axe,nope');
     expect(decodeBaseFilters(params, new Set(['axe'])).types).toEqual(['axe']);
     expect(decodeBaseFilters(params).classOnly).toBe('war');
+  });
+
+  it('encodes the families view as view=families and omits the cards default', () => {
+    expect(encodeBaseFilters({ ...DEFAULT_BASE_FILTERS, view: 'families' }).toString()).toBe('view=families');
+    expect(encodeBaseFilters({ ...DEFAULT_BASE_FILTERS, view: 'cards' }).has('view')).toBe(false);
+    expect(decodeBaseFilters(new URLSearchParams('view=families'))).toEqual({ ...DEFAULT_BASE_FILTERS, view: 'families' });
+    expect(decodeBaseFilters(new URLSearchParams('view=grid')).view).toBe('cards');
+    expect(hasBaseFilterParams(new URLSearchParams('view=families'))).toBe(true);
   });
 
   it('detects whether any bases param is present', () => {
