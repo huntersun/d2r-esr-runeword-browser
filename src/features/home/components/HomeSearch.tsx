@@ -4,19 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { selectError, selectIsInitialized } from '@/core/store';
-import { useBundleNames, useItemNames, type BundleNamesState } from '../hooks/useHomeSearchSources';
-import { homeResultHref, runewordsSearchHref, searchHome, type HomeSearchSources } from '../utils/homeSearch';
+import { useBundleNames, useItemNames } from '../hooks/useHomeSearchSources';
+import { runewordsSearchHref, searchHome, type HomeSearchSources } from '../utils/homeSearch';
 
 const SEARCH_ALL_VALUE = '__search-runewords';
 const ITEM_CLASS =
   'data-[selected=true]:bg-accent data-[selected=true]:ring-1 data-[selected=true]:ring-primary/50 data-[selected=true]:ring-inset';
 
-const readySources = (names: BundleNamesState): HomeSearchSources => (names.status === 'ready' ? names.sources : {});
-
 /**
- * One input over every item list: runewords, gemwords, uniques and mythicals (Dexie, once the startup sync is done) and
- * bases and sets (bases.json, sets.json, fetched on the first keystroke). Picking a result opens its page focused on that name; Enter on
- * the first row (selected by default) runs the runewords free-text search.
+ * One input over every name list: runewords, gemwords, uniques and mythicals (Dexie, once the startup sync is done) and
+ * bases, sets, skills, materials, areas and cube recipe families (static bundles, fetched on the first keystroke). Picking
+ * a result opens its page focused on it; Enter on the first row (selected by default) runs the runewords free-text search.
  */
 export function HomeSearch() {
   const navigate = useNavigate();
@@ -27,15 +25,14 @@ export function HomeSearch() {
   // Nothing is read or fetched until the visitor starts typing.
   const [activated, setActivated] = useState(false);
   const itemNames = useItemNames(activated && isInitialized);
-  const baseNames = useBundleNames('bases', activated);
-  const setNames = useBundleNames('sets', activated);
+  const bundleNames = useBundleNames(activated);
 
   const trimmed = query.trim();
-  const sources: HomeSearchSources = { ...itemNames, ...readySources(baseNames), ...readySources(setNames) };
+  const sources: HomeSearchSources = { ...itemNames, ...bundleNames.sources };
   const groups = searchHome(trimmed, sources);
   const showList = open && trimmed !== '';
   const itemsPending = !isInitialized || itemNames === undefined;
-  const basesPending = [baseNames, setNames].some((names) => names.status === 'idle' || names.status === 'loading');
+  const bundlesPending = bundleNames.pending;
 
   const go = (href: string) => {
     setOpen(false);
@@ -58,7 +55,7 @@ export function HomeSearch() {
       <Command
         shouldFilter={false}
         loop
-        label="Search items"
+        label="Search"
         className="overflow-visible rounded-lg border bg-background shadow-xs **:data-[slot=command-input-wrapper]:h-11 **:data-[slot=command-input-wrapper]:border-b-0"
         onKeyDown={(event) => {
           if (event.key === 'Escape') setOpen(false);
@@ -70,7 +67,7 @@ export function HomeSearch() {
           onFocus={() => {
             setOpen(true);
           }}
-          placeholder="Search runewords, uniques, bases…"
+          placeholder="Search items, skills, areas, recipes…"
           className="h-11 text-base sm:text-sm"
         />
         {showList && (
@@ -97,30 +94,30 @@ export function HomeSearch() {
             {itemsPending && (
               <p className="px-3 py-2 text-xs text-muted-foreground">
                 {syncError !== null && !isInitialized
-                  ? 'Item data could not be loaded; only bases and sets are searched.'
-                  : 'Item data is still loading…'}
+                  ? 'Runeword and unique data could not be loaded; only the game-data lists are searched.'
+                  : 'Runeword and unique data is still loading…'}
               </p>
             )}
             {groups.map((group) => (
               <CommandGroup key={group.category} heading={group.label}>
-                {group.names.map((name) => (
+                {group.results.map((result) => (
                   <CommandItem
-                    key={name}
-                    value={`${group.category}:${name}`}
+                    key={result.href}
+                    value={`${group.category}:${result.href}`}
                     onSelect={() => {
-                      go(homeResultHref(group.category, name));
+                      go(result.href);
                     }}
                     className={ITEM_CLASS}
                   >
-                    <span className="min-w-0 truncate">{name}</span>
+                    <span className="min-w-0 truncate">{result.name}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
             ))}
-            {groups.length === 0 && !itemsPending && !basesPending && (
-              <p className="px-3 py-2 text-xs text-muted-foreground">No item names match; Enter searches the runeword bonuses too.</p>
+            {groups.length === 0 && !itemsPending && !bundlesPending && (
+              <p className="px-3 py-2 text-xs text-muted-foreground">No names match; Enter searches the runeword bonuses too.</p>
             )}
-            {basesPending && <p className="px-3 py-2 text-xs text-muted-foreground">Loading bases and sets…</p>}
+            {bundlesPending && <p className="px-3 py-2 text-xs text-muted-foreground">Loading bases, sets, skills, materials and areas…</p>}
           </CommandList>
         )}
       </Command>

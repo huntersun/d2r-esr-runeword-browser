@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { homeResultHref, rankNames, runewordsSearchHref, searchHome } from './homeSearch';
+import { homeResultHref, rankNames, runewordsSearchHref, searchHome, skillSearchNames } from './homeSearch';
 
 describe('rankNames', () => {
   const names = ['Black Enigma', 'Enigma', 'Enigmatic Ring', 'Stenigma', 'Oath', 'Mosaic'];
@@ -37,12 +37,62 @@ describe('searchHome', () => {
       uniques: ['Sword'],
     });
     expect(groups.map((g) => g.category)).toEqual(['runewords', 'setItems', 'bases']);
-    expect(groups[2]?.names).toEqual(['Ring', 'Ring Mail']);
+    expect(groups[2]?.results.map((r) => r.name)).toEqual(['Ring', 'Ring Mail']);
   });
 
   it('caps every group at six by default', () => {
     const names = Array.from({ length: 10 }, (_, i) => `Rune ${String(i)}`);
-    expect(searchHome('rune', { runewords: names })[0]?.names).toHaveLength(6);
+    expect(searchHome('rune', { runewords: names })[0]?.results).toHaveLength(6);
+  });
+
+  it('appends skills, materials, areas and cube recipes after bases', () => {
+    const groups = searchHome('fire', {
+      cube: [{ name: 'Fire facets', id: 'facets-fire' }],
+      areas: ['Fire Pit'],
+      materials: ['Fire Rune'],
+      skills: [{ name: 'Fire Bolt', id: 'Fire Bolt' }],
+      bases: ['Fire Staff'],
+    });
+    expect(groups.map((g) => g.category)).toEqual(['bases', 'skills', 'materials', 'areas', 'cube']);
+    expect(groups.map((g) => g.label)).toEqual(['Bases', 'Skills', 'Materials', 'Areas', 'Cube recipes']);
+  });
+
+  it('links a cube family label to its family id', () => {
+    const [group] = searchHome('charm', {
+      cube: [{ name: 'Upgrading, rerolling and recycling unique charms', id: 'unique-charm-upgrades' }],
+    });
+    expect(group?.results).toEqual([
+      { name: 'Upgrading, rerolling and recycling unique charms', href: '/game-data/cube?family=unique-charm-upgrades' },
+    ]);
+  });
+
+  it('collapses duplicated area names to one result', () => {
+    const [group] = searchHome('jail', { areas: ['Jail Level 1', 'Jail Level 2', 'Jail Level 2'] });
+    expect(group?.results).toEqual([
+      { name: 'Jail Level 1', href: '/game-data/areas?search=%22Jail%20Level%201%22' },
+      { name: 'Jail Level 2', href: '/game-data/areas?search=%22Jail%20Level%202%22' },
+    ]);
+  });
+});
+
+describe('skillSearchNames', () => {
+  it('suffixes the variant of skills sharing a name and keeps every id', () => {
+    const names = skillSearchNames([
+      { id: 'Amplify Damage', name: 'Amplify Damage' },
+      { id: 'Amplify Damage Aura', name: 'Amplify Damage' },
+      { id: 'Stormshield Chain Lightning', name: 'Chain Lightning' },
+      { id: 'Chain Lightning Djinn', name: 'Chain Lightning' },
+      { id: 'Teleport', name: 'Teleport' },
+    ]);
+    expect(names).toEqual([
+      { name: 'Amplify Damage', id: 'Amplify Damage' },
+      { name: 'Amplify Damage (Aura)', id: 'Amplify Damage Aura' },
+      { name: 'Chain Lightning (Stormshield Chain Lightning)', id: 'Stormshield Chain Lightning' },
+      { name: 'Chain Lightning (Djinn)', id: 'Chain Lightning Djinn' },
+      { name: 'Teleport', id: 'Teleport' },
+    ]);
+    const [group] = searchHome('amplify', { skills: names });
+    expect(group?.results.map((r) => r.href)).toEqual(['/skills?skill=Amplify%20Damage', '/skills?skill=Amplify%20Damage%20Aura']);
   });
 });
 
@@ -55,6 +105,15 @@ describe('result links', () => {
     expect(homeResultHref('sets', "Arcanna's Tricks")).toBe("/game-data/sets?name=Arcanna's%20Tricks");
     expect(homeResultHref('setItems', "Arcanna's Sign")).toBe("/game-data/sets?name=Arcanna's%20Sign");
     expect(homeResultHref('bases', 'Ring Mail')).toBe('/game-data/bases?search=%22Ring%20Mail%22');
+  });
+
+  it('focuses a skill id, a material name, a cube family id and phrase-searches areas', () => {
+    expect(homeResultHref('skills', { name: 'Amplify Damage (Aura)', id: 'Amplify Damage Aura' })).toBe(
+      '/skills?skill=Amplify%20Damage%20Aura'
+    );
+    expect(homeResultHref('materials', 'Small Charm')).toBe('/game-data/materials?name=Small%20Charm');
+    expect(homeResultHref('areas', 'Catacombs Level 3')).toBe('/game-data/areas?search=%22Catacombs%20Level%203%22');
+    expect(homeResultHref('cube', { name: 'Opening map portals', id: 'map-portals' })).toBe('/game-data/cube?family=map-portals');
   });
 
   it('sends a free-text Enter to the runewords search', () => {

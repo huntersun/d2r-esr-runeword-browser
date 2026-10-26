@@ -109,7 +109,8 @@ orphaned file and on a key whose cel is outside its sheet. No vanilla art is nee
 ## Page
 
 Route `/skills` (`SkillsScreen`, lazy-loaded), nav: Database ▾ → Skills (after Ascendancies), also a chip on the home
-page's Items card.
+page's Database card. The home search lists every skill name (class and item skills from `skilldetails.json`,
+same-named variants suffixed like "Amplify Damage (Aura)") and links to `/skills?skill=<id>`.
 
 - **Class pills**: the 8 classes in types.json order plus "Item skills" (with its count).
 - **Trees**: each tab is a card with a 6 × 3 CSS grid; a tile (icon, name, required level) sits at its skilldesc row /

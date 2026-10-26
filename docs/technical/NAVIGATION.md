@@ -76,12 +76,17 @@ string (`/?name=Enigma`, `/?search=x&sockets=4`: old Copy Link URLs and guide de
    manifest (`useManifest`) and "Docs data: ESR … (site updated …)" from Dexie metadata (`esrVersion`,
    `docsLastModified`, via `useDocsDataLine`), each left out until it is known.
 2. **Search** (`HomeSearch`): one cmdk input with an inline results list grouped Runewords / Gemwords / Uniques /
-   Mythicals / Bases, max 6 each (`searchHome` / `rankNames` in `utils/homeSearch.ts`: case-insensitive substring over
-   `normaliseItemName`, ranked exact, prefix, word prefix, substring, then alphabetical; duplicates collapse). Nothing
-   loads before the first keystroke; then the Dexie name indexes (only once the startup sync has initialized; before
-   that the list says "Item data is still loading…") and `bases.json` via `loadGameDataFile`. A result opens its page
-   with `?name=<exact name>` (bases: `/game-data/bases?search="<name>"`, the page has no exact-name focus). The first row,
-   selected by default, is "Search runewords for “…”", so Enter without picking a result goes to
+   Mythicals / Sets / Set items / Bases / Skills / Materials / Areas / Cube recipes, max 6 each (`searchHome` /
+   `rankNames` in `utils/homeSearch.ts`: case-insensitive substring over `normaliseItemName`, ranked exact, prefix, word
+   prefix, substring, then alphabetical; duplicates collapse). Nothing loads before the first keystroke; then the Dexie
+   name indexes (only once the startup sync has initialized; before that the list says "Runeword and unique data is
+   still loading…") and, via `loadGameDataFile` (`useBundleNames`, each file settles on its own), `bases.json`,
+   `sets.json`, `skilldetails.json` (skill names, class and item skills; same-named variants get the Skills page's
+   suffix, "Amplify Damage (Aura)"), `materials.json` (item names, plus its `families` labels for Cube recipes, so
+   `cube.json` is not fetched) and `areas.json`. A result opens its page focused on it (`homeResultHref`):
+   `?name=<exact name>` on the item list pages, Sets and Materials; Skills `/skills?skill=<id>` (the page picks the class
+   and tab); Cube `/game-data/cube?family=<id>`; Bases and Areas have no exact-name focus, so `?search="<name>"`. The
+   first row, selected by default, is "Search runewords for “…”", so Enter without picking a result goes to
    `/runewords?search=<query>`.
 3. **Section cards** (`HomeSections`): one card per `NAV_ENTRIES` entry (`getHomeSections` in `utils/homeSections.ts`):
    a group's `description` and its pages as chips; a plain link's `description` and its `homeLinks` chips (Guide: Start

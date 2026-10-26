@@ -1125,7 +1125,8 @@ the Cube Recipes page", N = the family's rows in cube.json).
 
 `/game-data/materials` (`screens/MaterialsScreen.tsx`) loads only `materials.json` (a static-bundle route like Enhance
 and Cube) plus the guide bundle (`useGuide`); the page works without the guide, only the Guide lines are then missing.
-Database menu entry "Materials", layout tab "Materials".
+Database menu entry "Materials", layout tab "Materials". The home search lists the item names (→ `?name=`) and,
+from the same bundle's `families`, the cube family labels as "Cube recipes" (→ `/game-data/cube?family=<id>`).
 
 - Search, Copy Link and the group pills (All + each group with its row count) in the filter panel; with `?name=` the
   pills are hidden and the exact-name chip sits in the "Showing N of M items" line under the panel.
@@ -1148,7 +1149,8 @@ URL state (read on every render, written with `replace`; `utils/materials.ts`):
 ### Areas page
 
 `/game-data/areas` (`screens/AreasScreen.tsx`) loads only `areas.json` (a static-bundle route). Database menu entry
-"Areas", layout tab "Areas".
+"Areas", layout tab "Areas". The home search lists the area names and links to `?search="<name>"` (the page has no
+exact-name focus; the two duplicated names, Jail Level 2 and Catacombs Level 3, show both rows).
 
 - Filter panel: search, min / max monster level (an area matches when its Normal, Nightmare or Hell level is inside the
   range; towns and areas without monsters never match a set bound; the hint under the inputs says so) and Copy Link.

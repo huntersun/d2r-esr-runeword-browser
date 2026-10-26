@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/core/db';
 import { loadGameDataFile } from '@/features/game-data/engine/browser/loadGameData';
-import type { HomeSearchSources } from '../utils/homeSearch';
+import { skillSearchNames, type HomeSearchSources } from '../utils/homeSearch';
 
 type ItemSources = Required<Pick<HomeSearchSources, 'runewords' | 'gemwords' | 'uniques' | 'mythicals'>>;
 
@@ -28,43 +28,76 @@ export function useItemNames(enabled: boolean): ItemSources | undefined {
   }, [enabled]);
 }
 
-export type BundleNamesState =
-  | { readonly status: 'idle' | 'loading' | 'error' }
-  | { readonly status: 'ready'; readonly sources: HomeSearchSources };
+/** The static bundles the search reads, fetched in parallel on the first keystroke */
+const NAMES_BUNDLES = ['bases', 'sets', 'skilldetails', 'materials', 'areas'] as const;
+type NamesBundle = (typeof NAMES_BUNDLES)[number];
 
-type NamesBundle = 'bases' | 'sets';
-
-/** The search names a static bundle contributes: base names, or set names and set item names */
-async function loadNames(file: NamesBundle): Promise<HomeSearchSources> {
-  if (file === 'bases') {
+/** The search names each static bundle contributes (materials.json also carries the cube family labels and ids) */
+const NAME_LOADERS: Record<NamesBundle, () => Promise<HomeSearchSources>> = {
+  bases: async () => {
     const bundle = await loadGameDataFile('bases');
     return { bases: bundle.bases.map((base) => base.name) };
-  }
-  const bundle = await loadGameDataFile('sets');
-  return { sets: bundle.sets.map((set) => set.name), setItems: bundle.sets.flatMap((set) => set.items.map((item) => item.name)) };
+  },
+  sets: async () => {
+    const bundle = await loadGameDataFile('sets');
+    return { sets: bundle.sets.map((set) => set.name), setItems: bundle.sets.flatMap((set) => set.items.map((item) => item.name)) };
+  },
+  skilldetails: async () => {
+    const bundle = await loadGameDataFile('skilldetails');
+    return { skills: skillSearchNames(bundle.skills) };
+  },
+  materials: async () => {
+    const bundle = await loadGameDataFile('materials');
+    return {
+      materials: bundle.items.map((item) => item.name),
+      cube: bundle.families.map((family) => ({ name: family.label, id: family.id })),
+    };
+  },
+  areas: async () => {
+    const bundle = await loadGameDataFile('areas');
+    return { areas: bundle.areas.map((area) => area.name) };
+  },
+};
+
+export interface BundleNamesState {
+  /** Names of the bundles loaded so far */
+  readonly sources: HomeSearchSources;
+  /** True while a bundle is not fetched yet (also before `enabled`) */
+  readonly pending: boolean;
 }
 
-/** Item names from a static game-data bundle (bases.json, sets.json), fetched once `enabled` (on the first keystroke). */
-export function useBundleNames(file: NamesBundle, enabled: boolean): BundleNamesState {
-  const [loaded, setLoaded] = useState<BundleNamesState | null>(null);
+type Settled = Partial<Record<NamesBundle, HomeSearchSources | 'error'>>;
+
+/**
+ * Names from the static game-data bundles (bases, sets, skills, materials and cube families, areas), each fetched once
+ * `enabled` (on the first keystroke). A bundle that fails to load is logged and left out; the others still search.
+ */
+export function useBundleNames(enabled: boolean): BundleNamesState {
+  const [settled, setSettled] = useState<Settled>({});
 
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
-    loadNames(file).then(
-      (sources) => {
-        if (!cancelled) setLoaded({ status: 'ready', sources });
-      },
-      (error: unknown) => {
-        console.error(`[Home] Failed to load ${file} names for search:`, error);
-        if (!cancelled) setLoaded({ status: 'error' });
-      }
-    );
+    for (const file of NAMES_BUNDLES) {
+      NAME_LOADERS[file]().then(
+        (sources) => {
+          if (!cancelled) setSettled((current) => ({ ...current, [file]: sources }));
+        },
+        (error: unknown) => {
+          console.error(`[Home] Failed to load ${file} names for search:`, error);
+          if (!cancelled) setSettled((current) => ({ ...current, [file]: 'error' }));
+        }
+      );
+    }
     return () => {
       cancelled = true;
     };
-  }, [file, enabled]);
+  }, [enabled]);
 
-  if (loaded !== null) return loaded;
-  return { status: enabled ? 'loading' : 'idle' };
+  const sources: HomeSearchSources = {};
+  for (const file of NAMES_BUNDLES) {
+    const loaded = settled[file];
+    if (loaded !== undefined && loaded !== 'error') Object.assign(sources, loaded);
+  }
+  return { sources, pending: NAMES_BUNDLES.some((file) => settled[file] === undefined) };
 }
