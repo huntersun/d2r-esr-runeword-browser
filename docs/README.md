@@ -25,6 +25,7 @@ Architecture decisions, coding guidelines, tech stack documentation, and impleme
 - [Game Data](./features/GAME-DATA.md) - Static bundles built from the ESR txt game files (Bases, Item Types, Best Base and Affixes pages)
 - [Skills](./features/SKILLS.md) - Class skill trees and item-granted skills from the game files: descriptions, synergies, the items that grant each skill (`/skills`)
 - [Loot Filter](./features/LOOT-FILTER.md) - Loot filter editor for ESR's loot filter plugin: browser library, rule builder with game-data pickers, styles, label/sound/icon previews, JSON tab, test-item tab, download for the launcher
+- [Loot Filter backlog](./features/LOOT-FILTER-BACKLOG.md) - Deferred loot filter requests: what waits for an in-game check, what needs the plugin or the mod, what was decided against
 - [Guide](./features/GUIDE.md) - New-player guide: markdown notes compiled into a static bundle, journey spine, data directives, staleness tracking
 
 ### Technical Documentation
