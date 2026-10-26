@@ -471,3 +471,38 @@ describe('replaceFilter', () => {
     expect(reducer(initialState, replaceFilter({ filter, diagnostics }))).toBe(initialState);
   });
 });
+
+describe('text notes', () => {
+  const text = '// top\n{\n  "formatVersion": 1,\n  "rules": [\n    // section\n    {"hide": true, "itemCodes": ["r01"]},\n  ]\n}';
+  const openWith = (source: LootFilterEntry['source']) =>
+    run(initialState, hydrate([{ ...entry('x'), source, text }]), { type: open.type, payload: { id: 'x', now: NOW } });
+
+  it('open keeps the notes and the selector lists them first', () => {
+    const state = openWith('upload');
+    expect(state.editor.textNotes.map((note) => note.message)).toEqual([
+      expect.stringMatching(/^Trailing commas were accepted \(first at line 6\)/),
+      expect.stringMatching(/^1 comment inside the file/),
+    ]);
+    expect(state.editor.parseDiagnostics).toEqual([]);
+    expect(selectDiagnostics({ lootFilter: state })).toEqual(state.editor.textNotes);
+  });
+
+  it('the notes stay through edits and go once the model is written back', () => {
+    const edited = reducer(openWith('upload'), setHeader({ author: 'Me' }));
+    expect(edited.editor.textNotes).toHaveLength(2);
+    const flushed = reducer(edited, { type: editorFlushed.type, payload: { now: LATER } });
+    expect(flushed.editor.textNotes).toEqual([]);
+    expect(flushed.library.entries[0].text).not.toMatch(/section|,\s*\]/);
+  });
+
+  it('template entries get no notes', () => {
+    expect(openWith('template').editor.textNotes).toEqual([]);
+  });
+
+  it('replaceFilter stores the applied text notes (none when not given)', () => {
+    const { filter, diagnostics, notes } = parseLootFilter(text);
+    const applied = reducer(openState(), replaceFilter({ filter, diagnostics, notes }));
+    expect(applied.editor.textNotes).toBe(notes);
+    expect(reducer(applied, replaceFilter({ filter, diagnostics })).editor.textNotes).toEqual([]);
+  });
+});

@@ -13,7 +13,7 @@
  * - `rules` (or `styles`) holding a non-object entry is wrong-shaped as a whole: `rules` is then `[]`
  *   and the original list stays in the top-level `passthrough`.
  */
-import { parseJsonc } from './jsonc.ts';
+import { parseJsonc, type JsoncParseResult } from './jsonc.ts';
 import {
   BASE_TIERS,
   DIFFICULTIES,
@@ -563,8 +563,53 @@ export function readLootFilter(value: unknown, leadingComments: readonly string[
   return { filter, diagnostics: context.diagnostics };
 }
 
-/** Parses a filter file (JSON with `//` comments). Throws `JsoncSyntaxError` when the text is not valid JSON. */
-export function parseLootFilter(text: string): ParseLootFilterResult {
-  const { value, leadingComments } = parseJsonc(text);
-  return readLootFilter(value, leadingComments);
+/**
+ * Warnings about the file text rather than the model: trailing commas and block comments that were accepted (the game's
+ * plugin reads them too, the serializer writes strict JSON) and comments after the opening brace (the serializer keeps
+ * only the leading `//` lines). One warning per kind, path root. The editor shows them until the model is re-serialized.
+ */
+export function textNotes({ tolerated, innerComments }: Pick<JsoncParseResult, 'tolerated' | 'innerComments'>): Diagnostic[] {
+  const notes: Diagnostic[] = [];
+  const firstComma = tolerated.find((entry) => entry.kind === 'trailing-comma');
+  if (firstComma) {
+    notes.push({
+      severity: 'warning',
+      path: '',
+      message: `Trailing commas were accepted (first at line ${String(firstComma.line)}); the game reads them, but downloads are written without them`,
+    });
+  }
+  const firstBlock = tolerated.find((entry) => entry.kind === 'block-comment');
+  if (firstBlock) {
+    notes.push({
+      severity: 'warning',
+      path: '',
+      message: `Block comments (/* */) were accepted (first at line ${String(firstBlock.line)}); the game reads them, but they are not kept`,
+    });
+  }
+  const inner = innerComments.length;
+  if (inner > 0) {
+    notes.push({
+      severity: 'warning',
+      path: '',
+      message:
+        inner === 1
+          ? `1 comment inside the file (a section note between rules, line ${String(innerComments[0].line)}) is dropped on the first edit; only the comment lines before the opening brace are kept`
+          : `${String(inner)} comments inside the file (section notes between rules) are dropped on the first edit; only the comment lines before the opening brace are kept`,
+    });
+  }
+  return notes;
+}
+
+export interface ParseLootFilterTextResult extends ParseLootFilterResult {
+  /** {@link textNotes}: warnings about the text itself, which re-reading the model cannot reproduce. Not in `diagnostics`. */
+  readonly notes: Diagnostic[];
+}
+
+/**
+ * Parses a filter file (JSON with comments and trailing commas, as the game reads it). Throws `JsoncSyntaxError` when
+ * the text is not valid JSON.
+ */
+export function parseLootFilter(text: string): ParseLootFilterTextResult {
+  const jsonc = parseJsonc(text);
+  return { ...readLootFilter(jsonc.value, jsonc.leadingComments), notes: textNotes(jsonc) };
 }

@@ -12,7 +12,7 @@ import { NameDialog } from '../components/NameDialog';
 import { createBlank, duplicate, importText, remove, rename } from '../store/lootFilterSlice';
 import { selectLibraryEntries, selectLibraryHydrated } from '../store/selectors';
 import type { LootFilterEntry } from '../store/types';
-import { checkFilterText, fileBaseName } from '../utils/readFilterText';
+import { checkFilterText, fileBaseName, importDescription } from '../utils/readFilterText';
 import { TEMPLATE_CREDIT, TEMPLATE_NAME, fetchTemplateText } from '../utils/template';
 
 const CODE = 'rounded bg-muted px-1 py-0.5 text-xs';
@@ -49,9 +49,9 @@ export function LootFilterLibraryScreen() {
     }
     const action = importText({ name: check.title ?? fileBaseName(file.name), text, source: 'upload' });
     dispatch(action);
-    const problems = check.diagnostics.length;
+    const problems = check.diagnostics.length + check.notes.length;
     toast.success(`Imported ${file.name}`, {
-      description: problems === 0 ? undefined : `${String(problems)} ${problems === 1 ? 'problem' : 'problems'} to review in the editor.`,
+      description: importDescription(problems, check.notes),
     });
     void navigate(`/loot-filters/${action.payload.id}`);
   };

@@ -27,7 +27,14 @@ export type LootFilterHeader = Pick<
 
 const DEFAULT_ENTRY_NAME = 'Untitled filter';
 
-export const EMPTY_EDITOR: LootFilterEditorState = { id: null, filter: null, parseDiagnostics: [], selectedRule: null, dirty: false };
+export const EMPTY_EDITOR: LootFilterEditorState = {
+  id: null,
+  filter: null,
+  parseDiagnostics: [],
+  textNotes: [],
+  selectedRule: null,
+  dirty: false,
+};
 
 export const initialState: State = {
   library: { hydrated: false, entries: [] },
@@ -59,13 +66,13 @@ function updateEntry(state: State, id: string, update: (entry: LootFilterEntry) 
   return withEntries(state, entries);
 }
 
-/** Writes a dirty editor model back into its entry's text. */
+/** Writes a dirty editor model back into its entry's text, which then no longer has what `textNotes` describe. */
 function flushEditor(state: State, now: number): State {
   const { id, filter, dirty } = state.editor;
   if (id === null || filter === null || !dirty) return state;
   const text = serializeLootFilter(filter);
   const flushed = updateEntry(state, id, (entry) => ({ ...entry, text, updatedAt: now }));
-  return withEditor(flushed, { dirty: false });
+  return withEditor(flushed, { dirty: false, textNotes: [] });
 }
 
 /** Applies `update` to the open filter; a no-op (same object or undefined) leaves the state and `dirty` alone. */
@@ -100,13 +107,17 @@ function nonEmpty<T extends object>(value: T): T | undefined {
   return Object.keys(value).length === 0 ? undefined : value;
 }
 
-function parseEntryText(text: string): Pick<LootFilterEditorState, 'filter' | 'parseDiagnostics'> {
+function parseEntryText(text: string): Pick<LootFilterEditorState, 'filter' | 'parseDiagnostics' | 'textNotes'> {
   try {
-    const { filter, diagnostics } = parseLootFilter(text);
-    return { filter, parseDiagnostics: diagnostics };
+    const { filter, diagnostics, notes } = parseLootFilter(text);
+    return { filter, parseDiagnostics: diagnostics, textNotes: notes };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    return { filter: null, parseDiagnostics: [{ severity: 'error', path: '', message: `The filter is not valid JSON: ${message}` }] };
+    return {
+      filter: null,
+      parseDiagnostics: [{ severity: 'error', path: '', message: `The filter is not valid JSON: ${message}` }],
+      textNotes: [],
+    };
   }
 }
 
@@ -223,7 +234,10 @@ const lootFilterSlice = createSlice({
         const flushed = flushEditor(state, now);
         const entry = flushed.library.entries.find((candidate) => candidate.id === id);
         if (!entry) return { ...flushed, editor: { ...EMPTY_EDITOR, id } };
-        return { ...flushed, editor: { ...EMPTY_EDITOR, id, ...parseEntryText(entry.text) } };
+        const parsed = parseEntryText(entry.text);
+        // The shipped template's section comments are ours; a notice about losing them would only be noise.
+        const textNotes = entry.source === 'template' ? [] : parsed.textNotes;
+        return { ...flushed, editor: { ...EMPTY_EDITOR, id, ...parsed, textNotes } };
       },
       prepare: (id: string) => stamp({ id }),
     },
@@ -401,13 +415,20 @@ const lootFilterSlice = createSlice({
 
     // ----- editor: whole filter -----
 
-    /** The JSON tab's "Apply": a freshly parsed filter and its parse diagnostics. */
-    replaceFilter(state, action: PayloadAction<{ readonly filter: LootFilter; readonly diagnostics: readonly Diagnostic[] }>): State {
+    /** The JSON tab's "Apply": a freshly parsed filter, its parse diagnostics and the applied text's notes. */
+    replaceFilter(
+      state,
+      action: PayloadAction<{
+        readonly filter: LootFilter;
+        readonly diagnostics: readonly Diagnostic[];
+        readonly notes?: readonly Diagnostic[];
+      }>
+    ): State {
       if (state.editor.id === null) return state;
-      const { filter, diagnostics } = action.payload;
+      const { filter, diagnostics, notes = [] } = action.payload;
       const selected = state.editor.selectedRule;
       const selectedRule = selected !== null && isIndex(selected, filter.rules.length) ? selected : null;
-      return withEditor(state, { filter, parseDiagnostics: diagnostics, selectedRule, dirty: true });
+      return withEditor(state, { filter, parseDiagnostics: diagnostics, textNotes: notes, selectedRule, dirty: true });
     },
   },
 });

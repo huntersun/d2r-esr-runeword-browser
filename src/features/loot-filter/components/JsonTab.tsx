@@ -79,12 +79,12 @@ export function JsonTab({
 
   const handleApply = () => {
     try {
-      const { filter: parsed, diagnostics: parseDiagnostics } = parseLootFilter(text);
-      dispatch(replaceFilter({ filter: parsed, diagnostics: parseDiagnostics }));
-      // The text follows the model again: the re-serialized draft.
+      const { filter: parsed, diagnostics: parseDiagnostics, notes } = parseLootFilter(text);
+      dispatch(replaceFilter({ filter: parsed, diagnostics: parseDiagnostics, notes }));
+      // The text follows the model again: the re-serialized draft (strict JSON, comments after the brace gone).
       onDraftChange(null);
       setProblem(null);
-      toast.success('Applied');
+      toast.success('Applied', { description: notes.length === 0 ? undefined : notes.map((note) => `${note.message}.`).join(' ') });
     } catch (error) {
       if (error instanceof JsoncSyntaxError) {
         const { line, column } = error;

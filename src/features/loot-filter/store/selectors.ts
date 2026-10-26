@@ -19,17 +19,27 @@ export const selectLibraryEntry = (state: LootFilterRootState, id: string | unde
 export const selectEditor = (state: LootFilterRootState) => state.lootFilter.editor;
 export const selectEditorFilter = (state: LootFilterRootState) => state.lootFilter.editor.filter;
 export const selectParseDiagnostics = (state: LootFilterRootState) => state.lootFilter.editor.parseDiagnostics;
+export const selectTextNotes = (state: LootFilterRootState) => state.lootFilter.editor.textNotes;
 
 /**
  * The open model's diagnostics: shape diagnostics from re-reading the model as JSON (so rule indices and fixed keys
- * follow edits) plus `validateLootFilter`. Without a model (a JSONC syntax error) it is the stored parse diagnostics.
+ * follow edits) plus `validateLootFilter`, after the entry text's notes (`textNotes`: accepted trailing commas and block
+ * comments, comments that are dropped; cleared once the model is written back). Without a model (a JSONC syntax error)
+ * it is the stored parse diagnostics.
  * The reference is passed by the caller (from `useLootFilterReference`) instead of living in Redux: it holds Sets,
- * which Redux state should not. Memoized on (filter, parse diagnostics, reference) identity.
+ * which Redux state should not. Memoized on (filter, parse diagnostics, text notes, reference) identity.
  */
 export const selectDiagnostics = createSelector(
-  [selectEditorFilter, selectParseDiagnostics, (_state: LootFilterRootState, reference?: LootFilterReference) => reference],
-  (filter, parseDiagnostics, reference): readonly Diagnostic[] =>
-    filter === null ? parseDiagnostics : [...readLootFilter(toPlainJson(filter)).diagnostics, ...validateLootFilter(filter, reference)]
+  [
+    selectEditorFilter,
+    selectParseDiagnostics,
+    selectTextNotes,
+    (_state: LootFilterRootState, reference?: LootFilterReference) => reference,
+  ],
+  (filter, parseDiagnostics, textNotes, reference): readonly Diagnostic[] =>
+    filter === null
+      ? parseDiagnostics
+      : [...textNotes, ...readLootFilter(toPlainJson(filter)).diagnostics, ...validateLootFilter(filter, reference)]
 );
 
 export interface DiagnosticCounts {
