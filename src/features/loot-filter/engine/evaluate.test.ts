@@ -487,7 +487,7 @@ describe('expandPlaceholders', () => {
 });
 
 describe("Sully's QoL filter", () => {
-  const source = readFileSync(resolve(process.cwd(), 'public/loot-filters/esr-default-filter.json'), 'utf8');
+  const source = readFileSync(resolve(process.cwd(), 'public/loot-filters/sullys-qol-filter.json'), 'utf8');
   // Strip the `//` comment lines (leading and between rules) and parse the rest; no `//` appears inside strings.
   const json = source
     .split('\n')
@@ -508,27 +508,36 @@ describe("Sully's QoL filter", () => {
     expect(appliedNames(zod, hell)).toHaveLength(1);
     expect(result.name).toBe('ÿc1Zod Rune');
     expect(result.chatMessages).toEqual(['ÿc1*ÿc3*ÿc2*   ÿc8High Rune Drop: ÿc0Zod   ÿc1*ÿc3*ÿc2*']);
-    expect(result.sounds).toEqual([{ sound: 'mythical.mp3', volume: 100 }]);
+    // The Jackpot style's sound at the filter's soundVolume 25.
+    expect(result.sounds).toEqual([{ sound: 'tink.mp3', volume: 25 }]);
     expect(result.labelBackground).toEqual([255, 255, 255, 255]);
     expect(result.labelBorder).toEqual({ color: [240, 0, 0, 230], width: 2 });
+    expect(result.icon).toEqual({ iconName: 'rune', iconSize: 50 });
   });
 
-  it('hides a green rune (r33) at level 4 but leaves it at level 3, and tags it in the stash', () => {
-    const rune = makeItem({ code: 'r33', name: 'Green Rune' });
+  it('hides a tier 1 map (z01) at level 4 but labels it at level 3, and leaves it alone in the stash', () => {
+    const map = makeItem({ code: 'z01', typeAncestors: ['map'], name: 'Cellar of Pain' });
     const maps = { ...hell, filterLevel: 4 };
-    const hidden = evaluateFilter(sully, rune, maps);
+    const hidden = evaluateFilter(sully, map, maps);
     expect(hidden.hidden).toBe(true);
     expect(hidden.hiddenBy).not.toBeNull();
     expect(sully.rules[hidden.hiddenBy ?? -1]?.activeInLevels).toEqual([4]);
     expect(hidden.trace.at(-1)?.outcome).toBe('hidden');
 
-    const shown = evaluateFilter(sully, rune, hell);
+    const shown = evaluateFilter(sully, map, hell);
     expect(shown.hidden).toBe(false);
-    expect(shown.matched).toBe(false);
-    expect(shown.name).toBe('Green Rune');
+    expect(shown.name).toBe('Cellar of Pain (Tier 1)');
+    expect(shown.chatMessages).toEqual(['Tier 1 Map: ÿc0Cellars of Pain']);
+    expect(shown.icon).toEqual({ iconName: 'map', iconSize: 30 });
 
-    const stored = evaluateFilter(sully, { ...rune, location: 'stored' }, hell);
-    expect(stored.name).toBe('ÿc5+16 Green Rune Points when baggedÿc8\nGreen Rune');
+    const stored = evaluateFilter(sully, { ...map, location: 'stored' }, maps);
+    expect(stored.hidden).toBe(false);
+    expect(stored.matched).toBe(false);
+  });
+
+  it('lists the rune recipes on a stored Null rune (r50)', () => {
+    const stored = evaluateFilter(sully, makeItem({ code: 'r50', name: 'Null Rune', location: 'stored' }), hell);
+    expect(stored.name).toMatch(/^\nGod Rune: /);
   });
 
   it('hides small gold piles for a high level player but relabels larger ones', () => {
@@ -547,8 +556,10 @@ describe("Sully's QoL filter", () => {
     const bow = makeItem({ code: 'm01', typeAncestors: ['bow', 'miss', 'weap'], quality: 7, baseTier: 2, name: 'Some Unique', sockets: 2 });
     const result = evaluateFilter(sully, bow, hell);
     expect(result.hidden).toBe(false);
-    expect(result.name).toBe('Mythical Marksmen Bow ÿcP[2]');
-    expect(result.sounds.map((sound) => sound.sound)).toContain('mythical.mp3');
+    expect(result.name).toBe('Mythical Marksmen Bow');
+    expect(result.sounds).toEqual([{ sound: 'mythical.mp3', volume: 25 }]);
     expect(result.labelBorder).toEqual({ color: [240, 0, 0, 230], width: 2 });
+    // The rule writes `myth`; the bundled file is Myth.sprite (the plugin's file names are case-insensitive).
+    expect(result.icon).toEqual({ iconName: 'myth', iconSize: 50 });
   });
 });

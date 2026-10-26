@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { decodeSprite } from '../engine/sprite';
 import type { LootFilter } from '../engine/types';
+import { BUNDLED_ICONS } from './bundledAssets';
 import { collectReferencedAssets, isSoundFile, referencedAssetsOfText } from './referencedAssets';
 import { lootFilterAssetUrl } from './template';
 
@@ -69,12 +71,18 @@ describe('collectReferencedAssets', () => {
 });
 
 describe('referencedAssetsOfText', () => {
-  it('reads the bundled template', () => {
-    const text = readFileSync(resolve(process.cwd(), 'public/loot-filters/esr-default-filter.json'), 'utf8');
+  it('reads the bundled template: every sound and icon it references is bundled, and every icon decodes', () => {
+    const text = readFileSync(resolve(process.cwd(), 'public/loot-filters/sullys-qol-filter.json'), 'utf8');
     const assets = referencedAssetsOfText(text);
     expect(assets.missing).toEqual([]);
-    expect(paths(assets)).toContain('icons/goldstar.sprite');
     expect(paths(assets).filter((path) => path.startsWith('sounds/')).length).toBeGreaterThan(0);
+    const icons = paths(assets).filter((path) => path.startsWith('icons/'));
+    // All twelve bundled icons, plus goldstar's low graphics variant.
+    expect(icons).toHaveLength(BUNDLED_ICONS.length + 1);
+    for (const path of icons) {
+      const sprite = decodeSprite(readFileSync(resolve(process.cwd(), 'public/loot-filters', path)));
+      expect(sprite.width, path).toBeGreaterThan(0);
+    }
   });
 
   it('finds nothing in text that is not JSON', () => {

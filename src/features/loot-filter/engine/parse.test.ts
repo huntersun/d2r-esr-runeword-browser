@@ -4,7 +4,7 @@ import { parseJsonc } from './jsonc.ts';
 import { parseLootFilter } from './parse.ts';
 import { serializeLootFilter, toPlainJson } from './serialize.ts';
 
-const SULLY = readFileSync(resolve(__dirname, '../../../../public/loot-filters/esr-default-filter.json'), 'utf-8');
+const SULLY = readFileSync(resolve(__dirname, '../../../../public/loot-filters/sullys-qol-filter.json'), 'utf-8');
 
 const parse = (value: unknown) => parseLootFilter(JSON.stringify(value));
 const errors = (value: unknown) => parse(value).diagnostics.filter((d) => d.severity === 'error');
@@ -14,7 +14,7 @@ describe('parseLootFilter on Sully’s filter', () => {
 
   it('reads it without errors, keeping order', () => {
     expect(diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
-    expect(filter.rules).toHaveLength(302);
+    expect(filter.rules).toHaveLength(220);
     expect(Object.keys(filter.styles ?? {})).toEqual([
       'Mythical',
       'Jackpot',
@@ -29,9 +29,14 @@ describe('parseLootFilter on Sully’s filter', () => {
       'Map',
       'MapTier5',
     ]);
-    expect(filter.leadingComments).toHaveLength(3);
+    expect(filter.leadingComments).toHaveLength(4);
     expect(filter.leadingComments[0]).toMatch(/^\/\/ Sully's QoL Filter/);
-    expect(filter.rules.at(-1)).toEqual({ sockets: { min: 1 }, nameSuffix: ' ÿcP[{sockets}]' });
+    expect(filter.rules.at(-1)).toEqual({
+      itemCodes: ['z99'],
+      replaceName: 'ÿc6The Hidden Vault',
+      chatMessage: 'Unique Map: ÿc0The Hidden Vault',
+      useStyle: 'MapTier5',
+    });
   });
 
   it('keeps every value: the plain JSON equals the source', () => {

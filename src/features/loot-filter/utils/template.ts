@@ -1,12 +1,14 @@
 /**
- * The bundled starting point: the ESR default filter that the mod shipped as `LootFilters/esr-default-filter.json` up to
- * ESR 3.2.21 (Sully's QoL filter as converted by the ESR author, bundled with permission). ESR 3.2.22 removed that file;
- * the launcher now pulls Sully's filter live from github.com/Thisisnotsully/QoL-Filter (`LootFilters/sources.json`).
- * The copy here stays as the editor's starting point.
+ * The bundled starting point: Sully's QoL filter (v0.6.1), the filter the ESR launcher pulls live from
+ * github.com/Thisisnotsully/QoL-Filter since ESR 3.2.22 (`LootFilters/sources.json`). The copy in `public/loot-filters/`
+ * is his `Sullys-QoL-Filter.json` with two edits: the trailing comma after the last rule removed (strict JSON apart
+ * from the `//` comments) and the `9pm` typo in an `excludeItemCodes` list fixed to `9mp` (War Pick). Up to ESR 3.2.21
+ * the mod shipped an earlier conversion of the same filter as `LootFilters/esr-default-filter.json`.
  */
-export const TEMPLATE_NAME = 'ESR default filter';
-export const TEMPLATE_CREDIT = "Sully's QoL filter, converted by the ESR author, bundled with permission";
-export const TEMPLATE_FILE = 'esr-default-filter.json';
+export const TEMPLATE_NAME = "Sully's QoL Filter";
+export const TEMPLATE_CREDIT =
+  "Sully's QoL filter v0.6.1, the filter the ESR launcher ships live from github.com/Thisisnotsully/QoL-Filter; icons and sounds by Sully";
+export const TEMPLATE_FILE = 'sullys-qol-filter.json';
 
 /** A file under `public/loot-filters/` (the template, bundled sounds and icons). */
 export function lootFilterAssetUrl(path: string): string {

@@ -51,7 +51,7 @@ function messages(rule: LootFilterRule, ref: LootFilterReference | null = refere
 
 describe('validateLootFilter', () => {
   it('finds no errors in Sully’s filter', () => {
-    const source = readFileSync(resolve(__dirname, '../../../../public/loot-filters/esr-default-filter.json'), 'utf-8');
+    const source = readFileSync(resolve(__dirname, '../../../../public/loot-filters/sullys-qol-filter.json'), 'utf-8');
     const diagnostics = validateLootFilter(parseLootFilter(source).filter);
     expect(diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
     // It has no warnings either (also none against the real game-data reference when last checked).

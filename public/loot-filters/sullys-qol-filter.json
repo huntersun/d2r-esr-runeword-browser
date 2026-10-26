@@ -1,12 +1,14 @@
 // Sully's QoL Filter, converted from Sullys-QoL-Filter.lua (D2RLAN).
 // Its sound files go in the sounds folder next to this file: gong.mp3, map.mp3, mid.mp3,
 // mythical.mp3, other.mp3, t5_map.mp3, tink.mp3, unique.mp3.
+// volume can be adjusted on line 19 "soundVolume": XX, where XX is a number between 0-100; By default set to 50
 {
   "formatVersion": 1,
-  "title": "ESR default filter",
+  "title": "Sully's QoL Filter",
   "author": "Sully",
-  "version": "",
-  "description": "This filter is mostly a port of Sully's one.",
+  "version": "0.6.1",
+  "description": "Sully's D2RLAN QoL filter - Full conversion in progress.",
+  "updateUrl": "https://raw.githubusercontent.com/Thisisnotsully/QoL-Filter/refs/heads/main/Sullys-QoL-Filter.json",
   "filterLevels": [
     {"id": 1, "name": "Leveling"},
     {"id": 2, "name": "Strict - Nightmare"},
@@ -14,12 +16,14 @@
     {"id": 4, "name": "Uber-Strict - Maps+"}
   ],
   "defaultLevel": 3,
+  "soundVolume": 25,
   "styles": {
     "Mythical": {
       "chatMessage": "\nÿc1*ÿc2*ÿc3*ÿc;*ÿc1*ÿc2*ÿc3*ÿc;*ÿc1*ÿc2*ÿc3*ÿc;*ÿc1*ÿc2*ÿc3*ÿc;*ÿc1*ÿc2*ÿc3*ÿc;*ÿc1*ÿc2*ÿc3*ÿc;*ÿc1*ÿc2*ÿc3*ÿc;*ÿc1*ÿc2*ÿc3*ÿc;*ÿc1*ÿc2*\nÿc1*ÿc2*ÿc3*ÿc;* ÿc4MYTHICAL UNIQUE ÿc1*ÿc2*ÿc3*ÿc;*\nÿc1*ÿc2*ÿc3*ÿc;*ÿc1*ÿc2*ÿc3*ÿc;*ÿc1*ÿc2*ÿc3*ÿc;*ÿc1*ÿc2*ÿc3*ÿc;*ÿc1*ÿc2*ÿc3*ÿc;*ÿc1*ÿc2*ÿc3*ÿc;*ÿc1*ÿc2*ÿc3*ÿc;*ÿc1*ÿc2*ÿc3*ÿc;*ÿc1*ÿc2*ÿc3",
       "sound": "mythical.mp3",
       "labelBackground": [255, 255, 255, 255],
-      "labelBorder": {"color": [240, 0, 0, 230], "width": 2}
+      "labelBorder": {"color": [240, 0, 0, 230], "width": 2},
+      "icon": {"iconName": "myth", "iconSize": 50}
     },
     "Jackpot": {"sound": "tink.mp3", "labelBackground": [255, 255, 255, 255], "labelBorder": {"color": [240, 0, 0, 230], "width": 2}},
     "PurpleRune": {
@@ -27,7 +31,8 @@
       "sound": "tink.mp3",
       "labelBackground": [255, 255, 255, 255],
       "labelBorder": {"color": [240, 0, 0, 230], "width": 2},
-      "droplight": {"color": [174, 0, 255]}
+      "droplight": {"color": [174, 0, 255]},
+      "icon": {"iconName": "rune", "iconSize": 50}
     },
     "STierMaterial": {
       "chatMessage": "ÿc1*ÿc3*ÿc2*  ÿc4S-Tier Crafting Material ÿc1*ÿc3*ÿc2*: {name}",
@@ -37,24 +42,25 @@
     },
     "Valuable": {"sound": "tink.mp3", "labelBackground": [255, 255, 255, 255], "labelBorder": {"color": [255, 0, 0, 255], "width": 1}},
     "GoldPlate": {"labelBackground": [200, 150, 0, 255], "labelBorder": {"color": [0, 0, 0, 255], "width": 1}},
-    "UniqueLabel": {"sound": "unique.mp3", "labelBorder": {"color": [255, 165, 0, 255], "width": 1}},
-    "SetLabel": {"sound": "unique.mp3", "labelBorder": {"color": [0, 255, 0, 255], "width": 1}},
-    "Uber": {"sound": "gong.mp3", "labelBackground": [0, 0, 0, 200], "labelBorder": {"color": [165, 55, 253, 255], "width": 1}},
-    "MapTier1": {"labelBackground": [0, 0, 0, 255], "labelBorder": {"color": [255, 255, 255, 255], "width": 1}},
-    "Map": {"sound": "map.mp3", "labelBackground": [0, 0, 0, 255], "labelBorder": {"color": [255, 255, 255, 255], "width": 1}},
-    "MapTier5": {"sound": "t5_map.mp3", "labelBackground": [255, 255, 255, 255], "labelBorder": {"color": [0, 0, 0, 255], "width": 1}}
+    "UniqueLabel": {"sound": "unique.mp3", "labelBorder": {"color": [255, 165, 0, 255], "width": 1}, "icon": {"iconName": "goldstar", "iconSize": 30}},
+    "SetLabel": {"sound": "unique.mp3", "labelBorder": {"color": [0, 255, 0, 255], "width": 1}, "icon": {"iconName": "star", "iconSize": 30}},
+    "Uber": {"sound": "gong.mp3", "labelBackground": [0, 0, 0, 200], "labelBorder": {"color": [165, 55, 253, 255], "width": 1}, "icon": {"iconName": "map", "iconSize": 30}},
+    "MapTier1": {"labelBackground": [0, 0, 0, 255], "labelBorder": {"color": [255, 255, 255, 255], "width": 1}, "icon": {"iconName": "map", "iconSize": 30}},
+    "Map": {"sound": "map.mp3", "labelBackground": [0, 0, 0, 255], "labelBorder": {"color": [255, 255, 255, 255], "width": 1}, "icon": {"iconName": "map", "iconSize": 30}},
+    "MapTier5": {"sound": "t5_map.mp3", "labelBackground": [255, 255, 255, 255], "labelBorder": {"color": [0, 0, 0, 255], "width": 1}, "icon": {"iconName": "map", "iconSize": 40}}
   },
   "rules": [
     // Crafting reagents
-    {"itemCodes": ["ddd"], "activeInLevels": [1, 2, 3], "chatMessage": "ÿc1Crafting Reagant: ÿc4Ancient Decipherer"},
+    {"itemCodes": ["ddd"], "activeInLevels": [1, 2, 3], "chatMessage": "ÿc1Crafting Reagent: ÿc4Ancient Decipherer"},
     {"itemCodes": ["sdo"], "chatMessage": "ÿc1Crafting Material: {name}"},
-    {"itemCodes": ["wss"], "chatMessage": "ÿc1Crafting Reagant: ÿc0Worldstone Shard"},
+    {"itemCodes": ["wss"], "chatMessage": "ÿc1Crafting Reagent: ÿc0Worldstone Shard"},
+    {"itemCodes": ["rel"], "chatMessage": "ÿc1Crafting Reagent: ÿc0Relic of Knowledge"},
     {
       "itemCodes": ["xl0", "xl1", "xl2", "xl3", "xl4", "xl5", "xl6", "xl7", "xl8", "xl9", "xlx", "xly"],
       "activeInLevels": [1, 2, 3],
-      "chatMessage": "ÿc1Crafting Reagant: {name}"
+      "chatMessage": "ÿc1Crafting Reagent: {name}"
     },
-    {"itemCodes": ["xt0", "xt1", "xt2", "xt3", "xt4", "xt5", "xt6", "xt7", "xt8", "xt9", "xtx", "xty"], "chatMessage": "ÿc1Crafting Reagant: {name}"},
+    {"itemCodes": ["xt0", "xt1", "xt2", "xt3", "xt4", "xt5", "xt6", "xt7", "xt8", "xt9", "xtx", "xty"], "chatMessage": "ÿc1Crafting Reagent: {name}"},
 
     // Drop announcements: uniques, sets and coupons
     {
@@ -138,7 +144,7 @@
     },
     {
       "itemCodes": [
-        "01e", "02e", "04e", "05e", "07e", "08e", "09e", "10e", "11e", "12e", "13e", "14e", "15e", "16e", "18e",
+        "01e", "02e", "04e", "05e", "07e", "08e", "09e", "10e", "11e", "12e", "13d", "13e", "14e", "15e", "16e", "18e",
         "19e", "20e", "21e", "22e", "23e", "24e", "25e", "26e", "27e", "28e", "29e", "30e", "31e", "32e", "33e",
         "34e", "35e", "36e", "37e", "38e", "39e", "01h", "02k", "03h", "04h", "05h", "06h", "07h", "08h", "09h",
         "10h", "11h", "12k", "13h", "14h", "15h", "16h", "17h", "18h", "19h", "20h", "21h", "22k", "23h", "24h",
@@ -153,7 +159,7 @@
 
     // Class jewellery, reagents and perfect gems
     {
-      "itemCodes": ["zrn", "srn", "nrn", "prn", "brg", "drn", "arn", "zam", "sam", "nam", "pam", "bam", "dam", "aam"],
+      "itemCodes": ["zrn", "srn", "nrn", "prn", "brg", "drn", "arn", "wrn", "zam", "sam", "nam", "pam", "bam", "dam", "aam", "wam"],
       "quality": "rare",
       "activeInLevels": [1, 2, 3],
       "chatMessage": "Class Jewellery: ÿc9{name}"
@@ -161,31 +167,83 @@
     {
       "itemCodes": ["qll", "hrt", "brz", "jaw", "eyz", "hrn", "tal", "flg", "fng", "sol", "scz", "spe", "zzz"],
       "activeInLevels": [1, 2, 3],
-      "chatMessage": "ÿc1Crafting Reagant: ÿc0{name}"
+      "chatMessage": "ÿc1Crafting Reagent: ÿc0{name}"
     },
-    {"itemCodes": ["hrt", "sol"], "activeInLevels": [4], "chatMessage": "ÿc1Crafting Reagant: ÿc0{name}"},
+    {"itemCodes": ["hrt", "sol"], "activeInLevels": [4], "chatMessage": "ÿc1Crafting Reagent: ÿc0{name}"},
     {"itemCodes": ["gvb", "gyb", "gbb", "ggb", "grb", "gwb", "skb", "gbk"], "activeInLevels": [1, 2, 3], "chatMessage": "{name}"},
 
     // Bases worth a look: tags on their stats
     {
-      "itemCodes": ["ylb", "yvb", "ymb", "ytb", "yhb", "ybt", "ulb", "uvb", "umb", "utb", "uhb"],
-      "itemStats": [{"stat": 96, "op": ">=", "value": 20}],
-      "nameSuffix": "ÿc1[{stat:96}%FRW]"
-    },
-    {
-      "itemCodes": ["ylb", "yvb", "ymb", "ytb", "yhb", "ybt", "ulb", "uvb", "umb", "utb", "uhb"],
+      "itemTypes": ["armo", "weap"],
+      "quality": "superior",
       "itemStats": [{"stat": 336, "op": ">=", "value": 8}],
       "nameSuffix": "ÿc1[-{stat:333}% Res Pierce]"
     },
     {
-      "itemCodes": ["alb", "avb", "bmb", "atb", "ahb", "yms", "ulc", "uvc", "umc", "utc", "uhc", "m10"],
-      "itemStats": [{"stat": 336, "op": ">=", "value": 8}],
-      "nameSuffix": "ÿc1[-{stat:333}% Res Pierce]"
+      "itemTypes": ["armo", "weap"],
+      "quality": "superior",
+      "itemStats": [{"stat": 127, "op": ">=", "value": 1}],
+      "nameSuffix": "ÿc1[{stat:127} All Skills]"
     },
     {
-      "itemCodes": ["alb", "avb", "bmb", "atb", "ahb", "yms", "ulc", "uvc", "umc", "utc", "uhc", "m10"],
-      "itemStats": [{"stat": 36, "op": ">=", "value": 8}],
-      "nameSuffix": "ÿc1[{stat:36}% Phys Res]"
+      "itemTypes": ["armo", "weap"],
+      "quality": "superior",
+      "itemStats": [{"stat": 256, "op": ">=", "value": 5}],
+      "nameSuffix": "ÿc1[{stat:256}% all attributes]"
+    },
+    {
+      "itemTypes": ["armo", "weap"],
+      "quality": "superior",
+      "itemStats": [{"stat": 77, "op": ">=", "value": 1}],
+      "nameSuffix": "ÿc1[{stat:77}% Mana]"
+    },
+    {
+      "itemTypes": ["armo", "weap"],
+      "quality": "superior",
+      "itemStats": [{"stat": 76, "op": ">=", "value": 1}],
+      "nameSuffix": "ÿc1[{stat:76}% Life]"
+    },
+    {
+      "itemTypes": ["armo", "weap"],
+      "quality": "superior",
+      "itemStats": [{"stat": 40, "op": ">=", "value": 1}],
+      "nameSuffix": "ÿc1[{stat:40}% max Res]"
+    },
+    {
+      "itemTypes": ["armo", "weap"],
+      "quality": "superior",
+      "itemStats": [{"stat": 142, "op": ">=", "value": 1}],
+      "nameSuffix": "ÿc1[{stat:142}% Absorb]"
+    },
+    {
+      "itemTypes": ["armo", "weap"],
+      "quality": "superior",
+      "itemStats": [{"stat": 89, "op": ">=", "value": 15}],
+      "nameSuffix": "ÿc1[{stat:89} Light Radius]"
+    },
+    {
+      "itemTypes": ["armo", "weap"],
+      "quality": "superior",
+      "itemStats": [{"stat": 530, "op": ">=", "value": 1}],
+      "nameSuffix": "ÿc1[{stat:530} PHASING]"
+    },
+    {
+      "itemTypes": ["armo", "weap"],
+      "quality": "superior",
+      "itemStats": [{"stat": 338, "op": ">=", "value": 15}],
+      "nameSuffix": "ÿc1[{stat:338}% Dodge Chance]"
+    },
+    {
+      "itemTypes": ["armo", "weap"],
+      "quality": "superior",
+      "itemStats": [{"stat": 218, "op": ">=", "value": 1}],
+      "nameSuffix": "ÿc1[{stat:218}/8 Max Damage per Level]"
+    },
+    {
+      "itemTypes": ["armo", "weap"],
+      "quality": "superior",
+      "itemStats": [{"stat": 219, "op": ">=", "value": 1}],
+      "nameSuffix": "ÿc1[{stat:219}/8 %Max Damage per Level]"
     },
     {
       "itemCodes": ["0pb", "amb", "amc", "q80", "amf", "q82", "m31", "amd", "ame", "q81"],
@@ -221,48 +279,6 @@
       "itemCodes": ["ylg", "yvg", "ymg", "ytg", "yhg", "yig", "ulg", "uvg", "umg", "utg", "uhg"],
       "itemStats": [{"stat": 336, "op": ">=", "value": 8}],
       "nameSuffix": "ÿc1-{stat:333}% Enemy Res"
-    },
-
-    // Vendor tooltips
-    {
-      "itemCodes": ["gvb"],
-      "location": ["atVendor"],
-      "namePrefix": "ÿc3Non-Barb Weapon:ÿc5 25-35 Attack Speed|150-200 Enhanced Damage|15-25 Life Leech|10-15 Mana Leech\nÿc3Weapon:ÿc5 +1-2 Barb Skills|25-35 Attack Speed|150-200 Enhanced Damage\nÿc3Ring:ÿc5 +1-2 Barb Skills|10-15% Max Life|20-30 Str|+20-30 Max Dmg to Attacks\nÿc3Amulet:ÿc5 +1-2 Barb Skills|10-15% Max Life|15-25 All Resists\nÿc3Chest:ÿc5 +1-2 Barb Skills|80-100 ED|15-25 all attributes|+10-15 Phys Res\nÿc3Shield:ÿc5 +1-2 Barb Skills|20-30 Faster Block|80-100 ED|3-5 Increased Block\nÿc3Belt:ÿc5 +1 Barb Skills|20-30 Hit Recovery|80-100 ED|30-45 Str\nÿc3Gloves:ÿc5 +1 Barb Skills|20-30 Attack Speed|80-100 ED|30-45 Dex\nÿc3Boots:ÿc5 +1 Barb Skills|20-30 Faster Run/Walk|80-100 ED|30-45 Vit\nÿc3Helm:ÿc5 +1-2 Barb Skills|80-100 ED|30-45 Energy|15-25 All Res\nÿc0**Each recipe adds the below stats and an additional 1-4 random affixes***\nÿc3Magicÿc5 Gear + Forging Hammer + P.Amethyst + Any Jewel\n"
-    },
-    {
-      "itemCodes": ["gyb"],
-      "location": ["atVendor"],
-      "namePrefix": "ÿc3Non-Druid Wpn: ÿc525-35 IAS|150-200 Enhanced Dmg|25-40 Spell Dmg\nÿc3Druid Wpn: ÿc5+1-2 Druid Skill|25-35 IAS|150-200 Enahcned Dmg\nÿc3Ring: ÿc5+1-2 Druid Skill|20-30 Vit|Max Life 10-15%|12-18 Spell Dmg\nÿc3Amulet: ÿc5+1-2 Druid Skill|20-30 Vit|15% Max Life|15-25 All Res\nÿc3Chest: ÿc5+1-2 Druid Skill|80-100 ED|15-25 All Attr|10-15 Phys Res\nÿc3Shield:ÿc5 +1-2 Druid Skill|20-30 FBR|3-5 Block|80-100 ED\nÿc3Beltÿc5+1 Druid Skill|20-30 FHR|80-100 ED|30-45 Str\nÿc3Gloves:ÿc5+1 Druid Skill|20-30 IAS|80-100 ED|30-45 Dex\nÿc3Boots:ÿc5+1 Druid Skill|20-30 FRW|80-100 ED|30-45 Vit\nÿc3Helmÿc5+1-2 Druid Skills|90-100 ED|30-45 Energy|15-25 All Res\nÿc0**Each recipe adds the below stats and an additional 1-4 random affixes***\nÿc3Magic ÿc5Gear + Tyranium Ore + P.Topaz + Any Jewel\n"
-    },
-    {
-      "itemCodes": ["ggb"],
-      "location": ["atVendor"],
-      "namePrefix": "ÿc3Non-Amazon Wpn: ÿc525-35 IAS|150-200 Enhanced Dmg|50-100 Bonus Attack Rating\nÿc3Amazon Wpn: ÿc5+1-2 Amazon Skill|25-35 IAS|150-200 Enahcned Dmg\nÿc3Ring: ÿc5+1-2 Amazon Skill|30-45 Dex|Max Life 10-15%|15-25 Min Atk Dmg\nÿc3Amulet: ÿc5+1-2 Amazon Skill|20-30 Dex|15% Max Life|15-25 All Res\nÿc3Chest: ÿc5+1-2 Amazon Skill|80-100 ED|15-25 All Attr|10-15 Phys Res\nÿc3Shield:ÿc5 +1-2 Amazon Skill|20-30 Faster Block|3-5 Block|80-100 ED\nÿc3Beltÿc5+1 Amazon Skill|20-30 FHR|80-100 ED|30-45 Str\nÿc3Gloves:ÿc5+1 Amazon Skill|20-30 IAS|80-100 ED|30-45 Dex\nÿc3Boots:ÿc5+1 Amazon Skill|20-30 FRW|80-100 ED|30-45 Vit\nÿc3Helmÿc5+1-2 Amazon Skills|90-100 ED|30-45 Energy|15-25 All Res\nÿc0**Each recipe adds the below stats and an additional 1-4 random affixes***\nÿc3Magic ÿc5Gear + Spider's Silk + P.Emerald + Any Jewel\n"
-    },
-    {
-      "itemCodes": ["grb"],
-      "location": ["atVendor"],
-      "namePrefix": "ÿc3Non-Assassin Wpn: ÿc525-35 IAS|150-200 Enhanced Dmg|20-30 Deadly Strike\nÿc3Assassin Wpn: ÿc5+1-2 Assassin Skill|25-35 IAS|150-200 Enahcned Dmg\nÿc3Ring: ÿc5+1-2 Assassin Skill|30-45 Dex|Max Life 10-15%|20-30 Life After Kill|10-20 Mana After Kill\nÿc3Amulet: ÿc5+1-2 Assassin Skill|20-30 Dex|15% Max Life|15-25 All Res\nÿc3Chest: ÿc5+1-2 Assassin Skill|80-100 ED|15-25 All Attr|10-15 Phys Res\nÿc3Shield:ÿc5 +1-2 Assassin Skill|20-30 Faster Block|3-5 Block|80-100 ED\nÿc3Beltÿc5+1 Assassin Skill|20-30 FHR|80-100 ED|30-45 Str\nÿc3Gloves:ÿc5+1 Assassin Skill|20-30 IAS|80-100 ED|30-45 Dex\nÿc3Boots:ÿc5+1 Assassin Skill|20-30 FRW|80-100 ED|30-45 Vit\nÿc3Helmÿc5+1-2 Assassin Skills|90-100 ED|30-45 Energy|15-25 All Res\nÿc0**Each recipe adds the below stats and an additional 1-4 random affixes***\nÿc3Magic ÿc5Gear + Dragon Stone + P.Ruby + Any Jewel\n"
-    },
-    {
-      "itemCodes": ["skb"],
-      "location": ["atVendor"],
-      "namePrefix": "ÿc3Non-Necromancer Wpn: ÿc525-35 IAS|150-200 Enhanced Dmg|20-30 Crushing Blow\nÿc3Necromancer Wpn: ÿc5+1-2 Necromancer Skill|25-35 IAS|150-200 Enahcned Dmg\nÿc3Ring: ÿc5+1-2 Necromancer Skill|30-45 Energy|Max Life 10-15%|15-25 Faster Caste Rate\nÿc3Amulet: ÿc5+1-2 Necromancer Skill|20-30 Dex|15% Max Life|15-25 All Res\nÿc3Chest: ÿc5+1-2 Necromancer Skill|80-100 ED|15-25 All Attr|10-15 Phys Res\nÿc3Shield:ÿc5 +1-2 Necromancer Skill|20-30 Faster Block|3-5 Block|80-100 ED\nÿc3Beltÿc5+1 Necromancer Skill|20-30 FHR|80-100 ED|30-45 Str\nÿc3Gloves:ÿc5+1 Necromancer Skill|20-30 IAS|80-100 ED|30-45 Dex\nÿc3Boots:ÿc5+1 Necromancer Skill|20-30 FRW|80-100 ED|30-45 Vit\nÿc3Helmÿc5+1-2 Necromancer Skills|90-100 ED|30-45 Energy|15-25 All Res\nÿc0**Each recipe adds the below stats and an additional 1-4 random affixes***\nÿc3Magic ÿc5Gear + Dragon Stone + P.Ruby + Any Jewel\n"
-    },
-    {
-      "itemCodes": ["gwb"],
-      "location": ["atVendor"],
-      "namePrefix": "ÿc3Non-Paladin Wpn: ÿc525-35 IAS|150-200 Enhanced Dmg|200-300 Dmg to Demons|200-300 Dmg to Undead\nÿc3Paladin Wpn: ÿc5+1-2 Paladin Skill|25-35 IAS|150-200 Enahcned Dmg\nÿc3Ring: ÿc5+1-2 Paladin Skill|20-30 Str|Max Life 10-15%|15-25 All Res\nÿc3Amulet: ÿc5+1-2 Paladin Skill|20-30 Dex|15% Max Life|15-25 All Res\nÿc3Chest: ÿc5+1-2 Paladin Skill|80-100 ED|15-25 All Attr|10-15 Phys Res\nÿc3Shield:ÿc5 +1-2 Paladin Skill|20-30 Faster Block|3-5 Block|80-100 ED\nÿc3Beltÿc5+1 Paladin Skill|20-30 FHR|80-100 ED|30-45 Str\nÿc3Gloves:ÿc5+1 Paladin Skill|20-30 IAS|80-100 ED|30-45 Dex\nÿc3Boots:ÿc5+1 Paladin Skill|20-30 FRW|80-100 ED|30-45 Vit\nÿc3Helmÿc5+1-2 Paladin Skills|90-100 ED|30-45 Energy|15-25 All Res\nÿc0**Each recipe adds the below stats and an additional 1-4 random affixes***\nÿc3Magic ÿc5Gear + Dragon Stone + P.Ruby + Any Jewel\n"
-    },
-    {
-      "itemCodes": ["gbb"],
-      "location": ["atVendor"],
-      "namePrefix": "ÿc3Non-Sorceress Wpn: ÿc525-35 IAS|150-200 Enhanced Dmg|-15-25 Enemy Ele and Psn Resist\nÿc3Sorceress Wpn: ÿc5+1-2 Sorceress Skill|25-35 IAS|150-200 Enahcned Dmg\nÿc3Ring: ÿc5+1-2 Sorceress Skill|20-30 Energy|Max Life 10-15%|-8-12 Enemy Ele and Psn Res\nÿc3Amulet: ÿc5+1-2 Sorceress Skill|20-30 Dex|15% Max Life|15-25 All Res\nÿc3Chest: ÿc5+1-2 Sorceress Skill|80-100 ED|15-25 All Attr|10-15 Phys Res\nÿc3Shield:ÿc5 +1-2 Sorceress Skill|20-30 Faster Block|3-5 Block|80-100 ED\nÿc3Beltÿc5+1 Sorceress Skill|20-30 FHR|80-100 ED|30-45 Str\nÿc3Gloves:ÿc5+1 Sorceress Skill|20-30 IAS|80-100 ED|30-45 Dex\nÿc3Boots:ÿc5+1 Sorceress Skill|20-30 FRW|80-100 ED|30-45 Vit\nÿc3Helmÿc5+1-2 Sorceress Skills|90-100 ED|30-45 Energy|15-25 All Res\nÿc0**Each recipe adds the below stats and an additional 1-4 random affixes***\nÿc3Magic ÿc5Gear + Dragon Stone + P.Ruby + Any Jewel\n"
-    },
-    {
-      "itemCodes": ["tbk"],
-      "location": ["atVendor"],
-      "nameSuffix": "\nÿc315 Magic Find: ÿc2Chipped Emerald ÿc5+ Anvil Stone\nÿc315Increased Attack Speed: ÿc1Chipped Ruby ÿc5+ Anvil Stone\nÿc39 Percent Chance of Crushing Blow: ÿc;Chipped Amethyst ÿc5+ Anvil Stone\nÿc312 Percent Max life: ÿc9Chipped Topaz ÿc5+ Anvil Stone\nÿc315 Faster Cast Rate: Chipped Skull ÿc5+ Anvil Stone\nÿc3All Resistances +12: ÿc0Chipped Diamond ÿc5+ Anvil Stone\nÿc312 Percent Max Mana: ÿc3Chipped Sapphire ÿc5+ Anvil Stone\nÿc5ÿc3Add Weapon Mods of the Rune: ÿc52 of the same Rune (Up to ÿc9O Runeÿc5) + Chipped Gem + TP Scroll\nÿc3Add Helm Mods of the Rune: ÿc52 of the same Rune (Up to ÿc9O Runeÿc5) + Chipped Gem + ID Scroll\nCombine ÿc3Magicÿc5/ÿc9Rare ÿc5Jewel and:\nÿcP**Jewel Forging**ÿc0"
     },
 
     // Gold and low-value items
@@ -361,33 +377,10 @@
 
     // Strictness levels
     {
-      "itemCodes": ["01l", "02l", "03l", "04l", "05l", "06l", "07l", "08l", "09l", "r51", "r52", "r53", "r54", "r55", "r56", "r57", "r58", "r59"],
-      "excludeAreas": [1, 40, 75, 103, 109],
-      "activeInLevels": [2],
-      "hide": true
-    },
-    {
-      "itemCodes": ["r01", "r02", "r03", "r04", "r05", "r08", "r09", "r10", "r11", "r12", "r15", "r16", "r17", "r18", "r19", "r20", "r21"],
-      "excludeAreas": [1, 40, 75, 103, 109],
-      "activeInLevels": [2],
-      "hide": true
-    },
-    {"itemCodes": ["rng", "amu"], "quality": {"max": "magic"}, "excludeAreas": [1, 40, 75, 103, 109], "activeInLevels": [3], "hide": true},
-    {
       "itemCodes": [
-        "01l", "02l", "03l", "04l", "05l", "06l", "07l", "08l", "09l", "10l", "11l", "12l", "13l", "14l", "15l",
-        "16l", "17l", "18l", "19l", "20l", "21l", "22l", "r51", "r52", "r53", "r54", "r55", "r56", "r57", "r58",
-        "r59", "r60", "r61", "r62", "r63", "r64", "r65", "r66", "r67", "r68", "r69", "r70", "r71", "r72"
+        "rng", "amu", "rin"
       ],
-      "excludeAreas": [1, 40, 75, 103, 109],
-      "activeInLevels": [3],
-      "hide": true
-    },
-    {
-      "itemCodes": [
-        "r01", "r02", "r03", "r04", "r05", "r06", "r07", "r08", "r09", "r10", "r11", "r12", "r13", "r14", "r15",
-        "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24", "r25", "r26", "r27", "r28"
-      ],
+      "quality": {"max": "magic"},
       "excludeAreas": [1, 40, 75, 103, 109],
       "activeInLevels": [3],
       "hide": true
@@ -410,7 +403,7 @@
     },
     {
       "itemCodes": [
-        "rng", "amu", "zrn", "srn", "nrn", "prn", "brg", "drn", "arn", "zam", "sam", "nam", "pam", "bam", "dam",
+        "rng", "amu", "zrn", "srn", "nrn", "prn", "brg", "drn", "arn", "zam", "sam", "nam", "pam", "bam", "dam", "wrn", "wam",
         "aam", "cm1", "cm2", "cm3", "cx1", "cx2", "cx3"
       ],
       "quality": "magic",
@@ -451,7 +444,28 @@
     },
     {"itemCodes": ["rvs"], "excludeAreas": [1, 40, 75, 103, 109], "activeInLevels": [3], "hide": true},
     {"quality": "set", "baseTier": {"max": 1}, "excludeAreas": [1, 40, 75, 103, 109], "activeInLevels": [3], "hide": true},
-    {"quality": "superior", "baseTier": {"max": 1}, "excludeAreas": [1, 40, 75, 103, 109], "activeInLevels": [3], "hide": true},
+    {
+      "itemTypes": ["armo"],
+      "quality": "superior",
+      "baseTier": {"max": 0},
+      "excludeItemCodes": [
+        "scl", "plt", "ful", "kit", "tow", "gts", "fts"
+      ],
+      "excludeAreas": [1, 40, 75, 103, 109],
+      "activeInLevels": [3],
+      "hide": true
+    },
+    {
+      "itemTypes": ["weap"],
+      "quality": "superior",
+      "baseTier": {"max": 1},
+      "excludeItemCodes": [
+        "wsp", "crs", "wax", "mpi", "9mp", "9pa", "9cr", "9ws"
+      ],
+      "excludeAreas": [1, 40, 75, 103, 109],
+      "activeInLevels": [3],
+      "hide": true
+    },
     {
       "itemCodes": ["gzv", "gly", "glb", "glg", "glr", "glw", "skl", "gzk"],
       "excludeAreas": [1, 40, 75, 103, 109],
@@ -483,18 +497,8 @@
     },
     {
       "itemCodes": [
-        "01l", "02l", "03l", "04l", "05l", "06l", "07l", "08l", "09l", "10l", "11l", "12l", "13l", "14l", "15l",
-        "16l", "17l", "18l", "19l", "20l", "21l", "22l", "r51", "r52", "r53", "r54", "r55", "r56", "r57", "r58",
-        "r59", "r60", "r61", "r62", "r63", "r64", "r65", "r66", "r67", "r68", "r69", "r70", "r71", "r72"
-      ],
-      "excludeAreas": [1, 40, 75, 103, 109],
-      "activeInLevels": [4],
-      "hide": true
-    },
-    {
-      "itemCodes": [
         "m01", "m02", "m03", "m04", "m05", "m06", "m07", "m08", "m09", "m10", "m11", "m12", "m13", "m14", "m15",
-        "m16", "m17", "m18", "m20", "m21", "m22", "m23", "m24", "m25", "m26", "m27", "m28", "m29", "m30", "m31",
+        "m16", "m17", "m20", "m21", "m22", "m23", "m24", "m25", "m26", "m27", "m28", "m29", "m30", "m31",
         "m32", "m33", "m34", "m35", "m36", "m37", "m38", "m39"
       ],
       "quality": "magic",
@@ -505,7 +509,7 @@
     {
       "itemCodes": [
         "m01", "m02", "m03", "m04", "m05", "m06", "m07", "m08", "m09", "m10", "m11", "m12", "m13", "m14", "m15",
-        "m16", "m17", "m18", "m20", "m21", "m22", "m23", "m24", "m25", "m26", "m27", "m28", "m29", "m30", "m31",
+        "m16", "m17", "m20", "m21", "m22", "m23", "m24", "m25", "m26", "m27", "m28", "m29", "m30", "m31",
         "m32", "m33", "m34", "m35", "m36", "m37", "m38", "m39"
       ],
       "quality": "normal",
@@ -514,16 +518,6 @@
       "hide": true
     },
     {"itemCodes": ["z01", "z02", "z03", "z04"], "activeInLevels": [4], "hide": true},
-    {
-      "itemCodes": [
-        "r01", "r02", "r03", "r04", "r05", "r06", "r07", "r08", "r09", "r10", "r11", "r12", "r13", "r14", "r15",
-        "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24", "r25", "r26", "r27", "r28", "r29", "r30",
-        "r31", "r32", "r33", "r34", "r35"
-      ],
-      "excludeAreas": [1, 40, 75, 103, 109],
-      "activeInLevels": [4],
-      "hide": true
-    },
     {
       "itemTypes": ["weap", "armo"],
       "excludeItemCodes": [
@@ -543,7 +537,7 @@
     {"quality": "set", "excludeAreas": [1, 40, 75, 103, 109], "activeInLevels": [4], "hide": true},
     {
       "itemCodes": [
-        "mrn", "mam", "rin", "amu", "zrn", "srn", "nrn", "prn", "brg", "drn", "arn", "zam", "sam", "nam", "pam",
+        "mrn", "mam", "rin", "amu", "zrn", "srn", "nrn", "prn", "brg", "drn", "arn", "zam", "sam", "nam", "pam", "wam", "wrn",
         "bam", "dam", "aam", "cm1", "cm2", "cm3", "cx1", "cx2", "cx3"
       ],
       "quality": "magic",
@@ -661,7 +655,8 @@
       "chatMessage": "ÿc9** Rare Jewel **",
       "sound": "other.mp3",
       "labelBackground": [0, 0, 0, 255],
-      "labelBorder": {"color": [0, 200, 200, 255], "width": 1}
+      "labelBorder": {"color": [0, 200, 200, 255], "width": 1},
+      "icon": {"iconName": "gem", "iconSize": 27}
     },
     {"itemCodes": ["rvs"], "replaceName": "ÿc0*ÿc;25%ÿc0*", "labelBorder": {"color": [128, 0, 128, 255], "width": 1}},
     {"itemCodes": ["rvl"], "replaceName": "ÿc0*ÿc;50%ÿc0*", "labelBorder": {"color": [128, 0, 128, 255], "width": 1}},
@@ -691,49 +686,54 @@
     {"itemCodes": ["sdo"], "replaceName": "ÿc6Socket Donut", "sound": "mid.mp3", "useStyle": "GoldPlate"},
     {
       "itemCodes": ["um7"],
-      "chatMessage": "ÿc1*ÿc2*ÿc3* ÿc1Rare Crafting Reagant: ÿc; Orb of Annointment ÿc1*ÿc2*ÿc3*",
+      "chatMessage": "ÿc1*ÿc2*ÿc3* ÿc1Rare Crafting Reagent: ÿc; Orb of Anointment ÿc1*ÿc2*ÿc3*",
       "labelBackground": [255, 255, 255, 250],
-      "labelBorder": {"color": [150, 0, 200, 250], "width": 1}
+      "labelBorder": {"color": [150, 0, 200, 250], "width": 1},
+      "icon": {"iconName": "redD", "iconSize": 27}
     },
-    {"itemCodes": ["wss"], "replaceName": "ÿc6Worldstone Shard", "sound": "mid.mp3", "useStyle": "GoldPlate"},
-    {"itemCodes": ["wss"], "location": ["stored", "atVendor"], "namePrefix": "ÿc0Cube with Multi-Stocker to store\nÿc1Crafting Material\n"},
+    {"itemCodes": ["wss"], "replaceName": "ÿc6Worldstone Shard", "sound": "mid.mp3", "useStyle": "GoldPlate", "icon": {"iconName": "redD", "iconSize": 27}},
+    {"itemCodes": ["rel"], "replaceName": "ÿc6Relic of Knowledge", "sound": "mid.mp3", "useStyle": "GoldPlate", "icon": {"iconName": "redD", "iconSize": 27}},
+
     {
       "itemCodes": ["map"],
       "replaceName": "ÿc6Maple Leaf",
-      "chatMessage": "ÿc1*ÿc2*ÿc3* ÿc1Rare Crafting Reagant: ÿc4 Maple Leaf ÿc1*ÿc2*ÿc3*",
+      "chatMessage": "ÿc1*ÿc2*ÿc3* ÿc1Rare Crafting Reagent: ÿc4 Maple Leaf ÿc1*ÿc2*ÿc3*",
       "sound": "gong.mp3",
       "useStyle": "GoldPlate"
     },
     {
       "itemCodes": ["qqq"],
       "replaceName": "ÿc6Anvil Stone",
-      "chatMessage": "ÿc1*ÿc2*ÿc3* ÿc1Rare Crafting Reagant: ÿc4 Anvil Stone ÿc1*ÿc2*ÿc3*",
+      "chatMessage": "ÿc1*ÿc2*ÿc3* ÿc1Rare Crafting Reagent: ÿc4 Anvil Stone ÿc1*ÿc2*ÿc3*",
       "sound": "gong.mp3",
       "useStyle": "GoldPlate"
     },
     {
       "itemCodes": ["elx"],
       "replaceName": "ÿc6Elixir",
-      "chatMessage": "ÿc1*ÿc2*ÿc3* ÿc1Rare Crafting Reagant: ÿc4 Elixir ÿc1*ÿc2*ÿc3*",
+      "chatMessage": "ÿc1*ÿc2*ÿc3* ÿc1Rare Crafting Reagent: ÿc4 Elixir ÿc1*ÿc2*ÿc3*",
       "sound": "gong.mp3",
       "useStyle": "GoldPlate"
     },
     {
       "itemCodes": ["yyy"],
       "replaceName": "ÿc6Cookbook",
-      "chatMessage": "ÿc1*ÿc2*ÿc3* ÿc1Rare Crafting Reagant: ÿc4 Cookbook ÿc1*ÿc2*ÿc3*",
+      "chatMessage": "ÿc1*ÿc2*ÿc3* ÿc1Rare Crafting Reagent: ÿc4 Cookbook ÿc1*ÿc2*ÿc3*",
+      "sound": "gong.mp3",
+      "useStyle": "GoldPlate",
+      "icon": {"iconName": "redD", "iconSize": 27}
+    },
+    {
+      "itemCodes": ["01b","02b","03b","04b","05b","06b","07b","08b","09b","10b","11b","12b","13b","14b","15b","16b","17b","18b","19b","20b","21b","22b","23b","24b","25b","26b","27b","28b","29b","30b","31b","32b","33b","34b","35b","36b","37b","38b","39b","40b","41b","42b","43b","44b","45b","46b","47b","48b","49b","50b"],
+      "replaceName": "ÿc6Ancient Scroll",
+      "chatMessage": "ÿc1*ÿc2*ÿc3* ÿc4 Ancient Scroll ÿc1*ÿc2*ÿc3*",
       "sound": "gong.mp3",
       "useStyle": "GoldPlate"
     },
-    {
-      "itemCodes": ["map", "elx", "yyy", "qqq"],
-      "location": ["stored", "atVendor"],
-      "namePrefix": "ÿc0Cube with Multi-Stocker to store\nÿc1 Rare Crafting Reagant \n"
-    },
-    {"itemCodes": ["um8"], "replaceName": "ÿcPLilith's Crystallized Tear", "useStyle": "STierMaterial"},
-    {"itemCodes": ["um9"], "replaceName": "ÿcPTyrael's Eternal Feather", "useStyle": "STierMaterial"},
-    {"itemCodes": ["u17"], "replaceName": "ÿcPLucion's Essence", "useStyle": "STierMaterial"},
-    {"itemCodes": ["u20"], "replaceName": "ÿcPAstrogha's Petrified Heart", "useStyle": "STierMaterial"},
+    {"itemCodes": ["um8"], "replaceName": "ÿcPLilith's Crystallized Tear", "useStyle": "STierMaterial", "icon": {"iconName": "redD", "iconSize": 27}},
+    {"itemCodes": ["um9"], "replaceName": "ÿcPTyrael's Eternal Feather", "useStyle": "STierMaterial", "icon": {"iconName": "redD", "iconSize": 27}},
+    {"itemCodes": ["u17"], "replaceName": "ÿcPLucion's Essence", "useStyle": "STierMaterial", "icon": {"iconName": "redD", "iconSize": 27}},
+    {"itemCodes": ["u20"], "replaceName": "ÿcPAstrogha's Petrified Heart", "useStyle": "STierMaterial", "icon": {"iconName": "redD", "iconSize": 27}},
     {
       "itemCodes": ["an3", "an4", "an5", "an6", "an7", "an8", "an9", "a10"],
       "replaceName": "ÿc1{name}",
@@ -823,17 +823,19 @@
       "useStyle": "UniqueLabel"
     },
     {
-      "itemCodes": ["rin", "amu", "zrn", "srn", "nrn", "prn", "brg", "drn", "arn", "zam", "sam", "nam", "pam", "bam", "dam", "aam"],
+      "itemCodes": ["rin", "amu", "zrn", "srn", "nrn", "prn", "brg", "drn", "arn", "zam", "sam", "nam", "pam", "bam", "dam", "aam","wam", "wrn"],
       "quality": "unique",
       "chatMessage": "ÿc1*ÿc2*ÿc3 ÿc4{name} ÿc1*ÿc2*ÿc3",
       "sound": "other.mp3",
-      "labelBorder": {"color": [255, 0, 0, 255], "width": 1}
+      "labelBorder": {"color": [255, 0, 0, 255], "width": 1},
+      "icon": {"iconName": "goldstar", "iconSize": 40}
     },
     {"itemCodes": ["aq2", "cq2", "aqv", "cqv", "cq0", "aq0"], "quality": "unique", "chatMessage": "ÿc0 ** ÿc4{name} ÿc0**", "useStyle": "UniqueLabel"},
     {
-      "itemCodes": ["cm1", "cm2", "cm3", "jew", "cm4", "mjw"],
+      "itemCodes": ["cm1", "cm2", "cm3", "jew", "cm4", "mjw", "z99"],
       "quality": "unique",
       "chatMessage": "ÿc1*ÿc2*ÿc3 ÿc4{name} ÿc1*ÿc2*ÿc3",
+      "icon": {"iconName": "charm", "iconSize": 35},
       "useStyle": "Jackpot"
     },
     {"quality": "set", "baseTier": 0, "activeInLevels": [1, 2], "useStyle": "SetLabel"},
@@ -901,6 +903,8 @@
     {"itemCodes": ["m38"], "quality": "unique", "replaceName": "Arreat's Hatchet", "useStyle": "Mythical"},
     {"itemCodes": ["m39"], "quality": "unique", "replaceName": "Kagekiri", "namePrefix": "Mythical ", "useStyle": "Mythical"},
     {"itemCodes": ["mam"], "quality": "unique", "replaceName": "Amulet", "namePrefix": "Mythical ", "useStyle": "Mythical"},
+    {"itemCodes": ["m60"], "quality": "unique", "replaceName": "Light Plate", "namePrefix": "Mythical ", "useStyle": "Mythical"},
+    {"itemCodes": ["m61"], "quality": "unique", "replaceName": "Abyssal Blade", "namePrefix": "Mythical ", "useStyle": "Mythical"},
 
     // Coupon and class jewellery labels
     {
@@ -965,48 +969,51 @@
       "labelBorder": {"color": [255, 165, 0, 255], "width": 1}
     },
     {
-      "itemCodes": ["03j", "46h", "41e", "03e", "17e", "40e", "06e", "13d"],
+      "itemCodes": ["03j", "46h", "41e", "03e", "17e", "40e", "06e", "43e"],
       "chatMessage": "ÿc1High Tier Unique Coupon: {name}",
-      "useStyle": "Valuable"
+      "useStyle": "Valuable",
+      "icon": {"iconName": "scroll", "iconSize": 40}
     },
-    {"itemCodes": ["ci3"], "quality": "unique", "chatMessage": "ÿc8High Tier Unique: {name}", "useStyle": "Valuable"},
+    {"itemCodes": ["ci3"], "quality": "unique", "chatMessage": "ÿc8High Tier Unique: {name}", "useStyle": "Valuable", "icon": {"iconName": "goldstar", "iconSize": 50}},
     {
-      "itemCodes": ["zrn", "srn", "nrn", "prn", "brg", "drn", "arn", "zam", "sam", "nam", "pam", "bam", "dam", "aam"],
+      "itemCodes": ["zrn", "srn", "nrn", "prn", "brg", "drn", "arn", "zam", "sam", "nam", "pam", "bam", "dam", "aam", "wam", "wrn"],
       "quality": "magic",
       "chatMessage": "Class Jewellery: ÿc3{name}",
       "labelBorder": {"color": [0, 0, 255, 230], "width": 1}
     },
     {
-      "itemCodes": ["zrn", "srn", "nrn", "prn", "brg", "drn", "arn", "zam", "sam", "nam", "pam", "bam", "dam", "aam"],
+      "itemCodes": ["zrn", "srn", "nrn", "prn", "brg", "drn", "arn", "zam", "sam", "nam", "pam", "bam", "dam", "aam", "wam", "wrn"],
       "quality": "rare",
       "labelBorder": {"color": [0, 255, 255, 230], "width": 1}
     },
 
     // Pandemonium keys and organs, respec items
-    {"itemCodes": ["pk1", "pk2", "pk3"], "chatMessage": "ÿc1Pandemonium Key: {name}", "useStyle": "Uber"},
-    {"itemCodes": ["dhn", "bey", "mbr", "ht1", "ht2", "ht3"], "chatMessage": "ÿc1Pandemonium Organ: {name}", "useStyle": "Uber"},
-    {"itemCodes": ["toa", "tes", "ceh", "bet", "fed"], "chatMessage": "ÿc1Respec: {name}", "useStyle": "Uber"},
+    {"itemCodes": ["pk1", "pk2", "pk3"], "chatMessage": "ÿc1Pandemonium Key: {name}", "useStyle": "Uber", "icon": {"iconName": "gemp", "iconSize": 27}},
+    {"itemCodes": ["dhn", "bey", "mbr", "ht1", "ht2", "ht3"], "chatMessage": "ÿc1Pandemonium Organ: {name}", "useStyle": "Uber", "icon": {"iconName": "gemp", "iconSize": 27}},
+    {"itemCodes": ["toa", "tes", "ceh", "bet", "fed"], "chatMessage": "ÿc1Respec: {name}", "useStyle": "Uber", "icon": {"iconName": "gemp", "iconSize": 27}},
 
     // Crafting reagent and perfect gem labels
     {
       "itemCodes": ["qll", "hrt", "brz", "jaw", "eyz", "hrn", "tal", "flg", "fng", "sol", "scz", "spe", "zzz"],
-      "labelBorder": {"color": [200, 150, 0, 255], "width": 1}
+      "labelBorder": {"color": [200, 150, 0, 255], "width": 1},
+      "icon": {"iconName": "cube", "iconSize": 27}
     },
     {
       "itemCodes": [
         "xl0", "xl1", "xl2", "xl3", "xl4", "xl5", "xl6", "xl7", "xl8", "xl9", "xlx", "xly", "xt0", "xt1", "xt2",
         "xt3", "xt4", "xt5", "xt6", "xt7", "xt8", "xt9", "xtx", "xty"
       ],
-      "labelBorder": {"color": [200, 150, 0, 255], "width": 1}
+      "labelBorder": {"color": [200, 150, 0, 255], "width": 1},
+      "icon": {"iconName": "gem2", "iconSize": 27}
     },
-    {"itemCodes": ["gvb"], "replaceName": "ÿc;*P.Gem*", "labelBorder": {"color": [200, 150, 0, 255], "width": 1}},
-    {"itemCodes": ["gyb"], "replaceName": "ÿc9*P.Gem*", "labelBorder": {"color": [200, 150, 0, 255], "width": 1}},
-    {"itemCodes": ["gbb"], "replaceName": "ÿc3*P.Gem*", "labelBorder": {"color": [200, 150, 0, 255], "width": 1}},
-    {"itemCodes": ["ggb"], "replaceName": "ÿc2*P.Gem*", "labelBorder": {"color": [200, 150, 0, 255], "width": 1}},
-    {"itemCodes": ["grb"], "replaceName": "ÿc1*P.Gem*", "labelBorder": {"color": [200, 150, 0, 255], "width": 1}},
-    {"itemCodes": ["gwb"], "replaceName": "ÿc0*P.Gem*", "labelBorder": {"color": [200, 150, 0, 255], "width": 1}},
-    {"itemCodes": ["skb"], "replaceName": "ÿc5*P.Gem*", "labelBorder": {"color": [200, 150, 0, 255], "width": 1}},
-    {"itemCodes": ["gbk"], "replaceName": "ÿc6*P.Gem*", "labelBorder": {"color": [200, 150, 0, 255], "width": 1}},
+    {"itemCodes": ["gvb"], "replaceName": "ÿc;*P.Gem*", "labelBorder": {"color": [200, 150, 0, 255], "width": 1}, "icon": {"iconName": "gem2", "iconSize": 27}},
+    {"itemCodes": ["gyb"], "replaceName": "ÿc9*P.Gem*", "labelBorder": {"color": [200, 150, 0, 255], "width": 1}, "icon": {"iconName": "gem2", "iconSize": 27}},
+    {"itemCodes": ["gbb"], "replaceName": "ÿc3*P.Gem*", "labelBorder": {"color": [200, 150, 0, 255], "width": 1}, "icon": {"iconName": "gem2", "iconSize": 27}},
+    {"itemCodes": ["ggb"], "replaceName": "ÿc2*P.Gem*", "labelBorder": {"color": [200, 150, 0, 255], "width": 1}, "icon": {"iconName": "gem2", "iconSize": 27}},
+    {"itemCodes": ["grb"], "replaceName": "ÿc1*P.Gem*", "labelBorder": {"color": [200, 150, 0, 255], "width": 1}, "icon": {"iconName": "gem2", "iconSize": 27}},
+    {"itemCodes": ["gwb"], "replaceName": "ÿc0*P.Gem*", "labelBorder": {"color": [200, 150, 0, 255], "width": 1}, "icon": {"iconName": "gem2", "iconSize": 27}},
+    {"itemCodes": ["skb"], "replaceName": "ÿc5*P.Gem*", "labelBorder": {"color": [200, 150, 0, 255], "width": 1}, "icon": {"iconName": "gem2", "iconSize": 27}},
+    {"itemCodes": ["gbk"], "replaceName": "ÿc6*P.Gem*", "labelBorder": {"color": [200, 150, 0, 255], "width": 1}, "icon": {"iconName": "gem2", "iconSize": 27}},
 
     // Runes
     {
@@ -1014,71 +1021,80 @@
       "replaceName": "ÿc6Mal Rune",
       "chatMessage": "ÿc1*ÿc3*ÿc2*   ÿc8High Rune Drop: ÿc0Mal  ÿc1*ÿc3*ÿc2*",
       "sound": "mid.mp3",
-      "useStyle": "GoldPlate"
+      "useStyle": "GoldPlate",
+      "icon": {"iconName": "rune", "iconSize": 50}
     },
     {
       "itemCodes": ["24l", "r74"],
       "replaceName": "ÿc6Ist Rune",
       "chatMessage": "ÿc1*ÿc3*ÿc2*   ÿc8High Rune Drop: ÿc0Ist   ÿc1*ÿc3*ÿc2*",
       "sound": "mid.mp3",
-      "useStyle": "GoldPlate"
+      "useStyle": "GoldPlate",
+      "icon": {"iconName": "rune", "iconSize": 50}
     },
     {
       "itemCodes": ["25l", "r75"],
       "replaceName": "ÿc6Gul Rune",
       "chatMessage": "ÿc1*ÿc3*ÿc2*   ÿc8High Rune Drop: ÿc0Gul   ÿc1*ÿc3*ÿc2*",
       "sound": "mid.mp3",
-      "useStyle": "GoldPlate"
+      "useStyle": "GoldPlate",
+      "icon": {"iconName": "rune", "iconSize": 50}
     },
     {
       "itemCodes": ["26l", "r76"],
       "replaceName": "ÿc1Vex Rune",
       "chatMessage": "ÿc1*ÿc3*ÿc2*   ÿc8High Rune Drop: ÿc0Vex   ÿc1*ÿc3*ÿc2*",
-      "useStyle": "Jackpot"
+      "useStyle": "Jackpot",
+      "icon": {"iconName": "rune", "iconSize": 50}
     },
     {
       "itemCodes": ["27l", "r77"],
       "replaceName": "ÿc1Ohm Rune",
       "chatMessage": "ÿc1*ÿc3*ÿc2*   ÿc8High Rune Drop: ÿc0Ohm  ÿc1*ÿc3*ÿc2*",
-      "useStyle": "Jackpot"
+      "useStyle": "Jackpot",
+      "icon": {"iconName": "rune", "iconSize": 50}
     },
     {
       "itemCodes": ["28l", "r78"],
       "replaceName": "ÿc1Lo Rune",
       "chatMessage": "ÿc1*ÿc3*ÿc2*   ÿc8High Rune Drop: ÿc0Lo   ÿc1*ÿc3*ÿc2*",
-      "useStyle": "Jackpot"
+      "useStyle": "Jackpot",
+      "icon": {"iconName": "rune", "iconSize": 50}
     },
     {
       "itemCodes": ["29l", "r79"],
       "replaceName": "ÿc1Sur Rune",
       "chatMessage": "ÿc1*ÿc3*ÿc2*   ÿc8High Rune Drop: ÿc0Sur   ÿc1*ÿc3*ÿc2*",
-      "useStyle": "Jackpot"
+      "useStyle": "Jackpot",
+      "icon": {"iconName": "rune", "iconSize": 50}
     },
     {
       "itemCodes": ["30l", "r80"],
       "replaceName": "ÿc1Ber Rune",
       "chatMessage": "ÿc1*ÿc3*ÿc2*   ÿc8High Rune Drop: ÿc0Ber  ÿc1*ÿc3*ÿc2*",
-      "useStyle": "Jackpot"
+      "useStyle": "Jackpot",
+      "icon": {"iconName": "rune", "iconSize": 50}
     },
     {
       "itemCodes": ["31l", "r81"],
       "replaceName": "ÿc1Jah Rune",
       "chatMessage": "ÿc1*ÿc3*ÿc2*   ÿc8High Rune Drop: ÿc0Jah   ÿc1*ÿc3*ÿc2*",
-      "useStyle": "Jackpot"
+      "useStyle": "Jackpot",
+      "icon": {"iconName": "rune", "iconSize": 50}
     },
     {
       "itemCodes": ["32l", "r82"],
       "replaceName": "ÿc1Cham Rune",
       "chatMessage": "ÿc1*ÿc3*ÿc2*   ÿc8High Rune Drop: ÿc0Cham   ÿc1*ÿc3*ÿc2*",
-      "useStyle": "Jackpot"
+      "useStyle": "Jackpot",
+      "icon": {"iconName": "rune", "iconSize": 50}
     },
     {
       "itemCodes": ["33l", "r83"],
       "replaceName": "ÿc1Zod Rune",
       "chatMessage": "ÿc1*ÿc3*ÿc2*   ÿc8High Rune Drop: ÿc0Zod   ÿc1*ÿc3*ÿc2*",
-      "sound": "mythical.mp3",
-      "labelBackground": [255, 255, 255, 255],
-      "labelBorder": {"color": [240, 0, 0, 230], "width": 2}
+      "useStyle": "Jackpot",
+      "icon": {"iconName": "rune", "iconSize": 50}
     },
     {
       "itemCodes": ["r36", "r37", "r38", "r39", "r40", "r41", "r42"],
@@ -1086,22 +1102,24 @@
       "sound": "mid.mp3",
       "labelBackground": [0, 0, 0, 255],
       "labelBorder": {"color": [255, 215, 0, 255], "width": 1},
-      "droplight": {"color": [255, 215, 0]}
+      "droplight": {"color": [255, 215, 0]},
+      "icon": {"iconName": "rune", "iconSize": 50}
     },
     {"itemCodes": ["r43"], "replaceName": "ÿc;Su Rune", "useStyle": "PurpleRune"},
     {"itemCodes": ["r44"], "replaceName": "ÿc;He Rune", "useStyle": "PurpleRune"},
     {"itemCodes": ["r45"], "replaceName": "ÿc;Nu Rune", "useStyle": "PurpleRune"},
-    {"itemCodes": ["r46"], "replaceName": "ÿc;Wo Rune", "icon": {"iconName": "goldstar", "iconSize": 50, "color": [255, 215, 0]}, "useStyle": "PurpleRune"},
+    {"itemCodes": ["r46"], "replaceName": "ÿc;Wo Rune", "useStyle": "PurpleRune"},
     {"itemCodes": ["r50"], "replaceName": "ÿc;Null Rune", "useStyle": "PurpleRune"},
     {
       "itemCodes": ["r84", "r85", "r86", "r87", "r88", "r89", "r90", "r91", "r92", "r93", "r94", "r95", "r96", "r97"],
       "chatMessage": "ÿc8ESR Rune: {name}",
-      "useStyle": "Jackpot"
+      "useStyle": "Jackpot",
+      "icon": {"iconName": "rune", "iconSize": 50}
     },
     {
       "itemCodes": ["r50"],
       "location": ["stored", "atVendor"],
-      "namePrefix": "\nGod Rune: ÿc3Frozen Soul ÿc1Enigmatic Cinnabar ÿc4Pulsing Opal ÿc5Shadow Quartz\nÿc8Heaven Rune: ÿc1Bleeding Stone ÿc3Dark Azurite ÿcABitter Peridot ÿc;Tainted Tourmarineÿc0\nÿc8Death Rune: ÿc5Shadow Quartzÿc0\nÿc8Life Rune: ÿc4Pulsing Opal\nÿc8Dragon Rune: Storm Amber\nWind Rune: ÿc;Tainted Tourmaline\nÿc8Thunder Rune: ÿc9Burning Sulphur\nÿc8Sun Rune: ÿc1Enigmatic Cinnabar\nÿc8Earth Rune: ÿcABitter Peridot\nÿc8Metal Rune: ÿc0Solid Mercury\nÿc8Wood Rune: ÿc2Tomb Jade\nÿc8Water Rune: ÿc3Dark Azurite\nÿc8Fire Rune: ÿc1Bleeding Stone\nÿc8Moon Rune: ÿc3Frozen Soul\nÿc0** Combine this rune with the below crystals to obtain Kanji Runes **ÿc;\n"
+      "namePrefix": "\nGod Rune: ÿc3Frozen Soul ÿc1Enigmatic Cinnabar ÿc4Pulsing Opal ÿc5Shadow Quartz\nÿc8Heaven Rune: ÿc1Bleeding Stone ÿc3Dark Azurite ÿcABitter Peridot ÿc;Tainted Tourmalineÿc0\nÿc8Death Rune: ÿc5Shadow Quartzÿc0\nÿc8Life Rune: ÿc4Pulsing Opal\nÿc8Dragon Rune: Storm Amber\nWind Rune: ÿc;Tainted Tourmaline\nÿc8Thunder Rune: ÿc9Burning Sulphur\nÿc8Sun Rune: ÿc1Enigmatic Cinnabar\nÿc8Earth Rune: ÿcABitter Peridot\nÿc8Metal Rune: ÿc0Solid Mercury\nÿc8Wood Rune: ÿc2Tomb Jade\nÿc8Water Rune: ÿc3Dark Azurite\nÿc8Fire Rune: ÿc1Bleeding Stone\nÿc8Moon Rune: ÿc3Frozen Soul\nÿc0** Combine this rune with the below crystals to obtain Kanji Runes **ÿc;\n"
     },
 
     // Maps
@@ -1145,90 +1163,6 @@
       "chatMessage": "Tier 5 Map: ÿc0The Reliquary of False Light",
       "useStyle": "MapTier5"
     },
-    {"itemCodes": ["z99"], "replaceName": "ÿc6The Hidden Vault", "chatMessage": "Unique Map: ÿc0The Hidden Vault", "useStyle": "MapTier5"},
-
-    // Rune points (tooltips)
-    {"itemCodes": ["r01"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+1 White Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r02"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+2 White Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r03"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+4 White Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r04"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+8 White Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r05"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+16 White Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r06"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+32 White Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r07"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+64 White Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r08"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+1 Red Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r09"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+2 Red Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r10"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+4 Red Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r11"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+8 Red Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r12"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+16 Red Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r13"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+32 Red Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r14"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+64 Red Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r15"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+1 Yellow Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r16"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+2 Yellow Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r17"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+4 Yellow Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r18"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+8 Yellow Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r19"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+16 Yellow Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r20"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+32 Yellow Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r21"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+64 Yellow Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r22"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+1 Orange Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r23"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+2 Orange Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r24"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+4 Orange Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r25"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+8 Orange Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r26"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+16 Orange Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r27"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+32 Orange Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r28"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+64 Orange Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r29"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+1 Green Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r30"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+2 Green Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r31"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+4 Green Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r32"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+8 Green Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r33"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+16 Green Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r34"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+32 Green Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r35"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+64 Green Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r36"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+1 Gold Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r37"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+2 Gold Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r38"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+4 Gold Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r39"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+8 Gold Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r40"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+16 Gold Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r41"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+32 Gold Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r42"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+64 Gold Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r43"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+1 Purple Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r44"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+2 Purple Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r45"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+4 Purple Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["r46"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+8 Purple Rune Points when baggedÿc8\n"},
-    {"itemCodes": ["01l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+1 Low Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["02l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+2 Low Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["03l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+4 Low Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["04l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+8 Low Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["05l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+16 Low Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["06l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+32 Low Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["07l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+64 Low Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["08l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+128 Low Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["09l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+256 Low Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["10l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+512 Low Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["11l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+1024 Low Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["12l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+1 Mid Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["13l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+2 Mid Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["14l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+4 Mid Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["15l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+8 Mid Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["16l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+16 Mid Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["17l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+32 Mid Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["18l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+64 Mid Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["19l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+128 Mid Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["20l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+256 Mid Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["21l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+512 Mid Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["22l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+1024 Mid Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["23l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+1 High Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["24l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+2 High Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["25l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+4 High Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["26l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+8 High Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["27l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+16 High Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["28l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+32 High Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["29l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+64 High Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["30l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+128 High Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["31l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+256 High Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["32l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+512 High Rune Points when baggedÿc0\n"},
-    {"itemCodes": ["33l"], "location": ["stored", "atVendor"], "namePrefix": "ÿc5+1024 High Rune Points when baggedÿc0\n"},
-
-    // Socket count
-    {"sockets": {"min": 1}, "nameSuffix": " ÿcP[{sockets}]"}
+    {"itemCodes": ["z99"], "replaceName": "ÿc6The Hidden Vault", "chatMessage": "Unique Map: ÿc0The Hidden Vault", "useStyle": "MapTier5"}
   ]
 }

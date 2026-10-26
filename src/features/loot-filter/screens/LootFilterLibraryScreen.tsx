@@ -80,7 +80,7 @@ export function LootFilterLibraryScreen() {
         <div className="max-w-3xl space-y-2 text-sm text-muted-foreground">
           <p>
             Create and edit filters for ESR&apos;s loot filter plugin. Filters are saved in this browser only; download a filter to use it
-            in the game.
+            in the game. The launcher already gives every player Sully&apos;s QoL filter; start from a copy of it to change its rules.
           </p>
           <p>
             In the ESR launcher, open the <span className="font-medium text-foreground">Loot Filter</span> tab and choose{' '}
@@ -114,7 +114,7 @@ export function LootFilterLibraryScreen() {
           </Button>
           <Button variant="outline" onClick={() => void handleTemplate()} disabled={!hydrated || loadingTemplate}>
             {loadingTemplate ? <Spinner /> : <Sparkles />}
-            Start from the ESR default filter
+            Start from Sully&apos;s QoL filter
           </Button>
           <input
             ref={fileInput}
@@ -141,7 +141,7 @@ export function LootFilterLibraryScreen() {
             <Filter className="size-8 text-muted-foreground" aria-hidden />
             <p className="font-medium">No filters yet</p>
             <p className="text-sm text-muted-foreground">
-              Start a new filter, upload one you already have, or begin from the ESR default filter.
+              Start a new filter, upload one you already have, or begin from Sully&apos;s QoL filter.
             </p>
           </CardContent>
         </Card>
