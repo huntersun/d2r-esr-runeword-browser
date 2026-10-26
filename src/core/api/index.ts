@@ -5,4 +5,4 @@ export { fetchUniqueWeaponsHtml, fetchUniqueArmorsHtml, fetchUniqueOthersHtml } 
 export { fetchUniqueMythicalsHtml } from './mythicalUniquesApi';
 export { fetchAscendanciesHtml } from './ascendanciesApi';
 export { fetchLatestVersion, type EsrVersionInfo, type EsrVersionSource } from './versionApi';
-export { REMOTE_URLS, ESR_BASE_URL, ESR_REPO_RAW_URL } from './remoteConfig';
+export { REMOTE_URLS, ESR_BASE_URL, ESR_REPO_RAW_URL, ESR_REPO_SLUG } from './remoteConfig';

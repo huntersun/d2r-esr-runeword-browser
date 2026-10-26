@@ -1,7 +1,16 @@
 import { matchRoutes } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import { router } from '@/core/router';
-import { COMMUNITY_TOOLS, NAV_ENTRIES, getAllNavItems, getNavEntries, isNavGroupActive, isNavItemActive, type NavGroup } from './navConfig';
+import {
+  COMMUNITY_TOOLS,
+  NAV_ENTRIES,
+  OFFICIAL_LINKS,
+  getAllNavItems,
+  getNavEntries,
+  isNavGroupActive,
+  isNavItemActive,
+  type NavGroup,
+} from './navConfig';
 
 const items = getAllNavItems();
 const homeLinkPaths = NAV_ENTRIES.flatMap((entry) => (entry.kind === 'link' ? (entry.homeLinks ?? []).map((link) => link.to) : []));
@@ -52,6 +61,18 @@ describe('navConfig', () => {
     const runewords = recipes.items[0];
     expect(isNavItemActive('/gemwords', runewords)).toBe(false);
     expect(isNavItemActive('/loot-filtersx', tools.items[3])).toBe(false);
+  });
+
+  describe('OFFICIAL_LINKS', () => {
+    it('has unique keys and labels', () => {
+      expect(new Set(OFFICIAL_LINKS.map((l) => l.key)).size).toBe(OFFICIAL_LINKS.length);
+      expect(new Set(OFFICIAL_LINKS.map((l) => l.label)).size).toBe(OFFICIAL_LINKS.length);
+    });
+
+    it.each(OFFICIAL_LINKS.map((link) => [link.key, link] as const))('%s has an https link and a description', (_key, link) => {
+      expect(link.href.startsWith('https://')).toBe(true);
+      expect(link.description.trim()).not.toBe('');
+    });
   });
 
   describe('COMMUNITY_TOOLS', () => {

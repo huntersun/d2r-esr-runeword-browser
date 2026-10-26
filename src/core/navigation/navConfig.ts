@@ -1,3 +1,6 @@
+import { ESR_REPO_SLUG } from '@/core/api/remoteConfig';
+import { DROP_FINDER_URL } from '@/features/guide/engine/linkSchemes';
+
 /**
  * Navigation config: the header's grouped desktop menus, its mobile accordion and the home page's section cards all
  * render from `NAV_ENTRIES`, so they never drift. `navConfig.test.ts` checks every path against the router and that
@@ -10,8 +13,40 @@ export const GITHUB_URL = 'https://github.com/istvan-panczel/d2r-esr-runeword-br
 /** The privacy policy lives at the repo root (PRIVACY_POLICY.md); linked from the sign-in consent gate and the home footer. */
 export const PRIVACY_POLICY_URL = `${GITHUB_URL}/blob/master/PRIVACY_POLICY.md`;
 export const DISCORD_URL = 'https://discord.com/invite/XfFmAYZAbA';
+export const ESR_REPO_URL = `https://github.com/${ESR_REPO_SLUG}`;
 /** The official Drop Finder; defined with the guide's link schemes (shared with the Node guide generator). */
-export { DROP_FINDER_URL } from '@/features/guide/engine/linkSchemes';
+export { DROP_FINDER_URL };
+
+/** An official ESR link, listed in the header's external-links menu and on the home page. */
+export interface OfficialLink {
+  readonly key: string;
+  readonly label: string;
+  readonly href: string;
+  readonly description: string;
+}
+
+export const OFFICIAL_LINKS: readonly OfficialLink[] = [
+  {
+    key: 'esr-site',
+    label: 'Official site',
+    href: ESR_DOCS_URL,
+    description: "The mod's home page: downloads, documentation and news from the mod author.",
+  },
+  {
+    key: 'drop-finder',
+    label: 'Drop Finder',
+    href: DROP_FINDER_URL,
+    description: 'The official tool for where every item, rune and material drops.',
+  },
+  { key: 'changelog', label: 'Changelog', href: ESR_CHANGELOG_URL, description: 'Release notes for every ESR version.' },
+  { key: 'discord', label: 'ESR Discord', href: DISCORD_URL, description: 'The community server: announcements, help and bug reports.' },
+  {
+    key: 'esr-repo',
+    label: 'ESR on GitHub',
+    href: ESR_REPO_URL,
+    description: "The mod's source repository, including the game data files and docs.",
+  },
+];
 
 /** A fan-made ESR tool, listed on the home page and in the header's external-links menu. */
 export interface CommunityTool {

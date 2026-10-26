@@ -26,11 +26,8 @@ import { openDrawer, selectTheme, setTheme } from '@/features/settings';
 import { AuthControls, selectAuthIsConfigured } from '@/features/auth';
 import {
   COMMUNITY_TOOLS,
-  DISCORD_URL,
-  DROP_FINDER_URL,
-  ESR_CHANGELOG_URL,
-  ESR_DOCS_URL,
   GITHUB_URL,
+  OFFICIAL_LINKS,
   getNavEntries,
   isNavGroupActive,
   isNavItemActive,
@@ -39,13 +36,6 @@ import {
 } from '@/core/navigation/navConfig';
 // Shared nav-link styling (also the page sub-tabs), so the group triggers and the plain links look the same.
 import { TAB_ACTIVE, TAB_BASE, TAB_INACTIVE } from './navTabClasses';
-
-const EXTERNAL_LINKS = [
-  { key: 'esr-docs', href: ESR_DOCS_URL, label: 'ESR Documentation' },
-  { key: 'changelog', href: ESR_CHANGELOG_URL, label: 'ESR Changelog' },
-  { key: 'drop-finder', href: DROP_FINDER_URL, label: 'Drop Finder' },
-  { key: 'discord', href: DISCORD_URL, label: 'ESR Discord' },
-] as const;
 
 const DROPDOWN_LINK_CLASS = 'flex w-full cursor-pointer items-center justify-between gap-2';
 const MOBILE_EXTERNAL_LINK_CLASS =
@@ -165,8 +155,8 @@ export function Header() {
                 <BookOpen className="size-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              {EXTERNAL_LINKS.map((link) => (
+            <DropdownMenuContent align="end" className="w-56">
+              {OFFICIAL_LINKS.map((link) => (
                 <DropdownMenuItem key={link.key} asChild>
                   <a href={link.href} target="_blank" rel="noopener noreferrer" className={DROPDOWN_LINK_CLASS}>
                     {link.label}
@@ -241,7 +231,7 @@ export function Header() {
               )}
             </Accordion>
             <div className="mt-2 border-t pt-2">
-              {EXTERNAL_LINKS.map((link) => (
+              {OFFICIAL_LINKS.map((link) => (
                 <a key={link.key} href={link.href} target="_blank" rel="noopener noreferrer" className={MOBILE_EXTERNAL_LINK_CLASS}>
                   {link.label}
                   <ExternalLink className="size-3" />

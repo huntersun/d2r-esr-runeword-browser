@@ -1,8 +1,9 @@
 // Base URL for ESR documentation
 export const ESR_BASE_URL = 'https://easternsunresurrected.com';
 
-// ESR GitHub repository (raw files on the main branch)
-export const ESR_REPO_RAW_URL = 'https://raw.githubusercontent.com/CelestialRayOne/Eastern_Sun_Resurrected/main';
+// ESR GitHub repository (`owner/name`) and its raw files on the main branch
+export const ESR_REPO_SLUG = 'CelestialRayOne/Eastern_Sun_Resurrected';
+export const ESR_REPO_RAW_URL = `https://raw.githubusercontent.com/${ESR_REPO_SLUG}/main`;
 
 // Remote data URLs
 export const REMOTE_URLS = {
