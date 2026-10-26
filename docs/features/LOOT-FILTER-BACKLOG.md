@@ -69,7 +69,7 @@ Collected to forward together once the current implementation round is done.
   only, and `droplight` takes `{ "color": [r, g, b] }` or `{}`, nothing that switches a beam off. Ask for the model
   beam to be suppressed on hidden items, or a launcher toggle.
 - **Treasure goblins on the minimap.** Every condition and action of the plugin is about items; goblins are monsters
-  (`monstats.txt` treasuregoblin*). Needs a monster-marker plugin, not a filter feature.
+  (`monstats.txt` treasuregoblin\*). Needs a monster-marker plugin, not a filter feature.
 - **Orphan rune row.** `misc.txt` row 424 "Hu Rune" (`r48`, name string `r32` = Fu Rune) is used by no treasure class,
   cube recipe, runeword or gems.txt row. The app greys it out as "never drops".
 - **Unidentified items.** Whether the plugin sees stats and `uniqueOrSetId` of unidentified ground items decides how
