@@ -12,6 +12,8 @@ fields, synergies and the uniques, set items and runewords that grant it (`/skil
   skill, +levels, aura, charges, chance to cast on …), linked to that item's page
 - Look up skills no class has: procs and item-only spells such as Rift Shot, Fire Surge or Mythical Decrepify
 - Search every skill by name; share a view by URL
+- Point to the official Frame Table (`ias-calculator.html`, via `officialDocsUrl`) for IAS and FCR breakpoints in
+  the intro; the app does not compute breakpoints
 
 Out of scope: per-level values (damage, duration, …). The game computes them with calc expressions (`clc4`,
 `ln12`, `skill('Fire Ball'.blvl)`, …) that reference stats and other skills; only constants and skill params are

@@ -84,6 +84,11 @@ export const OFFICIAL_REFERENCES: readonly OfficialReference[] = [
     file: 'ascendancies.htm',
     description: 'Ascendancy Stones: how to unlock them and the challenges that upgrade them.',
   },
+  {
+    label: 'Frame Table',
+    file: 'ias-calculator.html',
+    description: 'Attack and cast speed breakpoints (IAS and FCR) per class, form, skill and weapon.',
+  },
   { label: 'Changelog', file: 'changelogs.html', description: 'Release notes for every ESR version.' },
 ];
 

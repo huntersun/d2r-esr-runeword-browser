@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
+import { ExternalLink } from '@/components/ExternalLink';
 import { FilterPanel } from '@/components/FilterPanel';
 import { PageShell } from '@/components/PageShell';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
@@ -14,6 +15,7 @@ import { GameDataError } from '@/features/game-data/components/GameDataError';
 import { GameDataLoading } from '@/features/game-data/components/GameDataLoading';
 import type { SkillDetail } from '@/features/game-data/engine/schema';
 import { useGameData } from '@/features/game-data/hooks/useGameData';
+import { officialDocsUrl } from '@/features/guide/engine/linkSchemes';
 import { cn } from '@/lib/utils';
 import { SkillDetailCard } from '../components/SkillDetailCard';
 import { SkillTile, type SkillTileMark } from '../components/SkillTile';
@@ -123,6 +125,15 @@ function SkillsBrowser({ view }: { readonly view: SkillsView }) {
       <p className="text-sm text-muted-foreground">
         Every class skill tree from the ESR game files, plus the skills only items grant. Pick a skill for its description, mana cost,
         synergies and the uniques, set items and runewords that grant it. Per-level values are formulas in the game files and are not shown.
+        For attack and cast speed breakpoints see the official{' '}
+        <ExternalLink
+          href={officialDocsUrl('ias-calculator.html')}
+          className="inline-flex items-center gap-0.5 text-primary hover:underline"
+          iconClassName="size-3"
+        >
+          Frame Table
+        </ExternalLink>
+        .
       </p>
 
       <FilterPanel>

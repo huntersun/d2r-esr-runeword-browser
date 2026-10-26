@@ -73,11 +73,12 @@ above the search, `START_CARDS` are four task-shaped entry cards (two columns fr
 what is it?" → `loot-triage`, "What can I make in the cube?" → `cube-basics`, "Where do I go next?" → `start-here`,
 "Which base for my runeword?" → `/game-data/best-base`. A card whose note is missing from the bundle is hidden
 (`visibleStartCards`). Below "I found something", `OFFICIAL_REFERENCES` lists the official docs pages (Cube Recipes,
-Maps, Endgame Maps, Kill Ledger, Weapon Mastery, Skill Information, Ascendancies, Changelog), each with a one-line
+Maps, Endgame Maps, Kill Ledger, Weapon Mastery, Skill Information, Ascendancies, Frame Table, Changelog; the Frame Table,
+`ias-calculator.html`, has the IAS and FCR breakpoints and is not linked from the official site's nav), each with a one-line
 description, opening in a new tab (`ExternalLink`, `rel="noopener noreferrer"`, ↗ icon). The URLs come from
 `officialDocsUrl(file)` in `engine/linkSchemes.ts`, the same helper that resolves `docs:` links. Both lists are kept in
 code, not in `spine.yml`: the cards mix note and app-page targets, and the docs strip is a fixed list of official pages
-with no note behind it, so putting them in content would mean a new bundle field and generator code for eight
+with no note behind it, so putting them in content would mean a new bundle field and generator code for nine
 constants. `utils/guideHome.test.ts` checks them instead: card slugs against the committed `public/guide/guide.json`,
 page cards against `APP_PAGES` (`build/links.ts`), docs files against the ESR clone's `docs/` (skipped without it).
 
