@@ -12,6 +12,11 @@
  * - A wrong-shaped value goes to `passthrough` with an `error`; an unknown key with a `warning`.
  * - `rules` (or `styles`) holding a non-object entry is wrong-shaped as a whole: `rules` is then `[]`
  *   and the original list stays in the top-level `passthrough`.
+ * - `disabledRules` (the editor's own key, ignored by the plugin) is a list of `{ "at": <index>, "rule": {…} }`: each
+ *   rule is read like a `rules` entry, marked `disabled` and inserted at `at` in ascending order, so `at` is its index
+ *   in the full rule list. A duplicate or too large `at` is moved (after the previous one, or to the end) with a
+ *   warning; any other shape makes the whole list wrong-shaped (top-level `passthrough`).
+ * - A rule's diagnostics carry its file path (`rules/<n>` or `disabledRules/<n>/rule`) and its index in the full list.
  */
 import { parseJsonc, type JsoncParseResult } from './jsonc.ts';
 import {
@@ -373,7 +378,20 @@ export const EFFECT_KEYS: readonly Exclude<keyof RuleActions, 'comment'>[] = ACT
   (key): key is Exclude<keyof RuleActions, 'comment'> => key !== 'comment'
 );
 /** Top-level keys in the guide's order. */
-export const TOP_LEVEL_KEYS = ['formatVersion', ...keysOf(HEADER_READERS), 'styles', 'rules'] as const;
+export const TOP_LEVEL_KEYS = ['formatVersion', ...keysOf(HEADER_READERS), 'styles', 'rules', 'disabledRules'] as const;
+
+/**
+ * Where each rule of the full list (disabled ones included) sits in the written file: `rules/<n>` with n the number of
+ * enabled rules before it, or `disabledRules/<n>/rule` with n the number of disabled rules before it.
+ */
+export function ruleFilePaths(rules: readonly Pick<LootFilterRule, 'disabled'>[]): string[] {
+  let enabled = 0;
+  let disabled = 0;
+  return rules.map((rule) => {
+    if (rule.disabled !== true) return `rules/${String(enabled++)}`;
+    return `disabledRules/${String(disabled++)}/rule`;
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Object parsing
@@ -456,8 +474,8 @@ function inFileOrder(
   return Object.fromEntries(keys.map((key) => [key, passthrough[key]]));
 }
 
-function parseRule(context: Context, raw: Readonly<Record<string, unknown>>, index: number): LootFilterRule {
-  const owner: Owner = { path: `rules/${String(index)}`, rule: index };
+function parseRule(context: Context, raw: Readonly<Record<string, unknown>>, index: number, path: string): LootFilterRule {
+  const owner: Owner = { path, rule: index };
   const rule: { -readonly [K in keyof LootFilterRule]?: LootFilterRule[K] } = {};
   const passthrough: Record<string, unknown> = {};
   readFields<RuleConditions>(context, owner, raw, CONDITION_READERS, rule, passthrough);
@@ -466,6 +484,56 @@ function parseRule(context: Context, raw: Readonly<Record<string, unknown>>, ind
   const ordered = inFileOrder(raw, passthrough);
   if (ordered) rule.passthrough = ordered;
   return rule;
+}
+
+/** A raw rule object with the path it has in the file being read, in full-list order. */
+interface PlacedRule {
+  readonly raw: Readonly<Record<string, unknown>>;
+  readonly path: string;
+  readonly disabled: boolean;
+}
+
+interface DisabledEntry {
+  readonly at: number;
+  readonly rule: Readonly<Record<string, unknown>>;
+}
+
+function isDisabledEntry(value: unknown): value is DisabledEntry {
+  return (
+    isPlainObject(value) &&
+    extraKeys(value, ['at', 'rule']).length === 0 &&
+    typeof value.at === 'number' &&
+    Number.isInteger(value.at) &&
+    value.at >= 0 &&
+    isPlainObject(value.rule)
+  );
+}
+
+/** Inserts the `disabledRules` entries into `placed` (the enabled rules) at their `at`, ascending; warns about moved ones. */
+function placeDisabledRules(context: Context, entries: readonly DisabledEntry[], placed: PlacedRule[]): void {
+  const order = entries.map((entry, position) => ({ entry, position })).sort((a, b) => a.entry.at - b.entry.at);
+  let previous = -1;
+  for (const { entry, position } of order) {
+    const path = `disabledRules/${String(position)}`;
+    let at = Math.max(entry.at, previous + 1);
+    if (at > entry.at) {
+      context.diagnostics.push({
+        severity: 'warning',
+        path: `${path}/at`,
+        message: `Another disabled rule has "at" ${String(entry.at)} too; this one goes after it (at ${String(at)})`,
+      });
+    }
+    if (at > placed.length) {
+      at = placed.length;
+      context.diagnostics.push({
+        severity: 'warning',
+        path: `${path}/at`,
+        message: `"at" ${String(entry.at)} is past the end of the rule list; the disabled rule goes last (at ${String(at)})`,
+      });
+    }
+    placed.splice(at, 0, { raw: entry.rule, path: `${path}/rule`, disabled: true });
+    previous = at;
+  }
 }
 
 function parseStyle(context: Context, raw: Readonly<Record<string, unknown>>, name: string): LootFilterStyle {
@@ -537,19 +605,31 @@ export function readLootFilter(value: unknown, leadingComments: readonly string[
     }
   }
 
-  const rules: LootFilterRule[] = [];
+  const placed: PlacedRule[] = [];
   if (!('rules' in value)) topReport('error', 'rules', 'Missing "rules"');
   else {
     const rawRules = value.rules;
     if (Array.isArray(rawRules) && rawRules.every(isPlainObject)) {
       for (const [index, rawRule] of rawRules.entries()) {
-        if (isPlainObject(rawRule)) rules.push(parseRule(context, rawRule, index));
+        if (isPlainObject(rawRule)) placed.push({ raw: rawRule, path: `rules/${String(index)}`, disabled: false });
       }
     } else {
       passthrough.rules = rawRules;
       topReport('error', 'rules', '"rules" must be a list of rule objects');
     }
   }
+  if ('disabledRules' in value) {
+    const rawDisabled = value.disabledRules;
+    if (Array.isArray(rawDisabled) && rawDisabled.every(isDisabledEntry)) placeDisabledRules(context, rawDisabled, placed);
+    else {
+      passthrough.disabledRules = rawDisabled;
+      topReport('error', 'disabledRules', '"disabledRules" must be a list of { "at": <rule index>, "rule": { … } } entries');
+    }
+  }
+  const rules = placed.map(({ raw, path, disabled }, index): LootFilterRule => {
+    const rule = parseRule(context, raw, index, path);
+    return disabled ? { ...rule, disabled: true } : rule;
+  });
 
   const ordered = inFileOrder(value, passthrough);
   const filter: LootFilter = {

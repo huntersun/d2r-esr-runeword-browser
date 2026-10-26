@@ -34,6 +34,7 @@ import {
   setHeader,
   setNotifications,
   setQualityColors,
+  setRuleDisabled,
   setStyle,
   updateRule,
 } from './lootFilterSlice';
@@ -52,6 +53,7 @@ const isEditorMutation = isAnyOf(
   addRule,
   updateRule,
   patchRule,
+  setRuleDisabled,
   removeRule,
   moveRule,
   duplicateRule,

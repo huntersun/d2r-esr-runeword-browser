@@ -1,21 +1,22 @@
 import { CircleAlert, TriangleAlert } from 'lucide-react';
 import type { Diagnostic } from '../../engine/types';
 
+/** A rule's own path in the file: `rules/<n>` or, for a disabled rule, `disabledRules/<n>/rule`. */
+const RULE_PATH = /^(?:rules\/\d+|disabledRules\/\d+\/rule)(?:\/|$)/;
+
 interface RuleDiagnosticsProps {
-  readonly index: number;
   /** This rule's diagnostics only. */
   readonly diagnostics: readonly Diagnostic[];
 }
 
 /** The rule's problems as a compact list (errors first); the path is shown relative to the rule. */
-export function RuleDiagnostics({ index, diagnostics }: RuleDiagnosticsProps) {
+export function RuleDiagnostics({ diagnostics }: RuleDiagnosticsProps) {
   if (diagnostics.length === 0) return null;
-  const prefix = `rules/${String(index)}`;
   const sorted = [...diagnostics].sort((a, b) => (a.severity === b.severity ? 0 : a.severity === 'error' ? -1 : 1));
   return (
     <ul className="space-y-1 rounded-md border bg-muted/30 px-3 py-2 text-sm" aria-label="Problems with this rule">
       {sorted.map((diagnostic, position) => {
-        const path = diagnostic.path === prefix ? '' : diagnostic.path.replace(`${prefix}/`, '');
+        const path = diagnostic.path.replace(RULE_PATH, '');
         return (
           <li key={`${diagnostic.path}-${String(position)}`} className="flex items-start gap-2">
             {diagnostic.severity === 'error' ? (

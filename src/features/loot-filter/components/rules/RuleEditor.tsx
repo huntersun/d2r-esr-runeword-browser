@@ -183,7 +183,7 @@ export function RuleEditor({ filter, index, rule, diagnostics, data }: RuleEdito
             </p>
           </div>
 
-          <RuleDiagnostics index={index} diagnostics={diagnostics} />
+          <RuleDiagnostics diagnostics={diagnostics} />
 
           <HowRulesCombine />
 

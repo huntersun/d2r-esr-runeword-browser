@@ -8,6 +8,9 @@
  *   always one line; a list of strings or numbers too long for {@link LINE_WIDTH} is wrapped several
  *   values per line (as Sully's `excludeItemCodes`); other values too long for a line are expanded;
  * - strings keep literal `ÿ` (and any other non-ASCII) characters; the file ends with a newline.
+ * - enabled rules go to `rules`; disabled ones (`LootFilterRule.disabled`) to a `disabledRules` list after it,
+ *   `{ "at": <index in the full rule list>, "rule": {…} }` in ascending `at`, which the plugin ignores; without
+ *   disabled rules no `disabledRules` key is written.
  * Comments between rules in the source are not kept.
  */
 import { ACTION_KEYS, CONDITION_KEYS, TOP_LEVEL_KEYS, isPlainObject } from './parse.ts';
@@ -60,10 +63,18 @@ export function toPlainJson(filter: LootFilter): PlainObject {
       case 'styles':
         if (filter.styles) out.styles = Object.fromEntries(Object.entries(filter.styles).map(([name, style]) => [name, plainStyle(style)]));
         break;
-      case 'rules':
+      case 'rules': {
+        const enabled = filter.rules.filter((rule) => rule.disabled !== true);
         // A wrong-shaped `rules` list waits in passthrough until the editor has rules of its own.
-        if (filter.rules.length > 0 || filter.passthrough?.rules === undefined) out.rules = filter.rules.map(plainRule);
+        if (enabled.length > 0 || filter.passthrough?.rules === undefined) out.rules = enabled.map(plainRule);
         break;
+      }
+      case 'disabledRules': {
+        const disabled = filter.rules.flatMap((rule, at) => (rule.disabled === true ? [{ at, rule: plainRule(rule) }] : []));
+        // Without disabled rules a wrong-shaped `disabledRules` list stays in passthrough.
+        if (disabled.length > 0) out.disabledRules = disabled;
+        break;
+      }
       default:
         if (filter[key] !== undefined) out[key] = filter[key];
     }

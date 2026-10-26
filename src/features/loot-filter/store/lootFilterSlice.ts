@@ -335,6 +335,21 @@ const lootFilterSlice = createSlice({
       });
     },
 
+    /**
+     * Switches a rule off or on. A disabled rule keeps its place in `rules` (indices and the selection stay put) and is
+     * written to `disabledRules`; the flag is not a rule key, so the rule's passthrough is untouched. Same value: no-op.
+     */
+    setRuleDisabled(state, action: PayloadAction<{ readonly index: number; readonly disabled: boolean }>): State {
+      const { index, disabled } = action.payload;
+      return editRules(state, (rules) => {
+        if (!isIndex(index, rules.length) || (rules[index].disabled === true) === disabled) return undefined;
+        const next = [...rules];
+        const { disabled: _flag, ...rule } = rules[index];
+        next[index] = disabled ? { ...rule, disabled: true } : rule;
+        return { rules: next };
+      });
+    },
+
     removeRule(state, action: PayloadAction<number>): State {
       const index = action.payload;
       const selected = state.editor.selectedRule;
@@ -364,7 +379,7 @@ const lootFilterSlice = createSlice({
       });
     },
 
-    /** Inserts a copy right after the rule and selects the copy. */
+    /** Inserts a copy right after the rule and selects the copy (a disabled rule's copy is disabled too). */
     duplicateRule(state, action: PayloadAction<number>): State {
       const index = action.payload;
       return editRules(state, (rules) => {
@@ -451,6 +466,7 @@ export const {
   addRule,
   updateRule,
   patchRule,
+  setRuleDisabled,
   removeRule,
   moveRule,
   duplicateRule,

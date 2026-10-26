@@ -16,7 +16,11 @@ const OUTCOMES: Readonly<Record<RuleTraceEntry['outcome'], { readonly label: str
     className: 'border-red-600/40 bg-red-500/15 text-red-800 dark:text-red-300',
   },
   skipped: { label: 'skipped', className: 'border-border bg-muted text-muted-foreground' },
+  disabled: { label: 'disabled', className: 'border-dashed border-border bg-muted text-muted-foreground' },
 };
+
+/** Rules that did nothing; listed only with "Show skipped rules". */
+const isQuiet = (entry: RuleTraceEntry): boolean => entry.outcome === 'skipped' || entry.outcome === 'disabled';
 
 interface RuleTraceProps {
   readonly filter: LootFilter;
@@ -25,11 +29,16 @@ interface RuleTraceProps {
   readonly onShowRule: (index: number) => void;
 }
 
-/** One row per rule that ran, in order: outcome, summary, and the conditions that failed. Clicking opens the rule. */
+/**
+ * One row per rule that ran, in order: outcome, summary, and the conditions that failed. Skipped and disabled rules show
+ * (muted) only when "Show skipped rules" is ticked. Clicking opens the rule.
+ */
 export function RuleTrace({ filter, result, lookup, onShowRule }: RuleTraceProps) {
   const [showSkipped, setShowSkipped] = useState(false);
   const skipped = result.trace.filter((entry) => entry.outcome === 'skipped').length;
-  const shown = showSkipped ? result.trace : result.trace.filter((entry) => entry.outcome !== 'skipped');
+  const disabled = result.trace.filter((entry) => entry.outcome === 'disabled').length;
+  const quietText = `${String(skipped)} skipped${disabled > 0 ? `, ${String(disabled)} disabled` : ''}`;
+  const shown = showSkipped ? result.trace : result.trace.filter((entry) => !isQuiet(entry));
   const stoppedAt = result.hiddenBy;
   const notRun = stoppedAt === null ? 0 : filter.rules.length - stoppedAt - 1;
 
@@ -46,13 +55,13 @@ export function RuleTrace({ filter, result, lookup, onShowRule }: RuleTraceProps
             }}
           />
           <Label htmlFor="loot-filter-test-show-skipped" className="text-sm font-normal">
-            Show skipped rules ({skipped})
+            Show skipped rules ({quietText})
           </Label>
         </div>
       </div>
       {shown.length === 0 ? (
         <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-          {filter.rules.length === 0 ? 'The filter has no rules.' : `No rule matched; ${String(skipped)} skipped.`}
+          {filter.rules.length === 0 ? 'The filter has no rules.' : `No rule matched; ${quietText}.`}
         </p>
       ) : (
         <ol className="flex flex-col divide-y rounded-md border">
@@ -66,6 +75,7 @@ export function RuleTrace({ filter, result, lookup, onShowRule }: RuleTraceProps
                   type="button"
                   className={cn(
                     'flex w-full min-w-0 items-start gap-2 px-2 py-1.5 text-left hover:bg-muted/50',
+                    entry.outcome === 'disabled' && 'opacity-60',
                     'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset'
                   )}
                   title={`Open rule ${String(entry.index + 1)} in the Rules tab`}
@@ -86,10 +96,7 @@ export function RuleTrace({ filter, result, lookup, onShowRule }: RuleTraceProps
                           <span className="truncate">{rule.useStyle}</span>
                         </Badge>
                       )}
-                      <span
-                        className={cn('min-w-0 truncate text-sm', entry.outcome === 'skipped' && 'text-muted-foreground')}
-                        title={summary}
-                      >
+                      <span className={cn('min-w-0 truncate text-sm', isQuiet(entry) && 'text-muted-foreground')} title={summary}>
                         {summary}
                       </span>
                     </span>

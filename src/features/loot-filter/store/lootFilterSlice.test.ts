@@ -20,6 +20,7 @@ import reducer, {
   patchRule,
   remove,
   removeRule,
+  setRuleDisabled,
   removeStyle,
   rename,
   renameStyle,
@@ -372,6 +373,30 @@ describe('rule reducers', () => {
     expect(reducer(before, duplicateRule(4))).toBe(before);
   });
 
+  it('setRuleDisabled flags a rule in place; duplicate and move keep the flag', () => {
+    const selected = reducer(openState(), selectRule(1));
+    const off = reducer(selected, setRuleDisabled({ index: 1, disabled: true }));
+    expect(off.editor.filter?.rules[1]).toEqual({ comment: 'b', disabled: true });
+    expect(off.editor).toMatchObject({ selectedRule: 1, dirty: true });
+    expect(comments(off)).toEqual(['a', 'b', 'c', 'd']);
+    expect(reducer(off, setRuleDisabled({ index: 1, disabled: true }))).toBe(off);
+    expect(reducer(off, setRuleDisabled({ index: 9, disabled: true }))).toBe(off);
+
+    const copied = reducer(off, duplicateRule(1));
+    expect(copied.editor.filter?.rules.map((rule) => rule.disabled)).toEqual([undefined, true, true, undefined, undefined]);
+    const moved = reducer(off, moveRule({ from: 1, to: 3 }));
+    expect(moved.editor.filter?.rules.map((rule) => rule.disabled)).toEqual([undefined, undefined, undefined, true]);
+
+    const on = reducer(off, setRuleDisabled({ index: 1, disabled: false }));
+    expect(on.editor.filter?.rules[1]).toEqual({ comment: 'b' });
+  });
+
+  it('setRuleDisabled leaves a passthrough key named "disabled" alone', () => {
+    const state = openState(filterWith({ rules: [{ comment: 'a', passthrough: { disabled: 1 } }] }));
+    const off = reducer(state, setRuleDisabled({ index: 0, disabled: true }));
+    expect(off.editor.filter?.rules[0]).toEqual({ comment: 'a', passthrough: { disabled: 1 }, disabled: true });
+  });
+
   it('selectRule selects valid indices only and does not set dirty', () => {
     const state = reducer(openState(), selectRule(3));
     expect(state.editor).toMatchObject({ selectedRule: 3, dirty: false });
@@ -440,6 +465,20 @@ describe('selectDiagnostics', () => {
 
     const fixed = reducer(moved, patchRule({ index: 0, patch: { quality: 'unique' } }));
     expect(selectDiagnostics({ lootFilter: fixed })).toEqual([]);
+  });
+
+  it('gives a disabled rule its disabledRules path and keeps its index', () => {
+    const opened = run(initialState, hydrate([{ ...entry('x'), text }]), { type: open.type, payload: { id: 'x', now: NOW } });
+    const off = reducer(opened, setRuleDisabled({ index: 0, disabled: true }));
+    expect(selectDiagnostics({ lootFilter: off })).toEqual([
+      expect.objectContaining({ severity: 'error', rule: 2, path: 'rules/1/quality' }),
+      expect.objectContaining({ severity: 'warning', path: 'disabledRules' }),
+    ]);
+    const both = reducer(off, setRuleDisabled({ index: 2, disabled: true }));
+    expect(selectDiagnostics({ lootFilter: both })).toEqual([
+      expect.objectContaining({ severity: 'error', rule: 2, path: 'disabledRules/1/rule/quality' }),
+      expect.objectContaining({ severity: 'warning', path: 'disabledRules' }),
+    ]);
   });
 
   it('keeps the syntax error when there is no model', () => {

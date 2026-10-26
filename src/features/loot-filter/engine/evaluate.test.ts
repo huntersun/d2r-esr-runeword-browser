@@ -563,3 +563,21 @@ describe("Sully's QoL filter", () => {
     expect(result.icon).toEqual({ iconName: 'myth', iconSize: 50 });
   });
 });
+
+describe('disabled rules', () => {
+  it('skips a disabled rule with the outcome "disabled": it never applies or hides', () => {
+    const filter = makeFilter([
+      { itemCodes: ['r33'], hide: true, disabled: true },
+      { itemCodes: ['r33'], hideIfOtherConditionsFail: true, quality: 'unique', disabled: true },
+      { itemCodes: ['r33'], namePrefix: 'X ' },
+    ]);
+    const result = evaluateFilter(filter, makeItem(), makeContext());
+    expect(result.trace).toEqual([
+      { index: 0, outcome: 'disabled', failed: [], actions: {} },
+      { index: 1, outcome: 'disabled', failed: [], actions: {} },
+      expect.objectContaining({ index: 2, outcome: 'applied' }),
+    ]);
+    expect(result.hidden).toBe(false);
+    expect(result.name).toBe('X Zod Rune');
+  });
+});

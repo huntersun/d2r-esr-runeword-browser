@@ -93,4 +93,39 @@ describe('serializeLootFilter', () => {
     // Sully writes some one-line rules and styles longer than the serializer's line width (12 of 113 when last checked).
     expect(Math.abs(oneLineRules(text) - oneLineRules(source))).toBeLessThanOrEqual(15);
   });
+
+  it('writes disabled rules to disabledRules after rules, with their index in the full list', () => {
+    const filter: LootFilter = {
+      ...base,
+      rules: [{ itemCodes: ['r01'], hide: true, disabled: true }, { itemCodes: ['r02'] }, { itemCodes: ['r03'], disabled: true }],
+      passthrough: { zzz: true },
+    };
+    expect(toPlainJson(filter)).toEqual({
+      formatVersion: 1,
+      rules: [{ itemCodes: ['r02'] }],
+      disabledRules: [
+        { at: 0, rule: { itemCodes: ['r01'], hide: true } },
+        { at: 2, rule: { itemCodes: ['r03'] } },
+      ],
+      zzz: true,
+    });
+    expect(serializeLootFilter(filter)).toContain(
+      [
+        '  "rules": [',
+        '    {"itemCodes": ["r02"]}',
+        '  ],',
+        '  "disabledRules": [',
+        '    {"at": 0, "rule": {"itemCodes": ["r01"], "hide": true}},',
+      ].join('\n')
+    );
+  });
+
+  it('writes no disabledRules key without disabled rules, and keeps a wrong-shaped one until a rule is disabled', () => {
+    expect(toPlainJson({ ...base, rules: [{ itemCodes: ['r01'] }] })).not.toHaveProperty('disabledRules');
+    const wrong: LootFilter = { ...base, rules: [{ itemCodes: ['r01'] }], passthrough: { disabledRules: 'x' } };
+    expect(toPlainJson(wrong).disabledRules).toBe('x');
+    expect(toPlainJson({ ...wrong, rules: [{ itemCodes: ['r01'], disabled: true }] }).disabledRules).toEqual([
+      { at: 0, rule: { itemCodes: ['r01'] } },
+    ]);
+  });
 });

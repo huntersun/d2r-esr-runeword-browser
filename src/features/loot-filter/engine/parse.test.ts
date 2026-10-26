@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { parseJsonc } from './jsonc.ts';
-import { parseLootFilter } from './parse.ts';
+import { parseLootFilter, readLootFilter } from './parse.ts';
 import { serializeLootFilter, toPlainJson } from './serialize.ts';
 
 const SULLY = readFileSync(resolve(__dirname, '../../../../public/loot-filters/sullys-qol-filter.json'), 'utf-8');
@@ -225,5 +225,79 @@ describe('parseLootFilter', () => {
 
   it('reports a top level that is not an object', () => {
     expect(parse([1, 2]).diagnostics).toEqual([expect.objectContaining({ severity: 'error', path: '' })]);
+  });
+});
+
+describe('parseLootFilter disabledRules', () => {
+  const read = (value: unknown) => readLootFilter(value);
+
+  it('inserts each disabled rule at its index, marks it and reports its problems under its file path', () => {
+    const { filter, diagnostics } = read({
+      formatVersion: 1,
+      rules: [{ itemCodes: ['a'] }, { itemCodes: ['b'], bogus: 1 }],
+      disabledRules: [
+        { at: 3, rule: { itemCodes: ['d'], quality: 'legendary' } },
+        { at: 0, rule: { itemCodes: ['z'] } },
+      ],
+    });
+    expect(filter.rules).toEqual([
+      { itemCodes: ['z'], disabled: true },
+      { itemCodes: ['a'] },
+      { itemCodes: ['b'], passthrough: { bogus: 1 } },
+      { itemCodes: ['d'], passthrough: { quality: 'legendary' }, disabled: true },
+    ]);
+    expect(filter.passthrough).toBeUndefined();
+    expect(diagnostics.map((d) => [d.severity, d.path, d.rule])).toEqual([
+      ['warning', 'rules/1/bogus', 2],
+      ['error', 'disabledRules/0/rule/quality', 3],
+    ]);
+  });
+
+  it('moves a duplicate or too large "at" with a warning', () => {
+    const { filter, diagnostics } = read({
+      formatVersion: 1,
+      rules: [{ comment: 'a' }],
+      disabledRules: [
+        { at: 0, rule: { comment: 'x' } },
+        { at: 0, rule: { comment: 'y' } },
+        { at: 9, rule: { comment: 'z' } },
+      ],
+    });
+    expect(filter.rules.map((rule) => [rule.comment, rule.disabled])).toEqual([
+      ['x', true],
+      ['y', true],
+      ['a', undefined],
+      ['z', true],
+    ]);
+    expect(diagnostics.map((d) => [d.severity, d.path])).toEqual([
+      ['warning', 'disabledRules/1/at'],
+      ['warning', 'disabledRules/2/at'],
+    ]);
+  });
+
+  it('keeps a wrong-shaped disabledRules in passthrough with an error', () => {
+    for (const disabledRules of [{}, [{ at: -1, rule: {} }], [{ at: 1.5, rule: {} }], [{ at: 0 }], [{ at: 0, rule: {}, extra: 1 }]]) {
+      const { filter, diagnostics } = read({ formatVersion: 1, rules: [{}], disabledRules });
+      expect(filter.rules).toEqual([{}]);
+      expect(filter.passthrough).toEqual({ disabledRules });
+      expect(diagnostics.map((d) => [d.severity, d.path])).toEqual([['error', 'disabledRules']]);
+    }
+  });
+
+  it('round-trips: serialize, parse and serialize again give the same model and text', () => {
+    const { filter } = read({
+      formatVersion: 1,
+      rules: [{ itemCodes: ['a'] }, { itemCodes: ['b'] }],
+      disabledRules: [
+        { at: 1, rule: { itemCodes: ['c'], hide: true } },
+        { at: 3, rule: { comment: 'd' } },
+      ],
+    });
+    const text = serializeLootFilter(filter);
+    const again = parseLootFilter(text);
+    expect(again.filter).toEqual(filter);
+    expect(again.diagnostics).toEqual([]);
+    expect(serializeLootFilter(again.filter)).toBe(text);
+    expect(readLootFilter(toPlainJson(filter)).filter).toEqual(filter);
   });
 });

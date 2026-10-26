@@ -184,6 +184,11 @@ export interface RuleActions {
 
 export interface LootFilterRule extends RuleConditions, RuleActions {
   readonly passthrough?: Passthrough;
+  /**
+   * Editor-only, never a key inside the rule: the format has no enable flag, so a disabled rule is written to the
+   * top-level `disabledRules` list (`{ "at": <index in the full rule list>, "rule": {…} }`) that the plugin ignores.
+   */
+  readonly disabled?: true;
 }
 
 /** A named set of actions that rules pull in with `useStyle`. Styles hold actions only. */
@@ -213,6 +218,7 @@ export interface LootFilter {
   readonly qualityColors?: QualityColors;
   /** Insertion order is the file order. */
   readonly styles?: Readonly<Record<string, LootFilterStyle>>;
+  /** Every rule in editor order, disabled ones included (they are written to `disabledRules`, see `LootFilterRule.disabled`). */
   readonly rules: readonly LootFilterRule[];
   /** The `//` comment lines that precede the JSON object, verbatim (without the line break). */
   readonly leadingComments: readonly string[];
@@ -228,7 +234,11 @@ export type DiagnosticSeverity = 'error' | 'warning';
 export interface Diagnostic {
   readonly severity: DiagnosticSeverity;
   readonly message: string;
-  /** Slash-separated path into the file, e.g. `rules/12/itemCodes/3` or `styles/Mythical/sound`. */
+  /**
+   * Slash-separated path into the file, e.g. `rules/12/itemCodes/3` or `styles/Mythical/sound`. A rule's path is its
+   * place in the written file (`ruleFilePaths`): `rules/<n>` counts enabled rules only, a disabled rule is
+   * `disabledRules/<n>/rule`; `rule` is the index in the editor's full list either way.
+   */
   readonly path: string;
   /** Index of the rule the diagnostic belongs to, when it is a rule's. */
   readonly rule?: number;

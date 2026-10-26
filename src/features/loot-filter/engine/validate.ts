@@ -5,7 +5,7 @@
  */
 import { effectiveActions } from './actions.ts';
 import { isNamedList, isNumberList, namedToNumber } from './match.ts';
-import { CONDITION_KEYS, EFFECT_KEYS } from './parse.ts';
+import { CONDITION_KEYS, EFFECT_KEYS, ruleFilePaths } from './parse.ts';
 import {
   BASE_TIERS,
   DIFFICULTIES,
@@ -284,6 +284,10 @@ function checkNeverMatches(report: Report, rule: LootFilterRule, reference: Loot
   }
 }
 
+function hasPassthrough(rule: LootFilterRule): boolean {
+  return rule.passthrough !== undefined && Object.keys(rule.passthrough).length > 0;
+}
+
 /**
  * True when a hiding rule has no condition but (at most) a location that includes onGround: it hides every ground
  * item. A rule with passthrough keys is left alone: a wrong-shaped condition sits there, and the plugin switches
@@ -292,7 +296,7 @@ function checkNeverMatches(report: Report, rule: LootFilterRule, reference: Loot
 function hidesEveryGroundItem(rule: LootFilterRule, filter: LootFilter): boolean {
   if (effectiveActions(rule, filter).hide !== true) return false;
   if (rule.location !== undefined && !rule.location.includes('onGround')) return false;
-  if (rule.passthrough !== undefined && Object.keys(rule.passthrough).length > 0) return false;
+  if (hasPassthrough(rule)) return false;
   return CONDITION_KEYS.every((key) => key === 'location' || rule[key] === undefined);
 }
 
@@ -381,12 +385,24 @@ export function validateLootFilter(filter: LootFilter, reference?: LootFilterRef
     checkActions(report, style, reference);
   }
 
+  const disabledCount = filter.rules.filter((rule) => rule.disabled === true).length;
+  if (disabledCount > 0) {
+    top(
+      'warning',
+      'disabledRules',
+      `${disabledCount === 1 ? '1 disabled rule is' : `${String(disabledCount)} disabled rules are`} stored in "disabledRules"; the game ignores that key and logs one "unknown setting" line`
+    );
+  }
+
+  const paths = ruleFilePaths(filter.rules);
+  let enabledAfter = filter.rules.length - disabledCount;
   filter.rules.forEach((rule, index) => {
-    const report = reporter(diagnostics, { path: `rules/${String(index)}`, rule: index });
+    const report = reporter(diagnostics, { path: paths[index], rule: index });
     checkRule(report, rule, filter, levelIds, reference);
-    const after = filter.rules.length - index - 1;
-    if (after > 0 && hidesEveryGroundItem(rule, filter)) {
-      const later = after === 1 ? 'the rule after it never runs' : `the ${String(after)} rules after it never run`;
+    if (rule.disabled === true) return;
+    enabledAfter -= 1;
+    if (enabledAfter > 0 && hidesEveryGroundItem(rule, filter)) {
+      const later = enabledAfter === 1 ? 'the rule after it never runs' : `the ${String(enabledAfter)} rules after it never run`;
       report('warning', 'hide', `Hides every ground item; ${later} for ground items`);
     }
   });

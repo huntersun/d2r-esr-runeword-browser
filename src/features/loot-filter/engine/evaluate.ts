@@ -88,8 +88,9 @@ export interface TestContext {
 
 export interface RuleTrace {
   readonly index: number;
-  readonly outcome: 'applied' | 'skipped' | 'hidden' | 'hiddenByOtherConditions';
-  /** Condition keys that did not hold; empty when applied. */
+  /** `disabled`: the rule is switched off in the editor (written to `disabledRules`), so the game never sees it. */
+  readonly outcome: 'applied' | 'skipped' | 'disabled' | 'hidden' | 'hiddenByOtherConditions';
+  /** Condition keys that did not hold; empty when applied or disabled. */
   readonly failed: readonly string[];
   /** The style's actions with the rule's own on top; empty when skipped. */
   readonly actions: RuleActions;
@@ -327,6 +328,10 @@ export function evaluateFilter(filter: LootFilter, item: TestItem, context: Test
   const sounds: EvaluatedSound[] = [];
 
   for (const [index, rule] of filter.rules.entries()) {
+    if (rule.disabled === true) {
+      trace.push({ index, outcome: 'disabled', failed: [], actions: {} });
+      continue;
+    }
     const failed = failedConditions(rule, item, context);
     if (failed.length > 0) {
       const actions = effectiveActions(rule, filter);
