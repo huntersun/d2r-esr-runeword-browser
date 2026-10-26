@@ -279,9 +279,13 @@ export function RuleEditor({ filter, index, rule, diagnostics, data }: RuleEdito
                   data={data}
                   value={rule[field.key]}
                   onChange={(value) => patch({ [field.key]: value })}
+                  affixBrowser={field.key === 'itemStats' ? 'all' : field.key === 'itemStatsAnyOf' ? 'any' : undefined}
                 />
               </ConditionField>
             ))}
+            <p className="text-xs text-muted-foreground sm:col-span-2">
+              The game checks item stats, not affix names; Browse affixes finds the stat behind an affix (prefix + suffix values add up).
+            </p>
           </ConditionSection>
 
           <ConditionSection title="Where and when">

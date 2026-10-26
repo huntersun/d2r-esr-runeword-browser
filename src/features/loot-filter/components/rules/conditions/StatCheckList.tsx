@@ -15,6 +15,7 @@ import {
 } from '../../../utils/statChecks';
 import { NumberInput } from '../../NumberInput';
 import { StatPicker } from '../../pickers';
+import { AffixBrowserDialog, type AffixBrowserMode } from '../../pickers/AffixBrowserDialog';
 import { focusAfterRemoval } from '../../pickers/focusAfterRemoval';
 import { RequiredNumberInput } from './RequiredNumberInput';
 
@@ -108,10 +109,12 @@ interface StatCheckListProps {
   readonly value: readonly StatCheck[] | undefined;
   /** An emptied list is `undefined` (the key goes away). */
   readonly onChange: (value: readonly StatCheck[] | undefined) => void;
+  /** Shows "Browse affixes…" next to the add control (item stat lists). */
+  readonly affixBrowser?: AffixBrowserMode;
 }
 
 /** Rows of stat, optional param, op and value (two values for `between`); a row is added by picking its stat. */
-export function StatCheckList({ id, data, value, onChange }: StatCheckListProps) {
+export function StatCheckList({ id, data, value, onChange, affixBrowser }: StatCheckListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   // Set when a stat is picked, so the popover's close moves focus to the new row.
   const addedRef = useRef(false);
@@ -139,7 +142,7 @@ export function StatCheckList({ id, data, value, onChange }: StatCheckListProps)
           ))}
         </ul>
       )}
-      <div data-focus-fallback>
+      <div data-focus-fallback className="flex flex-wrap items-center gap-1.5">
         <StatPicker
           id={checks.length === 0 ? id : undefined}
           data={data}
@@ -161,6 +164,7 @@ export function StatCheckList({ id, data, value, onChange }: StatCheckListProps)
               ?.focus();
           }}
         />
+        {affixBrowser !== undefined && <AffixBrowserDialog mode={affixBrowser} value={value} onChange={onChange} />}
       </div>
     </div>
   );
