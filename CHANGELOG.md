@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.41.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.40.0...v1.41.0) (2026-10-26)
+
+
+### Features
+
+* **game-data:** list the item stats each affix writes in affixes.json ([88984ee](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/88984ee047ce52d99ec9802bef23beac2e5bebfe))
+* **loot-filter:** browse affixes to add item stat checks ([3332c05](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/3332c052d25f03b2a14a9408cd29a4e86cad9dec))
+* **loot-filter:** model the affix browser rows from the affix stats ([ba0697d](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/ba0697dfec770939f1ed4e00856a22740e65a575))
+
+
+### Documentation
+
+* **loot-filter:** document the affix browser ([4aceb07](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/4aceb07c424ae60ebad186447821778f5876bcd5))
+
 ## [1.40.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.39.0...v1.40.0) (2026-10-26)
 
 
