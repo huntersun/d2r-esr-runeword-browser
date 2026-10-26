@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.36.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.35.0...v1.36.0) (2026-10-26)
+
+
+### Features
+
+* **home:** search skills, materials, areas and cube recipe families ([d755671](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/d755671736bbb54e4560c6d18ab224e93268a698))
+
 ## [1.35.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.34.0...v1.35.0) (2026-10-26)
 
 
