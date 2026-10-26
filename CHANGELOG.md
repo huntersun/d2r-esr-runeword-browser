@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.34.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.33.0...v1.34.0) (2026-10-26)
+
+
+### Features
+
+* **home:** community tools section and links in the header menu ([2212c2d](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/2212c2d21bb392cfe70d28fb843102c8a193da83))
+* **home:** official ESR links section shared with the header menu ([6941294](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/694129457ecccfbdc2cb30210e8a9a926cbb84b3))
+
+
+### Chores
+
+* **esr-update:** cover icons, skills, tiers and the docs version source ([4ce7803](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/4ce7803e7a4939a7169d0ce01227e47d144e6533))
+
 ## [1.33.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.32.0...v1.33.0) (2026-10-25)
 
 
