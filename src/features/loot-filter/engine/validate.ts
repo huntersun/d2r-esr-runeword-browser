@@ -284,8 +284,67 @@ function checkNeverMatches(report: Report, rule: LootFilterRule, reference: Loot
   }
 }
 
+/** Conditions that only decide whether `hideIfOtherConditionsFail` looks at an item; every other one failing hides it. */
+const HIDE_IF_FAIL_GATE: ReadonlySet<string> = new Set(['itemCodes', 'excludeItemCodes', 'itemTypes', 'excludeItemTypes', 'location']);
+
 function hasPassthrough(rule: LootFilterRule): boolean {
   return rule.passthrough !== undefined && Object.keys(rule.passthrough).length > 0;
+}
+
+/**
+ * `hideIfOtherConditionsFail` hides every item that passes the gate (codes, types, location) and fails any other
+ * condition. Without codes or types the gate lets every ground item in (the plugin warns the same); with `quality` it
+ * hides the other qualities of those items. Rules with passthrough keys are left alone, as in the other checks.
+ */
+function checkHideIfFail(report: Report, rule: LootFilterRule): void {
+  if (rule.hideIfOtherConditionsFail !== true || hasPassthrough(rule)) return;
+  const others = CONDITION_KEYS.filter((key) => !HIDE_IF_FAIL_GATE.has(key) && rule[key] !== undefined);
+  if (rule.itemCodes === undefined && rule.itemTypes === undefined) {
+    report(
+      'warning',
+      'hideIfOtherConditionsFail',
+      others.length > 0
+        ? `Without "itemCodes" or "itemTypes", "hideIfOtherConditionsFail" hides every ground item that fails ${others.map((key) => `"${key}"`).join(', ')}`
+        : '"hideIfOtherConditionsFail" needs "itemCodes" or "itemTypes" to say which items it hides'
+    );
+  }
+  if (rule.quality !== undefined) {
+    report(
+      'warning',
+      'hideIfOtherConditionsFail',
+      '"hideIfOtherConditionsFail" with "quality" also hides every other quality of these items (uniques included): any other condition failing hides the item'
+    );
+  }
+}
+
+/** List conditions; an empty one makes the plugin log "the list is empty". */
+const LIST_CONDITIONS = [
+  'itemCodes',
+  'excludeItemCodes',
+  'itemTypes',
+  'excludeItemTypes',
+  'uniqueOrSetIds',
+  'excludeUniqueOrSetIds',
+  'itemStats',
+  'itemStatsAnyOf',
+  'playerStats',
+  'playerStatsAnyOf',
+  'location',
+  'areas',
+  'excludeAreas',
+  'activeInLevels',
+] as const satisfies readonly (keyof LootFilterRule)[];
+
+function checkEmptyLists(report: Report, rule: LootFilterRule): void {
+  for (const key of LIST_CONDITIONS) {
+    if (rule[key]?.length === 0) {
+      report(
+        'warning',
+        key,
+        `"${key}" is an empty list: the game logs "the list is empty" and what it does then is not known; remove the key or add values`
+      );
+    }
+  }
 }
 
 /**
@@ -315,13 +374,8 @@ function checkRule(
   if (rule.useStyle !== undefined && (filter.styles === undefined || !Object.hasOwn(filter.styles, rule.useStyle))) {
     report('error', 'useStyle', `There is no style named "${rule.useStyle}"`);
   }
-  if (rule.hideIfOtherConditionsFail === true && rule.itemCodes === undefined && rule.itemTypes === undefined) {
-    report(
-      'warning',
-      'hideIfOtherConditionsFail',
-      '"hideIfOtherConditionsFail" needs "itemCodes" or "itemTypes" to say which items it hides'
-    );
-  }
+  checkHideIfFail(report, rule);
+  checkEmptyLists(report, rule);
 
   checkNamedMatch(report, 'quality', rule.quality, QUALITIES, 1, 'quality');
   checkNamedMatch(report, 'baseTier', rule.baseTier, BASE_TIERS, 0, 'base tier');

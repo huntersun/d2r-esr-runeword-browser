@@ -299,7 +299,42 @@ describe('validateLootFilter', () => {
   });
 });
 
-describe('disabled rules', () => {
+describe('hideIfOtherConditionsFail, empty lists and disabled rules', () => {
+  const said = (rule: LootFilterRule) => validateLootFilter({ ...base, rules: [rule] }).map((d) => `${d.path}: ${d.message}`);
+
+  it('warns that hide-if-fail without codes or types hides every ground item failing the other conditions', () => {
+    expect(said({ quality: 'unique', hideIfOtherConditionsFail: true })).toEqual([
+      'rules/0/hideIfOtherConditionsFail: Without "itemCodes" or "itemTypes", "hideIfOtherConditionsFail" hides every ground item that fails "quality"',
+      expect.stringContaining('rules/0/hideIfOtherConditionsFail: "hideIfOtherConditionsFail" with "quality" also hides'),
+    ]);
+    expect(said({ sockets: 2, isEthereal: true, excludeItemTypes: ['weap'], hideIfOtherConditionsFail: true })).toEqual([
+      'rules/0/hideIfOtherConditionsFail: Without "itemCodes" or "itemTypes", "hideIfOtherConditionsFail" hides every ground item that fails "sockets", "isEthereal"',
+    ]);
+    expect(said({ location: ['onGround'], hideIfOtherConditionsFail: true })).toEqual([
+      'rules/0/hideIfOtherConditionsFail: "hideIfOtherConditionsFail" needs "itemCodes" or "itemTypes" to say which items it hides',
+    ]);
+    expect(said({ itemTypes: ['weap'], sockets: 2, hideIfOtherConditionsFail: true })).toEqual([]);
+  });
+
+  it('warns that hide-if-fail with quality also hides the other qualities', () => {
+    expect(said({ itemTypes: ['weap'], quality: 'magic', itemStats: [{ stat: 'x', value: 1 }], hideIfOtherConditionsFail: true })).toEqual([
+      'rules/0/hideIfOtherConditionsFail: "hideIfOtherConditionsFail" with "quality" also hides every other quality of these items (uniques included): any other condition failing hides the item',
+    ]);
+    expect(said({ itemTypes: ['weap'], quality: 'magic', hide: true })).toEqual([]);
+  });
+
+  it('leaves rules with passthrough keys alone', () => {
+    expect(said({ quality: 'unique', hideIfOtherConditionsFail: true, passthrough: { sockets: 'two' } })).toEqual([]);
+  });
+
+  it('warns about every empty list condition', () => {
+    expect(said({ itemCodes: [], activeInLevels: [], location: [], hide: true })).toEqual([
+      'rules/0/itemCodes: "itemCodes" is an empty list: the game logs "the list is empty" and what it does then is not known; remove the key or add values',
+      expect.stringMatching(/^rules\/0\/location: "location" is an empty list/),
+      expect.stringMatching(/^rules\/0\/activeInLevels: "activeInLevels" is an empty list/),
+    ]);
+  });
+
   it('notes disabled rules once, still checks them under their file path and skips them for "hides every ground item"', () => {
     const later: LootFilterRule = { itemCodes: ['r01'], namePrefix: 'x' };
     const diagnostics = validateLootFilter({
