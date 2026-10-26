@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.35.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.34.0...v1.35.0) (2026-10-26)
+
+
+### Features
+
+* **areas:** area levels page from levels.txt with map tiers ([f855f38](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/f855f383b760d637dc93fc4de233ac310e71c8b4))
+* **areas:** merge the area levels page and register its route in the sitemap ([3661058](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/36610589eeeb27d26de5b81aa8df17a1f8f27c1f))
+* **cube:** output item level, more conditions, input/output search and quality filter ([ccb3032](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/ccb3032414a70654d5795ed168cebc028f9aea69))
+* **guide:** link the official Frame Table ([2e55587](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/2e555872434cad3044f4976f2ecc8348ab8c6da2))
+* **nav:** add the Frame Table to the official ESR links and rename the Items menu to Database ([08de261](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/08de26173869ba5f82d33aba84573cf3cf02ff7e))
+
+
+### Bug Fixes
+
+* **areas:** read vanilla unique-pack rows stored mins then maxes ([a83cbd6](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/a83cbd6a78287a74e9662ed51685289afcc494fd))
+* **cube:** show the mythical description lines a recipe adds ([7ae97d5](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/7ae97d5f5bd2e35ece0191bdd9502d8ee926571a))
+
+
+### Documentation
+
+* **areas:** unique-pack rows are ESR data, not vanilla; note the duplicated level names ([0559069](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/0559069b73cb5cfbf5061899cc7a7524f0e173d5))
+
 ## [1.34.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.33.0...v1.34.0) (2026-10-26)
 
 
