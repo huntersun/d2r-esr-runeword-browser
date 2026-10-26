@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- route table, not a component module: it exports `router` and keeps its lazy screens local */
 import { lazy, Suspense, type ComponentType, type LazyExoticComponent } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppLayout } from '@/core/layouts/AppLayout';

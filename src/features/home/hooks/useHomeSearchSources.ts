@@ -94,10 +94,10 @@ export function useBundleNames(enabled: boolean): BundleNamesState {
     };
   }, [enabled]);
 
-  const sources: HomeSearchSources = {};
+  let sources: HomeSearchSources = {};
   for (const file of NAMES_BUNDLES) {
     const loaded = settled[file];
-    if (loaded !== undefined && loaded !== 'error') Object.assign(sources, loaded);
+    if (loaded !== undefined && loaded !== 'error') sources = { ...sources, ...loaded };
   }
   return { sources, pending: NAMES_BUNDLES.some((file) => settled[file] === undefined) };
 }

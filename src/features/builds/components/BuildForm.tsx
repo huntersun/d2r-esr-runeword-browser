@@ -58,7 +58,7 @@ export function BuildForm({ initialValues, submitLabel, saving, saved, onSubmit,
   const [ascendancy, setAscendancy] = useState<string | null>(initialValues.ascendancy);
   const [skills, setSkills] = useState(initialValues.skills);
   const [levelText, setLevelText] = useState(initialValues.level !== null ? String(initialValues.level) : '');
-  const [skillPoints, setSkillPointsState] = useState<SkillPoints>(initialValues.skillPoints);
+  const [skillPoints, setSkillPoints] = useState<SkillPoints>(initialValues.skillPoints);
   const [touched, setTouched] = useState(false);
 
   const markTouched = () => {
@@ -194,7 +194,7 @@ export function BuildForm({ initialValues, submitLabel, saving, saved, onSubmit,
             markTouched();
           }}
           onSkillPointsChange={(next) => {
-            setSkillPointsState(next);
+            setSkillPoints(next);
             markTouched();
           }}
         />
