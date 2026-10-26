@@ -55,9 +55,21 @@ interface EnhanceSearchProps {
   readonly placeholder: string;
   /** Text before the exact-phrase hint (default "Search the bonus text;") */
   readonly hint?: string;
+  /** Input id, for a page with more than one search box (default `enhance-search`) */
+  readonly id?: string;
+  /** Screen-reader label of the input (default "Search") */
+  readonly label?: string;
 }
 
-export function EnhanceSearch({ value, onChange, onClear, placeholder, hint = 'Search the bonus text;' }: EnhanceSearchProps) {
+export function EnhanceSearch({
+  value,
+  onChange,
+  onClear,
+  placeholder,
+  hint = 'Search the bonus text;',
+  id = 'enhance-search',
+  label = 'Search',
+}: EnhanceSearchProps) {
   return (
     <div className="w-full max-w-md space-y-1">
       <div className="flex items-center gap-1">
@@ -66,12 +78,12 @@ export function EnhanceSearch({ value, onChange, onClear, placeholder, hint = 'S
         </p>
         <SearchHelpButton />
       </div>
-      <Label htmlFor="enhance-search" className="sr-only">
-        Search
+      <Label htmlFor={id} className="sr-only">
+        {label}
       </Label>
       <InputGroup>
         <InputGroupInput
-          id="enhance-search"
+          id={id}
           type="text"
           placeholder={placeholder}
           value={value}
@@ -85,7 +97,7 @@ export function EnhanceSearch({ value, onChange, onClear, placeholder, hint = 'S
         />
         {value && (
           <InputGroupAddon align="inline-end">
-            <InputGroupButton variant="ghost" size="icon-xs" onClick={onClear} aria-label="Clear search">
+            <InputGroupButton variant="ghost" size="icon-xs" onClick={onClear} aria-label={`Clear ${label.toLowerCase()}`}>
               <X className="size-4" />
             </InputGroupButton>
           </InputGroupAddon>

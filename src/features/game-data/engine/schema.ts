@@ -445,11 +445,17 @@ export interface CubeGroup {
   /** Conditions every row of the group has ("Amazon only", "Hell only") */
   conditions: string[];
   /**
-   * Unique and set item names the group's rows take or give, when the family has no `recipes` (the merged rows list
-   * only a few of them), for the search; omitted otherwise
+   * Unique and set item names the group's rows take, when the family has no `recipes` (the merged rows list only a few
+   * of them), for the ingredient search; omitted otherwise
    */
-  names?: string[];
+  inputNames?: string[];
+  /** The unique and set item names the group's rows give, as `inputNames`, for the result search */
+  outputNames?: string[];
 }
+
+/** Output qualities of the Cube page's quality filter, in filter order */
+export const CUBE_QUALITIES = ['unique', 'set', 'rare', 'magic', 'crafted'] as const;
+export type CubeQuality = (typeof CUBE_QUALITIES)[number];
 
 /** A merged recipe row (the guide's `::recipes` text, uncapped) and how many cubemain rows it stands for */
 export interface CubeMergedRow {
@@ -458,6 +464,13 @@ export interface CubeMergedRow {
   inputs: string[];
   output: string;
   variants: number;
+  /**
+   * The created item's level from the `lvl` / `plvl` / `ilvl` columns ("Item level 99", "Item level 60% of character
+   * level"); variants with different levels are joined with " / "; omitted when no variant sets one
+   */
+  outputLevel?: string;
+  /** Qualities of the outputs (quality qualifiers and named unique / set items), for the quality filter */
+  qualities: CubeQuality[];
 }
 
 export type CubeInputKind = 'item' | 'type' | 'unique' | 'any';
@@ -480,6 +493,8 @@ export interface CubeRecipeOutput {
   bonus: string[];
   /** Qualities and notes ("Unique", "3 sockets", "socketed items come out", "item level 99", "to Cellar of Pain") */
   details: string[];
+  /** The created item's level from the `lvl` / `plvl` / `ilvl` columns ("Item level 99"); omitted when unset */
+  level?: string;
 }
 
 /** One cubemain row */
@@ -492,8 +507,10 @@ export interface CubeRecipe {
   description: string;
   inputs: CubeRecipeInput[];
   outputs: CubeRecipeOutput[];
-  /** Readable conditions: class only, minimum difficulty, a boss kill, no added level requirement */
+  /** Readable conditions: class only, minimum difficulty, a boss kill, the stat checks (forging, merc-only, …) */
   conditions: string[];
+  /** Qualities of the outputs, for the quality filter (as CubeMergedRow) */
+  qualities: CubeQuality[];
 }
 
 /** Enabled cubemain rows not listed, by reason */

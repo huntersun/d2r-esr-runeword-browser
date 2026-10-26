@@ -28,8 +28,10 @@ export const GAME_DATA_URL_PARAM_KEYS = {
   // Enhance (TIER above is reused for the Vessel tier)
   TAB: 'tab',
   SLOT: 'slot',
-  // Cube recipes
+  // Cube recipes (QUALITY above is reused for the output qualities)
   FAMILY: 'family',
+  IN: 'in',
+  OUT: 'out',
   // Materials
   GROUP: 'group',
   // Sets (CLS above is reused for the set's class)

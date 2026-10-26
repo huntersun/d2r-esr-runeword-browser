@@ -25,6 +25,12 @@ export interface CubeOutput {
   /** Raw output cell without quotes, e.g. `usetype,uni` or `Kill Ledger` */
   spec: string;
   mods: CubeMod[];
+  /** `lvl` column: a fixed item level; omitted when unset */
+  lvl?: number;
+  /** `plvl` column: the item level as a % of the character level; omitted when unset */
+  plvl?: number;
+  /** `ilvl` column: the item level as a % of the input item's level (adds to plvl); omitted when unset */
+  ilvl?: number;
 }
 
 /** The row's `op` / `param` / `value` condition, e.g. the Kill Ledger's kill count (stat 163 at least 500) */
@@ -144,7 +150,13 @@ export function readCube(table: TsvTable): CubeRow[] {
       ['output c', 'c '],
     ] as const) {
       const spec = row.has(column) ? unquote(row.str(column)) : '';
-      if (spec !== '') outputs.push({ spec, mods: readMods(row, prefix) });
+      if (spec === '') continue;
+      const output: CubeOutput = { spec, mods: readMods(row, prefix) };
+      for (const key of ['lvl', 'plvl', 'ilvl'] as const) {
+        const level = numberOf(row, `${prefix}${key}`);
+        if (level !== 0) output[key] = level;
+      }
+      outputs.push(output);
     }
     rows.push({
       line: row.line,

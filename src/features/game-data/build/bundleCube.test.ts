@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildCubeBundle, RAW_ROW_LIMIT, type CubeContext } from './bundleCube.ts';
+import { buildCubeBundle, RAW_ROW_LIMIT, statConditionText, type CubeContext } from './bundleCube.ts';
 import { fallbackFamilyId, fallbackPrefix } from './cube/cubeCatalog.ts';
 import { buildCubeTables, type CubeMod } from './cube/cubeRows.ts';
 
@@ -20,6 +20,9 @@ const HEADER = [
   'input 2',
   'input 3',
   'output',
+  'lvl',
+  'plvl',
+  'ilvl',
   'mod 1',
   'mod 1 min',
   'mod 1 max',
@@ -34,6 +37,8 @@ interface RowOptions {
   cls?: string;
   mod?: [string, number];
   outputB?: string;
+  /** `lvl`, `plvl`, `ilvl` of output a (0 = unset) */
+  level?: [number, number, number];
 }
 
 function row(description: string, inputs: string[], output: string, options: RowOptions = {}): string[] {
@@ -53,6 +58,7 @@ function row(description: string, inputs: string[], output: string, options: Row
     second,
     third,
     output,
+    ...(options.level ?? [0, 0, 0]).map((level) => (level === 0 ? '' : String(level))),
     mod,
     mod === '' ? '' : String(amount),
     mod === '' ? '' : String(amount),
@@ -133,6 +139,8 @@ function build(rows: string[][]) {
     tables: { ...tables, levelName: (id) => (id === 147 ? 'Cellar of Pain' : null) },
     typeCodes: new Set(['weap', 'tors', 'gem5', 'char', 'can9']),
     statNames: STAT_NAMES,
+    setNames: new Set(["Tal Rasha's Lidless Eye"]),
+    uniqueNames: new Set(['Hacker', 'Axe of the Elements']),
   };
   return buildCubeBundle(ctx);
 }
@@ -225,7 +233,49 @@ describe('buildCubeBundle', () => {
     expect(box?.outputs[0]?.bonus).toEqual(['hp +5']);
   });
 
-  it('renders only the readable conditions: class, difficulty, boss kills and no added level requirement', () => {
+  it('words the stat checks: named flags first, then "{stat} {op} {value}"', () => {
+    expect(statConditionText(18, 'item_craftflag', 0)).toBe('No forging mod');
+    expect(statConditionText(18, 'item_craftflag', 12)).toBe('Has a forging mod');
+    expect(statConditionText(18, 'item_craftflag2', 0)).toBe('No jewel forging');
+    expect(statConditionText(18, 'item_mercflag', 0)).toBe('Not merc-only');
+    expect(statConditionText(18, 'item_mercflag', 3)).toBe('Merc-only item');
+    expect(statConditionText(18, 'weaponmastery', 0)).toBe('No weapon mastery token applied');
+    expect(statConditionText(18, 'weaponmastery', 1)).toBe('Weapon mastery token applied');
+    expect(statConditionText(17, 'item_upgraded', 1)).toBe('Not upgraded yet');
+    expect(statConditionText(18, 'item_levelreq', 0)).toBe('Only items without an added level requirement');
+    expect(statConditionText(3, 'kill_base', 10000)).toBe('Kill count ≥ 10,000');
+    expect(statConditionText(18, 'soul_counter', 0)).toBe('No souls remaining');
+    expect(statConditionText(15, 'item_numsockets', 1)).toBe('Sockets ≥ 1');
+    expect(statConditionText(16, 'item_fastercastrate', 120)).toBe('Faster cast rate ≤ 120');
+    expect(statConditionText(15, 'item_tinkerflag2', 2)).toBe('Tinkering points ≥ 2');
+    expect(statConditionText(15, 'junk_09', 25)).toBe('Stocker count junk_09 ≥ 25');
+    expect(statConditionText(18, 'item_cannotbefrozen', 1)).toBe('Cannotbefrozen = 1');
+    // op 28 has no stat; an unknown op is not worded
+    expect(statConditionText(28, 'strength', 0)).toBeNull();
+  });
+
+  it('gives merged rows and recipes the output item level and qualities', () => {
+    const { bundle } = build([
+      row('Magic Weapon Reroll', ['"weap,mag"', 'gpv'], 'usetype,mag', { level: [0, 60, 60] }),
+      row('Magic Weapon Reroll', ['"weap,mag"', 'gpr'], 'usetype,mag', { level: [0, 60, 60] }),
+      row('Unique Reroll ES Weapon Exc', ['Hacker', 'gpv'], 'Hacker', { level: [99, 0, 0] }),
+      row('Weapons Crate', ['u22'], "Tal Rasha's Lidless Eye", { level: [0, 0, 100] }),
+    ]);
+    const merged = (family: string) => bundle.rows.find((entry) => entry.family === family);
+    expect(merged('magic-rare-reroll')).toEqual(
+      expect.objectContaining({
+        outputLevel: 'Item level 60% of character level + 60% of input item level',
+        qualities: ['magic'],
+        variants: 2,
+      })
+    );
+    expect(merged('unique-reroll')).toEqual(expect.objectContaining({ outputLevel: 'Item level 99', qualities: ['unique'] }));
+    const crate = bundle.recipes.find((entry) => entry.description === 'Weapons Crate');
+    expect(crate?.qualities).toEqual(['set']);
+    expect(crate?.outputs[0]?.level).toBe('Item level 100% of input item level');
+  });
+
+  it('renders the readable conditions: class, difficulty, boss kills and the stat checks', () => {
     const { bundle } = build([
       row('Kill Ledger Rathma', ['kl0', 'gpv'], 'useitem', { condition: [6, 508, 99] }),
       row('Berserker Ascend to Tier 5 Rathma', ['key', 'map'], 'useitem', { condition: [6, 508, 99], cls: 'bar' }),
@@ -239,7 +289,7 @@ describe('buildCubeBundle', () => {
       ['Barbarian only', 'Needs a recorded Rathma kill'],
       ['Nightmare or Hell', 'Needs a recorded boss kill (#7)'],
       ['Only items without an added level requirement'],
-      [],
+      ['Corrupted dummy ≤ 0'],
     ]);
     expect(bundle.groups.filter((group) => group.family === 'secret').map((group) => group.label)).toEqual([
       'Secret Recipe 31',
@@ -259,7 +309,8 @@ describe('buildCubeBundle', () => {
     expect(bundle.recipes.map((recipe) => recipe.family)).toEqual(['tyrael-boon']);
     const group = bundle.groups.find((entry) => entry.family === 'unique-reroll');
     expect(group?.rowCount).toBe(RAW_ROW_LIMIT + 1);
-    expect(group?.names).toHaveLength(RAW_ROW_LIMIT + 1);
+    expect(group?.inputNames).toHaveLength(RAW_ROW_LIMIT + 1);
+    expect(group?.outputNames).toHaveLength(RAW_ROW_LIMIT + 1);
     expect(bundle.sections.map((section) => section.id)).toEqual(['uni', 'tyrael']);
   });
 });

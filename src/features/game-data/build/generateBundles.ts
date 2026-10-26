@@ -155,6 +155,8 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
     tables: cubeTables,
     typeCodes: itemTypeCodes(itemtypes),
     statNames: new Map(rowTable('itemstatcost').rows.map((row, id) => [id, row.str('Stat')])),
+    setNames: new Set(table('setitems').rows.map((row) => row.str('index'))),
+    uniqueNames: new Set(table('uniqueitems').rows.map((row) => row.str('index'))),
   });
   const cubeFallbackRows = cube.fallback.reduce((sum, family) => sum + family.rows, 0);
 

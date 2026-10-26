@@ -13,10 +13,12 @@ import type {
   CubeHiddenCounts,
   CubeInputKind,
   CubeMergedRow,
+  CubeQuality,
   CubeRecipe,
   CubeRecipeInput,
   CubeRecipeOutput,
 } from '../engine/schema.ts';
+import { CUBE_QUALITIES } from '../engine/schema.ts';
 import {
   CUBE_SECTIONS,
   EXTRA_FAMILIES,
@@ -32,7 +34,7 @@ import {
 } from './cube/cubeCatalog.ts';
 import { CUBE_FAMILIES, groupFamily, type CubeFamily } from './cube/cubeFamilies.ts';
 import type { CubeRow, CubeTables } from './cube/cubeRows.ts';
-import { bonusLines, describeOutput, formatInput, parseCubeCell } from './cube/cubeText.ts';
+import { bonusLines, describeOutput, describeOutputLevel, distinct, formatInput, parseCubeCell } from './cube/cubeText.ts';
 import type { TsvTable } from './tsv.ts';
 
 /** Families with at most this many rows keep every row (`recipes`); larger ones only their merged rows */
@@ -44,6 +46,10 @@ export interface CubeContext {
   typeCodes: ReadonlySet<string>;
   /** itemstatcost.txt row (stat id) → `Stat` name, for the readable conditions */
   statNames: ReadonlyMap<number, string>;
+  /** setitems.txt `index` names, to tell a named set output from a unique one (the quality filter); omitted: none */
+  setNames?: ReadonlySet<string>;
+  /** uniqueitems.txt `index` names; omitted: every named output that is not an item or type counts as unique */
+  uniqueNames?: ReadonlySet<string>;
 }
 
 export interface CubeBuildResult {
@@ -78,10 +84,66 @@ function killCheckNames(rows: readonly CubeRow[], killCheck: number | null): Map
   return names;
 }
 
+/** cubemain `op` → comparison of the `param` stat with `value` (the ops the cube conditions use; others unknown) */
+const STAT_OPS: Readonly<Partial<Record<number, string>>> = { 3: '≥', 15: '≥', 16: '≤', 17: '≠', 18: '=' };
+
+/** Readable names of the stats the listed rows check, for the generic "{name} {op} {value}" wording */
+const STAT_LABELS: Readonly<Partial<Record<string, string>>> = {
+  item_numsockets: 'Sockets',
+  item_levelreq: 'Added level requirement',
+  item_tinkerflag2: 'Tinkering points',
+  item_corrupted: 'Corruptions',
+  item_fastercastrate: 'Faster cast rate',
+  item_fasterattackrate: 'Faster attack rate',
+  item_fasterblockrate: 'Faster block rate',
+  item_fastermovevelocity: 'Faster run/walk',
+  item_randomize: 'Randomize counter',
+  soul_counter: 'Souls remaining',
+  stancedancecontrol: 'Stance dance control',
+};
+
+/** Stocker counters (`item_02` Decipherers in a Multi Stocker, `junk_09`, `xtal_03`, `rune_12`, `gem_r`) */
+const STOCKER_STAT = /^(?:(?:item|junk|xtal|rune)_\d+|gem_[a-z])$/;
+
 /**
- * The conditions a player can read: the class, the minimum difficulty, a recorded boss kill (`kill_check`) and "no
- * added level requirement yet" (`item_levelreq` = 0). The other `op` conditions are hidden markers (forging, dummy
- * rolls, soul counters) and are never shown.
+ * A stat check (`op` / `param` stat / `value`) in words, or null when the row has none a player can read. Named
+ * checks first (forging, merc-only, weapon mastery, the Kill Ledger), then "{stat} {op} {value}" for the rest.
+ * `kill_check` (op 6, a recorded boss kill) is worded by the caller, which knows the boss names.
+ * The ops, read from how ESR uses them: 3 and 15 "at least", 16 "at most", 17 "not equal", 18 "equal"
+ * ("Unsocket" needs sockets ≥ 1, "Adds Socket(4)" sockets ≤ 3, tinkering points ≥ 2 before the recipe takes 2).
+ */
+export function statConditionText(op: number, stat: string, value: number): string | null {
+  const flag = (unset: string, set: string) => (op === 18 ? (value === 0 ? unset : set) : op === 17 && value === 0 ? set : null);
+  let named: string | null = null;
+  if (stat === 'item_craftflag') named = flag('No forging mod', 'Has a forging mod');
+  else if (stat === 'item_craftflag2') named = flag('No jewel forging', 'Has a jewel forging');
+  else if (stat === 'item_mercflag') named = flag('Not merc-only', 'Merc-only item');
+  else if (stat === 'weaponmastery') named = flag('No weapon mastery token applied', 'Weapon mastery token applied');
+  else if (stat === 'item_upgraded' && value === 1) named = op === 17 ? 'Not upgraded yet' : op === 18 ? 'Already upgraded' : null;
+  else if (stat === 'item_levelreq' && op === 18 && value === 0) named = 'Only items without an added level requirement';
+  else if (stat === 'kill_base' && op === 3) named = `Kill count ≥ ${formatValue(value)}`;
+  else if (stat === 'soul_counter' && op === 18 && value === 0) named = 'No souls remaining';
+  else if (stat === 'item_sanctification_dummy' && op === 16 && value === 0) named = 'Not marked for sanctification';
+  if (named !== null) return named;
+  const symbol = STAT_OPS[op];
+  if (symbol === undefined || stat === '') return null;
+  const label = STAT_LABELS[stat] ?? (STOCKER_STAT.test(stat) ? `Stocker count ${stat}` : statLabel(stat));
+  return `${label} ${symbol} ${formatValue(value)}`;
+}
+
+/** `item_cannotbefrozen` → "Cannotbefrozen": the itemstatcost name without its `item_` prefix, sentence case */
+function statLabel(stat: string): string {
+  const words = stat.replace(/^item_/, '').replace(/_/g, ' ');
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+function formatValue(value: number): string {
+  return value.toLocaleString('en-US');
+}
+
+/**
+ * The conditions a player can read: the class, the minimum difficulty, a recorded boss kill (`kill_check`) and the
+ * stat checks (statConditionText).
  */
 function conditionsOf(row: CubeRow, ctx: CubeContext, bosses: ReadonlyMap<number, string>): string[] {
   const conditions: string[] = [];
@@ -91,12 +153,13 @@ function conditionsOf(row: CubeRow, ctx: CubeContext, bosses: ReadonlyMap<number
   else if (row.minDiff === 1) conditions.push('Nightmare or Hell');
   const condition = row.condition;
   if (condition !== null) {
-    const stat = ctx.statNames.get(condition.param);
+    const stat = ctx.statNames.get(condition.param) ?? '';
     if (stat === 'kill_check') {
       const boss = bosses.get(condition.value);
       conditions.push(boss === undefined ? `Needs a recorded boss kill (#${String(condition.value)})` : `Needs a recorded ${boss} kill`);
-    } else if (stat === 'item_levelreq' && condition.op === 18 && condition.value === 0) {
-      conditions.push('Only items without an added level requirement');
+    } else {
+      const text = statConditionText(condition.op, stat, condition.value);
+      if (text !== null) conditions.push(text);
     }
   }
   return conditions;
@@ -123,14 +186,63 @@ function recipeInput(spec: string, ctx: CubeContext, itemCodes: ReadonlySet<stri
 function recipeOutput(output: CubeRow['outputs'][number], ctx: CubeContext): CubeRecipeOutput {
   const { token } = parseCubeCell(output.spec);
   const { name, details } = describeOutput(output, ctx.tables, { bonus: false });
-  return { text: name, code: SPECIAL_OUTPUTS.has(token) ? null : token, bonus: bonusLines(output.mods, ctx.tables), details };
+  const level = describeOutputLevel(output);
+  return {
+    text: name,
+    code: SPECIAL_OUTPUTS.has(token) ? null : token,
+    bonus: bonusLines(output.mods, ctx.tables),
+    details,
+    ...(level === undefined ? {} : { level }),
+  };
 }
 
-/** Display names of the unique/set name tokens of the rows' inputs and outputs (distinct, file order) */
-function namedItems(rows: readonly CubeRow[], ctx: CubeContext, itemCodes: ReadonlySet<string>): string[] {
+/** Output quality qualifiers → the quality filter's values */
+const QUALITY_QUALIFIERS: Readonly<Partial<Record<string, CubeQuality>>> = {
+  uni: 'unique',
+  set: 'set',
+  rar: 'rare',
+  mag: 'magic',
+  crf: 'crafted',
+};
+
+/** The outputs a row gives (an item handed back unchanged, an output equal to an input, left out; as rowOutput) */
+function givenOutputs(row: CubeRow): CubeRow['outputs'] {
+  const kept = row.outputs.filter((output) => !row.inputs.includes(output.spec));
+  return kept.length > 0 ? kept : row.outputs;
+}
+
+/** The qualities of a row's outputs: quality qualifiers (`usetype,uni`) and named unique / set items */
+function rowQualities(row: CubeRow, ctx: CubeContext, itemCodes: ReadonlySet<string>): Set<CubeQuality> {
+  const qualities = new Set<CubeQuality>();
+  for (const output of givenOutputs(row)) {
+    const { token, qualifiers } = parseCubeCell(output.spec);
+    for (const qualifier of qualifiers) {
+      const quality = QUALITY_QUALIFIERS[qualifier];
+      if (quality !== undefined) qualities.add(quality);
+    }
+    if (SPECIAL_OUTPUTS.has(token) || inputKind(token, ctx, itemCodes) !== 'unique') continue;
+    if (ctx.setNames?.has(token) === true) qualities.add('set');
+    else if (ctx.uniqueNames === undefined || ctx.uniqueNames.has(token)) qualities.add('unique');
+  }
+  return qualities;
+}
+
+/** Qualities in filter order */
+function orderedQualities(qualities: ReadonlySet<CubeQuality>): CubeQuality[] {
+  return CUBE_QUALITIES.filter((quality) => qualities.has(quality));
+}
+
+/** The item level of a row's outputs ("Item level 99"); several different levels joined with " / " */
+function rowLevel(row: CubeRow): string | undefined {
+  const levels = distinct(givenOutputs(row).flatMap((output) => describeOutputLevel(output) ?? []));
+  return levels.length === 0 ? undefined : levels.join(' / ');
+}
+
+/** Display names of the unique/set name tokens of the rows' inputs or outputs (distinct, file order) */
+function namedItems(rows: readonly CubeRow[], side: 'inputs' | 'outputs', ctx: CubeContext, itemCodes: ReadonlySet<string>): string[] {
   const names = new Set<string>();
   for (const row of rows) {
-    for (const spec of [...row.inputs, ...row.outputs.map((output) => output.spec)]) {
+    for (const spec of side === 'inputs' ? row.inputs : row.outputs.map((output) => output.spec)) {
       const { token } = parseCubeCell(spec);
       if (SPECIAL_OUTPUTS.has(token) || inputKind(token, ctx, itemCodes) !== 'unique') continue;
       names.add(ctx.tables.nameOf(token));
@@ -236,17 +348,31 @@ export function buildCubeBundle(ctx: CubeContext): CubeBuildResult {
       const id = groups.length;
       const conditions = group.rows.map((row) => conditionsOf(row, ctx, bosses));
       const shared = (conditions[0] ?? []).filter((condition) => conditions.every((list) => list.includes(condition)));
-      const names = raw ? [] : namedItems(group.rows, ctx, itemCodes);
+      const inputNames = raw ? [] : namedItems(group.rows, 'inputs', ctx, itemCodes);
+      const outputNames = raw ? [] : namedItems(group.rows, 'outputs', ctx, itemCodes);
       groups.push({
         id,
         family: family.id,
         label: groupLabel(family, group.rows),
         rowCount: group.rows.length,
         conditions: shared,
-        ...(names.length === 0 ? {} : { names }),
+        ...(inputNames.length === 0 ? {} : { inputNames }),
+        ...(outputNames.length === 0 ? {} : { outputNames }),
       });
-      for (const { variant, count } of group.merged) {
-        rows.push({ family: family.id, group: id, inputs: variant.inputs, output: variant.output, variants: count });
+      for (const { variant, count, indices } of group.merged) {
+        const merged = indices.flatMap((index) => group.rows[index] ?? []);
+        // Variants without a level do not count; a row whose variants disagree lists each level
+        const levels = distinct(merged.flatMap((entry) => rowLevel(entry) ?? []));
+        const qualities = new Set(merged.flatMap((entry) => [...rowQualities(entry, ctx, itemCodes)]));
+        rows.push({
+          family: family.id,
+          group: id,
+          inputs: variant.inputs,
+          output: variant.output,
+          variants: count,
+          ...(levels.length === 0 ? {} : { outputLevel: levels.join(' / ') }),
+          qualities: orderedQualities(qualities),
+        });
       }
       if (!raw) continue;
       group.rows.forEach((row, i) => {
@@ -258,6 +384,7 @@ export function buildCubeBundle(ctx: CubeContext): CubeBuildResult {
           inputs: row.inputs.map((spec) => recipeInput(spec, ctx, itemCodes)),
           outputs: row.outputs.map((output) => recipeOutput(output, ctx)),
           conditions: conditions[i] ?? [],
+          qualities: orderedQualities(rowQualities(row, ctx, itemCodes)),
         });
       });
     }

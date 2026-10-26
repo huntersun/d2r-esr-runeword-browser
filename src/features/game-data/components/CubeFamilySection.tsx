@@ -61,6 +61,7 @@ function MergedRow({ row }: { readonly row: CubeMergedRow }) {
       </span>
       <div>
         <p className="font-medium">{row.output}</p>
+        {row.outputLevel !== undefined && <p className="text-xs text-muted-foreground">{row.outputLevel}</p>}
         {row.variants > 1 && <p className="text-xs text-muted-foreground">{formatCount(row.variants)} cubemain rows</p>}
       </div>
     </li>
@@ -85,6 +86,7 @@ function RawRecipe({ recipe }: { readonly recipe: CubeRecipe }) {
               {output.text}
               {output.details.length > 0 && <span className="font-normal text-muted-foreground"> ({output.details.join(', ')})</span>}
             </p>
+            {output.level !== undefined && <p className="text-xs text-muted-foreground">{output.level}</p>}
             {output.bonus.length > 0 && <BonusLines lines={output.bonus} className="text-xs" />}
           </div>
         ))}
@@ -151,7 +153,7 @@ function showAllLabel(count: number, searching: boolean): string {
 interface CubeFamilySectionProps {
   readonly view: CubeFamilyView;
   readonly section: CubeSection;
-  /** True while a search filters the rows */
+  /** True while a search or the quality filter narrows the rows */
   readonly searching: boolean;
   readonly onFocus: (family: string) => void;
 }

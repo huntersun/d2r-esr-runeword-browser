@@ -176,6 +176,20 @@ export function formatOutput(output: CubeOutput, esr: OutputTables, options: Des
   return details.length === 0 ? name : `${name} (${details.join(', ')})`;
 }
 
+/**
+ * The item level a created output gets, from the `lvl` / `plvl` / `ilvl` columns (not the `lvl=` qualifier of the
+ * output cell): a fixed level, a % of the character level, a % of the input item's level, or plvl + ilvl added.
+ * Kept out of the output text so it does not split merged rows.
+ */
+export function describeOutputLevel(output: Pick<CubeOutput, 'lvl' | 'plvl' | 'ilvl'>): string | undefined {
+  if (output.lvl !== undefined) return `Item level ${String(output.lvl)}`;
+  const parts = [
+    ...(output.plvl === undefined ? [] : [`${String(output.plvl)}% of character level`]),
+    ...(output.ilvl === undefined ? [] : [`${String(output.ilvl)}% of input item level`]),
+  ];
+  return parts.length === 0 ? undefined : `Item level ${parts.join(' + ')}`;
+}
+
 // ---------------------------------------------------------------------------
 // Collapsing the mechanical variants of a recipe (one row per base type, quality, class or socket count) into one row.
 // ---------------------------------------------------------------------------
@@ -241,6 +255,8 @@ export function clusterVariants(variants: readonly RecipeVariant[], pool: (ranke
 export interface CountedVariant {
   variant: RecipeVariant;
   count: number;
+  /** Positions in the input list of the variants merged into this row */
+  indices: number[];
 }
 
 /** clusterVariants, counting the variants each merged row stands for */
@@ -248,16 +264,17 @@ export function clusterVariantsCounted(
   variants: readonly RecipeVariant[],
   pool: (ranked: string[]) => string = randomPool
 ): CountedVariant[] {
-  const pools = new Map<string, { inputs: string[]; outputs: string[] }>();
-  for (const variant of variants) {
+  const pools = new Map<string, { inputs: string[]; outputs: string[]; indices: number[] }>();
+  variants.forEach((variant, index) => {
     const key = JSON.stringify(variant.inputs);
-    const entry = pools.get(key) ?? { inputs: variant.inputs, outputs: [] };
+    const entry = pools.get(key) ?? { inputs: variant.inputs, outputs: [], indices: [] };
     entry.outputs.push(variant.output);
+    entry.indices.push(index);
     pools.set(key, entry);
-  }
+  });
 
-  const clusters: { base: string[]; output: string; slot: number | null; values: string[]; count: number }[] = [];
-  for (const { inputs, outputs } of pools.values()) {
+  const clusters: { base: string[]; output: string; slot: number | null; values: string[]; count: number; indices: number[] }[] = [];
+  for (const { inputs, outputs, indices } of pools.values()) {
     const output = pool(byFrequency(outputs));
     const cluster = clusters.find((candidate) => {
       if (candidate.output !== output || candidate.base.length !== inputs.length) return false;
@@ -265,22 +282,24 @@ export function clusterVariantsCounted(
       return candidate.slot === null ? diffs.length === 1 : diffs.length === 0;
     });
     if (cluster === undefined) {
-      clusters.push({ base: inputs, output, slot: null, values: [], count: outputs.length });
+      clusters.push({ base: inputs, output, slot: null, values: [], count: outputs.length, indices: [...indices] });
       continue;
     }
     cluster.count += outputs.length;
+    cluster.indices.push(...indices);
     if (cluster.slot === null) {
       cluster.slot = inputs.findIndex((input, i) => input !== cluster.base[i]);
       cluster.values.push(cluster.base[cluster.slot] ?? '');
     }
     cluster.values.push(inputs[cluster.slot] ?? '');
   }
-  return clusters.map(({ base, output, slot, values, count }) => ({
+  return clusters.map(({ base, output, slot, values, count, indices }) => ({
     variant: {
       inputs: slot === null ? base : base.map((input, i) => (i === slot ? joinOptions(values) : input)),
       output,
     },
     count,
+    indices,
   }));
 }
 

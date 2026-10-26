@@ -289,19 +289,42 @@ when a defined family has no row.
 Ledger, Weapon Mastery and Vessel of Souls pages, then `other`; only sections with families), `families` (`id`,
 `label`, `section`, `order`, `rowCount`, `raw`), `groups` (one recipe shape of a family: the family's `collapse` key;
 `label` = the first row's description with numbers as `#`, or "Secret Recipe N"; `conditions` every row shares;
-`names` = the unique / set names its rows use, only for families without raw rows, for the search), `rows` (the merged
-rows of `groupFamily(…, 'full')`: the guide's text, uncapped, always with the output bonuses unless the family hides
-them, `variants` = the cubemain rows merged into it) and `recipes` (every row of the families with at most 40 rows:
-`id` = cubemain line, `description`, parsed `inputs` (`text`, `code`, `qty`, `quals`, `kind` item / type / unique /
-any), `outputs` (`text`, `code` or null for useitem/usetype/cloneitem, `bonus` lines, `details` such as "socketed items
-come out" for `rem`, "item level N" or "to <map>" for `lvl=`), `conditions`). Cube-only rewrites: a named unique or set
+`inputNames` / `outputNames` = the unique / set names its rows take / give, only for families without raw rows, for the
+ingredient / result searches), `rows` (the merged rows of `groupFamily(…, 'full')`: the guide's text, uncapped, always
+with the output bonuses unless the family hides them, `variants` = the cubemain rows merged into it, `outputLevel`,
+`qualities`) and `recipes` (every row of the families with at most 40 rows: `id` = cubemain line, `description`, parsed
+`inputs` (`text`, `code`, `qty`, `quals`, `kind` item / type / unique / any), `outputs` (`text`, `code` or null for
+useitem/usetype/cloneitem, `bonus` lines, `details` such as "socketed items come out" for `rem`, "item level N" or "to
+<map>" for the `lvl=` qualifier, `level`), `conditions`, `qualities`).
+
+**Output item level** (`outputLevel` on merged rows, `level` on recipe outputs; `describeOutputLevel` in
+`cubeText.ts`): the `lvl` / `plvl` / `ilvl` columns (`b lvl` … and `c lvl` … for outputs b and c), not the `lvl=`
+qualifier: "Item level 99" (fixed), "Item level 60% of character level" (`plvl`), "Item level 100% of input item
+level" (`ilvl`), both added: "Item level 60% of character level + 60% of input item level". It is a separate field so
+it does not split the merged rows (they cluster on the output text; `clusterVariantsCounted` returns the indices of the
+variants each merged row stands for). A merged row lists the distinct levels of its variants joined with " / "
+(variants without one do not count). ESR 3.2.24: 500 of 1,364 merged rows have a level, none disagree. The guide's
+`::recipes` blocks do not show it (their rows are built by `collectFamily`, a separate path without this field).
+
+**Qualities** (`qualities`, the page's quality filter, order unique / set / rare / magic / crafted): from the outputs a
+row gives (an output equal to an input left out, as the output text): the quality qualifiers `uni` / `set` / `rar` /
+`mag` / `crf` and named outputs (a setitems.txt `index` → set, a uniqueitems.txt `index` → unique). `useitem` without
+a qualifier has none. ESR 3.2.24 merged rows: unique 109, magic 107, set 61, rare 53, crafted 44 (374 rows with one). Cube-only rewrites: a named unique or set
 item cubed into itself reads "The same item, rerolled"; "Unique: 3 Sets" / "Set: 3 Uniques" read "3× Set items of one
 base → A unique item of that base".
 
-**Conditions** shown (the other `op` conditions are hidden markers: forging flags, dummy rolls, soul counters):
-"<Class> only" (`class`), "Hell only" / "Nightmare or Hell" (`min diff` 2 / 1), "Needs a recorded <boss> kill"
-(`kill_check`, the boss named after the Kill Ledger row with the same value; unknown values "(#N)") and "Only items
-without an added level requirement" (`item_levelreq` = 0, op 18). Counts (`cube*` in the manifest): recipes, families,
+**Conditions** shown: "<Class> only" (`class`), "Hell only" / "Nightmare or Hell" (`min diff` 2 / 1), "Needs a
+recorded <boss> kill" (`kill_check`, op 6, the boss named after the Kill Ledger row with the same value; unknown values
+"(#N)") and every other stat check (`op` / `param` = itemstatcost row / `value`, `statConditionText` in
+`bundleCube.ts`). The ops as ESR uses them: 3 and 15 "≥", 16 "≤", 17 "≠", 18 "=" ("Unsocket" needs sockets ≥ 1,
+"Adds Socket(4)" sockets ≤ 3, tinkering needs points ≥ 2 before the row takes 2); op 28 (no stat) and unknown ops are
+skipped. Named checks: `item_craftflag` "No forging mod" / "Has a forging mod", `item_craftflag2` "No jewel forging" /
+"Has a jewel forging", `item_mercflag` "Not merc-only" / "Merc-only item", `weaponmastery` "No weapon mastery token
+applied" / "Weapon mastery token applied" (= 0 / nonzero), `item_upgraded` ≠ 1 "Not upgraded yet", `item_levelreq` = 0
+"Only items without an added level requirement", `kill_base` op 3 "Kill count ≥ N", `soul_counter` = 0 "No souls
+remaining", `item_sanctification_dummy` ≤ 0 "Not marked for sanctification"; the rest read "{stat} {op} {value}" with
+a short label ("Sockets", "Tinkering points", "Faster cast rate", "Stocker count junk*09") or the stat name without
+`item*`. Groups show the conditions all their rows share: ESR 3.2.24, 155 of 511 groups (14 before the stat checks). Counts (`cube\*` in the manifest): recipes, families,
 fallback families / rows, merged rows, raw recipes and each hidden reason.
 
 ### Materials
@@ -1020,24 +1043,32 @@ Invalid values fall back to the tab's first option; Copy Link encodes only the n
 `/game-data/cube` (`screens/CubeScreen.tsx`) loads only `cube.json` and is a static-bundle route like Enhance. Tools
 menu entry "Cube Recipes", layout tab "Cube".
 
-- **Family index**: inside the filter panel under the search (a hairline above it, the chips on the panel's card
+- **Filters**: two searches, "Ingredient" (inputs only) and "Result" (the output text, and on raw rows the output
+  code, bonus lines and details), and "Result quality" checkboxes (Unique, Set, Rare, Magic, Crafted; any of them).
+  All must match. Family and group labels are not searched by them (they are txt descriptions that name both sides);
+  a big family's group names per side are (`inputNames` / `outputNames`), a match keeping the group's rows.
+- **Family index**: inside the filter panel under the filters (a hairline above it, the chips on the panel's card
   surface like the home page chips), one line per section (its label links to the official page section), the families
   as chips with their row counts (matching rows while searching); a chip focuses the family.
 - Two cards (no search, no focus): the corruption / anointment / Vessel rows are on the Enhance page (with their
   count), and the stocker / can bookkeeping rows are left out (count, official page link).
 - **Family sections** by official section (`components/CubeFamilySection.tsx`): label (a button that focuses it), row
   count, "Official: <section>" link; per group a header (the recipe shape, a dev label, with its conditions as badges)
-  unless one group holds the whole family; the merged rows (inputs → output, "N cubemain rows" when merged). Families
+  unless one group holds the whole family; the merged rows (inputs → output, the output item level as a muted note,
+  "N cubemain rows" when merged). Families
   with raw rows offer "Show all N cubemain rows" (every row with its outputs, bonus lines, conditions, description and
-  line number); a search that only matches raw rows shows them directly.
-- Empty state: "No cube recipe matches the search", with the official Cube Recipes page link.
+  line number, the item level under an output); a filter that only matches raw rows shows them directly.
+- Empty state: "No cube recipe matches the filters", with the official Cube Recipes page link.
 
 URL state (read on every render, `utils/cube.ts`):
 
-| Param    | Meaning                                                                                                                                                                                                 |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `search` | AND terms (quoted phrases): a family whose label matches every term stays whole, else a group whose header (shape, names, conditions) matches, else merged rows and raw recipes are filtered one by one |
-| `family` | focused family id (unknown ids show all); shows only that family, scrolls to it, "← Show all families"                                                                                                  |
+| Param    | Meaning                                                                                                                                                                                                                                                                                 |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `in`     | Ingredient search, AND terms (quoted phrases), matched against the inputs only (and a big family's group `inputNames`)                                                                                                                                                                  |
+| `out`    | Result search, AND terms, matched against the outputs only (and a big family's group `outputNames`)                                                                                                                                                                                     |
+| `q`      | Result qualities, comma-separated (`unique,set,rare,magic,crafted`); a row is kept when one of its `qualities` is selected; unknown values are dropped                                                                                                                                  |
+| `search` | Legacy (old links; the page has no box for it, a notice with "Clear" shows it): AND terms over either side; a family whose label matches every term stays whole, else a group whose header (shape, names, conditions) matches, else merged rows and raw recipes are filtered one by one |
+| `family` | focused family id (unknown ids show all); shows only that family, scrolls to it, "← Show all families"                                                                                                                                                                                  |
 
 The guide's `::recipes[family]` and `::secret-recipes` blocks link to `/game-data/cube?family=<id>` ("All N recipes on
 the Cube Recipes page", N = the family's rows in cube.json).

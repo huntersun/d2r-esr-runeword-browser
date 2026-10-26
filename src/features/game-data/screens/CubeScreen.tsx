@@ -4,11 +4,12 @@ import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { CopyLinkHelpButton } from '@/components/CopyLinkHelpButton';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { FilterPanel } from '@/components/FilterPanel';
 import { SectionHeader } from '@/components/SectionHeader';
 import { useDebouncedFilterValue } from '@/core/hooks/useDebouncedFilterValue';
 import { buildShareUrl } from '@/core/utils/filterUrlParams';
-import type { CubeBundle } from '../engine/schema';
+import { CUBE_QUALITIES, type CubeBundle, type CubeQuality } from '../engine/schema';
 import { CubeFamilySection, DocsLink } from '../components/CubeFamilySection';
 import { EnhanceSearch } from '../components/EnhanceParts';
 import { GameDataError } from '../components/GameDataError';
@@ -16,11 +17,13 @@ import { GameDataLoading } from '../components/GameDataLoading';
 import { useGameData } from '../hooks/useGameData';
 import {
   CUBE_DOCS_URL,
+  CUBE_QUALITY_LABELS,
   buildCubeTree,
   encodeCubeState,
   filterCubeTree,
   focusCubeTree,
   formatCount,
+  isFiltering,
   readCubeState,
   sectionDocsUrl,
   shownRowCount,
@@ -41,7 +44,7 @@ export function CubeScreen() {
   return <CubeBrowser bundle={gameData.data.cube} />;
 }
 
-/** The page state lives in the URL (search, focused family), so links and the back button keep it. */
+/** The page state lives in the URL (searches, qualities, focused family), so links and the back button keep it. */
 function CubeBrowser({ bundle }: { readonly bundle: CubeBundle }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const state = readCubeState(searchParams, bundle);
@@ -51,10 +54,17 @@ function CubeBrowser({ bundle }: { readonly bundle: CubeBundle }) {
     setSearchParams(encodeCubeState({ ...state, ...patch }), { replace });
   };
 
-  const [search, setSearch, commitSearch] = useDebouncedFilterValue(
-    state.search,
+  const [input, setInput, commitInput] = useDebouncedFilterValue(
+    state.input,
     (value) => {
-      update({ search: value });
+      update({ input: value });
+    },
+    SEARCH_DEBOUNCE_MS
+  );
+  const [output, setOutput, commitOutput] = useDebouncedFilterValue(
+    state.output,
+    (value) => {
+      update({ output: value });
     },
     SEARCH_DEBOUNCE_MS
   );
@@ -65,8 +75,17 @@ function CubeBrowser({ bundle }: { readonly bundle: CubeBundle }) {
     document.getElementById(FOCUS_ANCHOR)?.scrollIntoView({ block: 'start' });
   }, [state.family]);
 
-  const getShareUrl = () => buildShareUrl(CUBE_ROUTE, encodeCubeState({ ...state, search }));
-  const filtered = filterCubeTree(tree, state.search);
+  const getShareUrl = () => buildShareUrl(CUBE_ROUTE, encodeCubeState({ ...state, input, output }));
+  const filtered = filterCubeTree(tree, state);
+  const filtering = isFiltering(state);
+  // Remounts the family sections on a new filter so "Show all" starts closed
+  const filterKey = [state.search, state.input, state.output, state.qualities.join(',')].join('|');
+  const toggleQuality = (quality: CubeQuality) => {
+    const qualities = state.qualities.includes(quality)
+      ? state.qualities.filter((entry) => entry !== quality)
+      : [...state.qualities, quality];
+    update({ qualities: CUBE_QUALITIES.filter((entry) => qualities.includes(entry)) });
+  };
   const shown = focusCubeTree(filtered, state.family);
   const total = bundle.families.reduce((sum, family) => sum + family.rowCount, 0);
   const focus = (family: string | null) => {
@@ -84,13 +103,26 @@ function CubeBrowser({ bundle }: { readonly bundle: CubeBundle }) {
       <FilterPanel>
         <div className="flex flex-wrap items-end gap-4">
           <EnhanceSearch
-            value={search}
-            onChange={setSearch}
+            id="cube-input-search"
+            label="Ingredient"
+            value={input}
+            onChange={setInput}
             onClear={() => {
-              commitSearch('');
+              commitInput('');
             }}
-            placeholder="Search items, bonuses or recipes..."
-            hint="Search items, bonuses and families;"
+            placeholder="Ingredient, e.g. perfect gem..."
+            hint="Ingredient: what goes in;"
+          />
+          <EnhanceSearch
+            id="cube-output-search"
+            label="Result"
+            value={output}
+            onChange={setOutput}
+            onClear={() => {
+              commitOutput('');
+            }}
+            placeholder="Result, e.g. unique, sockets, life..."
+            hint="Result: the item and its bonuses;"
           />
           <div className="space-y-1">
             <div className="flex items-center gap-1">
@@ -101,10 +133,42 @@ function CubeBrowser({ bundle }: { readonly bundle: CubeBundle }) {
           </div>
         </div>
 
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground">Result quality</p>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            {CUBE_QUALITIES.map((quality) => (
+              <label key={quality} className="flex h-7 cursor-pointer items-center gap-1">
+                <Checkbox
+                  checked={state.qualities.includes(quality)}
+                  onCheckedChange={() => {
+                    toggleQuality(quality);
+                  }}
+                />
+                <span className="text-sm">{CUBE_QUALITY_LABELS[quality]}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {state.search !== '' && (
+          <p className="text-sm text-muted-foreground">
+            Matching “{state.search}” in ingredients or results (from an older link).{' '}
+            <button
+              type="button"
+              className="font-medium text-primary underline decoration-primary/40 underline-offset-2 hover:decoration-primary"
+              onClick={() => {
+                update({ search: '' });
+              }}
+            >
+              Clear
+            </button>
+          </p>
+        )}
+
         {state.family === null ? (
           <FamilyIndex
             tree={filtered}
-            searching={state.search !== ''}
+            searching={filtering}
             onFocus={(family) => {
               focus(family);
             }}
@@ -124,7 +188,7 @@ function CubeBrowser({ bundle }: { readonly bundle: CubeBundle }) {
         )}
       </FilterPanel>
 
-      {state.family === null && state.search === '' && <HiddenRowsCards bundle={bundle} />}
+      {state.family === null && !filtering && <HiddenRowsCards bundle={bundle} />}
 
       {shown.length === 0 ? (
         <EmptyState focused={state.family !== null} />
@@ -135,11 +199,10 @@ function CubeBrowser({ bundle }: { readonly bundle: CubeBundle }) {
               <SectionHeader title={section.label} />
               {families.map((view) => (
                 <CubeFamilySection
-                  // Remount on a new search so "Show all" starts closed
-                  key={`${view.family.id}|${state.search}`}
+                  key={`${view.family.id}|${filterKey}`}
                   view={view}
                   section={section}
-                  searching={state.search !== ''}
+                  searching={filtering}
                   onFocus={(family) => {
                     focus(family);
                   }}
@@ -232,9 +295,9 @@ function HiddenRowsCards({ bundle }: { readonly bundle: CubeBundle }) {
 function EmptyState({ focused }: { readonly focused: boolean }) {
   return (
     <div className="space-y-1 py-6 text-center text-sm text-muted-foreground">
-      <p>{focused ? 'Nothing in this family matches the search.' : 'No cube recipe matches the search.'}</p>
+      <p>{focused ? 'Nothing in this family matches the filters.' : 'No cube recipe matches the filters.'}</p>
       <p>
-        Try fewer words, or look it up on the <DocsLink href={CUBE_DOCS_URL}>official Cube Recipes page</DocsLink>.
+        Try fewer words or qualities, or look it up on the <DocsLink href={CUBE_DOCS_URL}>official Cube Recipes page</DocsLink>.
       </p>
     </div>
   );

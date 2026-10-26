@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clusterVariantsCounted, describeOutput, formatInput, formatOutput, type OutputTables } from './cubeText.ts';
+import { clusterVariantsCounted, describeOutput, describeOutputLevel, formatInput, formatOutput, type OutputTables } from './cubeText.ts';
 
 const NAMES: Readonly<Partial<Record<string, string>>> = { weap: 'Weapon', key: 'Key', 'Red Portal': 'Red Portal', gem5: 'Perfect Gem' };
 const tables: OutputTables = { nameOf: (token) => NAMES[token] ?? token, renderMods: () => [] };
@@ -38,8 +38,16 @@ describe('cube cell text', () => {
       { inputs: ['c', 'Key'], output: 'y' },
     ]);
     expect(merged).toEqual([
-      { variant: { inputs: ['a / b', 'Key'], output: 'x' }, count: 2 },
-      { variant: { inputs: ['c', 'Key'], output: 'y' }, count: 2 },
+      { variant: { inputs: ['a / b', 'Key'], output: 'x' }, count: 2, indices: [0, 1] },
+      { variant: { inputs: ['c', 'Key'], output: 'y' }, count: 2, indices: [2, 3] },
     ]);
+  });
+
+  it('describes the item level of an output from its lvl / plvl / ilvl columns', () => {
+    expect(describeOutputLevel({})).toBeUndefined();
+    expect(describeOutputLevel({ lvl: 99 })).toBe('Item level 99');
+    expect(describeOutputLevel({ plvl: 60 })).toBe('Item level 60% of character level');
+    expect(describeOutputLevel({ plvl: 60, ilvl: 60 })).toBe('Item level 60% of character level + 60% of input item level');
+    expect(describeOutputLevel({ ilvl: 100 })).toBe('Item level 100% of input item level');
   });
 });
