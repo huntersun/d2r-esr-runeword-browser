@@ -193,7 +193,9 @@ and validator (`src/features/loot-filter/engine/reference.ts` turns it plus `typ
 - `stats`: every `itemstatcost.txt` row, `id` = 0-based row number (equal to the `*ID` comment column in ESR 3.2.12),
   `name` = `Stat`.
 - `areas`: every `levels.txt` row with an `Id` (the `Expansion` marker has none); name = `LevelName` through the string
-  table, else the raw `LevelName`, else `Name`; `act` is the 0-based `Act` column.
+  table, else the raw `LevelName`, else `Name`; `act` is the 0-based `Act` column. Two rows share a name with their
+  neighbour because ESR's `LevelName` keys say so (Jail Level 3 → "Jail Level 2", Catacombs Level 4 → "Catacombs
+  Level 3"); the game shows the same names, so they are kept.
 - `sounds`: `Sound` of every `sounds.txt` row by 0-based row number, so `sounds[row]` is the name the plugin's numeric
   `sound` refers to (row 0 is the blank "none" row). The `*Index` comment column is not used: it is hand-maintained and
   repeats 11949 for four Leoric taunt rows in ESR 3.2.12, so from row 11950 on it lags the row number by 1–3.
@@ -442,10 +444,12 @@ set, `group`, `tier`, `uniqueMap`, `boss`, `preventTownPortal`.
   `MonLvlEx`) and in areas without any monster: no `mon*` / `nmon*` / `umon*` column, no density, no unique packs and
   no boss (Forgotten Tower, Harem Level 1, Dimensional Gate, the two Tier 5 entrance-like rows 200 / 204).
 - **Density** (`MonDen*`) and **unique packs** (`MonUMin*` / `MonUMax*`, read by column name) are `null` when 0 in
-  every difficulty. The vanilla rows store the six unique-pack values mins then maxes (Blood Moor `2 4 6 5 8 10` = 2–5,
-  4–8, 6–10) while the ESR map rows follow the header's per-difficulty pairs (`30 40 30 40 30 40`), so the builder
-  (`readUniquePacks`) reads each row pairwise and re-reads it mins then maxes when a pair has min > max (a warning
-  when both readings are inverted; `areasUniquesMinsThenMaxes` counts the re-read rows).
+  every difficulty. The game reads the six values as the header pairs them, and the ESR map rows fit that (`30 40 30 40
+30 40`), but 61 older rows have an inverted Nightmare pair (Blood Moor `2 4 6 5 8 10`); their values are the mod
+  author's, not Blizzard's (vanilla Blood Moor is 4–5 / 7–9), so the inversion is most likely a data-entry slip. The
+  builder (`readUniquePacks`) reads each row pairwise and, only when a pair has min > max, re-reads it as three mins
+  then three maxes (Blood Moor 2–5, 4–8, 6–10), which is the one reading that makes those rows consistent. A warning
+  fires when both readings are inverted; `areasUniquesMinsThenMaxes` counts the re-read rows.
 - **Maps**: `Name` "Tier N Map - …" → `tier` N; `group` = `LevelGroup` without its "Tier N Map - " prefix (the zone, 2–11
   levels each, 4 zones per tier). "Unique Map - Goblin Realm" (id 213, The Hidden Vault) has `uniqueMap` and group
   "Goblin Realm", no tier. `boss` is the `*Map Boss` comment column (read from the raw text: the TSV parser drops

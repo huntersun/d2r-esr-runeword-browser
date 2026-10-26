@@ -34,7 +34,7 @@ export interface AreasInput {
 export interface AreasBuildResult extends BuildResult<AreasBundle> {
   /** Rows left out: map entrances (Prep Zone) and the null row */
   hidden: { prepZones: number; other: number };
-  /** Rows whose unique packs were re-read mins-then-maxes (the vanilla rows) */
+  /** Rows whose unique packs were re-read mins-then-maxes (rows with an inverted pair) */
   uniquesMinsThenMaxes: number;
 }
 
@@ -42,10 +42,10 @@ type UniquePacks = PerDifficulty<[number, number]>;
 const inverted = (packs: UniquePacks) => packs.some(([min, max]) => min > max);
 
 /**
- * The six MonUMin / MonUMax values. ESR's header pairs them per difficulty (`MonUMin, MonUMax, MonUMin(N), …`) and the
- * ESR map rows follow it (30 40 30 40 30 40), but the vanilla rows are stored mins then maxes (2 4 6 5 8 10 = mins
- * 2/4/6, maxes 5/8/10). Read pairwise; when a pair is inverted, re-read the row mins then maxes; when that is inverted
- * too, keep the pairwise values (`ok` false: the caller warns).
+ * The six MonUMin / MonUMax values. The header pairs them per difficulty (`MonUMin, MonUMax, MonUMin(N), …`) and the
+ * ESR map rows follow it (30 40 30 40 30 40), but 61 older rows have an inverted Nightmare pair (2 4 6 5 8 10); those
+ * values are ESR's own, not vanilla, and read as mins 2/4/6, maxes 5/8/10 they become consistent. Read pairwise; when
+ * a pair is inverted, re-read the row mins then maxes; when that is inverted too, keep the pairwise values (`ok` false: the caller warns).
  */
 export function readUniquePacks(values: readonly [number, number, number, number, number, number]): {
   packs: UniquePacks;
