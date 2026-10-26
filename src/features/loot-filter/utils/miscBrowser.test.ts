@@ -26,6 +26,7 @@ const item = (code: string, name: string, typeCode: string, extra: Partial<LootF
   kind: 'misc',
   type: typeCode,
   spawnable: true,
+  drops: true,
   ...extra,
 });
 

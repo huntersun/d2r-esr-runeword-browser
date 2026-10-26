@@ -51,6 +51,7 @@ const { bundle, warnings } = buildLootFilterBundle(
       ['index', 'item'],
       ['Set Axe', 'hax'],
     ]),
+    treasureclassex: table([['Treasure Class', 'Item1']]),
   },
   strings
 );
@@ -58,10 +59,10 @@ const { bundle, warnings } = buildLootFilterBundle(
 describe('buildLootFilterBundle', () => {
   it('lists every item code once (first row wins), spawnable or not, named through the string table, with type2 when set', () => {
     expect(bundle.items).toEqual([
-      { code: 'hax', name: 'Hand Axe', kind: 'weapon', type: 'axe', type2: '1hsw', spawnable: true },
-      { code: 'zax', name: 'Shadow Axe', kind: 'weapon', type: 'axe', spawnable: false },
-      { code: 'buc', name: 'Buckler', kind: 'armor', type: 'shie', spawnable: true },
-      { code: 'r01', name: 'El Rune', kind: 'misc', type: 'rune', spawnable: true },
+      { code: 'hax', name: 'Hand Axe', kind: 'weapon', type: 'axe', type2: '1hsw', spawnable: true, drops: true },
+      { code: 'zax', name: 'Shadow Axe', kind: 'weapon', type: 'axe', spawnable: false, drops: false },
+      { code: 'buc', name: 'Buckler', kind: 'armor', type: 'shie', spawnable: true, drops: true },
+      { code: 'r01', name: 'El Rune', kind: 'misc', type: 'rune', spawnable: true, drops: true },
     ]);
     expect(warnings).toContain('lootfilter: duplicate item code "hax" (Dup Axe); kept the first row');
   });
@@ -115,6 +116,7 @@ describe('buildLootFilterBundle tiers', () => {
       sounds: rowTable([['Sound']]),
       uniqueitems: rowTable([['index', 'code']]),
       setitems: rowTable([['index', 'item']]),
+      treasureclassex: table([['Treasure Class', 'Item1']]),
     },
     new Map()
   );
@@ -132,6 +134,7 @@ describe('buildLootFilterBundle tiers', () => {
       type: 'helm',
       tier: 'elite',
       spawnable: true,
+      drops: true,
     });
   });
 
@@ -142,5 +145,68 @@ describe('buildLootFilterBundle tiers', () => {
     expect(tierOf('hlf')).toBeUndefined();
     expect(tierOf('rin')).toBeUndefined();
     expect(tiered.items.find((item) => item.code === 'rin')).not.toHaveProperty('tier');
+  });
+});
+
+describe('buildLootFilterBundle drops', () => {
+  const { bundle: dropping } = buildLootFilterBundle(
+    {
+      weapons: table([
+        ITEM_COLUMNS,
+        ['Shadow Blade', 'sdb', 'sdb', 'swor', '', '0'],
+        ['Set Shadow', 'ssh', 'ssh', 'swor', '', '0'],
+        ['Vessel Hammer', 'm44', 'm44', 'hamm', '', '0'],
+      ]),
+      armor: table([ITEM_COLUMNS, ['Cap', 'cap', 'cap', 'helm', '', '1']]),
+      misc: table([
+        ITEM_COLUMNS,
+        ['Ancient Scroll', '01b', '01b', 'scrl', '', '0'],
+        ['Ancient Scroll', '02b', '02b', 'scrl', '', '0'],
+        ['Ore', 'ore', 'ore', 'rock', '', '0'],
+        ['Hu Rune', 'r48', 'r32', 'rune', '', '1'],
+        ['Elixir', 'hpo', 'hpo', 'hpot', '', '0'],
+      ]),
+      itemstatcost: rowTable([['Stat']]),
+      levels: table([['Name', 'Id', 'Act', 'LevelName']]),
+      sounds: rowTable([['Sound']]),
+      uniqueitems: rowTable([
+        ['index', 'code'],
+        ['Uni Ore 0', 'ore'],
+        ['Frost Blade', 'sdb'],
+        ['Lost Unique', 'hpo'],
+      ]),
+      setitems: rowTable([
+        ['index', 'item'],
+        ['Shadow Set Piece', 'ssh'],
+      ]),
+      treasureclassex: table([
+        ['Treasure Class', 'Item1', 'Item2', 'Item3'],
+        ['Scrolls 1', '01b', '"02b,qty=3"', ''],
+        ['Scrolls 2', 'Scrolls 1', 'weap54', ''],
+        ['Unique Ore 0', 'Unique Ore Crystals 0', 'Uni Ore 0', ''],
+        ['Boss', 'Frost Blade', 'Shadow Set Piece', 'Scrolls 2'],
+        ['', 'hpo', '', ''],
+      ]),
+    },
+    new Map()
+  );
+  const dropsOf = (code: string) => dropping.items.find((item) => item.code === code)?.drops;
+
+  it('marks non-spawnable items a treasure class names (quoted, with a quantity suffix) as dropping', () => {
+    expect(dropsOf('01b')).toBe(true);
+    expect(dropsOf('02b')).toBe(true);
+  });
+
+  it('marks the base of a unique or set row a treasure class names by its index as dropping', () => {
+    expect(dropsOf('ore')).toBe(true);
+    expect(dropsOf('sdb')).toBe(true);
+    expect(dropsOf('ssh')).toBe(true);
+  });
+
+  it('keeps spawnable items dropping and leaves the rest (no treasure class, unnamed unique, blank TC row) out', () => {
+    expect(dropsOf('cap')).toBe(true);
+    expect(dropsOf('r48')).toBe(true);
+    expect(dropsOf('m44')).toBe(false);
+    expect(dropsOf('hpo')).toBe(false);
   });
 });

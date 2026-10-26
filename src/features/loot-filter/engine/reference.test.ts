@@ -20,8 +20,8 @@ const itemType = (code: string, parents: string[] = []): ItemTypeInfo => ({
 
 const data: LootFilterDataBundle = {
   items: [
-    { code: 'hax', name: 'Hand Axe', kind: 'weapon', type: 'axe', spawnable: true },
-    { code: 'r01', name: 'El Rune', kind: 'misc', type: 'rune', spawnable: true },
+    { code: 'hax', name: 'Hand Axe', kind: 'weapon', type: 'axe', spawnable: true, drops: true },
+    { code: 'r01', name: 'El Rune', kind: 'misc', type: 'rune', spawnable: true, drops: true },
   ],
   stats: [
     { id: 0, name: 'strength' },
@@ -52,7 +52,7 @@ describe('buildLootFilterReference', () => {
   it('maps item codes to the ancestors of their type and type2', () => {
     const withType2: LootFilterDataBundle = {
       ...data,
-      items: [...data.items, { code: 'dbl', name: 'Double', kind: 'weapon', type: 'axe', type2: 'club', spawnable: true }],
+      items: [...data.items, { code: 'dbl', name: 'Double', kind: 'weapon', type: 'axe', type2: 'club', spawnable: true, drops: true }],
     };
     const types = { types: [itemType('axe', ['weap']), itemType('club', ['blun', 'weap']), itemType('weap')], classes: [] };
     const reference = buildLootFilterReference(withType2, types);

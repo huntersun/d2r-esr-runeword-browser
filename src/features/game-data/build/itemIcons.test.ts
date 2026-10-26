@@ -376,6 +376,7 @@ describe('misc item art (socket fillers)', () => {
     kind: 'misc',
     type,
     spawnable: true,
+    drops: true,
     ...extra,
   });
   const ancestors = new Map([

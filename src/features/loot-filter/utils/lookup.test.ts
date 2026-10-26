@@ -38,7 +38,10 @@ describe('buildPickerOptions', () => {
     expect(hax?.detail).toBe('hax · Axe');
     expect(hax?.search).toBe('hand axe hax');
     const withType2 = buildPickerOptions(
-      { ...TEST_DATA, items: [{ code: 'hax', name: 'Hand Axe', kind: 'weapon', type: 'axe', type2: 'thro', spawnable: true }] },
+      {
+        ...TEST_DATA,
+        items: [{ code: 'hax', name: 'Hand Axe', kind: 'weapon', type: 'axe', type2: 'thro', spawnable: true, drops: true }],
+      },
       {
         ...TEST_TYPES,
         types: [...TEST_TYPES.types, { ...TEST_TYPES.types[1], code: 'thro', name: 'Throwing Weapon', ancestors: ['thro'] }],
@@ -57,8 +60,8 @@ describe('buildPickerOptions', () => {
       {
         ...TEST_DATA,
         items: [
-          { code: 'cap', name: 'Cap', kind: 'armor', type: 'helm', spawnable: true },
-          { code: 'lgl', name: 'Leather Gloves', kind: 'armor', type: 'glov', spawnable: true },
+          { code: 'cap', name: 'Cap', kind: 'armor', type: 'helm', spawnable: true, drops: true },
+          { code: 'lgl', name: 'Leather Gloves', kind: 'armor', type: 'glov', spawnable: true, drops: true },
         ],
       },
       {

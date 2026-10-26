@@ -3,6 +3,7 @@ import type { BuildResult } from './bundleTypes.ts';
 import { readUniqueOrSetRows, resolveName } from './itemNames.ts';
 import { optStr } from './model.ts';
 import { distinctFamilyTier } from './tiers.ts';
+import { refOf } from './treasureClasses.ts';
 import type { TsvTable } from './tsv.ts';
 
 /**
@@ -18,9 +19,43 @@ export interface LootFilterTables {
   sounds: TsvTable;
   uniqueitems: TsvTable;
   setitems: TsvTable;
+  treasureclassex: TsvTable;
+}
+
+/** treasureclassex.txt has `Item1` … `Item10` */
+const TC_ITEM_COLUMNS = 10;
+
+/**
+ * Item codes a treasure class can drop although their row is not spawnable: every `Item*` cell of every treasure
+ * class row that is an item code, plus the base code of every unique/set row a cell names by its `index`. A cell that
+ * names another treasure class needs no expansion: that class's own row is scanned too.
+ */
+function treasureClassCodes(tables: LootFilterTables): Set<string> {
+  const refs = new Set<string>();
+  for (const row of tables.treasureclassex.rows) {
+    if (row.str('Treasure Class') === '') continue;
+    for (let i = 1; i <= TC_ITEM_COLUMNS; i++) {
+      const column = `Item${String(i)}`;
+      if (!row.has(column)) continue;
+      const ref = refOf(row.str(column));
+      if (ref !== '') refs.add(ref);
+    }
+  }
+  const codes = new Set(refs);
+  for (const [table, codeColumn] of [
+    [tables.uniqueitems, 'code'],
+    [tables.setitems, 'item'],
+  ] as const) {
+    for (const row of table.rows) {
+      const code = row.str(codeColumn);
+      if (code !== '' && refs.has(row.str('index'))) codes.add(code);
+    }
+  }
+  return codes;
 }
 
 function readItemRows(tables: LootFilterTables, warnings: string[], strings: ReadonlyMap<string, string>): LootFilterItem[] {
+  const dropCodes = treasureClassCodes(tables);
   const items: LootFilterItem[] = [];
   const seen = new Set<string>();
   for (const [kind, table] of [
@@ -37,6 +72,7 @@ function readItemRows(tables: LootFilterTables, warnings: string[], strings: Rea
       }
       seen.add(code);
       const name = row.str('name');
+      const spawnable = row.num('spawnable') === 1;
       const type2 = row.str('type2');
       // misc.txt has no tier families; neither do weapons/armor rows whose family points at themselves
       const tier =
@@ -48,7 +84,8 @@ function readItemRows(tables: LootFilterTables, warnings: string[], strings: Rea
         type: row.str('type'),
         ...(type2 === '' ? {} : { type2 }),
         ...(tier === undefined ? {} : { tier }),
-        spawnable: row.num('spawnable') === 1,
+        spawnable,
+        drops: spawnable || dropCodes.has(code),
       });
     }
   }

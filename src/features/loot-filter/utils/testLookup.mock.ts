@@ -19,11 +19,11 @@ const type = (code: string, name: string, parents: string[] = []): TypesBundle['
 
 export const TEST_DATA: LootFilterDataBundle = {
   items: [
-    { code: 'r33', name: 'Zod Rune', kind: 'misc', type: 'rune', spawnable: true },
-    { code: 'r32', name: 'Cham Rune', kind: 'misc', type: 'rune', spawnable: true },
-    { code: 'r31', name: 'Jah Rune', kind: 'misc', type: 'rune', spawnable: true },
-    { code: 'hax', name: 'Hand Axe', kind: 'weapon', type: 'axe', spawnable: true },
-    { code: 'xyz', name: 'Shadow Axe', kind: 'weapon', type: 'axe', spawnable: false },
+    { code: 'r33', name: 'Zod Rune', kind: 'misc', type: 'rune', spawnable: true, drops: true },
+    { code: 'r32', name: 'Cham Rune', kind: 'misc', type: 'rune', spawnable: true, drops: true },
+    { code: 'r31', name: 'Jah Rune', kind: 'misc', type: 'rune', spawnable: true, drops: true },
+    { code: 'hax', name: 'Hand Axe', kind: 'weapon', type: 'axe', spawnable: true, drops: true },
+    { code: 'xyz', name: 'Shadow Axe', kind: 'weapon', type: 'axe', spawnable: false, drops: false },
   ],
   stats: [
     { id: 0, name: 'strength' },
