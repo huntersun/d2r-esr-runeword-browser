@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.40.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.39.0...v1.40.0) (2026-10-26)
+
+
+### Features
+
+* **game-data:** add required level, set name and disabled flag to the loot-filter uniques and sets ([b9d7efa](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/b9d7efa5c0f473ea3752d6ef5f4cb82f4ff77e02))
+* **loot-filter:** add a browse uniques and sets dialog to the unique and set pickers ([1be131d](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/1be131d32b0167f6f974a3e53b92b3e17e417f57))
+* **loot-filter:** build the unique and set browser model ([8251fc2](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/8251fc2f05f9b5c3e7a9a42a0ecc62f51ba5412f))
+
+
+### Documentation
+
+* **loot-filter:** describe the unique and set browser ([37a8f41](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/37a8f417908d95bca997eb65014e7cf5a64aee09))
+* **loot-filter:** format the backlog ([12293d7](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/12293d79eb23023ff7531d78f8a58f1d848645f3))
+
+
+### Refactoring
+
+* **loot-filter:** share the browser tabs, add merged, disabled and column-list cells ([647d1e9](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/647d1e9c17a455bdc819794d18859b1b45717511))
+
 ## [1.39.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.38.0...v1.39.0) (2026-10-26)
 
 
