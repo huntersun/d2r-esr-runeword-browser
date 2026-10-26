@@ -247,7 +247,9 @@ Mythical`: items/types/uniques by name when the bundles are in, codes otherwise,
   file numbers kept until that part changes (`utils/matchValues.ts`); number matches (`itemLevel`, `sockets`,
   `maxSockets`): any / exactly / list (`1, 2, 3`) / range (min only or max only allowed); flags any / yes / no; stat
   check rows: stat picker, optional param, op (`>=` for new rows), value, two values for `between`
-  (`utils/statChecks.ts`); `location` checkboxes (none = on the ground); `activeInLevels`: "Every level" or a tick per
+  (`utils/statChecks.ts`); the two item stat lists (`itemStats`, `itemStatsAnyOf`) also have "Browse affixes…" after
+  "Add stat check" (the affix browser below), and a line under the Stats section says the game checks item stats, not
+  affix names; `location` checkboxes (none = on the ground); `activeInLevels`: "Every level" or a tick per
   filter level, unknown ids listed with a remove button. Unticking every level writes `activeInLevels: []` (the
   validator warns about the empty list); ticking "Every level" removes the key.
 - **Pickers** (`components/pickers/index.ts`): `MultiPicker` / `SinglePicker` (Popover + cmdk with our own filter,
@@ -380,6 +382,36 @@ counter and one Apply / Cancel.
   "id N is both unique X and set item Y; set the rule's quality to unique or set" (three ids named, then a count). The
   dialog reads that quality from the store (the selected rule), so `RuleEditor` passes nothing extra.
 - **Apply**: as in the item browser (`applyBrowserSelection` over the listed ids, uniques first, each id once).
+
+### Affix browser (`components/pickers/AffixBrowserDialog.tsx`, `utils/affixBrowser.ts`)
+
+The plugin matches item stats (itemstatcost names or ids), never affix names, but filter authors think in affixes
+(Jagged, Deadly, Cruel… = enhanced damage; "of Mastery" = enhanced damage + IAS). "Browse affixes…" next to "Add stat
+check" in `itemStats` (all of) and `itemStatsAnyOf` (any of) opens a dialog of the same size as the item browser
+("Browse affixes", one search box, "N stats selected", Apply / Cancel; Escape or the close button drop the draft and
+focus returns to the button).
+
+- **Data**: `affixes.json` (`stats` per affix and the top-level `stats` list, see GAME-DATA.md "Affixes"), loaded when
+  the dialog opens, with the Game Data loading and error states. The model is built once per loaded bundle.
+- **Rows** (`buildAffixBrowserModel`): one per item stat some affix writes, sorted by label: checkbox, label, the stat
+  name muted, then the affixes writing it as muted text sorted by affix level ("Jagged, Deadly, … (28 prefixes, 3
+  suffixes, 5 automods)"). ESR repeats affix rows per item type and level band; one entry per name, kind and stat set is
+  kept (the lowest level). A hybrid names its other stats ("of Mastery (+Increased Attack Speed, +Monster Defense Per
+  Hit)"), automods say so ("Sharp (automod, +Attack Rating)"), nameless automods show as "unnamed automod". The first 8
+  are shown, "+N more" / "Show less" toggles the rest; a search that matches an affix past the first 8 shows the whole
+  list, and matching affix names are emphasised.
+- **Enhanced damage**: `dmg%` writes both `item_maxdamage_percent` (17) and `item_mindamage_percent` (18). The browser
+  shows one "Enhanced Damage" row on 17 and hides 18 wherever an affix writes both (every ED affix in ESR 3.2.24), so
+  a tick writes one check on `item_maxdamage_percent`; an affix writing only one of them would keep it as its own row.
+- **Search**: every whitespace term must match the label, the stat name, an affix name, or (digits) the stat id.
+- **Apply** (`applyAffixSelection`): the draft starts with the listed stats that already have a check in that list
+  (by name or id, any op, value or param). Apply keeps checks on stats the dialog does not list and on stats still
+  ticked (unchanged), removes checks on listed stats that were unticked, and appends `{ "stat": <name>, "op": ">=",
+"value": 1 }` (a presence check, by name as the stat picker writes it; the user sets the number afterwards) for each
+  newly ticked stat in display order; an emptied list removes the key, and nothing is dispatched when nothing changes.
+- **Any-of note**: opened from `itemStatsAnyOf`, the footer says "An item matches when ANY ticked stat is present; a
+  hybrid affix gives all its stats, tick them in the all-of list to require both."
+- Not built: an "Except" (inverted) mode, deferred in the backlog.
 
 ## Actions editor (`components/actions/`)
 
