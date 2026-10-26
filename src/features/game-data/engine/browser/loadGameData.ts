@@ -8,6 +8,7 @@
 import {
   GAME_DATA_SCHEMA,
   type AffixesBundle,
+  type AreasBundle,
   type BasesBundle,
   type CraftingBundle,
   type CubeBundle,
@@ -41,6 +42,7 @@ export interface GameDataBundles {
   skilldetails: SkillDetailsBundle;
   crafting: CraftingBundle;
   tiers: TiersBundle;
+  areas: AreasBundle;
   icons: IconsBundle;
 }
 

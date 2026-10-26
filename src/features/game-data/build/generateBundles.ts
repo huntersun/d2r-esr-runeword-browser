@@ -1,5 +1,6 @@
 import type {
   AffixesBundle,
+  AreasBundle,
   BasesBundle,
   CraftingBundle,
   CubeBundle,
@@ -15,6 +16,7 @@ import type {
   TypesBundle,
 } from '../engine/schema.ts';
 import { buildAffixesBundle } from './bundleAffixes.ts';
+import { buildAreasBundle } from './bundleAreas.ts';
 import { attachAutomods, buildBasesBundle, readStaffMods } from './bundleBases.ts';
 import { assignCubeRows, buildCubeBundle, itemTypeCodes } from './bundleCube.ts';
 import { buildMaterialsBundle } from './bundleMaterials.ts';
@@ -54,6 +56,8 @@ export interface GeneratedBundles {
   skilldetails: SkillDetailsBundle;
   crafting: CraftingBundle;
   tiers: TiersBundle;
+  // areas.json
+  areas: AreasBundle;
   counts: Record<string, number>;
   /** Build warnings stored in the manifest */
   warnings: string[];
@@ -220,6 +224,22 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
   const tierCodes = Object.values(tiers.bundle.codes);
   const countTier = (tier: string) => tierCodes.filter((value) => value === tier).length;
 
+  // --- areas.json ---
+  const areas = buildAreasBundle({ levelsText: sources.tables.levels, strings });
+  const countAreas = (pick: (area: AreasBundle['areas'][number]) => boolean) => areas.bundle.areas.filter(pick).length;
+  const areaCounts = {
+    areas: areas.bundle.areas.length,
+    areasMaps: countAreas((area) => area.tier !== undefined),
+    areasMapZones: new Set(areas.bundle.areas.flatMap((area) => (area.tier === undefined ? [] : [area.group]))).size,
+    areasUniqueMaps: countAreas((area) => area.uniqueMap === true),
+    areasWithoutMonsters: countAreas((area) => area.level === null),
+    areasWithWaypoint: countAreas((area) => area.waypoint),
+    areasHiddenPrepZones: areas.hidden.prepZones,
+    areasHiddenOther: areas.hidden.other,
+    areasUniquesMinsThenMaxes: areas.uniquesMinsThenMaxes,
+  };
+  // --- end areas.json ---
+
   const countKind = (kind: string) => bases.bundle.bases.filter((base) => base.kind === kind).length;
   return {
     types: types.bundle,
@@ -236,6 +256,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
     skilldetails: skillDetails.bundle,
     crafting: crafting.bundle,
     tiers: tiers.bundle,
+    areas: areas.bundle,
     counts: {
       types: types.bundle.types.length,
       classes: types.bundle.classes.length,
@@ -322,6 +343,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       tierCodesExceptional: countTier('exceptional'),
       tierCodesElite: countTier('elite'),
       tierCodesMythical: countTier('mythical'),
+      ...areaCounts,
     },
     warnings: [
       ...types.warnings,
@@ -339,6 +361,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       ...skillDetails.warnings,
       ...crafting.warnings,
       ...tiers.warnings,
+      ...areas.warnings,
     ],
     stringWarnings: [...stringWarnings],
   };

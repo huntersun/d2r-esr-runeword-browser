@@ -36,7 +36,7 @@ const TABLES = [
   'gamble',
   // sets.json
   'sets',
-  // lootfilter.json
+  // lootfilter.json (levels: also areas.json and the cube's level names)
   'levels',
   'sounds',
   // skills.json

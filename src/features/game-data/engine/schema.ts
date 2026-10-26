@@ -20,6 +20,7 @@ export type GameDataFile =
   | 'skilldetails'
   | 'crafting'
   | 'tiers'
+  | 'areas'
   | 'icons';
 
 export interface GameDataManifest {
@@ -878,4 +879,47 @@ export interface ItemIconInfo {
    * file without `.dat` and the item row's `invtransform` colour code), approximating the game's palette recolour
    */
   tint?: { map: string; color: string };
+}
+
+// --- areas.json ---------------------------------------------------------------------------------------------------
+
+/**
+ * areas.json: the areas of levels.txt (towns, act areas, endgame map zones) with their monster level, density and
+ * unique pack counts per difficulty, waypoint and connections. The map entrances ("Prep Zone" rows), the null row 0
+ * and the Expansion marker are left out.
+ */
+export interface AreasBundle {
+  /** In levels.txt row order */
+  areas: Area[];
+}
+
+/** Normal, Nightmare, Hell */
+export type PerDifficulty<T> = [T, T, T];
+
+export interface Area {
+  /** levels.txt `Id` */
+  id: number;
+  /** `LevelName` through the string table, else `Name` without its "Act N - " prefix */
+  name: string;
+  /** 0-based act (maps are act 4) */
+  act: number;
+  /** Map zone (`LevelGroup` without its "Tier N Map - " prefix; the unique map's `Name` without "Unique Map - ") */
+  group?: string;
+  /** Endgame map tier, from the "Tier N Map - " prefix */
+  tier?: number;
+  /** The unique map (Goblin Realm): a map without a tier */
+  uniqueMap?: true;
+  /** `*Map Boss`: the boss of a map boss arena */
+  boss?: string;
+  waypoint: boolean;
+  /** Expansion monster level (`MonLvlEx`, `MonLvlEx(N)`, `MonLvlEx(H)`); null in towns and areas without any monster */
+  level: PerDifficulty<number> | null;
+  /** Monster density (`MonDen*`); null when 0 in every difficulty */
+  density: PerDifficulty<number> | null;
+  /** Unique / champion packs [min, max] (`MonUMin*` / `MonUMax*`); null when 0 in every difficulty */
+  uniques: PerDifficulty<[number, number]> | null;
+  /** Ids of the listed areas this one connects to (`Vis0`–`Vis7`, deduplicated, hidden rows and itself left out) */
+  connections: number[];
+  /** `PreventTownPortal` */
+  preventTownPortal?: true;
 }

@@ -39,6 +39,7 @@ const ROUTES_AFTER_NOTES: readonly SitemapEntry[] = [
   { path: 'game-data/enhance', changefreq: 'monthly', priority: '0.6' },
   { path: 'game-data/cube', changefreq: 'monthly', priority: '0.6' },
   { path: 'game-data/materials', changefreq: 'monthly', priority: '0.6' },
+  { path: 'game-data/areas', changefreq: 'monthly', priority: '0.6' },
   { path: 'loot-filters', changefreq: 'monthly', priority: '0.6' },
 ];
 

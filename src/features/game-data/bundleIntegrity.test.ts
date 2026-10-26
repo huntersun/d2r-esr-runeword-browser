@@ -11,6 +11,7 @@ import { serializeBundle } from './build/writeBundle.ts';
 import {
   GAME_DATA_SCHEMA,
   type AffixesBundle,
+  type AreasBundle,
   type BaseItem,
   type BasesBundle,
   type CraftingBundle,
@@ -52,6 +53,7 @@ const skillsText = readText('skills');
 const skillDetailsText = readText('skilldetails');
 const craftingText = readText('crafting');
 const tiersText = readText('tiers');
+const areasText = readText('areas');
 const { types, classes: typeClasses } = JSON.parse(typesText) as TypesBundle;
 const classCodes = typeClasses.map((cls) => cls.code);
 const { bases, automods: baseAutomods = [] } = JSON.parse(basesText) as BasesBundle;
@@ -67,6 +69,7 @@ const skills = JSON.parse(skillsText) as SkillsBundle;
 const skillDetails = JSON.parse(skillDetailsText) as SkillDetailsBundle;
 const crafting = JSON.parse(craftingText) as CraftingBundle;
 const { codes: tierCodes } = JSON.parse(tiersText) as TiersBundle;
+const { areas } = JSON.parse(areasText) as AreasBundle;
 
 describe('committed game-data bundles', () => {
   it('match the app schema', () => {
@@ -89,6 +92,7 @@ describe('committed game-data bundles', () => {
       ['skilldetails', skillDetailsText],
       ['crafting', craftingText],
       ['tiers', tiersText],
+      ['areas', areasText],
     ] as const) {
       expect(manifest.files[name]?.hash).toBe(createHash('sha256').update(text, 'utf8').digest('hex'));
       expect(manifest.files[name]?.bytes).toBe(Buffer.byteLength(text, 'utf8'));
@@ -731,6 +735,7 @@ describe.skipIf(!existsSync(ESR_DIR))('game data generated from the ESR clone', 
     expect(serializeBundle(generated.skilldetails)).toBe(skillDetailsText);
     expect(serializeBundle(generated.crafting)).toBe(craftingText);
     expect(serializeBundle(generated.tiers)).toBe(tiersText);
+    expect(serializeBundle(generated.areas)).toBe(areasText);
   });
 
   it('numbers uniques, sets, stats and sounds like the *ID / *Index comment columns where those are consistent', () => {
@@ -775,5 +780,36 @@ describe.skipIf(!existsSync(ESR_DIR))('game data generated from the ESR clone', 
       console.log(`Names differing by code: ${differing.map((b) => `${b.code}: "${b.name}" vs "${htm.get(b.code) ?? ''}"`).join(', ')}`);
     }
     expect((gear.length - missing.length) / gear.length).toBeGreaterThanOrEqual(0.95);
+  });
+});
+
+// --- areas.json ---------------------------------------------------------------------------------------------------
+
+describe('committed areas bundle', () => {
+  const byId = new Map(areas.map((area) => [area.id, area]));
+
+  it('lists unique ids whose connections resolve, with the manifest counts', () => {
+    expect(byId.size).toBe(areas.length);
+    expect(manifest.counts.areas).toBe(areas.length);
+    for (const area of areas) {
+      expect(area.name).not.toBe('');
+      for (const id of area.connections) expect(byId.has(id), `${area.name} → ${String(id)}`).toBe(true);
+    }
+  });
+
+  it('has the five map tiers of four zones each on the fixed level ladder, plus the unique map', () => {
+    for (const tier of [1, 2, 3, 4, 5]) {
+      const maps = areas.filter((area) => area.tier === tier);
+      expect(new Set(maps.map((area) => area.group)).size).toBe(4);
+      for (const area of maps) if (area.level !== null) expect(area.level).toEqual(Array(3).fill(100 + 2 * (tier - 1)));
+    }
+    expect(areas.filter((area) => area.uniqueMap === true).map((area) => area.name)).toEqual(['The Hidden Vault']);
+  });
+
+  it('keeps the towns (waypoint, no level) and no map entrance', () => {
+    const towns = ['Rogue Encampment', 'Lut Gholein', 'Kurast Docks', 'The Pandemonium Fortress', 'Harrogath'];
+    for (const name of towns) expect(areas.find((area) => area.name === name)).toMatchObject({ waypoint: true, level: null });
+    expect(byId.has(0)).toBe(false);
+    expect(byId.get(2)?.name).toBe('Blood Moor');
   });
 });
