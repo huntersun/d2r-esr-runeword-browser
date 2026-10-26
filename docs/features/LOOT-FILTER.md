@@ -183,15 +183,19 @@ Mythical`: items/types/uniques by name when the bundles are in, codes otherwise,
   `utils/pickerSearch.ts`: every term in name or code/id, exact and prefix matches first, at most 200 shown with "type
   to narrow"; Enter picks the highlighted option; the "Add code …" entry for typed values comes last) and the wrappers
   `ItemPicker`, `SingleItemPicker`, `ItemTypePicker`, `StatPicker`, `AreaPicker`, `UniqueOrSetPicker`. Non-spawnable
-  items are greyed with "shadow base". Item options show their type (`hax · Axe`) and also match the names and codes of
+  weapons and armor are greyed with "shadow base" (tooltip: they exist only as a unique's base or as a cube result),
+  misc items with `drops: false` with "never drops"; non-spawnable misc items that drop (the Ancient Scrolls, Ore) look
+  like any other (`itemMutedState` in `utils/lookup.ts`, shared by the options and the chips). Items sharing a display
+  name get their code in the option label ("Ko Rune (r19)", "Hand Axe (p01)"; ESR 3.2.24: 319 names, 947 items); the
+  search still matches the plain name. Item options show their type (`hax · Axe`) and also match the names and codes of
   every type the base counts as (`type` and `type2` with their ancestors, the option's `searchMore`), ranked after the
   name and code matches, so `helm` lists the helms named Helm first, then Demonhead and the rest. In `MultiPicker` the
   "Add …" button comes before the chips (the popover stays put as chips are added), a pick keeps the search, clicks on
   the picker's own chips do not close the list, and the popover has a fixed height (it does not flip as the matches
   change); the search, the highlighted option and the scroll position survive closing and reopening (the search text is
   selected on open, so typing replaces it). While searching, the item and type pickers offer "Add all N items" /
-  "Remove all N items" for every match, not only the 200 shown (`bulkPick`): adding skips shadow bases ("M shadow bases
-  skipped"), removing applies once every other match is picked, and above 50 values the button asks for a second click
+  "Remove all N items" for every match, not only the 200 shown (`bulkPick`): adding skips the muted options and names them
+  by hint ("2 shadow bases, 1 never-drop item skipped", `skippedByHint`), removing applies once every other match is picked, and above 50 values the button asks for a second click
   ("Add N items? Click again"). `SinglePicker` closes on a pick and starts with an empty search. Uniques and sets share
   the id space (a unique and a set item can have the same row), so a chip names both. Without the bundles the pickers
   still take typed codes and ids. `ItemPicker` (item codes and except item codes, not the Test tab's `SingleItemPicker`)
@@ -212,7 +216,8 @@ share one draft, one search box, one "N selected" counter and one Apply / Cancel
 - **Data**: `bases.json`, `types.json` and `lootfilter.json`, loaded when the dialog opens (`useGameData`; loading and
   error states as on the Game Data pages; `lootfilter.json` is the bundle the pickers already load, cached per file).
   Each tab's model is built once per loaded bundle set (module caches, `getBaseBrowserModel`, `getMiscBrowserModel`).
-  Shadow bases of uniques are not listed; the dialog's hint points to "Add item" for those.
+  Non-spawnable bases are not listed (they exist only as the base of a unique or as a cube result, Vessel of Souls);
+  the dialog's description points to "Add item" for those.
 - **Shared model** (`browserModel.ts`): groups → types; a type is a `grid` (named columns, rows with one cell per
   column, extras below the rows) or a `list`. A column has a key, a label and, for the base tiers, a tier (rendered as
   the tier badge; other columns get a plain label badge). Each column header is a tri-state checkbox for that column;
@@ -228,7 +233,8 @@ share one draft, one search box, one "N selected" counter and one Apply / Cancel
   potions) are a plain list. A cell: checkbox, name, code, one stat line (damage or defense, block, speed for weapons,
   required level/str/dex, max sockets as `N os` with the per-ilvl caps in the tooltip, qlvl). The toolbar adds
   tri-state toggles for Normal / Exceptional / Elite / Mythical (this tab only).
-- **Misc tab**: every spawnable `kind: 'misc'` item of `lootfilter.json` whose code is not in `bases.json` (rings,
+- **Misc tab**: every `kind: 'misc'` item with `drops` (spawnable, or non-spawnable but named by a treasure class:
+  the Ancient Scrolls, Ore, Fake Note…; no badge, they drop like anything else) of `lootfilter.json` whose code is not in `bases.json` (rings,
   amulets, charms and jewels stay on the Bases tab under Accessories), in bundle (misc.txt) order. Cells show name and
   code only.
   - _Groups_: the item type's chain up `parents[0]` ends at the topmost type below `misc` (or at a type without
@@ -238,7 +244,8 @@ share one draft, one search box, one "N selected" counter and one Apply / Cancel
   - _Blocks_: one per type right below the group root on that chain (the root itself for its own items), so the seven
     gem types share one "Gem" block and the rejuvenation potions sit under Healing Potion.
   - _Containers left out_: an item type whose items (more than one) all share one name is a stack of containers
-    (Rune Stocker, Rerolling Orb, Decal Stocker…); such types are not listed and the tab's hint names them. They stay
+    (Rune Stocker, Rerolling Orb, Decal Stocker…); such types are not listed and the tab's hint names them. The hint also says items that never drop (cube-only
+    results, Vessel of Souls transform bases) are not listed and are found with "Add item". They stay
     reachable through "Add item" and the item-type picker.
   - _Quality families_: the ladder is the set of item types the items use as `type2` (`gem0`…`gem5`), ordered by their
     first use; each ladder word is the type name minus the words all of them share ("Chipped Gem" → "Chipped"). An

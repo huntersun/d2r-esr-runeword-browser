@@ -60,7 +60,7 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 | `runewords.json`    | 197 KB / 28 KB                                                                 |
 | `affixes.json`      | 795 KB / 61 KB                                                                 |
 | `sources.json`      | 298 KB / 29 KB                                                                 |
-| `lootfilter.json`   | 686 KB / 98 KB                                                                 |
+| `lootfilter.json`   | ESR 3.2.24: 744 KB / 100 KB                                                    |
 | `enhance.json`      | ESR 3.2.24: 357 KB / 32 KB                                                     |
 | `cube.json`         | ESR 3.2.24: 517 KB / 55 KB                                                     |
 | `materials.json`    | ESR 3.2.24: 165 KB / 11 KB                                                     |
@@ -190,6 +190,15 @@ and validator (`src/features/loot-filter/engine/reference.ts` turns it plus `typ
   It is omitted for `misc.txt` rows and for rows without a tier family, whose three family columns hold the item's own
   code (arrows/bolts, quest items, ESR mythical bases; ESR 3.2.24: 76 weapons, 6 armors). The loot-filter Test tab fills
   its base tier from it; an item without a tier matches no `baseTier` condition.
+  `spawnable` is the `spawnable` column. `drops` says whether the item can drop: spawnable, or named by a
+  `treasureclassex.txt` `Item1`…`Item10` cell (first comma-separated token without quotes, `"01c,qty=3"` → `01c`), or
+  the base code of a `uniqueitems.txt` / `setitems.txt` row whose `index` such a cell names (ESR drops non-spawnable
+  rows a treasure class names). Every TC row is scanned, so a TC named by another TC needs no expansion. ESR 3.2.24: 56
+  non-spawnable items drop (55 misc: the Ancient Scrolls `01b`…`50b` through "Scrolls 1…17", Ore through the
+  "Uni Ore N" unique rows, Fake Note, Flask of Renewal, Nirvana Grass, `au9`; one weapon, `dd1`, the base of the
+  Frostmourne unique); the Vessel of Souls transform bases (`m44` and 27 more mythical weapons) do not. A spawnable
+  item is always `drops: true`, although misc items only drop through treasure classes (no auto-TCs) and 333 spawnable
+  misc rows are named by none (cube results, engine drops such as the essences, and the unused `r48` "Fu Rune").
 - `stats`: every `itemstatcost.txt` row, `id` = 0-based row number (equal to the `*ID` comment column in ESR 3.2.12),
   `name` = `Stat`.
 - `areas`: every `levels.txt` row with an `Id` (the `Expansion` marker has none); name = `LevelName` through the string
