@@ -74,7 +74,21 @@ export interface LootFilterPickerOptions {
 
 export const EMPTY_PICKER_OPTIONS: LootFilterPickerOptions = { items: [], types: [], stats: [], areas: [], uniquesAndSets: [] };
 
-const SHADOW_BASE_HINT = 'shadow base';
+/**
+ * Whether an item option is greyed out, with its short hint and its tooltip. Weapons and armor that are not spawnable
+ * are shadow bases; misc items are muted only when they never drop (non-spawnable ones a treasure class names drop like
+ * any other).
+ */
+export function itemMutedState(item: LootFilterItem): { muted: boolean; hint?: string; title?: string } {
+  if (item.kind === 'misc') {
+    return item.drops
+      ? { muted: false }
+      : { muted: true, hint: 'never drops', title: 'Never drops: no treasure class names it (cube results, quest items, unused rows)' };
+  }
+  return item.spawnable
+    ? { muted: false }
+    : { muted: true, hint: 'shadow base', title: 'Shadow base: not spawnable; exists only as a unique’s base or as a cube result' };
+}
 
 /**
  * Ancestor types left out of an item option's type search. ESR's itemtypes.txt names the mercenary-equipment umbrella
@@ -104,17 +118,27 @@ export function buildPickerOptions(data: LootFilterDataBundle, types: TypesBundl
       search: searchText(entry.name, entry.id, base, entry.code),
     };
   };
+  // Items sharing a display name (Ko Rune r19 / r68) get their code in the label
+  const nameCounts = new Map<string, number>();
+  for (const item of data.items) if (item.name !== '') nameCounts.set(item.name, (nameCounts.get(item.name) ?? 0) + 1);
+  const itemLabel = (item: LootFilterItem): string => {
+    if (item.name === '') return item.code;
+    return (nameCounts.get(item.name) ?? 0) > 1 ? `${item.name} (${item.code})` : item.name;
+  };
   return {
-    items: data.items.map((item) => ({
-      key: item.code,
-      value: item.code,
-      label: item.name === '' ? item.code : item.name,
-      detail: [item.code, typeName.get(item.type)].filter((part) => part !== undefined && part !== '').join(' · '),
-      muted: !item.spawnable,
-      hint: item.spawnable ? undefined : SHADOW_BASE_HINT,
-      search: searchText(item.name, item.code),
-      searchMore: itemTypeSearch(item),
-    })),
+    items: data.items.map((item) => {
+      const { muted, hint } = itemMutedState(item);
+      return {
+        key: item.code,
+        value: item.code,
+        label: itemLabel(item),
+        detail: [item.code, typeName.get(item.type)].filter((part) => part !== undefined && part !== '').join(' · '),
+        muted,
+        hint,
+        search: searchText(item.name, item.code),
+        searchMore: itemTypeSearch(item),
+      };
+    }),
     types: types.types.map((type) => ({
       key: type.code,
       value: type.code,

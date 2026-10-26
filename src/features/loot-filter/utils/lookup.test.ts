@@ -1,4 +1,4 @@
-import { buildPickerOptions, EMPTY_LOOKUP } from './lookup';
+import { buildPickerOptions, EMPTY_LOOKUP, itemMutedState } from './lookup';
 import { filterPickerOptions } from './pickerSearch';
 import { TEST_DATA, TEST_LOOKUP, TEST_TYPES } from './testLookup.mock';
 
@@ -31,6 +31,49 @@ describe('buildPickerOptions', () => {
   it('marks non-spawnable items as shadow bases', () => {
     expect(options.items.find((option) => option.value === 'xyz')).toMatchObject({ muted: true, hint: 'shadow base' });
     expect(options.items.find((option) => option.value === 'hax')).toMatchObject({ muted: false, hint: undefined });
+  });
+
+  it('mutes misc items only when they never drop, and names shadow bases apart', () => {
+    const misc = buildPickerOptions(
+      {
+        ...TEST_DATA,
+        items: [
+          { code: '01b', name: 'Ancient Scroll', kind: 'misc', type: 'scrl', spawnable: false, drops: true },
+          { code: 'r48', name: 'Hu Rune', kind: 'misc', type: 'rune', spawnable: true, drops: true },
+          { code: 'xyz', name: 'Unused', kind: 'misc', type: 'rune', spawnable: false, drops: false },
+          { code: 'dd1', name: 'Mythical Blade', kind: 'weapon', type: 'swor', spawnable: false, drops: true },
+        ],
+      },
+      TEST_TYPES
+    );
+    expect(misc.items.map((option) => [option.value, option.muted, option.hint])).toEqual([
+      ['01b', false, undefined],
+      ['r48', false, undefined],
+      ['xyz', true, 'never drops'],
+      ['dd1', true, 'shadow base'],
+    ]);
+    expect(itemMutedState({ code: 'xyz', name: '', kind: 'misc', type: 'rune', spawnable: false, drops: false }).title).toMatch(
+      /^Never drops/
+    );
+    expect(itemMutedState({ code: 'dd1', name: '', kind: 'weapon', type: 'swor', spawnable: false, drops: true }).title).toMatch(
+      /^Shadow base/
+    );
+  });
+
+  it('adds the code to the label of items sharing a display name, still found by the plain name', () => {
+    const runes = buildPickerOptions(
+      {
+        ...TEST_DATA,
+        items: [
+          { code: 'r19', name: 'Ko Rune', kind: 'misc', type: 'rune', spawnable: true, drops: true },
+          { code: 'r68', name: 'Ko Rune', kind: 'misc', type: 'rune', spawnable: true, drops: true },
+          { code: 'r20', name: 'Fal Rune', kind: 'misc', type: 'rune', spawnable: true, drops: true },
+        ],
+      },
+      TEST_TYPES
+    );
+    expect(runes.items.map((option) => option.label)).toEqual(['Ko Rune (r19)', 'Ko Rune (r68)', 'Fal Rune']);
+    expect(filterPickerOptions(runes.items, 'ko rune').matches.map((option) => option.value)).toEqual(['r19', 'r68']);
   });
 
   it("shows the item's type and searches its types' names and codes, type2 included", () => {

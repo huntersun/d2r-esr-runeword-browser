@@ -178,10 +178,13 @@ function ItemBrowserForm({ bases, misc, values, onApply, onCancel }: BrowserForm
         aria-labelledby={`${idPrefix}-tab-${tab}`}
         className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3 sm:px-6"
       >
-        {tab === 'misc' && misc.excluded.length > 0 && (
+        {tab === 'misc' && (
           <p className="text-xs text-muted-foreground">
-            Not listed: stacks of identically named containers ({misc.excluded.map((type) => type.itemName).join(', ')}); find them with
-            “Add item” or by item type.
+            Not listed: items that never drop (cube-only results, Vessel of Souls transform bases)
+            {misc.excluded.length > 0 && (
+              <> and stacks of identically named containers ({misc.excluded.map((type) => type.itemName).join(', ')})</>
+            )}
+            ; find them with “Add item”{misc.excluded.length > 0 && ' or by item type'}.
           </p>
         )}
         {groups.length === 0 ? (
@@ -232,7 +235,7 @@ function ItemBrowserBody({ values, onApply, onCancel }: Omit<BrowserFormProps, '
 
 /**
  * "Browse items…": two tabs with checkboxes. Bases: every spawnable base by type group, type and tier (a Normal |
- * Exceptional | Elite row per family). Misc: the spawnable misc items that are not bases, by type group and type, with
+ * Exceptional | Elite row per family). Misc: the misc items that drop and are not bases, by type group and type, with
  * quality families (Chipped … Perfect) as grid rows. Both tabs edit one draft; Apply hands the picker its values with
  * the browser's codes replaced.
  */
@@ -250,8 +253,8 @@ export function ItemBrowserDialog({ values, onChange }: ItemBrowserProps) {
         <DialogHeader className="px-4 pt-4 pb-3 pr-12 sm:px-6 sm:pr-12">
           <DialogTitle>Browse items</DialogTitle>
           <DialogDescription>
-            Tick bases by type and tier, or misc items (runes, gems, potions…) by group, then Apply. Shadow bases of uniques are not listed;
-            find them with “Add item”.
+            Tick bases by type and tier, or misc items (runes, gems, potions…) by group, then Apply. Non-spawnable bases are not listed:
+            they exist only as the base of a unique or as a cube result (Vessel of Souls); find them with “Add item”.
           </DialogDescription>
         </DialogHeader>
         {/* The content unmounts on close, so every opening starts a fresh draft from the picker's values. */}

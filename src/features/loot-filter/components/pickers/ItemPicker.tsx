@@ -2,6 +2,7 @@ import type { LootFilterData } from '../../hooks/useLootFilterData';
 import { ItemBrowserDialog } from './ItemBrowserDialog';
 import { codeCustom } from './customOptions';
 import { MultiPicker, SinglePicker, type DescribeValue } from './MultiPicker';
+import { itemMutedState } from '../../utils/lookup';
 
 function describeItem(data: LootFilterData): DescribeValue {
   return (code) => {
@@ -9,14 +10,12 @@ function describeItem(data: LootFilterData): DescribeValue {
     if (item === undefined) {
       return { label: code, muted: data.status === 'ready', title: data.status === 'ready' ? 'Not in the game data' : undefined };
     }
-    return {
-      label: item.name === '' ? code : item.name,
-      detail: code,
-      muted: !item.spawnable,
-      title: item.spawnable ? undefined : 'Shadow base: not spawnable (uniques sit on such bases)',
-    };
+    const { muted, title } = itemMutedState(item);
+    return { label: item.name === '' ? code : item.name, detail: code, muted, title };
   };
 }
+
+const MUTED_NOUNS = { 'shadow base': ['shadow base', 'shadow bases'], 'never drops': ['never-drop item', 'never-drop items'] } as const;
 
 export interface ItemPickerProps {
   /** From `useLootFilterData()`; without loaded data the picker still takes typed codes. */
@@ -28,7 +27,8 @@ export interface ItemPickerProps {
 
 /**
  * Item codes (weapons, armor, misc) as chips with name + code; search by name or code, or by item type (`helm` finds
- * Demonhead, after the names). "Add all" / "Remove all" acts on every match, skipping shadow bases. "Browse items…" opens
+ * Demonhead, after the names). "Add all" / "Remove all" acts on every match, skipping shadow bases and misc items that
+ * never drop. "Browse items…" opens
  * the bases by type and tier and the misc items by group, with checkboxes.
  */
 export function ItemPicker({ data, values, onChange, id }: ItemPickerProps) {
@@ -43,7 +43,7 @@ export function ItemPicker({ data, values, onChange, id }: ItemPickerProps) {
       searchPlaceholder="Item name, code or type…"
       custom={codeCustom('item')}
       bulkNouns={['item', 'items']}
-      mutedNouns={['shadow base', 'shadow bases']}
+      mutedNouns={MUTED_NOUNS}
       actions={<ItemBrowserDialog values={values} onChange={onChange} />}
     />
   );

@@ -74,11 +74,13 @@ const ITEMS = [
   item('mp1', 'Minor Mana Potion', 'mpot'),
   item('std', 'Standard of Heroes', 'ques'),
   item('ear', 'Ear', 'body'),
+  // Not spawnable, but a treasure class names it: listed.
+  item('lmb', 'Limb', 'body', { spawnable: false }),
   item('ko1', 'Rune Stocker', 'can2'),
   item('ko2', 'Rune Stocker', 'can2'),
-  // Not listed: a base, a shadow item, a weapon.
+  // Not listed: a base, an item that never drops, a weapon.
   item('amu', 'Amulet', 'amu'),
-  item('xxx', 'Shadow', 'body', { spawnable: false }),
+  item('xxx', 'Shadow', 'body', { spawnable: false, drops: false }),
   item('axe', 'Axe', 'axe', { kind: 'weapon' }),
 ];
 
@@ -142,7 +144,7 @@ describe('buildMiscBrowserModel', () => {
     expect(MODEL.codes).toEqual([
       'gcv', 'gfv', 'gsv', 'gvb', 'gck', 'gsk', 'gbk', 'gsy',
       'xr0', 'xl0', 'xt0', 'r01', 'r02', 'xx1',
-      'hp1', 'rvs', 'mp1', 'std', 'ear',
+      'hp1', 'rvs', 'mp1', 'std', 'ear', 'lmb',
     ]);
   });
 

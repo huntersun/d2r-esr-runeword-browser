@@ -65,19 +65,34 @@ describe('groupPickerOptions', () => {
 describe('bulkPick', () => {
   const items = [
     { ...option('hlm', 'Full Helm'), searchMore: 'helm' },
-    { ...option('usk', 'Demonhead'), searchMore: 'helm', muted: true },
+    { ...option('usk', 'Demonhead'), searchMore: 'helm', muted: true, hint: 'shadow base' },
     { ...option('cap', 'Cap'), searchMore: 'helm' },
+    { ...option('hm2', 'Odd Rune'), searchMore: 'helm', muted: true, hint: 'never drops' },
+    { ...option('hm3', 'Shade Cap'), searchMore: 'helm', muted: true, hint: 'shadow base' },
     option('hax', 'Hand Axe'),
   ];
 
   it('adds every unpicked match beyond the shown ones, skipping muted options', () => {
-    expect(bulkPick(items, 'helm', ['cap'])).toEqual({ action: 'add', values: ['hlm'], skipped: 1 });
+    expect(bulkPick(items, 'helm', ['cap'])).toEqual({
+      action: 'add',
+      values: ['hlm'],
+      skipped: 3,
+      skippedByHint: [
+        ['shadow base', 2],
+        ['never drops', 1],
+      ],
+    });
     const many = Array.from({ length: 250 }, (_, index) => option(`c${String(index)}`, `Charm ${String(index)}`));
     expect(bulkPick(many, 'charm', [])?.values).toHaveLength(250);
   });
 
   it('removes the picked matches (muted ones too) once every unmuted match is picked', () => {
-    expect(bulkPick(items, 'helm', ['hlm', 'cap', 'usk', 'hax'])).toEqual({ action: 'remove', values: ['hlm', 'usk', 'cap'], skipped: 0 });
+    expect(bulkPick(items, 'helm', ['hlm', 'cap', 'usk', 'hax'])).toEqual({
+      action: 'remove',
+      values: ['hlm', 'usk', 'cap'],
+      skipped: 0,
+      skippedByHint: [],
+    });
   });
 
   it('offers nothing for an empty query or when nothing can be added or removed', () => {

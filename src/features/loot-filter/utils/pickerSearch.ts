@@ -10,7 +10,7 @@ export interface PickerOption {
   readonly detail?: string;
   /** Heading the option is listed under (act, unique or set); options keep their order within a group. */
   readonly group?: string;
-  /** Shown greyed out with `hint` (e.g. a non-spawnable "shadow" base); still selectable. */
+  /** Shown greyed out with `hint` (a non-spawnable "shadow" base, a misc item that never drops); still selectable. */
   readonly muted?: boolean;
   readonly hint?: string;
   /** Lowercase text the query terms are matched against (name, code, id). */
@@ -79,8 +79,10 @@ export function filterPickerOptions(options: readonly PickerOption[], query: str
 export interface BulkPick {
   readonly action: 'add' | 'remove';
   readonly values: readonly string[];
-  /** Muted matches (shadow bases) left out of an add. */
+  /** Muted matches (shadow bases, items that never drop) left out of an add. */
   readonly skipped: number;
+  /** `skipped` split by the options' `hint` (`''` without one), in first-seen order. */
+  readonly skippedByHint: readonly (readonly [hint: string, count: number])[];
 }
 
 /**
@@ -93,14 +95,19 @@ export function bulkPick(options: readonly PickerOption[], query: string, select
   const { matches } = filterPickerOptions(options, query, Infinity);
   const picked = new Set(selected);
   const toAdd = new Set<string>();
-  const skipped = new Set<string>();
+  const skipped = new Map<string, string>();
   for (const option of matches) {
     if (picked.has(option.value)) continue;
-    (option.muted === true ? skipped : toAdd).add(option.value);
+    if (option.muted === true) skipped.set(option.value, option.hint ?? '');
+    else toAdd.add(option.value);
   }
-  if (toAdd.size > 0) return { action: 'add', values: [...toAdd], skipped: skipped.size };
+  if (toAdd.size > 0) {
+    const byHint = new Map<string, number>();
+    for (const hint of skipped.values()) byHint.set(hint, (byHint.get(hint) ?? 0) + 1);
+    return { action: 'add', values: [...toAdd], skipped: skipped.size, skippedByHint: [...byHint] };
+  }
   const toRemove = new Set(matches.filter((option) => picked.has(option.value)).map((option) => option.value));
-  return toRemove.size === 0 ? null : { action: 'remove', values: [...toRemove], skipped: 0 };
+  return toRemove.size === 0 ? null : { action: 'remove', values: [...toRemove], skipped: 0, skippedByHint: [] };
 }
 
 /** Splits matches into groups in order of first appearance; options without a group go under ''. */

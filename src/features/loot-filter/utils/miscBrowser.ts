@@ -10,8 +10,9 @@ import {
 } from './browserModel';
 
 /**
- * The Misc tab of the item browser: every spawnable misc item that is not a base (runes, gems, potions, cube
- * materials, quest items, coupons…), grouped by the item type's topmost ancestor below `misc`, with a block per type
+ * The Misc tab of the item browser: every misc item that drops (`drops`: spawnable or named by a treasure class, like
+ * the non-spawnable Ancient Scrolls and Ore) and is not a base (runes, gems, potions, cube materials, quest items,
+ * coupons…), grouped by the item type's topmost ancestor below `misc`, with a block per type
  * below that group root. Quality families (Chipped / Flawed / … Perfect X) form a grid by quality.
  */
 
@@ -119,7 +120,7 @@ export function buildMiscBrowserModel(
 ): MiscBrowserModel {
   const typeByCode = new Map(types.map((type) => [type.code, type]));
   const typeName = (code: string) => typeByCode.get(code)?.name ?? code;
-  const candidates = lootfilterItems.filter((item) => item.kind === 'misc' && item.spawnable && !baseCodes.has(item.code));
+  const candidates = lootfilterItems.filter((item) => item.kind === 'misc' && item.drops && !baseCodes.has(item.code));
 
   const containers = containerTypes(candidates);
   const excluded = [...containers].map(

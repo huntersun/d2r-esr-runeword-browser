@@ -36,6 +36,13 @@ function countOf(count: number, [one, many]: PickerNouns): string {
   return `${String(count)} ${count === 1 ? one : many}`;
 }
 
+const MUTED_NOUNS: PickerNouns = ['muted option', 'muted options'];
+
+/** "2 shadow bases, 1 never-drop item skipped" */
+function skippedText(byHint: readonly (readonly [string, number])[], nouns: Readonly<Record<string, PickerNouns>>): string {
+  return `${byHint.map(([hint, count]) => countOf(count, nouns[hint] ?? MUTED_NOUNS)).join(', ')} skipped`;
+}
+
 export interface MultiPickerProps {
   readonly id?: string;
   readonly options: readonly PickerOption[];
@@ -49,8 +56,8 @@ export interface MultiPickerProps {
   readonly custom?: PickerCustom;
   /** Offers "Add all N" / "Remove all N" for every match of the search, naming the values with these nouns. */
   readonly bulkNouns?: PickerNouns;
-  /** What the muted options are (skipped by "Add all"), e.g. `['shadow base', 'shadow bases']`. */
-  readonly mutedNouns?: PickerNouns;
+  /** What the muted options are (skipped by "Add all"), by their `hint`, e.g. `{ 'shadow base': ['shadow base', 'shadow bases'] }`. */
+  readonly mutedNouns?: Readonly<Record<string, PickerNouns>>;
   /** More buttons right after the add button (before the chips). */
   readonly actions?: ReactNode;
 }
@@ -71,7 +78,7 @@ export function MultiPicker({
   searchPlaceholder,
   custom,
   bulkNouns,
-  mutedNouns = ['muted option', 'muted options'],
+  mutedNouns = {},
   actions,
 }: MultiPickerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -178,7 +185,7 @@ export function MultiPicker({
                   ? `${bulk.action === 'add' ? 'Add' : 'Remove'} ${countOf(bulk.values.length, bulkNouns)}? Click again`
                   : `${bulk.action === 'add' ? 'Add' : 'Remove'} all ${countOf(bulk.values.length, bulkNouns)}`}
               </Button>
-              {bulk.skipped > 0 && <span className="text-xs text-muted-foreground">{countOf(bulk.skipped, mutedNouns)} skipped</span>}
+              {bulk.skipped > 0 && <span className="text-xs text-muted-foreground">{skippedText(bulk.skippedByHint, mutedNouns)}</span>}
             </div>
           )}
         </PopoverContent>
