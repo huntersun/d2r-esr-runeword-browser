@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.39.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.38.0...v1.39.0) (2026-10-26)
+
+
+### Features
+
+* **loot-filter:** disable and enable rules from the rule list and editor ([0ad8a4f](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/0ad8a4f405e02f2bccdf0f9cbd44caa81f4f1c66))
+* **loot-filter:** explain in the rule editor that hide-if-fail also hides other qualities ([da17d86](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/da17d86c5626b5216676425c22aff75f784523da))
+* **loot-filter:** keep disabled rules in a top-level disabledRules list ([b06ca10](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/b06ca10faf432f2def1714e95e1147dc9c02eb0c))
+* **loot-filter:** warn about hide-if-fail pitfalls and empty condition lists ([281b9de](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/281b9de989e7ecf63709c7ecb3e301485e82ba80))
+
+
+### Documentation
+
+* **loot-filter:** document disabledRules, the new rule warnings and the hide-if-fail note ([ba5ade4](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/ba5ade4e04e0d18ad28d9097d5492cdef36a0837))
+
 ## [1.38.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.37.0...v1.38.0) (2026-10-26)
 
 
