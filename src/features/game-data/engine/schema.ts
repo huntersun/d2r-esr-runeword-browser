@@ -158,6 +158,18 @@ export interface TxtRunewordRow {
 // Phase 3
 export interface AffixesBundle {
   affixes: Affix[];
+  /** Every item stat some affix writes (`Affix.stats`), by id; for the loot filter's affix browser */
+  stats: AffixStat[];
+}
+
+/** An itemstatcost stat an affix writes. */
+export interface AffixStat {
+  /** itemstatcost `*ID` */
+  id: number;
+  /** itemstatcost `Stat` (what a loot filter stat check names) */
+  name: string;
+  /** Short label from `descstrpos` ("Enhanced Damage"); the stat name when there is no description */
+  label: string;
 }
 
 export interface Affix {
@@ -178,6 +190,11 @@ export interface Affix {
   itypes: string[];
   etypes: string[];
   mods: AffixMod[];
+  /**
+   * Distinct itemstatcost ids the mods write, ascending (enhanced damage = 17 and 18); ESR technical stats (tinkering,
+   * jewel flag, `_display` companions) are left out. Empty for an affix that writes none (e.g. only `ethereal`).
+   */
+  stats: number[];
   text: string[];
 }
 

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { TypesBundle } from '../engine/schema.ts';
 import { buildAffixesBundle } from './bundleAffixes.ts';
 import { readAffixes } from './model.ts';
-import { testRenderer } from './stats/testContext.mock.ts';
+import { TEST_STRINGS, testRenderer, testStatIndex, testTables } from './stats/testContext.mock.ts';
 import { parseTsv } from './tsv.ts';
 
 const COLUMNS = [
@@ -90,16 +90,15 @@ function row(spec: RowSpec): string[] {
 
 const table = (rows: RowSpec[]) => parseTsv([COLUMNS, ...rows.map(row)].map((cells) => cells.join('\t')).join('\n'), 'affix.txt');
 const typesBundle = { types: ['armo', 'weap', 'shld', 'amaz'].map((code) => ({ code })), classes: [] } as unknown as TypesBundle;
-const strings = new Map([
-  ['of the Fox', 'of the Fox'],
-  ['Sturdy', 'Sturdy'],
-]);
+const strings = new Map([...TEST_STRINGS, ['of the Fox', 'of the Fox'], ['Sturdy', 'Sturdy']]);
 const renderer = testRenderer();
+const statTables = { properties: testTables().properties, stats: testStatIndex() };
+const statId = (name: string) => statTables.stats.get(name)?.id;
 const renderMods = (mods: Parameters<typeof renderer.renderMods>[0]) => renderer.renderMods(mods);
 
 function build(prefixes: RowSpec[], suffixes: RowSpec[] = [], automagic: RowSpec[] = []) {
   const rows = [...readAffixes(table(prefixes), 'p'), ...readAffixes(table(suffixes), 's'), ...readAffixes(table(automagic), 'a')];
-  return buildAffixesBundle(rows, typesBundle, strings, renderMods);
+  return buildAffixesBundle(rows, typesBundle, strings, renderMods, statTables);
 }
 
 describe('buildAffixesBundle', () => {
@@ -135,6 +134,7 @@ describe('buildAffixesBundle', () => {
         itypes: ['armo'],
         etypes: ['shld'],
         mods: [{ prop: 'ac%', param: null, min: 10, max: 20 }],
+        stats: [statId('item_armor_percent')],
         text: ['Requirements +(10 to 20)%'],
       },
     ]);
@@ -184,5 +184,49 @@ describe('buildAffixesBundle', () => {
     );
     expect(droppedPlaceholders).toBe(1);
     expect(bundle.affixes.map((affix) => [affix.kind, affix.id, affix.name, affix.text])).toEqual([['a', 1, '', ['+5 to Strength']]]);
+  });
+
+  it('lists the item stats the mods write, without technical stats, with the bundle-level stat list', () => {
+    const { bundle, warnings } = build(
+      [
+        { name: 'Jagged', mods: [['dmg%', '', '10', '20']] },
+        {
+          name: 'Sturdy',
+          mods: [
+            ['dmg-min', '', '1', '2'],
+            ['dmg-max', '', '3', '4'],
+          ],
+        },
+        { name: 'Odd', mods: [['affix-rand', '', '1', '1']] },
+      ],
+      [{ name: 'of the Fox', mods: [['str', '', '1', '3']] }],
+      [
+        {
+          name: 'null',
+          mods: [
+            ['tinkerflag2', '', '25', '35'],
+            ['str', '', '5', '5'],
+          ],
+        },
+      ]
+    );
+    expect(bundle.affixes.map((affix) => [affix.name, affix.stats])).toEqual([
+      ['Jagged', [statId('item_maxdamage_percent'), statId('item_mindamage_percent')].sort((a = 0, b = 0) => a - b)],
+      ['Sturdy', [statId('mindamage'), statId('maxdamage')].sort((a = 0, b = 0) => a - b)],
+      ['Odd', []],
+      ['of the Fox', [statId('strength')]],
+      ['', [statId('strength')]],
+    ]);
+    expect(bundle.stats.map((stat) => [stat.name, stat.label])).toEqual([
+      ['strength', 'Strength'],
+      ['mindamage', 'Minimum Damage to Attacks'],
+      ['maxdamage', 'Maximum Damage to Attacks'],
+      ['item_maxdamage_percent', 'Enhanced Maximum Damage'],
+      ['item_mindamage_percent', 'Enhanced Minimum Damage'],
+    ]);
+    expect(bundle.stats.map((stat) => stat.id)).toEqual([...bundle.stats.map((stat) => stat.id)].sort((a, b) => a - b));
+    expect(warnings.filter((warning) => warning.startsWith('affix stats'))).toEqual([
+      'affix stats: property "affix-rand" is not mapped to item stats',
+    ]);
   });
 });

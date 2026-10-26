@@ -1,6 +1,8 @@
 /** Small inline game tables for the stat renderer tests (shapes match the real ESR headers). */
 import { createStatRenderer, readStatTables, type StatRenderer, type StatTableName } from './statRenderer.ts';
 import type { StatTables } from './tables.ts';
+import { readStatIndex, type StatIndex } from '../affixStats.ts';
+import { parseTsv } from '../tsv.ts';
 
 const tsv = (rows: readonly (readonly string[])[]) => rows.map((row) => row.join('\t')).join('\n');
 
@@ -298,4 +300,9 @@ export function testTables(): StatTables {
 
 export function testRenderer(): StatRenderer {
   return createStatRenderer(testTables(), TEST_STRINGS);
+}
+
+/** The mock itemstatcost by name (ids = mock row numbers). */
+export function testStatIndex(): StatIndex {
+  return readStatIndex(parseTsv(TABLES.itemstatcost, 'itemstatcost.txt', { keepExpansionRows: true }));
 }

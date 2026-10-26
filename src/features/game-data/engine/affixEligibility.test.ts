@@ -19,6 +19,7 @@ function affix(name: string, extra: Partial<Affix> = {}): Affix {
     itypes: ['weap'],
     etypes: [],
     mods: [],
+    stats: [],
     text: [],
     ...extra,
   };

@@ -15,6 +15,7 @@ import type {
   TxtRunewordsBundle,
   TypesBundle,
 } from '../engine/schema.ts';
+import { readStatIndex } from './affixStats.ts';
 import { buildAffixesBundle } from './bundleAffixes.ts';
 import { buildAreasBundle } from './bundleAreas.ts';
 import { attachAutomods, buildBasesBundle, readStaffMods } from './bundleBases.ts';
@@ -87,12 +88,17 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
   const renderer = createStatRenderer(statTables, strings);
   const renderMods = (mods: Parameters<typeof renderer.renderMods>[0]) => renderer.renderMods(mods);
   const runewords = buildRunewordsBundle(readRuneRecipes(table('runes')), misc, types.bundle, strings, renderMods);
+  // Row-numbered tables keep their Expansion marker rows so ids match the game's row numbers
+  const rowTable = (name: keyof EsrSources['tables']) => parseTsv(sources.tables[name], `${name}.txt`, { keepExpansionRows: true });
   const affixRows = [
     ...readAffixes(table('magicprefix'), 'p'),
     ...readAffixes(table('magicsuffix'), 's'),
     ...readAffixes(table('automagic'), 'a'),
   ];
-  const affixes = buildAffixesBundle(affixRows, types.bundle, strings, renderMods);
+  const affixes = buildAffixesBundle(affixRows, types.bundle, strings, renderMods, {
+    properties: statTables.properties,
+    stats: readStatIndex(rowTable('itemstatcost')),
+  });
   const basesBundle = attachAutomods(bases.bundle, affixes.bundle.affixes);
   const countAffixes = (kind: string) => affixes.bundle.affixes.filter((affix) => affix.kind === kind).length;
 
@@ -114,8 +120,6 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
   );
   const countSources = (item: string) => sourceItems.bundle.items.filter((source) => source.item === item).length;
 
-  // Row-numbered tables keep their Expansion marker rows so ids match the game's row numbers
-  const rowTable = (name: keyof EsrSources['tables']) => parseTsv(sources.tables[name], `${name}.txt`, { keepExpansionRows: true });
   const lootfilter = buildLootFilterBundle(
     {
       weapons: table('weapons'),

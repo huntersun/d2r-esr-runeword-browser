@@ -29,6 +29,7 @@ function affix(overrides: Partial<Affix>): Affix {
     itypes: ['armo'],
     etypes: [],
     mods: [],
+    stats: [],
     text: [],
     ...overrides,
   };

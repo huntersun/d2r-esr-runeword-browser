@@ -58,7 +58,7 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 | `types.json`        | 44 KB / 5 KB                                                                   |
 | `bases.json`        | 292 KB / 26 KB (ESR 3.2.24 with automods, staffmods and range: 322 KB / 27 KB) |
 | `runewords.json`    | 197 KB / 28 KB                                                                 |
-| `affixes.json`      | 795 KB / 61 KB                                                                 |
+| `affixes.json`      | 795 KB / 61 KB (ESR 3.2.24 with `stats`: 852 KB / 67 KB)                       |
 | `sources.json`      | 298 KB / 29 KB                                                                 |
 | `lootfilter.json`   | ESR 3.2.24: 771 KB / 103 KB (744 / 100 before reqLvl, set, disabled)           |
 | `enhance.json`      | ESR 3.2.24: 357 KB / 32 KB                                                     |
@@ -127,6 +127,21 @@ row index within its file, unique together with `kind`), string-resolved `name`,
 structured `mods` and rendered `text`. Rows with `spawnable != 1` are dropped (`counts.affixesDropped`, 111); automagic
 placeholders named "null" are kept with an empty name when a stat is visible, otherwise dropped
 (`counts.affixesPlaceholdersDropped`, 4). `runewords.json` rows also carry `text`, rendered from `T1Code1-7`.
+
+Item stats (for the loot filter's affix browser; `build/affixStats.ts`): per affix `stats` = the distinct itemstatcost
+ids its mods write, ascending, and a top-level `stats` list `{ id, name, label }` of every stat some affix writes (ESR
+3.2.24: 148 stats, 174 distinct per-affix stat sets, 65 of them with more than one stat). A property resolves through its
+properties.txt slots: `stat1-7` for the funcs that name a stat; the stat-less funcs as the engine writes them: func 7
+(`dmg%`) → `item_maxdamage_percent` (17) + `item_mindamage_percent` (18), func 5 (`dmg-min`) → `mindamage`, func 6
+(`dmg-max`) → `maxdamage`, func 20 (`indestruct`) → `item_indesctructible`, func 23 (`ethereal`, an item flag) → none.
+Any other stat-less func leaves the property unmapped with a build warning ("affix stats: property … is not mapped").
+ESR technical stats are left out: names containing `tinkerflag`, `item_jewelflag`, `item_randomize` and the `_display`
+/ `_hidden` / `_cap` companions (the real stat, e.g. `item_aura`, is kept). `label` is the stat's `descstrpos` string
+without format tokens, signs, a leading "to" or a trailing "by"/"of" ("+%d%% Enhanced Damage" → "Enhanced Damage"),
+a few overrides for per-class or format-only strings (`item_addclassskills` → "Class Skill Levels", `item_aura`,
+`item_nonclassskill`, `item_numsockets`, the `*length` stats…), " (per level)" for `perlevel` stats, " %" for the
+`_percent` one of two stats with one label (Fire Absorb), else the stat name. Stat ids are itemstatcost row numbers (the
+same ids as `lootfilter.json` `stats`).
 
 ### Sources
 

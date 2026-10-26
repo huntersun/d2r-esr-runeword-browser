@@ -1,5 +1,7 @@
 import { isClassCode, type Affix, type AffixesBundle, type ClassCode, type TypesBundle } from '../engine/schema.ts';
+import { createAffixStatResolver, type StatIndex } from './affixStats.ts';
 import type { ModsRenderer } from './bundleRunewords.ts';
+import type { PropertyDef } from './stats/tables.ts';
 import type { AffixRow } from './model.ts';
 
 export interface AffixesBuildResult {
@@ -9,6 +11,12 @@ export interface AffixesBuildResult {
   dropped: number;
   /** automagic placeholder rows named "null" without any visible stat (e.g. only `tinkerflag2`) */
   droppedPlaceholders: number;
+}
+
+/** What `Affix.stats` resolves through: properties.txt and itemstatcost (by name). */
+export interface AffixStatTables {
+  properties: ReadonlyMap<string, PropertyDef>;
+  stats: StatIndex;
 }
 
 /** automagic.txt uses "null" as the name of nameless automods; automods never show a name in game. */
@@ -23,9 +31,11 @@ export function buildAffixesBundle(
   rows: readonly AffixRow[],
   typesBundle: TypesBundle,
   strings: ReadonlyMap<string, string>,
-  renderMods: ModsRenderer
+  renderMods: ModsRenderer,
+  statTables: AffixStatTables
 ): AffixesBuildResult {
   const warnings = new Set<string>();
+  const statResolver = createAffixStatResolver(statTables.properties, statTables.stats, strings);
   const typeCodes = new Set(typesBundle.types.map((type) => type.code));
   const nextId = { p: 0, s: 0, a: 0 };
   const affixes: Affix[] = [];
@@ -58,6 +68,7 @@ export function buildAffixesBundle(
       if (!typeCodes.has(code)) warnings.add(`affixes: ${label} references unknown item type "${code}"`);
     }
 
+    const mods = row.mods.map((mod) => ({ prop: mod.code, param: mod.param, min: mod.min, max: mod.max }));
     affixes.push({
       id,
       kind: row.kind,
@@ -73,10 +84,12 @@ export function buildAffixesBundle(
       rare: row.rare === 1,
       itypes: row.itypes,
       etypes: row.etypes,
-      mods: row.mods.map((mod) => ({ prop: mod.code, param: mod.param, min: mod.min, max: mod.max })),
+      mods,
+      stats: statResolver.statsOf(mods),
       text: rendered.lines,
     });
   }
 
-  return { bundle: { affixes }, warnings: [...warnings], dropped, droppedPlaceholders };
+  for (const warning of statResolver.warnings()) warnings.add(warning);
+  return { bundle: { affixes, stats: statResolver.listed() }, warnings: [...warnings], dropped, droppedPlaceholders };
 }

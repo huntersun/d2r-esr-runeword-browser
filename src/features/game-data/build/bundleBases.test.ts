@@ -138,6 +138,7 @@ function automod(id: number, overrides: Partial<Affix> = {}): Affix {
     itypes: ['weap'],
     etypes: [],
     mods: [],
+    stats: [],
     text: [`Line ${String(id)}`],
     ...overrides,
   };
