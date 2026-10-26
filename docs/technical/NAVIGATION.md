@@ -30,6 +30,7 @@ All routes are children of `AppLayout` in `src/core/router/index.tsx`; every scr
 | `/game-data/enhance`    | EnhanceScreen           | Corruption, anointment and Vessel of Souls outcomes (cube recipes)                                            | `tab`, `slot`, `tier`, `search` (kept in the URL)                                                      |
 | `/game-data/cube`       | CubeScreen              | Every cube recipe from cubemain.txt, grouped by family and official section                                   | `search`, `family` (focused family; kept in the URL)                                                   |
 | `/game-data/materials`  | MaterialsScreen         | Every misc item: how to get it, the cube families and Enhance recipes using it, guide notes                   | `search`, `group`, `name` (kept in the URL)                                                            |
+| `/game-data/areas`      | AreasScreen             | Every area: monster level, density and unique packs per difficulty, waypoint, connections; maps by tier       | `search`, `minlvl`, `maxlvl` (kept in the URL)                                                         |
 | `/game-data/sets`       | SetsScreen              | Every set: items, per-item and set-wide partial bonuses, full-set bonuses, item sources                       | `search`, `maxlvl`, `pieces`, `cls`, `name` (kept in the URL)                                          |
 | `/loot-filters`         | LootFilterLayout        | Loot filter frame: an "Under development" notice above every loot-filter page, then the child route           |                                                                                                        |
 | `/loot-filters` (index) | LootFilterLibraryScreen | Loot filter library: new, upload, ESR default filter template, download (.json or .zip)                       |                                                                                                        |
@@ -50,7 +51,7 @@ feature-specific keys live next to each feature's `useUrlInitialize` hook, and `
 `src/features/game-data/constants/urlParams.ts`. The filter screens (runewords, gemwords, socketables, uniques, mythicals,
 ascendancies, bases, best base, affixes) read their params once on mount, put them into Redux and remove them from the URL;
 Copy Link rebuilds a URL from the current state (non-default values only). Item Types (`type`), Enhance (`tab`, `slot`,
-`tier`, `search`), Cube Recipes (`search`, `family`), Materials (`search`, `group`, `name`) and the loot filter editor (`tab`) read their params on every render and keep them in the URL. The builds screens keep their search, class and sort in
+`tier`, `search`), Cube Recipes (`search`, `family`), Materials (`search`, `group`, `name`), Areas (`search`, `minlvl`, `maxlvl`) and the loot filter editor (`tab`) read their params on every render and keep them in the URL. The builds screens keep their search, class and sort in
 Redux only.
 
 **`?name=<Name>` focus** (runewords, gemwords, socketables, uniques, mythicals): shows only the items whose name equals `<Name>`
@@ -127,8 +128,8 @@ match every path), the others are prefixes (a path matches its prefix exactly or
 - `/guide`: the guide is a static JSON bundle (`public/guide/`), see [GUIDE.md](../features/GUIDE.md);
 - `/loot-filters`: the editor uses the game-data bundles, `public/loot-filters/` and localStorage, see
   [LOOT-FILTER.md](../features/LOOT-FILTER.md);
-- `/game-data/enhance`, `/game-data/cube`, `/game-data/materials` and `/game-data/sets`: only `enhance.json` /
-  `cube.json` / `materials.json` / `sets.json` (+ the guide bundle, or sources.json for Sets) (the other Game Data pages stay behind the gate: Best Base matches the HTM
+- `/game-data/enhance`, `/game-data/cube`, `/game-data/materials`, `/game-data/sets` and `/game-data/areas`: only
+  `enhance.json` / `cube.json` / `materials.json` / `sets.json` / `areas.json` (+ the guide bundle, or sources.json for Sets) (the other Game Data pages stay behind the gate: Best Base matches the HTM
   runewords), see [GAME-DATA.md](../features/GAME-DATA.md).
 
 ### Header Components
@@ -137,13 +138,13 @@ match every path), the others are prefixes (a path matches its prefix exactly or
 (groups of `NavItem`s with a label, a one-line description and a path, plus plain links). The home page's section
 cards render from the same config (group `description`, link `homeLinks`):
 
-| Entry     | Kind  | Pages                                                                                                                                                                                                 |
-| --------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Recipes ▾ | group | Runewords (`/runewords`), Gemwords (`/gemwords`), Socketables (`/socketables`)                                                                                                                        |
-| Items ▾   | group | Uniques (`/uniques`), Mythicals (`/mythicals`), Sets (`/game-data/sets`), Ascendancies (`/ascendancies`), Skills (`/skills`), Bases (`/game-data/bases`), Materials (`/game-data/materials`)          |
-| Tools ▾   | group | Best Base (`/game-data/best-base`), Affixes (`/game-data/affixes`), Item Types (`/game-data/types`), Enhance (`/game-data/enhance`), Cube Recipes (`/game-data/cube`), Loot Filters (`/loot-filters`) |
-| Guide     | link  | `/guide`                                                                                                                                                                                              |
-| Builds    | link  | `/builds`, only when Supabase is configured (`requiresSupabase`, filtered by `getNavEntries`)                                                                                                         |
+| Entry     | Kind  | Pages                                                                                                                                                                                                                    |
+| --------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Recipes ▾ | group | Runewords (`/runewords`), Gemwords (`/gemwords`), Socketables (`/socketables`)                                                                                                                                           |
+| Items ▾   | group | Uniques (`/uniques`), Mythicals (`/mythicals`), Sets (`/game-data/sets`), Ascendancies (`/ascendancies`), Skills (`/skills`), Bases (`/game-data/bases`), Materials (`/game-data/materials`), Areas (`/game-data/areas`) |
+| Tools ▾   | group | Best Base (`/game-data/best-base`), Affixes (`/game-data/affixes`), Item Types (`/game-data/types`), Enhance (`/game-data/enhance`), Cube Recipes (`/game-data/cube`), Loot Filters (`/loot-filters`)                    |
+| Guide     | link  | `/guide`                                                                                                                                                                                                                 |
+| Builds    | link  | `/builds`, only when Supabase is configured (`requiresSupabase`, filtered by `getNavEntries`)                                                                                                                            |
 
 - **Brand**: "D2R ESR", a link to `/` (the home page).
 - **Desktop (md and up)**: a shadcn `NavigationMenu` (`src/components/ui/navigation-menu.tsx`, `viewport={false}` so
@@ -305,7 +306,7 @@ export const router = createBrowserRouter(
           children: [
             { index: true, element: <Navigate to="bases" replace /> },
             { path: 'bases', element: routeElement(GameDataBasesScreen) },
-            // ... sets, best-base, affixes, types, enhance, cube, materials
+            // ... sets, best-base, affixes, types, enhance, cube, materials, areas
           ],
         },
         // ... uniques, mythicals, ascendancies (before game-data),

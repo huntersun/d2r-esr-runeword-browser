@@ -101,6 +101,7 @@ function main(): void {
     skilldetails: serializeBundle(generated.skilldetails),
     crafting: serializeBundle(generated.crafting),
     tiers: serializeBundle(generated.tiers),
+    areas: serializeBundle(generated.areas),
   };
   const icons = readIcons();
   const manifest = buildManifest({

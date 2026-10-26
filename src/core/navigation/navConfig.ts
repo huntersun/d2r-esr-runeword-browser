@@ -160,7 +160,7 @@ export const NAV_ENTRIES: readonly NavEntry[] = [
     kind: 'group',
     key: 'items',
     label: 'Items',
-    description: 'Uniques, mythicals, sets, ascendancies, skills, every base item and every material',
+    description: 'Uniques, mythicals, sets, ascendancies, skills, every base item, material and area',
     items: [
       { key: 'uniques', to: '/uniques', label: 'Uniques', description: 'Unique items by category and coupon' },
       { key: 'mythicals', to: '/mythicals', label: 'Mythicals', description: 'Mythical unique items' },
@@ -173,6 +173,12 @@ export const NAV_ENTRIES: readonly NavEntry[] = [
         to: '/game-data/materials',
         label: 'Materials',
         description: 'Runes, gems, organs, coupons and every other misc item',
+      },
+      {
+        key: 'areas',
+        to: '/game-data/areas',
+        label: 'Areas',
+        description: "Every area's monster level per difficulty, density, waypoints and the endgame map tiers",
       },
     ],
   },

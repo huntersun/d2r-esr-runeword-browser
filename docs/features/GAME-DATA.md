@@ -17,6 +17,7 @@ per-phase implementation notes live in `builds-feature-docs/FEATURE-GAME-DATA.md
 | `/game-data/enhance`   | Enhance    | done                 |
 | `/game-data/cube`      | Cube       | done                 |
 | `/game-data/materials` | Materials  | done                 |
+| `/game-data/areas`     | Areas      | done                 |
 
 The game-file data is a second data system next to the HTM pipeline: it is never stored in IndexedDB and never parsed
 in the browser. Uniques, gemwords and the runeword list stay on the HTM pipeline (sets come from the game files, see
@@ -45,6 +46,7 @@ lazily (`src/features/game-data/engine/browser/loadGameData.ts`).
 | `skilldetails.json` | details of every class skill and item-granted skill and the items granting them, for the Skills page ([SKILLS.md](./SKILLS.md))    |
 | `crafting.json`     | forging, D-stoning and gem meld options with rendered lines per slot family, for builds (see "Crafting options")                   |
 | `tiers.json`        | base tier of every weapons.txt / armor.txt row with one, spawnable or not, for the unique and set item tier badges (see "Tiers")   |
+| `areas.json`        | every area of levels.txt: monster level, density and unique packs per difficulty, waypoint, connections, map tiers (see "Areas")   |
 | `icons.json`        | item icon index (base code / unique / set item / socketable name → WebP file under `icons/`, size); own generator ("Item icons")   |
 
 Arrays are written one element per line so diffs stay readable. Bundle URLs carry the manifest hash (`?v=<sha256>`);
@@ -67,6 +69,7 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 | `skilldetails.json` | ESR 3.2.24: 387 KB / 61 KB (+ `icons/skills/`: 325 WebP files, 433 KB)         |
 | `crafting.json`     | ESR 3.2.24: 55 KB / 6 KB                                                       |
 | `tiers.json`        | ESR 3.2.24: 23 KB / 3 KB                                                       |
+| `areas.json`        | ESR 3.2.24: 35 KB / 5 KB                                                       |
 | `icons.json`        | ESR 3.2.24: 303 KB / 36 KB (+ `icons/`: 1,361 WebP files, 5.3 MB)              |
 
 ### Bases and types
@@ -402,6 +405,37 @@ mythicals) is 700 KB.
 
 Counts: `tierCodes` 1067 (`tierCodesNormal` 321, `tierCodesExceptional` 331, `tierCodesElite` 354,
 `tierCodesMythical` 61; ESR 3.2.24). Adding the file did not bump `GAME_DATA_SCHEMA`.
+
+### Areas
+
+`areas.json` (`AreasBundle`, built by `build/bundleAreas.ts` from the raw levels.txt text) is `{ areas: Area[] }` in
+levels.txt row order, for the Areas page. Per area: `id` (`Id`), `name` (`LevelName` through the string table, else
+`Name` without its "Act N - " prefix: only id 137 ColossalSummit lacks a string), `act` (0-based), `waypoint`
+(`Waypoint` ≠ 255), `level` / `density` (`[n, nm, h]`), `uniques` (`[[min, max] × 3]`), `connections` (ids) and, when
+set, `group`, `tier`, `uniqueMap`, `boss`, `preventTownPortal`.
+
+- **Monster level** is `MonLvlEx`, `MonLvlEx(N)`, `MonLvlEx(H)` (the expansion level the game uses; `MonLvl*` is the
+  classic one, lower in Nightmare / Hell, e.g. Blood Moor 1 / 26 / 51 vs 2 / 38 / 68). `null` in towns (no
+  `MonLvlEx`) and in areas without any monster: no `mon*` / `nmon*` / `umon*` column, no density, no unique packs and
+  no boss (Forgotten Tower, Harem Level 1, Dimensional Gate, the two Tier 5 entrance-like rows 200 / 204).
+- **Density** (`MonDen*`) and **unique packs** (`MonUMin*` / `MonUMax*`, read by column name) are `null` when 0 in
+  every difficulty. Caveat: ESR's header interleaves `MonUMin, MonUMax, MonUMin(N), …`; the vanilla rows read that way
+  give e.g. Blood Moor NM 6–5 (61 areas have a min above the max somewhere), the ESR map rows (30–40 × 3) read sanely.
+  The values are shown as read.
+- **Maps**: `Name` "Tier N Map - …" → `tier` N; `group` = `LevelGroup` without its "Tier N Map - " prefix (the zone, 2–11
+  levels each, 4 zones per tier). "Unique Map - Goblin Realm" (id 213, The Hidden Vault) has `uniqueMap` and group
+  "Goblin Realm", no tier. `boss` is the `*Map Boss` comment column (read from the raw text: the TSV parser drops
+  comment columns). Build warnings (manifest): a tier whose level is not the fixed ladder 100 / 102 / 104 / 106 / 108
+  (`mapTierLevel`), a `LevelGroup` tier that differs from the `Name` tier, a `Vis*` naming an unknown level.
+- **Left out**: the null row (id 0), the Expansion marker (dropped by the parser) and the map entrances (`Name` contains
+  "Prep Zone": 17 rows). Towns, boss arenas and id 214 (a second Naraku Level 2 row) stay.
+- **Connections**: `Vis0`–`Vis7`, 0, the area itself, repeats and left-out rows dropped; the page resolves the names
+  from the same bundle.
+
+Counts (ESR 3.2.24): `areas` 197, `areasMaps` 57 (tier 1: 7, 2: 9, 3: 15, 4: 8, 5: 18), `areasMapZones` 20,
+`areasUniqueMaps` 1, `areasWithoutMonsters` 10 (5 towns + 5), `areasWithWaypoint` 39, `areasHiddenPrepZones` 17,
+`areasHiddenOther` 1. levels.txt is also read by bundleLootFilter.ts (lootfilter areas) and generateBundles.ts (the cube's
+level names); those reads were left as they were.
 
 ### Skills
 
@@ -750,6 +784,7 @@ The script warns when the clone has uncommitted changes, because the output woul
 | `/game-data/enhance`   | `EnhanceScreen`   | Corruption, anointment and Vessel of Souls outcomes               |
 | `/game-data/cube`      | `CubeScreen`      | Every cube recipe, grouped by family                              |
 | `/game-data/materials` | `MaterialsScreen` | Misc items: sources, cube families, Enhance roles, guide notes    |
+| `/game-data/areas`     | `AreasScreen`     | Area levels, density, unique packs, waypoints, map tiers          |
 
 One header entry ("Game Data", `end: false`). All screens are lazy-loaded from `@/features/game-data` (the route
 code-splitting guard test covers it). The child routes are in `public/sitemap.xml`.
@@ -1066,6 +1101,28 @@ URL state (read on every render, written with `replace`; `utils/materials.ts`):
 | `group`  | group code (`sock`, `cube`, `body` …; unknown codes show all)                                                                                                                    |
 | `name`   | exact-name focus (`normaliseItemName`), ignores the other filters; the chip's × clears it                                                                                        |
 
+### Areas page
+
+`/game-data/areas` (`screens/AreasScreen.tsx`) loads only `areas.json` (a static-bundle route). Items menu entry
+"Areas", layout tab "Areas".
+
+- Filter panel: search, min / max monster level (an area matches when its Normal, Nightmare or Hell level is inside the
+  range; towns and areas without monsters never match a set bound; the hint under the inputs says so) and Copy Link.
+  "Showing N of M areas" under it.
+- One table per section: "Act I" … "Act V" (non-map rows by `act`), "Maps · Tier 1" … "Tier 5" (a sub-heading row per
+  zone, zones in order of first appearance) and "Unique maps". Columns: Area (boss as a muted second line, a "No town
+  portal" badge), Monster level, Density, Unique packs (each N / NM / H; packs as min–max), Waypoint (check or —),
+  Connects to (names). The table scrolls sideways inside its card on phones with the Area column sticky.
+- Empty state: "No area matches." with a button that clears every filter.
+
+URL state (read on every render, written with `replace`; `utils/areas.ts`):
+
+| Param    | Meaning                                                                  |
+| -------- | ------------------------------------------------------------------------ |
+| `search` | AND terms (quoted phrases) over the area name, map zone and boss         |
+| `minlvl` | lowest monster level (1–150; shared key with the Affixes page)           |
+| `maxlvl` | highest monster level (1–150; shared `FILTER_URL_PARAM_KEYS.MAXLVL` key) |
+
 ### Sets page
 
 `/game-data/sets` (`screens/SetsScreen.tsx`) loads only `sets.json` (a static-bundle route like Enhance, Cube and
@@ -1213,7 +1270,7 @@ src/features/game-data/
   build/       build only: tsv.ts, strings.ts, model.ts, esrSources.ts, bundleTypes.ts, bundleBases.ts,
                bundleRunewords.ts, bundleAffixes.ts, bundleSources.ts (+ treasureClasses.ts, pluginUniques.ts,
                itemNames.ts), bundleLootFilter.ts, bundleEnhance.ts, bundleCube.ts, bundleMaterials.ts, bundleSets.ts,
-               bundleSkills.ts, bundleSkillDetails.ts, skillIcons.ts, bundleCrafting.ts, bundleTiers.ts (+ tiers.ts), itemIcons.ts,
+               bundleSkills.ts, bundleSkillDetails.ts, skillIcons.ts, bundleCrafting.ts, bundleTiers.ts (+ tiers.ts), bundleAreas.ts, itemIcons.ts,
                generateBundles.ts,
                writeBundle.ts
   build/cube/  cubemain rows and texts shared with the guide: cubeRows.ts, cubeText.ts, cubeFamilies.ts, cubeCatalog.ts
@@ -1299,6 +1356,13 @@ components/MaterialRow.tsx             one item: how to get, used in, guide note
 utils/materials.ts                     URL state, tree, search rule, cube / enhance links, guide join (+ test)
 ```
 
+UI files (Areas):
+
+```
+screens/AreasScreen.tsx                loader, search, min / max level, section tables, Copy Link
+utils/areas.ts                         URL state, sections (acts, map tiers by zone, unique maps), filters (+ test)
+```
+
 UI files (Sets):
 
 ```
@@ -1324,13 +1388,15 @@ utils/sets.ts                          URL state, options, order, search / focus
   automod eligibility and attachment on inline TSV), `build/bundleRunewords.test.ts`, `build/bundleAffixes.test.ts`,
   `build/bundleSources.test.ts` (each label rule on inline TSV; with the ESR clone, the verified examples Pelta Lunata,
   Krok's Basher, Mephisto's Will, Frostmourne, Annihilus, Hellfire Torch, Kill Ledger, Orb of Anointment, Forging Hammer),
-  `build/stats/*.test.ts` (sprintf, expandProperty, descfunc, renderLines, propertyGroups)
+  `build/stats/*.test.ts` (sprintf, expandProperty, descfunc, renderLines, propertyGroups), `build/bundleAreas.test.ts`
+  (left-out rows, MonLvlEx / density / unique packs per difficulty, towns and areas without monsters, name fallback,
+  map tier / zone / boss, connections to left-out rows, tier ladder / LevelGroup / unknown Vis warnings)
 - Engine: `engine/itemTypes.test.ts`, `engine/sockets.test.ts`, `engine/matchRunewords.test.ts`,
   `engine/bestBase.test.ts`, `engine/affixEligibility.test.ts`, `engine/browser/loadGameData.test.ts`
 - UI: `store/gameDataSlice.test.ts`, `store/bestBaseState.test.ts`, `utils/filterBases.test.ts`,
   `utils/typeTree.test.ts`, `utils/bestBaseResults.test.ts`, `utils/filterAffixes.test.ts`, `store/affixFilters.test.ts`,
   `utils/baseAutomods.test.ts`, `utils/enhance.test.ts`, `utils/cube.test.ts`, `utils/materials.test.ts`,
-  `utils/sets.test.ts`
+  `utils/sets.test.ts`, `utils/areas.test.ts`
 - `bundleIntegrity.test.ts`: reads the committed JSON (counts, hashes, schema, type references, affix text, the enhance
   counts and rates listed under "Enhance", the cube families, fallback limits and hidden enhance rows listed under "Cube
   recipes", and for materials.json: every used-in / made-by family exists in cube.json with at most its row count,
@@ -1339,7 +1405,9 @@ utils/sets.ts                          URL state, options, order, search / focus
   sources.json, and Arcanna's Tricks / Harbinger of Ruin checked against docs/sets.htm; for skills.json: 8 classes × 3
   tabs, 280 skills, level cap 110, unique cells, required skills within the class, the Warlock tabs and Summon Tainted;
   for crafting.json: one skill forging per class on every slot, all-skills, the 7 stat forgings (Chipped Amethyst
-  checked), 60 rune forgings (46 ES + 14 Kanji), 8 amulet-only aura forgings, Dragon Stone weapon steps, 8 gem melds).
+  checked), 60 rune forgings (46 ES + 14 Kanji), 8 amulet-only aura forgings, Dragon Stone weapon steps, 8 gem melds;
+  for areas.json: unique ids, resolvable connections, 5 tiers × 4 zones on the level ladder, the unique map, the five
+  towns with a waypoint and no level).
   When the
   ESR clone is present it also regenerates the bundles in memory, checks they equal the committed files, and compares
   base names with the clone's `docs/weapons.htm` / `docs/armors.htm` (≥ 95 % overlap; misses are printed).

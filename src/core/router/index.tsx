@@ -138,6 +138,12 @@ const GameDataMaterialsScreen = lazy(async () => {
   return { default: module.MaterialsScreen };
 });
 
+// Areas page
+const GameDataAreasScreen = lazy(async () => {
+  const module = await import('@/features/game-data');
+  return { default: module.AreasScreen };
+});
+
 const GameDataSetsScreen = lazy(async () => {
   const module = await import('@/features/game-data');
   return { default: module.SetsScreen };
@@ -212,6 +218,7 @@ export const router = createBrowserRouter(
             { path: 'enhance', element: routeElement(GameDataEnhanceScreen) },
             { path: 'cube', element: routeElement(GameDataCubeScreen) },
             { path: 'materials', element: routeElement(GameDataMaterialsScreen) },
+            { path: 'areas', element: routeElement(GameDataAreasScreen) },
           ],
         },
         {
