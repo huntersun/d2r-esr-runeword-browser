@@ -68,7 +68,7 @@ function SpriteCanvas({
   );
 }
 
-/** Draws a bundled icon (goldstar) or a local `.sprite` the user picks, tinted and at the chosen size. */
+/** Draws a bundled icon (`BUNDLED_ICONS`) or a local `.sprite` the user picks, tinted and at the chosen size. */
 export function SpritePreview({ idPrefix, iconName, iconSize, color }: SpritePreviewProps) {
   const bundledName = findBundledIcon(iconName);
   const bundled = useBundledSprite(bundledName);

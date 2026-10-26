@@ -10,6 +10,16 @@ function pixel(rgba: Uint8ClampedArray, width: number, x: number, y: number): nu
 }
 
 describe('decodeSprite', () => {
+  // Sully's icons from github.com/Thisisnotsully/QoL-Filter: 512 px squares, the rune 1080 px.
+  it.each([
+    ...['charm', 'cube', 'gem', 'gem2', 'gemP', 'map', 'Myth', 'redD', 'scroll', 'star'].map((name) => [`${name}.sprite`, 512] as const),
+    ['rune.sprite', 1080] as const,
+  ])('decodes %s at %i px', (file, size) => {
+    const sprite = decodeSprite(new Uint8Array(readFileSync(resolve(ICONS, file))));
+    expect(sprite).toMatchObject({ width: size, height: size, frames: 1 });
+    expect(sprite.rgba).toHaveLength(size * size * 4);
+  });
+
   it.each([
     ['goldstar.sprite', 200],
     ['goldstar.lowend.sprite', 100],

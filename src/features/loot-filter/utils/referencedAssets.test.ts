@@ -44,13 +44,22 @@ describe('collectReferencedAssets', () => {
           { sound: 'my sound.wav' },
           { sound: 'My Sound.wav' },
           { icon: { iconName: 'skull' } },
-          { icon: { iconName: 'rune.sprite' } },
+          { icon: { iconName: 'heart.sprite' } },
           { sound: 'tink.mp3' },
         ],
       })
     );
-    expect(assets.missing).toEqual(['sounds/my sound.wav', 'icons/skull.sprite', 'icons/rune.sprite']);
+    expect(assets.missing).toEqual(['sounds/my sound.wav', 'icons/skull.sprite', 'icons/heart.sprite']);
     expect(paths(assets)).toEqual(['sounds/tink.mp3']);
+  });
+
+  it('writes bundled icons under the file name in its own case', () => {
+    const assets = collectReferencedAssets(
+      filter({ rules: [{ icon: { iconName: 'gemp' } }, { icon: { iconName: 'MYTH.sprite' } }, { icon: { iconName: 'rune' } }] })
+    );
+    expect(paths(assets)).toEqual(['icons/gemP.sprite', 'icons/Myth.sprite', 'icons/rune.sprite']);
+    expect(assets.bundled[0]?.url).toBe(lootFilterAssetUrl('icons/gemP.sprite'));
+    expect(assets.missing).toEqual([]);
   });
 
   it('encodes file names in the URL', () => {

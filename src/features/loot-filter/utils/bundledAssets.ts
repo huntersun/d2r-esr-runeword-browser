@@ -1,8 +1,9 @@
 import { lootFilterAssetUrl } from './template';
 
 /**
- * The sound and icon files shipped with the ESR default filter template under `public/loot-filters/`. The editor can
- * preview these; any other file lives only in the user's own filter folder.
+ * The sound and icon files of Sully's QoL filter (the template) under `public/loot-filters/`, copied from
+ * github.com/Thisisnotsully/QoL-Filter. The editor can preview these; any other file lives only in the user's own
+ * filter folder.
  */
 
 export const BUNDLED_SOUNDS = [
@@ -17,8 +18,11 @@ export const BUNDLED_SOUNDS = [
   'unique.mp3',
 ] as const;
 
-/** Icon names as a filter writes them (`iconName`, without `.sprite`). */
-export const BUNDLED_ICONS = ['goldstar'] as const;
+/**
+ * Icon file names without `.sprite`, in the files' own case (the app's server is case-sensitive; the plugin's
+ * Windows file system is not, so a rule's `gemp` loads `gemP.sprite`). The first is the editor's default icon.
+ */
+export const BUNDLED_ICONS = ['goldstar', 'charm', 'cube', 'gem', 'gem2', 'gemP', 'map', 'Myth', 'redD', 'rune', 'scroll', 'star'] as const;
 
 /** The bundled sound file a `sound` value names (the plugin's file names are case-insensitive), or undefined. */
 export function findBundledSound(sound: string | number | undefined): string | undefined {
@@ -27,7 +31,7 @@ export function findBundledSound(sound: string | number | undefined): string | u
   return BUNDLED_SOUNDS.find((name) => name.toLowerCase() === lower);
 }
 
-/** The bundled icon an `iconName` names, with or without `.sprite` and in any case, or undefined. */
+/** The bundled icon file an `iconName` names, with or without `.sprite` and in any case (in the file's case), or undefined. */
 export function findBundledIcon(iconName: string | undefined): string | undefined {
   if (iconName === undefined) return undefined;
   const lower = iconName
