@@ -34,6 +34,13 @@ export function HowRulesCombine() {
           &quot;Hide if other conditions fail&quot; is the other way round: the codes or types match but another condition does not, so the
           item is hidden.
         </li>
+        <li>
+          That counts every other condition, quality included: item type <code className={CODE}>weap</code>, quality magic, a stat check and
+          &quot;hide if other conditions fail&quot; also hides unique and rare weapons. To keep only the magic weapons with a stat, write a
+          hide rule with item type <code className={CODE}>weap</code>, quality magic and the stat check negated to{' '}
+          <code className={CODE}>&lt; 1</code>, which hides the ones without it. That relies on a missing stat counting as 0, one of the
+          &quot;Verify in game&quot; assumptions.
+        </li>
       </ul>
       <p className="mt-2 text-xs text-muted-foreground">
         Try it on an item in the{' '}
