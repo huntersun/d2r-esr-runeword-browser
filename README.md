@@ -29,7 +29,7 @@ The item data needs no backend: the app fetches the official ESR documentation p
 
 ## Development
 
-Requires Node 22 (see `.nvmrc`).
+Requires Node 24 (see `.nvmrc`).
 
 ```bash
 npm install
