@@ -43,8 +43,9 @@ the affix browser's Apply offers the same inverted mode. Files: `components/rule
 
 The level checkboxes write `activeInLevels: []` when every level is unticked ("no level" badge); our evaluator treats
 that as never active. The plugin logs "the list is empty" for an empty list and we do not know whether it then drops
-the key (rule active at every level) or switches the rule off. Until known, the validator warns about empty lists and
-the UI keeps writing them. Verify with a one-rule filter and `lootfilter` in the console.
+the key (rule active at every level) or switches the rule off. Until known, the validator warns about every empty list
+condition ("empty list: the game logs 'the list is empty'…", done) and the UI keeps writing `activeInLevels: []`
+("Every level" removes the key). Verify with a one-rule filter and `lootfilter` in the console.
 
 ### Plugin tier of tier-less items
 
@@ -55,9 +56,9 @@ Still open from round 2: the plugin's `tier` for rings, amulets, charms and jewe
 
 Collected to forward together once the current implementation round is done.
 
-- **Per-rule enable flag.** The format has none; the editor encodes disabled rules in a sibling top-level
-  `disabledRules` array the plugin ignores ("unknown setting, ignored", one log line). An official
-  `"enabled": false` would remove the workaround.
+- **Per-rule enable flag.** The format has none; the editor now writes disabled rules to a sibling top-level
+  `disabledRules` list (`{ "at", "rule" }` entries, see LOOT-FILTER.md "Disabled rules") that the plugin ignores
+  ("unknown setting, ignored", one log line). An official `"enabled": false` would remove the workaround.
 - **Hide unique/set items already in the Chronicle.** The Chronicle is the game's collection log (saved with the
   shared stash). It is not exposed as player stats (no itemstatcost row), the plugin rejects D2RLAN's grail condition
   ("grail conditions are not supported"), and ESR's chronicle-tracker plugin (3.2.22) already adds a "Not in
