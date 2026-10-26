@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.37.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.36.0...v1.37.0) (2026-10-26)
+
+
+### Features
+
+* **game-data:** mark runes without a gems.txt row as never dropping ([e054875](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/e05487540f27cb8fb452876b4bd7ecb5e090441e))
+* **game-data:** mark which loot-filter items can drop ([ec2f3ce](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/ec2f3ce3c53712ca0e46d4e4f2fbb607c1bb7ab2))
+* **loot-filter:** accept block comments and trailing commas when reading filters ([da78a9d](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/da78a9d12ad1b0c0b3ca6cb53ef25ea1e4e692bc))
+* **loot-filter:** list misc items that drop and label items that never drop ([00711d2](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/00711d24cfbe4f2604b2679b15467dfec9e27009))
+* **loot-filter:** warn about accepted trailing commas, block comments and dropped section comments ([dea0a2f](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/dea0a2f3b86e8d7c8c9631f12e7589d76e5076db))
+
+
+### Bug Fixes
+
+* **loot-filter:** add the code only to labels of unmuted items sharing a name ([0c2296c](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/0c2296c0ddc987c77887e7703a9f3195538779d4))
+
+
+### Documentation
+
+* link the loot filter backlog from the docs index ([38d1660](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/38d16603d626b9d591fe1ff1f4a10c57c47ef435))
+* **loot-filter:** add the backlog of deferred loot filter items ([81653b0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/81653b0fe6c8d9d5e87ef8f06f97652dba5742cf))
+* **loot-filter:** describe the lenient reader and the text notes ([f2495cf](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/f2495cfdfb237ced1169b59bb4d26d69247b5ab8))
+* **loot-filter:** document the drops flag, never-drop labels and coded duplicate names ([b558d4c](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/b558d4c6f9d8d30badba373e8915f8e2a9f1d109))
+
 ## [1.36.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.35.0...v1.36.0) (2026-10-26)
 
 
