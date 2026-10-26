@@ -6,7 +6,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import { Input } from '@/components/ui/input';
 import type { Diagnostic, DiagnosticSeverity, LootFilter } from '../engine/types';
 import { useLootFilterData } from '../hooks/useLootFilterData';
-import { addRule, duplicateRule, moveRule, removeRule, selectRule } from '../store/lootFilterSlice';
+import { addRule, duplicateRule, moveRule, removeRule, selectRule, setRuleDisabled } from '../store/lootFilterSlice';
 import { ruleMatchesSearch, ruleSearchText, ruleSummary } from '../utils/ruleSummary';
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 import { RULE_EDITOR_ID, RuleEditor } from './rules/RuleEditor';
@@ -45,6 +45,11 @@ export function RulesTab({ filter, selectedRule, diagnostics }: RulesTabProps) {
   const searching = query.trim() !== '';
   const entries = searching ? all.filter((entry) => ruleMatchesSearch(ruleSearchText(entry.rule, data.lookup, entry.summary), query)) : all;
   const hiddenCount = all.length - entries.length;
+  const disabledCount = filter.rules.filter((entry) => entry.disabled === true).length;
+  const countNotes = [
+    disabledCount > 0 ? `${String(disabledCount)} disabled` : undefined,
+    hiddenCount > 0 ? `${String(hiddenCount)} hidden by search` : undefined,
+  ].filter((note) => note !== undefined);
 
   const rule = selectedRule === null ? undefined : filter.rules.at(selectedRule);
   const ruleDiagnostics = selectedRule === null ? [] : diagnostics.filter((diagnostic) => diagnostic.rule === selectedRule);
@@ -92,7 +97,7 @@ export function RulesTab({ filter, selectedRule, diagnostics }: RulesTabProps) {
           </div>
           <p className="text-xs text-muted-foreground" aria-live="polite">
             {all.length} {all.length === 1 ? 'rule' : 'rules'}
-            {hiddenCount > 0 && ` (${String(hiddenCount)} hidden by search)`}
+            {countNotes.length > 0 && ` (${countNotes.join(', ')})`}
           </p>
         </div>
         {all.length === 0 ? (
@@ -108,6 +113,7 @@ export function RulesTab({ filter, selectedRule, diagnostics }: RulesTabProps) {
             selectedRule={selectedRule}
             onSelect={handleSelect}
             onMove={(from, to) => dispatch(moveRule({ from, to }))}
+            onToggle={(index, disabled) => dispatch(setRuleDisabled({ index, disabled }))}
             onDuplicate={(index) => dispatch(duplicateRule(index))}
             onDelete={(index) => {
               setPendingDelete(index);

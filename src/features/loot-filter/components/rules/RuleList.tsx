@@ -18,13 +18,25 @@ interface RuleListProps {
   readonly selectedRule: number | null;
   readonly onSelect: (index: number) => void;
   readonly onMove: (from: number, to: number) => void;
+  readonly onToggle: (index: number, disabled: boolean) => void;
   readonly onDuplicate: (index: number) => void;
   readonly onDelete: (index: number) => void;
   readonly className?: string;
 }
 
 /** The rules in file order; keeps the selected row in view when the selection changes (e.g. from the JSON tab). */
-export function RuleList({ entries, ruleCount, canMove, selectedRule, onSelect, onMove, onDuplicate, onDelete, className }: RuleListProps) {
+export function RuleList({
+  entries,
+  ruleCount,
+  canMove,
+  selectedRule,
+  onSelect,
+  onMove,
+  onToggle,
+  onDuplicate,
+  onDelete,
+  className,
+}: RuleListProps) {
   const listRef = useRef<HTMLUListElement>(null);
 
   // Rows are keyed by position, so after a move the focused button belongs to the other rule: follow the moved one.
@@ -57,6 +69,7 @@ export function RuleList({ entries, ruleCount, canMove, selectedRule, onSelect, 
           canMove={canMove}
           onSelect={onSelect}
           onMove={handleMove}
+          onToggle={onToggle}
           onDuplicate={onDuplicate}
           onDelete={onDelete}
         />

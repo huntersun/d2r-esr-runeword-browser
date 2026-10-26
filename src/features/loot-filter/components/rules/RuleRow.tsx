@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Copy, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Copy, Power, PowerOff, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -18,11 +18,15 @@ export interface RuleRowProps {
   readonly severity: DiagnosticSeverity | undefined;
   readonly onSelect: (index: number) => void;
   readonly onMove: (from: number, to: number) => void;
+  readonly onToggle: (index: number, disabled: boolean) => void;
   readonly onDuplicate: (index: number) => void;
   readonly onDelete: (index: number) => void;
 }
 
-/** One rule: number, summary, badges and a problem dot; move, duplicate and delete on hover/focus (always on touch). */
+/**
+ * One rule: number, summary, badges and a problem dot (a disabled rule is dimmed with a "disabled" badge); move,
+ * disable/enable, duplicate and delete on hover/focus (always on touch).
+ */
 export function RuleRow({
   index,
   rule,
@@ -34,13 +38,15 @@ export function RuleRow({
   severity,
   onSelect,
   onMove,
+  onToggle,
   onDuplicate,
   onDelete,
 }: RuleRowProps) {
+  const disabled = rule.disabled === true;
   const levels = levelsBadge(rule.activeInLevels);
   const location = locationBadge(rule.location);
   const number = String(index + 1);
-  const hasBadges = rule.hide === true || rule.useStyle !== undefined || levels !== undefined || location !== undefined;
+  const hasBadges = disabled || rule.hide === true || rule.useStyle !== undefined || levels !== undefined || location !== undefined;
 
   return (
     <li
@@ -54,7 +60,10 @@ export function RuleRow({
         type="button"
         data-rule-main
         aria-current={selected ? 'true' : undefined}
-        className="flex min-w-0 flex-1 items-start gap-2 px-2 py-1.5 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset"
+        className={cn(
+          'flex min-w-0 flex-1 items-start gap-2 px-2 py-1.5 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset',
+          disabled && 'opacity-60'
+        )}
         onClick={() => {
           onSelect(index);
         }}
@@ -76,6 +85,15 @@ export function RuleRow({
           </span>
           {(hasBadges || rule.comment !== undefined) && (
             <span className="flex min-w-0 flex-wrap items-center gap-1">
+              {disabled && (
+                <Badge
+                  variant="outline"
+                  className="border-dashed px-1.5 py-0 text-[0.7rem] text-muted-foreground"
+                  title="Kept in the file under disabledRules, which the game ignores"
+                >
+                  disabled
+                </Badge>
+              )}
               {rule.hide === true && (
                 <Badge variant="outline" className="border-destructive/50 px-1.5 py-0 text-[0.7rem] text-destructive">
                   hide
@@ -136,6 +154,20 @@ export function RuleRow({
           }}
         >
           <ArrowDown />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          className="size-7"
+          aria-label={`${disabled ? 'Enable' : 'Disable'} rule ${number}`}
+          title={disabled ? 'Enable rule' : 'Disable rule'}
+          aria-pressed={disabled}
+          onClick={() => {
+            onToggle(index, !disabled);
+          }}
+        >
+          {disabled ? <Power /> : <PowerOff />}
         </Button>
         <Button
           type="button"

@@ -83,6 +83,11 @@ describe('ruleSearchText', () => {
     expect(ruleSearchText({ itemCodes: ['r33'] }, TEST_LOOKUP, 'Precomputed')).toBe('precomputed r33 zod rune');
   });
 
+  it('holds "disabled" for a disabled rule only', () => {
+    expect(ruleSearchText({ itemCodes: ['r33'], disabled: true }, TEST_LOOKUP, 'Zod')).toBe('zod disabled r33 zod rune');
+    expect(ruleSearchText({ itemCodes: ['r33'] }, TEST_LOOKUP)).not.toContain('disabled');
+  });
+
   it('matches every query term', () => {
     const text = ruleSearchText({ itemCodes: ['r33'], useStyle: 'Jackpot' }, TEST_LOOKUP);
     expect(ruleMatchesSearch(text, 'ZOD jack')).toBe(true);

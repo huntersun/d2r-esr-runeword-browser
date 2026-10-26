@@ -1,11 +1,13 @@
 import { useDispatch } from 'react-redux';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ACTION_KEYS } from '../../engine/parse';
 import type { Diagnostic, LootFilter, LootFilterRule, RuleActions } from '../../engine/types';
 import type { LootFilterData } from '../../hooks/useLootFilterData';
-import { patchRule } from '../../store/lootFilterSlice';
+import { patchRule, setRuleDisabled } from '../../store/lootFilterSlice';
 import { BASE_TIER_SCALE, DIFFICULTY_SCALE, QUALITY_SCALE } from '../../utils/matchValues';
 import type { ShallowPatch } from '../../utils/patch';
 import { ActionsEditor } from '../actions/ActionsEditor';
@@ -127,6 +129,8 @@ const FLAGS = [
 
 const COMMENT_ID = fieldId('comment');
 const COMMENT_HINT_ID = `${COMMENT_ID}-hint`;
+const ENABLED_ID = 'loot-filter-rule-enabled';
+const ENABLED_HINT_ID = `${ENABLED_ID}-hint`;
 
 interface RuleEditorProps {
   readonly filter: LootFilter;
@@ -167,9 +171,35 @@ export function RuleEditor({ filter, index, rule, diagnostics, data }: RuleEdito
     <div id={RULE_EDITOR_ID} className="scroll-mt-4 space-y-4">
       <Card className="gap-4">
         <CardHeader>
-          <CardTitle>Rule {index + 1}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Rule {index + 1}
+            {rule.disabled === true && (
+              <Badge variant="outline" className="border-dashed font-normal text-muted-foreground">
+                disabled
+              </Badge>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <Checkbox
+                id={ENABLED_ID}
+                aria-describedby={ENABLED_HINT_ID}
+                checked={rule.disabled !== true}
+                onCheckedChange={(checked) => dispatch(setRuleDisabled({ index, disabled: checked !== true }))}
+              />
+              <Label htmlFor={ENABLED_ID} className="font-normal">
+                Enabled
+              </Label>
+            </div>
+            <p id={ENABLED_HINT_ID} className="text-xs text-muted-foreground">
+              {rule.disabled === true
+                ? 'Disabled: kept in the file under disabledRules, which the game ignores. The Test tab skips it.'
+                : 'Untick to switch the rule off without deleting it: it is kept in the file under disabledRules, which the game ignores.'}
+            </p>
+          </div>
+
           <div className="flex flex-col gap-1.5">
             <Label htmlFor={COMMENT_ID}>Comment</Label>
             <Input

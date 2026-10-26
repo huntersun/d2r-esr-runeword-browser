@@ -107,6 +107,7 @@ export function ruleSummary(rule: LootFilterRule, lookup: LootFilterLookup): str
 export function ruleSearchText(rule: LootFilterRule, lookup: LootFilterLookup, summary = ruleSummary(rule, lookup)): string {
   const parts: (string | undefined)[] = [
     summary,
+    rule.disabled === true ? 'disabled' : undefined,
     rule.comment,
     rule.useStyle,
     plainText(rule.replaceName),
