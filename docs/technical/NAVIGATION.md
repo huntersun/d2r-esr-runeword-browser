@@ -92,8 +92,8 @@ string (`/?name=Enigma`, `/?search=x&sockets=4`: old Copy Link URLs and guide de
    skeleton row while loading; hidden on error or when there are no builds.
 5. **New to ESR?** (`HomeStartHere`): a button to `/guide` and the guide's `GuideOfficialReference` strip.
 6. **Official ESR links** (`HomeOfficialLinks`): compact cards (label linking out, description) for `OFFICIAL_LINKS` in
-   `navConfig.ts`, the same list as the header's ESR links menu: Official site, Drop Finder, Changelog, ESR Discord, ESR
-   on GitHub.
+   `navConfig.ts`, the same list as the header's ESR links menu: Official site, Drop Finder, Frame Table, Changelog, ESR Discord,
+   ESR on GitHub.
 7. **Community tools** (`HomeCommunityTools`): a card per fan-made ESR tool from `COMMUNITY_TOOLS` in `navConfig.ts`
    (label linking out, author, a kind badge, description, caveat, "Source on GitHub" when the project has one), with a
    note that they are not affiliated with this site or the mod. Static data, no fetches. Both sections share the `HomeLinkCard` component.
@@ -106,7 +106,7 @@ The page skips the startup loading gate (exact match on `/`, see below), so it r
 
 ```
 ┌───────────────────────────────────────────────────────────────────────┐
-│ D2R ESR  Recipes▾ Items▾ Tools▾ Guide Builds    [📖] [☀] [GH] [⚙] │
+│ D2R ESR  Recipes▾ Database▾ Tools▾ Guide Builds [📖] [☀] [GH] [⚙] │
 ├───────────────────────────────────────────────────────────────────────┤
 │                                                                       │
 │                         Main Content Area                             │
@@ -138,13 +138,13 @@ match every path), the others are prefixes (a path matches its prefix exactly or
 (groups of `NavItem`s with a label, a one-line description and a path, plus plain links). The home page's section
 cards render from the same config (group `description`, link `homeLinks`):
 
-| Entry     | Kind  | Pages                                                                                                                                                                                                                    |
-| --------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Recipes ▾ | group | Runewords (`/runewords`), Gemwords (`/gemwords`), Socketables (`/socketables`)                                                                                                                                           |
-| Items ▾   | group | Uniques (`/uniques`), Mythicals (`/mythicals`), Sets (`/game-data/sets`), Ascendancies (`/ascendancies`), Skills (`/skills`), Bases (`/game-data/bases`), Materials (`/game-data/materials`), Areas (`/game-data/areas`) |
-| Tools ▾   | group | Best Base (`/game-data/best-base`), Affixes (`/game-data/affixes`), Item Types (`/game-data/types`), Enhance (`/game-data/enhance`), Cube Recipes (`/game-data/cube`), Loot Filters (`/loot-filters`)                    |
-| Guide     | link  | `/guide`                                                                                                                                                                                                                 |
-| Builds    | link  | `/builds`, only when Supabase is configured (`requiresSupabase`, filtered by `getNavEntries`)                                                                                                                            |
+| Entry      | Kind  | Pages                                                                                                                                                                                                                    |
+| ---------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Recipes ▾  | group | Runewords (`/runewords`), Gemwords (`/gemwords`), Socketables (`/socketables`)                                                                                                                                           |
+| Database ▾ | group | Uniques (`/uniques`), Mythicals (`/mythicals`), Sets (`/game-data/sets`), Ascendancies (`/ascendancies`), Skills (`/skills`), Bases (`/game-data/bases`), Materials (`/game-data/materials`), Areas (`/game-data/areas`) |
+| Tools ▾    | group | Best Base (`/game-data/best-base`), Affixes (`/game-data/affixes`), Item Types (`/game-data/types`), Enhance (`/game-data/enhance`), Cube Recipes (`/game-data/cube`), Loot Filters (`/loot-filters`)                    |
+| Guide      | link  | `/guide`                                                                                                                                                                                                                 |
+| Builds     | link  | `/builds`, only when Supabase is configured (`requiresSupabase`, filtered by `getNavEntries`)                                                                                                                            |
 
 - **Brand**: "D2R ESR", a link to `/` (the home page).
 - **Desktop (md and up)**: a shadcn `NavigationMenu` (`src/components/ui/navigation-menu.tsx`, `viewport={false}` so
@@ -152,7 +152,7 @@ cards render from the same config (group `description`, link `homeLinks`):
   an item is active when the path equals its `to` or starts with `to/` (no item is active on the home page); a group trigger is highlighted when any of its items is active (`isNavGroupActive`). Active links
   get `aria-current="page"`. Keyboard (Radix): triggers are in the tab order, Enter/Space/ArrowDown opens, arrows and
   Tab move through the items, Escape closes; choosing a link closes the menu.
-- **Right side**: ESR links dropdown (book icon, md and up: the `OFFICIAL_LINKS` Official site, Drop Finder, Changelog, ESR Discord, ESR on GitHub,
+- **Right side**: ESR links dropdown (book icon, md and up: the `OFFICIAL_LINKS` Official site, Drop Finder, Frame Table, Changelog, ESR Discord, ESR on GitHub,
   then a "Community tools" label with ESR Wiki Overlay, ESR Docs, ESR Tools, Unofficial ESR Wiki from `COMMUNITY_TOOLS`), theme toggle, GitHub link,
   `AuthControls` (Sign In / user menu, Supabase only), settings cog.
 - **Mobile (below md)**: hamburger opens a left `Sheet` with a shadcn `Accordion` (`type="multiple"`) of the same groups;
@@ -191,7 +191,7 @@ The version line comes from `public/game-data/manifest.json`; the docs line from
 `metadata.docsLastModified`. Both versions normally come from `metadata.modVersion` of ESR's `d2rloader/metadata.json`;
 the docs version may fall back to the changelog page's header, so the note never says which version is newer.
 
-The Game Data child pages are separate header items (Bases under Items; Best Base, Affixes and Item Types under Tools).
+The Game Data child pages are separate header items (Bases, Sets, Materials and Areas under Database; Best Base, Affixes, Item Types, Enhance and Cube Recipes under Tools).
 Guide and Loot Filters items are prefix-matched, so they stay active on every child page.
 
 The header triggers and links, the Game Data sub-tabs and the loot filter editor's tabs share one set of classes

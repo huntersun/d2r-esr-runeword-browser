@@ -12,8 +12,8 @@ fields, synergies and the uniques, set items and runewords that grant it (`/skil
   skill, +levels, aura, charges, chance to cast on …), linked to that item's page
 - Look up skills no class has: procs and item-only spells such as Rift Shot, Fire Surge or Mythical Decrepify
 - Search every skill by name; share a view by URL
-- Point to the official Frame Table (`ias-calculator.html`, via `officialDocsUrl`) for IAS and FCR breakpoints in
-  the intro; the app does not compute breakpoints
+- Point to the official Frame Table (`FRAME_TABLE_URL` in `navConfig.ts`, `ias-calculator.html`; also an `OFFICIAL_LINKS`
+  entry) for IAS and FCR breakpoints in the intro; the app does not compute breakpoints
 
 Out of scope: per-level values (damage, duration, …). The game computes them with calc expressions (`clc4`,
 `ln12`, `skill('Fire Ball'.blvl)`, …) that reference stats and other skills; only constants and skill params are
@@ -108,7 +108,7 @@ orphaned file and on a key whose cel is outside its sheet. No vanilla art is nee
 
 ## Page
 
-Route `/skills` (`SkillsScreen`, lazy-loaded), nav: Items ▾ → Skills (after Ascendancies), also a chip on the home
+Route `/skills` (`SkillsScreen`, lazy-loaded), nav: Database ▾ → Skills (after Ascendancies), also a chip on the home
 page's Items card.
 
 - **Class pills**: the 8 classes in types.json order plus "Item skills" (with its count).

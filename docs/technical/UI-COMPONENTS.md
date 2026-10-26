@@ -36,7 +36,7 @@ All Radix primitives come from the unified `radix-ui` package, so a new shadcn c
 
 Location: `src/core/components/`
 
-- `Header.tsx` - Top bar: brand, grouped navigation (Recipes / Items / Tools menus, Guide, Builds) rendered from
+- `Header.tsx` - Top bar: brand, grouped navigation (Recipes / Database / Tools menus, Guide, Builds) rendered from
   `src/core/navigation/navConfig.ts`, ESR links, theme, GitHub, auth and settings controls; mobile sheet with an accordion.
   See [NAVIGATION.md](./NAVIGATION.md#header-components).
 - `SettingsDrawer.tsx` - Settings sheet (theme, font, text size, data refresh, versions, credits).

@@ -1,5 +1,5 @@
 import { ESR_REPO_SLUG } from '@/core/api/remoteConfig';
-import { DROP_FINDER_URL } from '@/features/guide/engine/linkSchemes';
+import { DROP_FINDER_URL, officialDocsUrl } from '@/features/guide/engine/linkSchemes';
 
 /**
  * Navigation config: the header's grouped desktop menus, its mobile accordion and the home page's section cards all
@@ -16,6 +16,8 @@ export const DISCORD_URL = 'https://discord.com/invite/XfFmAYZAbA';
 export const ESR_REPO_URL = `https://github.com/${ESR_REPO_SLUG}`;
 /** The official Drop Finder; defined with the guide's link schemes (shared with the Node guide generator). */
 export { DROP_FINDER_URL };
+/** The official Frame Table (IAS and FCR breakpoints); not linked from the official site's own navigation. */
+export const FRAME_TABLE_URL = officialDocsUrl('ias-calculator.html');
 
 /** An official ESR link, listed in the header's external-links menu and on the home page. */
 export interface OfficialLink {
@@ -37,6 +39,12 @@ export const OFFICIAL_LINKS: readonly OfficialLink[] = [
     label: 'Drop Finder',
     href: DROP_FINDER_URL,
     description: 'The official tool for where every item, rune and material drops.',
+  },
+  {
+    key: 'frame-table',
+    label: 'Frame Table',
+    href: FRAME_TABLE_URL,
+    description: 'Attack and cast speed breakpoints (IAS and FCR) per class, form, skill and weapon.',
   },
   { key: 'changelog', label: 'Changelog', href: ESR_CHANGELOG_URL, description: 'Release notes for every ESR version.' },
   { key: 'discord', label: 'ESR Discord', href: DISCORD_URL, description: 'The community server: announcements, help and bug reports.' },
@@ -158,8 +166,8 @@ export const NAV_ENTRIES: readonly NavEntry[] = [
   },
   {
     kind: 'group',
-    key: 'items',
-    label: 'Items',
+    key: 'database',
+    label: 'Database',
     description: 'Uniques, mythicals, sets, ascendancies, skills, every base item, material and area',
     items: [
       { key: 'uniques', to: '/uniques', label: 'Uniques', description: 'Unique items by category and coupon' },

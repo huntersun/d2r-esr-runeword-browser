@@ -8,6 +8,7 @@ import { PageShell } from '@/components/PageShell';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 import { db } from '@/core/db';
 import { useDebouncedFilterValue } from '@/core/hooks/useDebouncedFilterValue';
+import { FRAME_TABLE_URL } from '@/core/navigation/navConfig';
 import { buildShareUrl } from '@/core/utils/filterUrlParams';
 import { normaliseItemName } from '@/core/utils/itemName';
 import { EnhanceSearch, Pills } from '@/features/game-data/components/EnhanceParts';
@@ -15,7 +16,6 @@ import { GameDataError } from '@/features/game-data/components/GameDataError';
 import { GameDataLoading } from '@/features/game-data/components/GameDataLoading';
 import type { SkillDetail } from '@/features/game-data/engine/schema';
 import { useGameData } from '@/features/game-data/hooks/useGameData';
-import { officialDocsUrl } from '@/features/guide/engine/linkSchemes';
 import { cn } from '@/lib/utils';
 import { SkillDetailCard } from '../components/SkillDetailCard';
 import { SkillTile, type SkillTileMark } from '../components/SkillTile';
@@ -127,7 +127,7 @@ function SkillsBrowser({ view }: { readonly view: SkillsView }) {
         synergies and the uniques, set items and runewords that grant it. Per-level values are formulas in the game files and are not shown.
         For attack and cast speed breakpoints see the official{' '}
         <ExternalLink
-          href={officialDocsUrl('ias-calculator.html')}
+          href={FRAME_TABLE_URL}
           className="inline-flex items-center gap-0.5 text-primary hover:underline"
           iconClassName="size-3"
         >

@@ -1125,7 +1125,7 @@ the Cube Recipes page", N = the family's rows in cube.json).
 
 `/game-data/materials` (`screens/MaterialsScreen.tsx`) loads only `materials.json` (a static-bundle route like Enhance
 and Cube) plus the guide bundle (`useGuide`); the page works without the guide, only the Guide lines are then missing.
-Items menu entry "Materials", layout tab "Materials".
+Database menu entry "Materials", layout tab "Materials".
 
 - Search, Copy Link and the group pills (All + each group with its row count) in the filter panel; with `?name=` the
   pills are hidden and the exact-name chip sits in the "Showing N of M items" line under the panel.
@@ -1147,7 +1147,7 @@ URL state (read on every render, written with `replace`; `utils/materials.ts`):
 
 ### Areas page
 
-`/game-data/areas` (`screens/AreasScreen.tsx`) loads only `areas.json` (a static-bundle route). Items menu entry
+`/game-data/areas` (`screens/AreasScreen.tsx`) loads only `areas.json` (a static-bundle route). Database menu entry
 "Areas", layout tab "Areas".
 
 - Filter panel: search, min / max monster level (an area matches when its Normal, Nightmare or Hell level is inside the
@@ -1171,7 +1171,7 @@ URL state (read on every render, written with `replace`; `utils/areas.ts`):
 
 `/game-data/sets` (`screens/SetsScreen.tsx`) loads only `sets.json` (a static-bundle route like Enhance, Cube and
 Materials) plus sources.json through `useItemSources` and tiers.json through `useBaseTiers` (the source lines and
-tier badges are a bonus: missing while their bundle loads or when it fails). Items menu entry "Sets" (after Mythicals), layout tab "Sets" (after Bases). The home search lists set names
+tier badges are a bonus: missing while their bundle loads or when it fails). Database menu entry "Sets" (after Mythicals), layout tab "Sets" (after Bases). The home search lists set names
 ("Sets") and set item names ("Set items"), both linking to `/game-data/sets?name=`.
 
 - Search, "Max required level" input, Copy Link; Pieces pills (All + each item count with its set count) and Class
