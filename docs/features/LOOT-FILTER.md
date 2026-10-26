@@ -272,7 +272,9 @@ Mythical`: items/types/uniques by name when the bundles are in, codes otherwise,
   ("Add N items? Click again"). `SinglePicker` closes on a pick and starts with an empty search. Uniques and sets share
   the id space (a unique and a set item can have the same row), so a chip names both. Without the bundles the pickers
   still take typed codes and ids. `ItemPicker` (item codes and except item codes, not the Test tab's `SingleItemPicker`)
-  also has a "Browse items…" button after "Add item" that opens the item browser below.
+  also has a "Browse items…" button after "Add item" that opens the item browser below; `UniqueOrSetPicker` (unique or
+  set items and their except list, not the Test tab's single unique/set picker) has a "Browse uniques and sets…"
+  button that opens the unique and set browser.
 - **Data**: `useLootFilterData()` → `{ status, data, types, lookup, options }`; `lookup` (`utils/lookup.ts`) has `item`,
   `itemName`, `itemType`, `typeName`, `statName`, `statId`, `areaName`, `uniqueOrSetName` (all `undefined` for unknown
   keys or missing data); the lookup and option lists are built once per loaded bundle pair (module cache). An item
@@ -291,8 +293,11 @@ share one draft, one search box, one "N selected" counter and one Apply / Cancel
   Each tab's model is built once per loaded bundle set (module caches, `getBaseBrowserModel`, `getMiscBrowserModel`).
   Non-spawnable bases are not listed (they exist only as the base of a unique or as a cube result, Vessel of Souls);
   the dialog's description points to "Add item" for those.
-- **Shared model** (`browserModel.ts`): groups → types; a type is a `grid` (named columns, rows with one cell per
-  column, extras below the rows) or a `list`. A column has a key, a label and, for the base tiers, a tier (rendered as
+- **Shared model** (`browserModel.ts`, also used by the unique and set browser): groups → types; a type is a `grid`
+  (named columns, rows with one cell per column, extras below the rows), `columns` (each column a list of its items
+  side by side, extras below) or a `list`. A cell selects its `code`, or its `codes` when it stands for several values
+  (merged unique rows); a cell with `disabled` (its reason) is greyed, cannot be ticked and counts toward no checkbox;
+  `tag` replaces the monospace code. A column has a key, a label and, for the base tiers, a tier (rendered as
   the tier badge; other columns get a plain label badge). Each column header is a tri-state checkbox for that column;
   group and type headers are tri-state checkboxes with "selected/total". Below `md` the columns stack and each cell
   shows its column badge.
@@ -337,6 +342,44 @@ share one draft, one search box, one "N selected" counter and one Apply / Cancel
   drop it, and focus returns to the button. Apply keeps every value the browser does not list (shadow bases, container
   items, typed codes) in place, removes the browser's codes the draft no longer has and appends the new ones in display
   order, bases first (`applyBrowserSelection`); nothing is dispatched when the values do not change.
+
+### Unique and set browser (`components/pickers/UniqueSetBrowserDialog.tsx`, `BrowserTabs.tsx`, `utils/uniqueBrowser.ts`)
+
+The item browser's sibling ("Browse uniques and sets", same size and behaviour) for the `uniqueOrSetIds` and
+`excludeUniqueOrSetIds` pickers. Two tabs, **Uniques** and **Sets** (the tab list is `BrowserTabs`, shared with the
+item browser), one draft of row ids (strings in the draft, numbers in the rule), one search box, one "N selected"
+counter and one Apply / Cancel.
+
+- **Data**: `bases.json`, `types.json`, `lootfilter.json` (`uniques` / `sets` with `reqLvl`, `set` and `disabled`, see
+  GAME-DATA.md) and `tiers.json`, loaded when the dialog opens; the model is built once per bundle set
+  (`getUniqueBrowserModel`). Uniques on non-spawnable shadow bases (about 400) are listed like the others.
+- **Cells**: name, base code (tag), then base name · `Lvl N` (required level) · `#id`. Rows of one table with the same
+  name, base and disabled flag are one cell that selects all their ids (ESR 3.2.24: Ember of Creation ×230 on the
+  Mythical Jewel, Ore ×16, Lich King's Essence ×6, The Ties That Bind ×7, two ×3); a cell of more than 10 rows shows the
+  row count and lists the id runs in its tooltip. Disabled rows (`disabled` in the txt: The Perfect Cello #0 and the
+  six Rupture charms #690–695) are greyed with "disabled in the game files" and cannot be ticked; an id typed into the
+  picker stays (Apply keeps values the browser does not tick).
+- **Uniques tab**: the base's item type (`lootfilter.json` `items[].type`, shadow bases included) is the block; blocks
+  sit in the type groups of `buildTypeGroups` over `bases.json` (Weapons … Class accessories). A type no spawnable base
+  has goes to the group of its nearest listed ancestor type (Odd Charm → Grand Charm → Accessories) after that group's
+  listed types, else by kind and class (Weapons / Class weapons / Armor / Class armor) or **Misc** (Ore, Randomizing
+  Stone). The base tier comes from `tiers.json` (every weapon and armor row) and, for the mythical accessories, from
+  `bases.json`. A weapon or armor type with tiered bases is a `columns` block Normal | Exceptional | Elite, each column
+  sorted by required level, then name; its uniques on mythical bases follow under a "Mythical" checkbox (bases without a
+  tier would follow without one). Other types (rings, amulets, charms, jewels, quivers, Ore) are a list by required
+  level, mythical accessories with their badge.
+- **Sets tab**: one "Sets" group with a block per set (`set`, so the three difficulty variants of a hireling set are
+  one block), ordered by the lowest required level of its items, then name; items in table order, with the tier badge
+  of an exceptional, elite or mythical base.
+- **Search**: every whitespace term must match the cell's name, base name, base code, set name, type name or code,
+  group label, column label or one of its ids. Tab counts while searching as in the item browser.
+- **Shared ids**: unique and set item ids are one id space (`uniqueOrSetIds` matches the row number of either table and
+  the plugin ignores the quality when matching; ESR 3.2.24: all 270 set ids are also unique ids), so a ticked id is
+  ticked on both tabs. While a ticked id is in both tables and the edited rule's `quality` does not let through exactly
+  one of set and unique (`qualityTellsApart`: no quality, `magic` and up, `[set, unique]`…), the footer warns
+  "id N is both unique X and set item Y; set the rule's quality to unique or set" (three ids named, then a count). The
+  dialog reads that quality from the store (the selected rule), so `RuleEditor` passes nothing extra.
+- **Apply**: as in the item browser (`applyBrowserSelection` over the listed ids, uniques first, each id once).
 
 ## Actions editor (`components/actions/`)
 
