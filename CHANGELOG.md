@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.38.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.37.0...v1.38.0) (2026-10-26)
+
+
+### Features
+
+* **loot-filter:** bundle the twelve minimap icons of sully's qol filter ([aeebc04](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/aeebc04bcbfc655d8959f8612908659565a16be6))
+* **loot-filter:** start from sully's live qol filter instead of the old esr default filter ([aefbb36](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/aefbb36320bd5a65d9508cf7115b3eac0623e25d))
+
+
+### Documentation
+
+* **loot-filter:** describe sully's qol filter template and the bundled icons ([ce6b07a](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/ce6b07ad2771a080fc6f56a2242b190b5a3fde45))
+
+
+### Chores
+
+* **loot-filter:** update the template comment note ([9316fe0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/9316fe08e608cf14586759a541e73642f4430a52))
+
 ## [1.37.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.36.0...v1.37.0) (2026-10-26)
 
 
