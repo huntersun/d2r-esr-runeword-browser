@@ -235,7 +235,7 @@ const lootFilterSlice = createSlice({
         const entry = flushed.library.entries.find((candidate) => candidate.id === id);
         if (!entry) return { ...flushed, editor: { ...EMPTY_EDITOR, id } };
         const parsed = parseEntryText(entry.text);
-        // The shipped template's section comments are ours; a notice about losing them would only be noise.
+        // The template's section comments are Sully's, shipped on purpose; a notice about losing them would only be noise.
         const textNotes = entry.source === 'template' ? [] : parsed.textNotes;
         return { ...flushed, editor: { ...EMPTY_EDITOR, id, ...parsed, textNotes } };
       },
