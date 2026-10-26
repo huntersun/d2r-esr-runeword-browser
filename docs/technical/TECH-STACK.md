@@ -104,7 +104,7 @@ The project uses [React Compiler](https://react.dev/learn/react-compiler) for au
 - Performance-critical code where you need explicit control
 
 **ESLint Integration:**
-The `eslint-plugin-react-compiler` is configured to report errors when code patterns prevent optimization.
+The compiler's diagnostics ship as rules in `eslint-plugin-react-hooks` (its recommended flat config enables them), so patterns that prevent optimization fail lint.
 
 **Scripts:**
 

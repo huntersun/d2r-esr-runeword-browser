@@ -16,7 +16,7 @@
     "prettier:format-fix": "prettier --write ./src",
     "prepare": "husky",
     "release": "npm run lint && npm run build && commit-and-tag-version -a",
-    "compiler:check": "eslint ./src --rule 'react-compiler/react-compiler: error'",
+    "compiler:check": "eslint ./src --rule 'react-hooks/incompatible-library: error' --rule 'react-hooks/unsupported-syntax: error'",
     "compiler:health": "npx react-compiler-healthcheck@latest --verbose",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -93,11 +93,6 @@
       }
     ]
   },
-  "overrides": {
-    "eslint-plugin-react-hooks": {
-      "zod-validation-error": "^4.0.0"
-    }
-  },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
       "prettier --write",
@@ -154,7 +149,6 @@
     "commit-and-tag-version": "^12.6.1",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-react-compiler": "^19.1.0-rc.2",
     "eslint-plugin-react-dom": "^2.3.13",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",

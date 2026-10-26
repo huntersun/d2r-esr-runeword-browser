@@ -122,10 +122,13 @@ export interface Database {
         Relationships: [];
       };
     };
+    // The schema defines none of these; the empty object type is what supabase-js expects.
+    /* eslint-disable @typescript-eslint/no-generated-empty-object-type */
     Views: Record<never, never>;
     Functions: Record<never, never>;
     Enums: Record<never, never>;
     CompositeTypes: Record<never, never>;
+    /* eslint-enable @typescript-eslint/no-generated-empty-object-type */
   };
 }
 
