@@ -60,7 +60,7 @@ describe('buildPickerOptions', () => {
     );
   });
 
-  it('adds the code to the label of items sharing a display name, still found by the plain name', () => {
+  it('adds the code to the label of unmuted items sharing a display name, still found by the plain name', () => {
     const runes = buildPickerOptions(
       {
         ...TEST_DATA,
@@ -68,11 +68,23 @@ describe('buildPickerOptions', () => {
           { code: 'r19', name: 'Ko Rune', kind: 'misc', type: 'rune', spawnable: true, drops: true },
           { code: 'r68', name: 'Ko Rune', kind: 'misc', type: 'rune', spawnable: true, drops: true },
           { code: 'r20', name: 'Fal Rune', kind: 'misc', type: 'rune', spawnable: true, drops: true },
+          { code: 'r32', name: 'Fu Rune', kind: 'misc', type: 'rune', spawnable: true, drops: true },
+          { code: 'r48', name: 'Fu Rune', kind: 'misc', type: 'rune', spawnable: true, drops: false },
+          { code: 'hax', name: 'Hand Axe', kind: 'weapon', type: 'axe', spawnable: true, drops: true },
+          { code: 'p01', name: 'Hand Axe', kind: 'weapon', type: 'axe', spawnable: false, drops: false },
         ],
       },
       TEST_TYPES
     );
-    expect(runes.items.map((option) => option.label)).toEqual(['Ko Rune (r19)', 'Ko Rune (r68)', 'Fal Rune']);
+    expect(runes.items.map((option) => [option.label, option.hint])).toEqual([
+      ['Ko Rune (r19)', undefined],
+      ['Ko Rune (r68)', undefined],
+      ['Fal Rune', undefined],
+      ['Fu Rune', undefined],
+      ['Fu Rune', 'never drops'],
+      ['Hand Axe', undefined],
+      ['Hand Axe', 'shadow base'],
+    ]);
     expect(filterPickerOptions(runes.items, 'ko rune').matches.map((option) => option.value)).toEqual(['r19', 'r68']);
   });
 

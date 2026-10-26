@@ -118,12 +118,15 @@ export function buildPickerOptions(data: LootFilterDataBundle, types: TypesBundl
       search: searchText(entry.name, entry.id, base, entry.code),
     };
   };
-  // Items sharing a display name (Ko Rune r19 / r68) get their code in the label
+  // Unmuted items sharing a display name (Ko Rune r19 / r68) get their code in the label; a muted twin (shadow base
+  // p01 of Hand Axe, the unused Fu Rune r48) is told apart by its hint instead
   const nameCounts = new Map<string, number>();
-  for (const item of data.items) if (item.name !== '') nameCounts.set(item.name, (nameCounts.get(item.name) ?? 0) + 1);
+  for (const item of data.items) {
+    if (item.name !== '' && !itemMutedState(item).muted) nameCounts.set(item.name, (nameCounts.get(item.name) ?? 0) + 1);
+  }
   const itemLabel = (item: LootFilterItem): string => {
     if (item.name === '') return item.code;
-    return (nameCounts.get(item.name) ?? 0) > 1 ? `${item.name} (${item.code})` : item.name;
+    return !itemMutedState(item).muted && (nameCounts.get(item.name) ?? 0) > 1 ? `${item.name} (${item.code})` : item.name;
   };
   return {
     items: data.items.map((item) => {

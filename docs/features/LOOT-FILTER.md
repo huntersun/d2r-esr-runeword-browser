@@ -185,9 +185,11 @@ Mythical`: items/types/uniques by name when the bundles are in, codes otherwise,
   `ItemPicker`, `SingleItemPicker`, `ItemTypePicker`, `StatPicker`, `AreaPicker`, `UniqueOrSetPicker`. Non-spawnable
   weapons and armor are greyed with "shadow base" (tooltip: they exist only as a unique's base or as a cube result),
   misc items with `drops: false` with "never drops"; non-spawnable misc items that drop (the Ancient Scrolls, Ore) look
-  like any other (`itemMutedState` in `utils/lookup.ts`, shared by the options and the chips). Items sharing a display
-  name get their code in the option label ("Ko Rune (r19)", "Hand Axe (p01)"; ESR 3.2.24: 319 names, 947 items); the
-  search still matches the plain name. Item options show their type (`hax · Axe`) and also match the names and codes of
+  like any other (`itemMutedState` in `utils/lookup.ts`, shared by the options and the chips). Two or more unmuted
+  items sharing a display name get their code in the option label ("Ko Rune (r19)" / "Ko Rune (r68)"; ESR 3.2.24: 24
+  names, 277 items, mostly containers and the 50 Ancient Scrolls); a muted twin keeps the plain name and is told apart
+  by its hint (Hand Axe `hax` / `p01` "shadow base", Fu Rune `r32` / `r48` "never drops"). The search still matches the
+  plain name. Item options show their type (`hax · Axe`) and also match the names and codes of
   every type the base counts as (`type` and `type2` with their ancestors, the option's `searchMore`), ranked after the
   name and code matches, so `helm` lists the helms named Helm first, then Demonhead and the rest. In `MultiPicker` the
   "Add …" button comes before the chips (the popover stays put as chips are added), a pick keeps the search, clicks on
