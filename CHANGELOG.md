@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.41.1](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.41.0...v1.41.1) (2026-10-26)
+
+### Documentation
+
+* note Vite 8 and Vitest 5 in the tech stack ([641686f](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/641686ffd0773b76c958f91e3fb1c7abe199f223))
+
+### Chores
+
+* **deps:** apply in-range updates and drop eslint-plugin-react-compiler ([88dd1e9](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/88dd1e9cd5c39772e3218f04570c04f69c0a5011))
+* **deps:** upgrade commitlint 21, commit-and-tag-version 13, jsdom 29 ([ddbe778](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/ddbe778b49abf350918c4606acea9aa4f6fb1693))
+* **deps:** upgrade to ESLint 10 and eslint-plugin-react-x/dom 5 ([01c3860](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/01c3860ea1f963018eac2c08538adbe5dff57001))
+* **deps:** upgrade to Vite 8, @vitejs/plugin-react 6 and Vitest 5 ([ae457ed](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/ae457ed8c502ad1d8273b89794b0f5ef2a4171aa))
+
+### Build
+
+* move to Node 24 LTS ([7d78fb2](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/7d78fb21e8eea3bdecf090e55f05dfe166fa2d9d))
+* project npm config for npm 12 ([6687c4f](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/6687c4f5b393d7b6a5c294f4b3ead7156e99cc9f))
+
+### CI
+
+* bump checkout and setup-node to v7, read Node from .nvmrc ([af65dea](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/af65deac064451ee1e72ce7bf1b8abb59d0df587))
+
 ## [1.41.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.40.0...v1.41.0) (2026-10-26)
 
 
