@@ -197,8 +197,11 @@ and validator (`src/features/loot-filter/engine/reference.ts` turns it plus `typ
   non-spawnable items drop (55 misc: the Ancient Scrolls `01b`…`50b` through "Scrolls 1…17", Ore through the
   "Uni Ore N" unique rows, Fake Note, Flask of Renewal, Nirvana Grass, `au9`; one weapon, `dd1`, the base of the
   Frostmourne unique); the Vessel of Souls transform bases (`m44` and 27 more mythical weapons) do not. A spawnable
-  item is always `drops: true`, although misc items only drop through treasure classes (no auto-TCs) and 333 spawnable
-  misc rows are named by none (cube results, engine drops such as the essences, and the unused `r48` "Fu Rune").
+  item is `drops: true` with one exception: a rune (type `rune`; ESR has no type below it) without a `gems.txt` row is
+  an unused row (no socket stats, and no recipe or treasure class makes it), so it never drops; ESR 3.2.24: only `r48`
+  "Hu Rune", whose namestr makes it a second "Fu Rune". Misc items only drop through treasure classes (no auto-TCs), but
+  332 other spawnable misc rows are named by none (cube results, engine drops such as the essences), so spawnable
+  stays enough for those.
 - `stats`: every `itemstatcost.txt` row, `id` = 0-based row number (equal to the `*ID` comment column in ESR 3.2.12),
   `name` = `Stat`.
 - `areas`: every `levels.txt` row with an `Id` (the `Expansion` marker has none); name = `LevelName` through the string

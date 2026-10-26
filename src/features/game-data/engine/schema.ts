@@ -244,7 +244,8 @@ export interface LootFilterItem {
   /**
    * The item can drop: spawnable, or named by a treasureclassex.txt `Item*` cell (ESR drops non-spawnable rows a
    * treasure class names, e.g. the Ancient Scrolls `01b`…`50b`), or the base of a uniqueitems/setitems row a treasure
-   * class names (Ore through "Uni Ore N"). False for items only a cube recipe makes or that nothing creates at all.
+   * class names (Ore through "Uni Ore N"). False for items only a cube recipe makes or that nothing creates at all, and
+   * for a spawnable rune without a gems.txt row (an unused row: `r48`).
    */
   drops: boolean;
 }

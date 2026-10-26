@@ -1509,7 +1509,7 @@
     {"code":"xtx","name":"Storm Amber","kind":"misc","type":"rune","spawnable":true,"drops":true},
     {"code":"xty","name":"Tainted Tourmaline","kind":"misc","type":"rune","spawnable":true,"drops":true},
     {"code":"ore","name":"Ore","kind":"misc","type":"rock","spawnable":false,"drops":true},
-    {"code":"r48","name":"Fu Rune","kind":"misc","type":"rune","spawnable":true,"drops":true},
+    {"code":"r48","name":"Fu Rune","kind":"misc","type":"rune","spawnable":true,"drops":false},
     {"code":"r50","name":"Null Rune","kind":"misc","type":"rune","spawnable":true,"drops":true},
     {"code":"r84","name":"Moon Rune","kind":"misc","type":"rune","spawnable":true,"drops":true},
     {"code":"r85","name":"Fire Rune","kind":"misc","type":"rune","spawnable":true,"drops":true},

@@ -127,6 +127,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
       uniqueitems: rowTable('uniqueitems'),
       setitems: rowTable('setitems'),
       treasureclassex: table('treasureclassex'),
+      gems: table('gems'),
     },
     strings
   );

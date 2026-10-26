@@ -52,6 +52,10 @@ const { bundle, warnings } = buildLootFilterBundle(
       ['Set Axe', 'hax'],
     ]),
     treasureclassex: table([['Treasure Class', 'Item1']]),
+    gems: table([
+      ['name', 'code'],
+      ['El Rune', 'r01'],
+    ]),
   },
   strings
 );
@@ -117,6 +121,7 @@ describe('buildLootFilterBundle tiers', () => {
       uniqueitems: rowTable([['index', 'code']]),
       setitems: rowTable([['index', 'item']]),
       treasureclassex: table([['Treasure Class', 'Item1']]),
+      gems: table([['name', 'code']]),
     },
     new Map()
   );
@@ -163,6 +168,7 @@ describe('buildLootFilterBundle drops', () => {
         ['Ancient Scroll', '01b', '01b', 'scrl', '', '0'],
         ['Ancient Scroll', '02b', '02b', 'scrl', '', '0'],
         ['Ore', 'ore', 'ore', 'rock', '', '0'],
+        ['Fu Rune', 'r32', 'r32', 'rune', '', '1'],
         ['Hu Rune', 'r48', 'r32', 'rune', '', '1'],
         ['Elixir', 'hpo', 'hpo', 'hpot', '', '0'],
       ]),
@@ -187,6 +193,10 @@ describe('buildLootFilterBundle drops', () => {
         ['Boss', 'Frost Blade', 'Shadow Set Piece', 'Scrolls 2'],
         ['', 'hpo', '', ''],
       ]),
+      gems: table([
+        ['name', 'code'],
+        ['Fu Rune', 'r32'],
+      ]),
     },
     new Map()
   );
@@ -205,8 +215,12 @@ describe('buildLootFilterBundle drops', () => {
 
   it('keeps spawnable items dropping and leaves the rest (no treasure class, unnamed unique, blank TC row) out', () => {
     expect(dropsOf('cap')).toBe(true);
-    expect(dropsOf('r48')).toBe(true);
+    expect(dropsOf('r32')).toBe(true);
     expect(dropsOf('m44')).toBe(false);
     expect(dropsOf('hpo')).toBe(false);
+  });
+
+  it('marks a spawnable rune without a gems.txt row as never dropping (an unused row)', () => {
+    expect(dropsOf('r48')).toBe(false);
   });
 });

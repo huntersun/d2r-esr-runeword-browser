@@ -39,6 +39,7 @@ const TABLES = [
   // lootfilter.json (levels: also areas.json and the cube's level names)
   'levels',
   'sounds',
+  'gems',
   // skills.json
   'experience',
 ] as const;

@@ -302,8 +302,9 @@ describe('committed game-data bundles', () => {
     expect(lootfilter.items.some((item) => !item.spawnable)).toBe(true);
     // Non-spawnable items a treasure class names drop (Ancient Scrolls, Ore through "Uni Ore N"); Vessel of Souls bases do not
     const dropsOf = (code: string) => lootfilter.items.find((item) => item.code === code)?.drops;
-    expect([dropsOf('01b'), dropsOf('ore'), dropsOf('m44')]).toEqual([true, true, false]);
-    expect(lootfilter.items.every((item) => !item.spawnable || item.drops)).toBe(true);
+    expect([dropsOf('01b'), dropsOf('ore'), dropsOf('m44'), dropsOf('r48'), dropsOf('r32')]).toEqual([true, true, false, false, true]);
+    // A spawnable item drops, except the unused rune row r48 (no gems.txt row)
+    expect(lootfilter.items.filter((item) => item.spawnable && !item.drops).map((item) => item.code)).toEqual(['r48']);
 
     const typeCodes = new Set(types.map((type) => type.code));
     for (const item of lootfilter.items) expect(typeCodes, `${item.code} → ${item.type}`).toContain(item.type);

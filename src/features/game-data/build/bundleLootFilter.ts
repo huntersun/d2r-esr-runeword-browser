@@ -20,6 +20,7 @@ export interface LootFilterTables {
   uniqueitems: TsvTable;
   setitems: TsvTable;
   treasureclassex: TsvTable;
+  gems: TsvTable;
 }
 
 /** treasureclassex.txt has `Item1` … `Item10` */
@@ -54,8 +55,19 @@ function treasureClassCodes(tables: LootFilterTables): Set<string> {
   return codes;
 }
 
+/**
+ * A spawnable rune without a gems.txt row is an unused row: it has no socket stats, and no recipe or treasure class
+ * makes it (ESR 3.2.24: only `r48` "Hu Rune", whose namestr makes it a second "Fu Rune"). Misc items only drop through
+ * treasure classes, so spawnable alone does not prove a misc item drops; this narrow check catches the one row the data
+ * proves dead without hiding engine drops (the essences) that no table names. ESR has no item type below `rune`.
+ */
+function isUnusedRune(type: string, code: string, gemCodes: ReadonlySet<string>): boolean {
+  return type === 'rune' && !gemCodes.has(code);
+}
+
 function readItemRows(tables: LootFilterTables, warnings: string[], strings: ReadonlyMap<string, string>): LootFilterItem[] {
   const dropCodes = treasureClassCodes(tables);
+  const gemCodes = new Set(tables.gems.rows.map((row) => row.str('code')).filter((code) => code !== ''));
   const items: LootFilterItem[] = [];
   const seen = new Set<string>();
   for (const [kind, table] of [
@@ -85,7 +97,7 @@ function readItemRows(tables: LootFilterTables, warnings: string[], strings: Rea
         ...(type2 === '' ? {} : { type2 }),
         ...(tier === undefined ? {} : { tier }),
         spawnable,
-        drops: spawnable || dropCodes.has(code),
+        drops: dropCodes.has(code) || (spawnable && !isUnusedRune(row.str('type'), code, gemCodes)),
       });
     }
   }
