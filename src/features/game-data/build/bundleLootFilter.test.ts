@@ -11,6 +11,7 @@ const strings = new Map([
   ['r01', 'El Rune'],
   ['Pelta', 'Pelta Lunata'],
   ['Act1Town', 'Rogue Encampment'],
+  ['AxeSet', 'Axe Gear'],
 ]);
 
 const { bundle, warnings } = buildLootFilterBundle(
@@ -46,10 +47,16 @@ const { bundle, warnings } = buildLootFilterBundle(
       ['cursor_pass', '1'],
       ['item_rune', '1'],
     ]),
-    uniqueitems: rowTable([['index', 'code'], ['Pelta', 'buc'], ['Expansion'], ['Lost', 'xxx'], ['Basher', 'hax']]),
+    uniqueitems: rowTable([
+      ['index', 'code', 'disabled', 'lvl req'],
+      ['Pelta', 'buc', '', '12'],
+      ['Expansion'],
+      ['Lost', 'xxx', '1', ''],
+      ['Basher', 'hax', '0', '5'],
+    ]),
     setitems: rowTable([
-      ['index', 'item'],
-      ['Set Axe', 'hax'],
+      ['index', 'set', 'item', 'lvl req'],
+      ['Set Axe', 'AxeSet', 'hax', '30'],
     ]),
     treasureclassex: table([['Treasure Class', 'Item1']]),
     gems: table([
@@ -86,11 +93,11 @@ describe('buildLootFilterBundle', () => {
 
   it('numbers uniques and sets by data row, counting Expansion rows without listing them', () => {
     expect(bundle.uniques).toEqual([
-      { id: 0, name: 'Pelta Lunata', code: 'buc' },
-      { id: 2, name: 'Lost', code: 'xxx' },
-      { id: 3, name: 'Basher', code: 'hax' },
+      { id: 0, name: 'Pelta Lunata', code: 'buc', reqLvl: 12 },
+      { id: 2, name: 'Lost', code: 'xxx', reqLvl: 0, disabled: true },
+      { id: 3, name: 'Basher', code: 'hax', reqLvl: 5 },
     ]);
-    expect(bundle.sets).toEqual([{ id: 0, name: 'Set Axe', code: 'hax' }]);
+    expect(bundle.sets).toEqual([{ id: 0, name: 'Set Axe', code: 'hax', reqLvl: 30, set: 'Axe Gear' }]);
     expect(warnings).toContain('lootfilter: unique 2 (Lost) has unknown base code "xxx"');
   });
 });

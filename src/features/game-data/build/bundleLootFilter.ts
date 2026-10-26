@@ -104,9 +104,23 @@ function readItemRows(tables: LootFilterTables, warnings: string[], strings: Rea
   return items;
 }
 
-/** Rows with a base code, numbered by their 0-based data-row index (marker rows count but are not listed). */
+/**
+ * Rows with a base code, numbered by their 0-based data-row index (marker rows count but are not listed), with the
+ * `lvl req` column, the `disabled` flag (only when set) and, for set items, the set's display name (`set` column).
+ */
 function lootFilterRows(table: TsvTable, codeColumn: 'code' | 'item', strings: ReadonlyMap<string, string>): LootFilterUniqueOrSet[] {
-  return readUniqueOrSetRows(table, codeColumn, strings).map(({ id, name, code }) => ({ id, name, code }));
+  return readUniqueOrSetRows(table, codeColumn, strings).map(({ id, name, code, disabled }) => {
+    const row = table.rows.at(id);
+    const setId = codeColumn === 'item' && row?.has('set') === true ? row.str('set') : '';
+    return {
+      id,
+      name,
+      code,
+      reqLvl: row?.has('lvl req') === true ? row.num('lvl req') : 0,
+      ...(setId === '' ? {} : { set: resolveName(strings, setId, setId) }),
+      ...(disabled ? { disabled: true as const } : {}),
+    };
+  });
 }
 
 export function buildLootFilterBundle(tables: LootFilterTables, strings: ReadonlyMap<string, string>): BuildResult<LootFilterDataBundle> {

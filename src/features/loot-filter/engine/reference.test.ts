@@ -30,10 +30,10 @@ const data: LootFilterDataBundle = {
   areas: [{ id: 1, name: 'Rogue Encampment', act: 0 }],
   sounds: ['', 'cursor_pass', 'item_rune'],
   uniques: [
-    { id: 0, name: 'The Perfect Cello', code: 'cm1' },
-    { id: 2, name: "Lothar's Will", code: 'hax' },
+    { id: 0, name: 'The Perfect Cello', code: 'cm1', reqLvl: 1 },
+    { id: 2, name: "Lothar's Will", code: 'hax', reqLvl: 1 },
   ],
-  sets: [{ id: 2, name: "Autolycus' Robes", code: 'qui' }],
+  sets: [{ id: 2, name: "Autolycus' Robes", code: 'qui', reqLvl: 1 }],
 };
 
 describe('buildLootFilterReference', () => {

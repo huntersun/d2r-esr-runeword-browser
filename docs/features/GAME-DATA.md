@@ -60,7 +60,7 @@ the manifest itself is always revalidated. The shape is defined in `src/features
 | `runewords.json`    | 197 KB / 28 KB                                                                 |
 | `affixes.json`      | 795 KB / 61 KB                                                                 |
 | `sources.json`      | 298 KB / 29 KB                                                                 |
-| `lootfilter.json`   | ESR 3.2.24: 744 KB / 100 KB                                                    |
+| `lootfilter.json`   | ESR 3.2.24: 771 KB / 103 KB (744 / 100 before reqLvl, set, disabled)           |
 | `enhance.json`      | ESR 3.2.24: 357 KB / 32 KB                                                     |
 | `cube.json`         | ESR 3.2.24: 517 KB / 55 KB                                                     |
 | `materials.json`    | ESR 3.2.24: 165 KB / 11 KB                                                     |
@@ -215,6 +215,11 @@ and validator (`src/features/loot-filter/engine/reference.ts` turns it plus `typ
   game loads the table. Every data row counts, including `Expansion` marker rows (parsed with
   `parseTsv(…, { keepExpansionRows: true })`), which are numbered but not listed. ESR 3.2.12 has no marker rows in
   either table and `*ID` equals the row number. Name = `index` through the string table; `code` = `code` / `item`.
+  For the loot-filter unique and set browser: `reqLvl` = `lvl req` (0 when blank), `set` (set items only) = the
+  `set` column (a `sets.txt` `index`) through the string table, so the three difficulty variants of a hireling set
+  share one name, and `disabled: true` when the `disabled` column is 1 (omitted otherwise; ESR 3.2.24: 7 uniques,
+  The Perfect Cello #0 and the six Rupture charms #690–695, and no set item). Adding these fields did not bump
+  `GAME_DATA_SCHEMA`.
 
 Counts: `counts.lootFilterItems`, `lootFilterStats`, `lootFilterAreas`, `lootFilterSounds`, `lootFilterUniques`,
 `lootFilterSets` (ESR 3.2.12: 2292 / 923 / 215 / 12103 / 1390 / 270). Adding the file did not bump

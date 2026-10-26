@@ -37,10 +37,10 @@ export const TEST_DATA: LootFilterDataBundle = {
   ],
   sounds: [''],
   uniques: [
-    { id: 0, name: 'The Gnasher', code: 'hax' },
-    { id: 5, name: 'Harlequin Crest', code: 'uap' },
+    { id: 0, name: 'The Gnasher', code: 'hax', reqLvl: 1 },
+    { id: 5, name: 'Harlequin Crest', code: 'uap', reqLvl: 1 },
   ],
-  sets: [{ id: 5, name: "Civerb's Ward", code: 'lrg' }],
+  sets: [{ id: 5, name: "Civerb's Ward", code: 'lrg', reqLvl: 1 }],
 };
 
 export const TEST_TYPES: TypesBundle = {

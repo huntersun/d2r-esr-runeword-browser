@@ -317,6 +317,16 @@ describe('committed game-data bundles', () => {
     }
     expect(lootfilter.stats.every((stat, i) => stat.id === i)).toBe(true);
     expect(new Set(lootfilter.areas.map((area) => area.id)).size).toBe(lootfilter.areas.length);
+
+    // The unique and set browser's fields: a required level on every row, a set name on every set item, and the
+    // disabled rows (ESR 3.2.24: The Perfect Cello and the six Rupture charms; no disabled set item)
+    for (const entry of [...lootfilter.uniques, ...lootfilter.sets]) expect(entry.reqLvl, entry.name).toBeGreaterThan(0);
+    for (const entry of lootfilter.sets) expect(entry.set, entry.name).toBeTruthy();
+    expect(lootfilter.uniques.some((entry) => entry.set !== undefined)).toBe(false);
+    expect(lootfilter.uniques.filter((entry) => entry.disabled === true).map((entry) => entry.id)).toEqual([
+      0, 690, 691, 692, 693, 694, 695,
+    ]);
+    expect(lootfilter.sets.some((entry) => entry.disabled === true)).toBe(false);
   });
 
   it('contain the corruption outcomes per slot with the computed rates (ESR 3.2.24)', () => {

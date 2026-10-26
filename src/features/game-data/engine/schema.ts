@@ -257,6 +257,12 @@ export interface LootFilterUniqueOrSet {
   name: string;
   /** Base item code */
   code: string;
+  /** `lvl req` (0 when blank) */
+  reqLvl: number;
+  /** Set items only: the set's display name (setitems.txt `set` through the string table) */
+  set?: string;
+  /** `disabled` = 1 (the game never creates the row); omitted otherwise */
+  disabled?: true;
 }
 
 export interface LootFilterDataBundle {
