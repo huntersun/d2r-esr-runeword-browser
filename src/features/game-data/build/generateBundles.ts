@@ -234,6 +234,7 @@ export function generateBundles(sources: EsrSources): GeneratedBundles {
     areasWithWaypoint: countAreas((area) => area.waypoint),
     areasHiddenPrepZones: areas.hidden.prepZones,
     areasHiddenOther: areas.hidden.other,
+    areasUniquesMinsThenMaxes: areas.uniquesMinsThenMaxes,
   };
   // --- end areas.json ---
 

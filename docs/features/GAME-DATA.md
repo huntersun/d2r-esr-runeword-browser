@@ -419,9 +419,10 @@ set, `group`, `tier`, `uniqueMap`, `boss`, `preventTownPortal`.
   `MonLvlEx`) and in areas without any monster: no `mon*` / `nmon*` / `umon*` column, no density, no unique packs and
   no boss (Forgotten Tower, Harem Level 1, Dimensional Gate, the two Tier 5 entrance-like rows 200 / 204).
 - **Density** (`MonDen*`) and **unique packs** (`MonUMin*` / `MonUMax*`, read by column name) are `null` when 0 in
-  every difficulty. Caveat: ESR's header interleaves `MonUMin, MonUMax, MonUMin(N), …`; the vanilla rows read that way
-  give e.g. Blood Moor NM 6–5 (61 areas have a min above the max somewhere), the ESR map rows (30–40 × 3) read sanely.
-  The values are shown as read.
+  every difficulty. The vanilla rows store the six unique-pack values mins then maxes (Blood Moor `2 4 6 5 8 10` = 2–5,
+  4–8, 6–10) while the ESR map rows follow the header's per-difficulty pairs (`30 40 30 40 30 40`), so the builder
+  (`readUniquePacks`) reads each row pairwise and re-reads it mins then maxes when a pair has min > max (a warning
+  when both readings are inverted; `areasUniquesMinsThenMaxes` counts the re-read rows).
 - **Maps**: `Name` "Tier N Map - …" → `tier` N; `group` = `LevelGroup` without its "Tier N Map - " prefix (the zone, 2–11
   levels each, 4 zones per tier). "Unique Map - Goblin Realm" (id 213, The Hidden Vault) has `uniqueMap` and group
   "Goblin Realm", no tier. `boss` is the `*Map Boss` comment column (read from the raw text: the TSV parser drops
@@ -434,7 +435,7 @@ set, `group`, `tier`, `uniqueMap`, `boss`, `preventTownPortal`.
 
 Counts (ESR 3.2.24): `areas` 197, `areasMaps` 57 (tier 1: 7, 2: 9, 3: 15, 4: 8, 5: 18), `areasMapZones` 20,
 `areasUniqueMaps` 1, `areasWithoutMonsters` 10 (5 towns + 5), `areasWithWaypoint` 39, `areasHiddenPrepZones` 17,
-`areasHiddenOther` 1. levels.txt is also read by bundleLootFilter.ts (lootfilter areas) and generateBundles.ts (the cube's
+`areasHiddenOther` 1, `areasUniquesMinsThenMaxes` 61. levels.txt is also read by bundleLootFilter.ts (lootfilter areas) and generateBundles.ts (the cube's
 level names); those reads were left as they were.
 
 ### Skills

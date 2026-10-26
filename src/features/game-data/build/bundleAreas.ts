@@ -34,6 +34,38 @@ export interface AreasInput {
 export interface AreasBuildResult extends BuildResult<AreasBundle> {
   /** Rows left out: map entrances (Prep Zone) and the null row */
   hidden: { prepZones: number; other: number };
+  /** Rows whose unique packs were re-read mins-then-maxes (the vanilla rows) */
+  uniquesMinsThenMaxes: number;
+}
+
+type UniquePacks = PerDifficulty<[number, number]>;
+const inverted = (packs: UniquePacks) => packs.some(([min, max]) => min > max);
+
+/**
+ * The six MonUMin / MonUMax values. ESR's header pairs them per difficulty (`MonUMin, MonUMax, MonUMin(N), …`) and the
+ * ESR map rows follow it (30 40 30 40 30 40), but the vanilla rows are stored mins then maxes (2 4 6 5 8 10 = mins
+ * 2/4/6, maxes 5/8/10). Read pairwise; when a pair is inverted, re-read the row mins then maxes; when that is inverted
+ * too, keep the pairwise values (`ok` false: the caller warns).
+ */
+export function readUniquePacks(values: readonly [number, number, number, number, number, number]): {
+  packs: UniquePacks;
+  minsThenMaxes: boolean;
+  ok: boolean;
+} {
+  const [a, b, c, d, e, f] = values;
+  const pairwise: UniquePacks = [
+    [a, b],
+    [c, d],
+    [e, f],
+  ];
+  if (!inverted(pairwise)) return { packs: pairwise, minsThenMaxes: false, ok: true };
+  const minsThenMaxes: UniquePacks = [
+    [a, d],
+    [b, e],
+    [c, f],
+  ];
+  if (!inverted(minsThenMaxes)) return { packs: minsThenMaxes, minsThenMaxes: true, ok: true };
+  return { packs: pairwise, minsThenMaxes: false, ok: false };
 }
 
 /** Values of a comment column by 1-based line number (TsvRow.line) */
@@ -69,6 +101,7 @@ export function buildAreasBundle({ levelsText, strings }: AreasInput): AreasBuil
   const bosses = commentColumn(levelsText, MAP_BOSS_COLUMN);
   const rows = table.rows.filter((row) => row.str('Id') !== '');
   const hidden = { prepZones: 0, other: 0 };
+  let uniquesMinsThenMaxes = 0;
 
   const listed = rows.filter((row) => {
     if (row.str('Name').includes(PREP_ZONE)) {
@@ -107,7 +140,13 @@ export function buildAreasBundle({ levelsText, strings }: AreasInput): AreasBuil
     const boss = bosses.get(row.line);
     const rawLevel = perDifficulty((suffix) => row.num(`MonLvlEx${suffix}`));
     const density = perDifficulty((suffix) => row.num(`MonDen${suffix}`));
-    const uniques = perDifficulty((suffix): [number, number] => [row.num(`MonUMin${suffix}`), row.num(`MonUMax${suffix}`)]);
+    const read = readUniquePacks(
+      // In header order: MonUMin, MonUMax, MonUMin(N), MonUMax(N), MonUMin(H), MonUMax(H)
+      [row.num('MonUMin'), row.num('MonUMax'), row.num('MonUMin(N)'), row.num('MonUMax(N)'), row.num('MonUMin(H)'), row.num('MonUMax(H)')]
+    );
+    const uniques = read.packs;
+    if (read.minsThenMaxes) uniquesMinsThenMaxes++;
+    if (!read.ok) warnings.push(`areas: ${label} unique packs have min > max read pairwise and mins then maxes; kept pairwise`);
     const hasDensity = density.some((value) => value > 0);
     const hasUniques = uniques.some(([min, max]) => min > 0 || max > 0);
     // A row with no monster columns, density, unique packs or boss (towns, Dimensional Gate, map entrances) has no level
@@ -145,5 +184,5 @@ export function buildAreasBundle({ levelsText, strings }: AreasInput): AreasBuil
     };
   });
 
-  return { bundle: { areas }, warnings, hidden };
+  return { bundle: { areas }, warnings, hidden, uniquesMinsThenMaxes };
 }

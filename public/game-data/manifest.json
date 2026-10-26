@@ -3,7 +3,7 @@
   "esrVersion": "3.2.24",
   "esrTag": "3.2.24",
   "esrCommit": "b0622767314f9bf65f9c3a2cdeacded0b2e04a7e",
-  "generatedAt": "2026-10-26T12:26:51.461Z",
+  "generatedAt": "2026-10-26T12:39:21.239Z",
   "files": {
     "types": {
       "hash": "cab8a44704bcb77dd1d552147ce4b2e16d2d30517780f10d4d1b55de7c1e294d",
@@ -62,7 +62,7 @@
       "bytes": 23850
     },
     "areas": {
-      "hash": "4d4f9bacce0d9e130438cbf10283d43eec85f9f9e6d73b3362097091dbe26f9e",
+      "hash": "3aa47efd671e2371747427257e4847372a9a3f5d8d41e01bc61d37e3c5f46822",
       "bytes": 35601
     },
     "icons": {
@@ -164,6 +164,7 @@
     "areasWithWaypoint": 39,
     "areasHiddenPrepZones": 17,
     "areasHiddenOther": 1,
+    "areasUniquesMinsThenMaxes": 61,
     "itemIcons": 653,
     "uniqueIcons": 1114,
     "setIcons": 270,

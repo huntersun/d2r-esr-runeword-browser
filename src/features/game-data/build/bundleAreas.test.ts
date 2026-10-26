@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildAreasBundle, mapTierLevel } from './bundleAreas.ts';
+import { buildAreasBundle, mapTierLevel, readUniquePacks } from './bundleAreas.ts';
 
 const MONSTER_COLUMNS = ['mon1', 'mon2', 'nmon1', 'umon1'];
 const COLUMNS = [
@@ -151,6 +151,7 @@ describe('buildAreasBundle', () => {
   it('leaves out the null row, the Expansion marker and the map entrances', () => {
     expect(result.bundle.areas.map((area) => area.id)).toEqual([1, 2, 3, 4, 6, 7, 8]);
     expect(result.hidden).toEqual({ prepZones: 1, other: 1 });
+    expect(result.uniquesMinsThenMaxes).toBe(1);
   });
 
   it('reads the expansion monster level, density and unique packs per difficulty', () => {
@@ -162,9 +163,9 @@ describe('buildAreasBundle', () => {
       level: [2, 38, 68],
       density: [520, 1000, 1500],
       uniques: [
-        [2, 4],
-        [6, 5],
-        [8, 10],
+        [2, 5],
+        [4, 8],
+        [6, 10],
       ],
       connections: [1, 3],
     });
@@ -198,5 +199,43 @@ describe('buildAreasBundle', () => {
 
   it('numbers the map tier levels 100 to 108', () => {
     expect([1, 2, 3, 4, 5].map(mapTierLevel)).toEqual([100, 102, 104, 106, 108]);
+  });
+});
+
+describe('readUniquePacks', () => {
+  it('re-reads a vanilla row stored mins then maxes', () => {
+    expect(readUniquePacks([2, 4, 6, 5, 8, 10])).toEqual({
+      packs: [
+        [2, 5],
+        [4, 8],
+        [6, 10],
+      ],
+      minsThenMaxes: true,
+      ok: true,
+    });
+  });
+
+  it('keeps an ESR row pairwise per the header', () => {
+    expect(readUniquePacks([30, 40, 30, 40, 30, 40])).toEqual({
+      packs: [
+        [30, 40],
+        [30, 40],
+        [30, 40],
+      ],
+      minsThenMaxes: false,
+      ok: true,
+    });
+  });
+
+  it('keeps the pairwise values and flags the row when both readings are inverted', () => {
+    expect(readUniquePacks([5, 1, 5, 1, 5, 1])).toEqual({
+      packs: [
+        [5, 1],
+        [5, 1],
+        [5, 1],
+      ],
+      minsThenMaxes: false,
+      ok: false,
+    });
   });
 });
