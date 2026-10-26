@@ -9,6 +9,70 @@ export const ESR_CHANGELOG_URL = 'https://easternsunresurrected.com/changelogs.h
 export const GITHUB_URL = 'https://github.com/istvan-panczel/d2r-esr-runeword-browser';
 /** The privacy policy lives at the repo root (PRIVACY_POLICY.md); linked from the sign-in consent gate and the home footer. */
 export const PRIVACY_POLICY_URL = `${GITHUB_URL}/blob/master/PRIVACY_POLICY.md`;
+export const DISCORD_URL = 'https://discord.com/invite/XfFmAYZAbA';
+/** The official Drop Finder; defined with the guide's link schemes (shared with the Node guide generator). */
+export { DROP_FINDER_URL } from '@/features/guide/engine/linkSchemes';
+
+/** A fan-made ESR tool, listed on the home page and in the header's external-links menu. */
+export interface CommunityTool {
+  readonly key: string;
+  readonly label: string;
+  readonly author: string;
+  readonly href: string;
+  /** The project's source repository, when it is public and differs from `href`. */
+  readonly sourceUrl?: string;
+  readonly kind: 'web' | 'in-game' | 'archive';
+  readonly description: string;
+  readonly caveat?: string;
+}
+
+export const COMMUNITY_TOOL_KIND_LABELS: Readonly<Record<CommunityTool['kind'], string>> = {
+  web: 'Web',
+  'in-game': 'In-game',
+  archive: 'Archive, may be outdated',
+};
+
+export const COMMUNITY_TOOLS: readonly CommunityTool[] = [
+  {
+    key: 'wiki-overlay',
+    label: 'ESR Wiki Overlay',
+    author: 'Sully',
+    href: 'https://github.com/Thisisnotsully/ESR-Wiki-Overlay/releases/latest',
+    sourceUrl: 'https://github.com/Thisisnotsully/ESR-Wiki-Overlay',
+    kind: 'in-game',
+    description: 'In-game wiki and Horadric Cube recipe overlay, loaded as a D2RLoader plugin.',
+    caveat: 'Windows download; needs D2RLoader.',
+  },
+  {
+    key: 'esr-docs',
+    label: 'ESR Docs',
+    author: 'dotsyzygy',
+    href: 'https://dotsyzygy.github.io/esr-docs/',
+    sourceUrl: 'https://github.com/dotsyzygy/esr-docs',
+    kind: 'web',
+    description: 'Searchable cube recipe reference, rebuilt automatically from the latest ESR game files.',
+    caveat: 'Tracks the ESR GitHub main branch, so it can run ahead of the released version.',
+  },
+  {
+    key: 'esr-tools',
+    label: 'ESR Tools',
+    author: 'DoubleEclipse',
+    href: 'https://doubleeclipse.github.io/esr-tools',
+    sourceUrl: 'https://github.com/DoubleEclipse/doubleeclipse.github.io',
+    kind: 'web',
+    description: 'Item database, cube recipe search, life calculator, area levels and materials finder.',
+    caveat: 'Some tools were last updated in early 2026.',
+  },
+  {
+    key: 'unofficial-wiki',
+    label: 'Unofficial ESR Wiki',
+    author: 'DoubleEclipse (archive)',
+    href: 'https://doubleeclipse.github.io/esr-tools/unofficial-wiki/',
+    kind: 'archive',
+    description: 'Archived snapshot of the community Fandom wiki front page from June 2026.',
+    caveat: 'May be outdated.',
+  },
+];
 
 export interface NavItem {
   readonly key: string;

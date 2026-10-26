@@ -58,6 +58,7 @@ Reusable components used across features:
 - `CopyLinkHelpButton.tsx` - Help info for copy link
 - `ScrollToTopButton.tsx` - Floating action button to scroll to top
 - `SearchHelpButton.tsx` - Search syntax help (quoted phrases, AND logic)
+- `ExternalLink.tsx` - Link that opens in a new tab (`noopener noreferrer`) with a ↗ icon and a screen-reader "(opens in a new tab)" hint (guide, home community tools)
 
 ## Page pattern
 

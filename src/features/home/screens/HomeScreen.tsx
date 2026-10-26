@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux';
 import { selectAuthIsConfigured } from '@/features/auth';
+import { HomeCommunityTools } from '../components/HomeCommunityTools';
 import { HomeFooter } from '../components/HomeFooter';
 import { HomeHero } from '../components/HomeHero';
 import { HomeSections } from '../components/HomeSections';
@@ -19,6 +20,7 @@ export function HomeScreen() {
       <HomeSections />
       {isSupabaseEnabled && <LatestBuilds />}
       <HomeStartHere />
+      <HomeCommunityTools />
       <HomeFooter />
     </div>
   );

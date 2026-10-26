@@ -1,7 +1,7 @@
 import { matchRoutes } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import { router } from '@/core/router';
-import { NAV_ENTRIES, getAllNavItems, getNavEntries, isNavGroupActive, isNavItemActive, type NavGroup } from './navConfig';
+import { COMMUNITY_TOOLS, NAV_ENTRIES, getAllNavItems, getNavEntries, isNavGroupActive, isNavItemActive, type NavGroup } from './navConfig';
 
 const items = getAllNavItems();
 const homeLinkPaths = NAV_ENTRIES.flatMap((entry) => (entry.kind === 'link' ? (entry.homeLinks ?? []).map((link) => link.to) : []));
@@ -52,5 +52,22 @@ describe('navConfig', () => {
     const runewords = recipes.items[0];
     expect(isNavItemActive('/gemwords', runewords)).toBe(false);
     expect(isNavItemActive('/loot-filtersx', tools.items[3])).toBe(false);
+  });
+
+  describe('COMMUNITY_TOOLS', () => {
+    it('has unique keys and labels', () => {
+      expect(new Set(COMMUNITY_TOOLS.map((t) => t.key)).size).toBe(COMMUNITY_TOOLS.length);
+      expect(new Set(COMMUNITY_TOOLS.map((t) => t.label)).size).toBe(COMMUNITY_TOOLS.length);
+    });
+
+    it.each(COMMUNITY_TOOLS.map((tool) => [tool.key, tool] as const))('%s has https links and a description', (_key, tool) => {
+      expect(tool.href.startsWith('https://')).toBe(true);
+      if (tool.sourceUrl !== undefined) expect(tool.sourceUrl.startsWith('https://')).toBe(true);
+      expect(tool.description.trim()).not.toBe('');
+    });
+
+    it('gives archives no source link', () => {
+      for (const tool of COMMUNITY_TOOLS.filter((t) => t.kind === 'archive')) expect(tool.sourceUrl).toBeUndefined();
+    });
   });
 });

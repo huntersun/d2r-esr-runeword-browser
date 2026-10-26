@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** 2026-10-24
+**Last updated:** 2026-10-26
 
 This privacy policy explains what data I collect, why I collect it, and how you can control it. I've kept it short and written in plain language because I believe you shouldn't need a lawyer to understand how your data is handled.
 
@@ -77,6 +77,8 @@ I use the following third-party services that may process your data:
 | Cloudflare | Anonymous traffic statistics (Web Analytics) | Page views, referrer, country, browser and device type (no cookies) |
 
 I do not share your data with anyone else. I do not sell your data. I never will.
+
+The app also links to external sites (the official ESR site, Discord and fan-made community tools) that are not operated by me and have their own privacy practices, which this policy does not cover.
 
 ## Your Rights
 

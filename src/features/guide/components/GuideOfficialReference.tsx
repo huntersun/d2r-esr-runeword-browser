@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { OFFICIAL_REFERENCES, officialReferenceHref } from '../utils/guideHome';
-import { ExternalLink } from './ExternalLink';
+import { ExternalLink } from '@/components/ExternalLink';
 import { SectionLabel } from './SectionLabel';
 import { FOCUS_RING, GUIDE_PROSE_FONT } from './styles';
 

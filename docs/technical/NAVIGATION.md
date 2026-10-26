@@ -10,7 +10,7 @@ All routes are children of `AppLayout` in `src/core/router/index.tsx`; every scr
 
 | Path                    | Screen                  | Description                                                                                                  | Query params                                                                                           |
 | ----------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
-| `/`                     | HomeScreen              | [Home page](#home-page): search, section cards, latest builds, guide pointer                                 | any query: redirects to `/runewords` with the same query                                               |
+| `/`                     | HomeScreen              | [Home page](#home-page): search, section cards, latest builds, guide pointer, community tools                | any query: redirects to `/runewords` with the same query                                               |
 | `/runewords`            | RunewordsScreen         | Browse and filter runewords (was `/` before the home page)                                                   | `search`, `sockets`, `maxlvl`, `items`, `runes`, `runemode`, `tierpts`, `name`                         |
 | `/guide`                | GuideLayout             | Guide frame: a small "Experimental" notice above every guide page, then the child route                      |                                                                                                        |
 | `/guide` (index)        | GuideSpineScreen        | New-player guide: "Start here" journey spine, note search, "I found something" row                           |                                                                                                        |
@@ -90,7 +90,10 @@ string (`/?name=Enigma`, `/?search=x&sockets=4`: old Copy Link URLs and guide de
    that writes `recentBuilds` / `recentStatus` only, so the `/builds` list, its filters and paging are untouched. One
    skeleton row while loading; hidden on error or when there are no builds.
 5. **New to ESR?** (`HomeStartHere`): a button to `/guide` and the guide's `GuideOfficialReference` strip.
-6. **Footer** (`HomeFooter`): app version (`src/assets/version.json`), ESR / GitHub / privacy policy links (URLs from
+6. **Community tools** (`HomeCommunityTools`): a card per fan-made ESR tool from `COMMUNITY_TOOLS` in `navConfig.ts`
+   (label linking out, author, a kind badge, description, caveat, "Source on GitHub" when the project has one), with a
+   note that they are not affiliated with this site or the mod. Static data, no fetches.
+7. **Footer** (`HomeFooter`): app version (`src/assets/version.json`), ESR / GitHub / privacy policy links (URLs from
    `navConfig.ts`), credits.
 
 The page skips the startup loading gate (exact match on `/`, see below), so it renders before the HTM sync finishes.
@@ -145,11 +148,12 @@ cards render from the same config (group `description`, link `homeLinks`):
   an item is active when the path equals its `to` or starts with `to/` (no item is active on the home page); a group trigger is highlighted when any of its items is active (`isNavGroupActive`). Active links
   get `aria-current="page"`. Keyboard (Radix): triggers are in the tab order, Enter/Space/ArrowDown opens, arrows and
   Tab move through the items, Escape closes; choosing a link closes the menu.
-- **Right side**: ESR links dropdown (book icon: ESR Documentation, ESR Changelog; md and up), theme toggle, GitHub link,
+- **Right side**: ESR links dropdown (book icon, md and up: ESR Documentation, ESR Changelog, Drop Finder, ESR Discord,
+  then a "Community tools" label with ESR Wiki Overlay, ESR Docs, ESR Tools, Unofficial ESR Wiki from `COMMUNITY_TOOLS`), theme toggle, GitHub link,
   `AuthControls` (Sign In / user menu, Supabase only), settings cog.
 - **Mobile (below md)**: hamburger opens a left `Sheet` with a shadcn `Accordion` (`type="multiple"`) of the same groups;
-  the group of the current route starts open, Guide and Builds are top-level links, then the ESR links and the auth
-  control. Choosing a page closes the sheet.
+  the group of the current route starts open, Guide and Builds are top-level links, then the official ESR links, a small "Community tools" label with the
+  community links, and the auth control. Choosing a page closes the sheet.
 
 `navConfig.test.ts` checks that every config path resolves to a real route of the router (not the `*` catch-all), that
 labels, keys and paths are unique, that Builds is hidden without Supabase, and the active-state rules.

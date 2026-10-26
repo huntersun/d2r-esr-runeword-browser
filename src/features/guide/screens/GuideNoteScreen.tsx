@@ -7,7 +7,7 @@ import type { LoadedGuide } from '../engine/browser/loadGuide';
 import { findNote, findSourceRef, noteTitle } from '../engine/notes';
 import type { GuideNote } from '../engine/schema';
 import { AppLinkIcon } from '../components/AppLinkIcon';
-import { ExternalLink } from '../components/ExternalLink';
+import { ExternalLink } from '@/components/ExternalLink';
 import { FreshnessBadge } from '../components/FreshnessBadge';
 import { GuideBody } from '../components/GuideBody';
 import { GuideGate } from '../components/GuideGate';

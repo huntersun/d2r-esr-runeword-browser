@@ -6,7 +6,7 @@ import type { GuideInline } from '../engine/schema';
 import { useHoverPopover } from '../hooks/useHoverPopover';
 import { useLoadedGuide } from '../hooks/useLoadedGuide';
 import { AppLinkIcon } from './AppLinkIcon';
-import { ExternalLink } from './ExternalLink';
+import { ExternalLink } from '@/components/ExternalLink';
 import { PeekPopover, PeekText } from './PeekPopover';
 import { LINK_CLASS } from './styles';
 

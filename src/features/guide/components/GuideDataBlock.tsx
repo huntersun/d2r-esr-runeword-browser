@@ -7,7 +7,7 @@ import { DROP_FINDER_URL } from '../engine/linkSchemes';
 import type { DataBlock } from '../engine/schema';
 import { sourceCells } from '../utils/guideUtils';
 import { GuideCardBoundary } from './GuideCardBoundary';
-import { ExternalLink } from './ExternalLink';
+import { ExternalLink } from '@/components/ExternalLink';
 import { GuideCardFailed, GuideCardLoading } from './GuideCardPlaceholder';
 import { GuideTable } from './GuideTable';
 import { SectionLabel } from './SectionLabel';

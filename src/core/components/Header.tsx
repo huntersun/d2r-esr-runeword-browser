@@ -4,7 +4,14 @@ import { Settings, Sun, Moon, ExternalLink, Menu, BookOpen } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -18,6 +25,9 @@ import { cn } from '@/lib/utils';
 import { openDrawer, selectTheme, setTheme } from '@/features/settings';
 import { AuthControls, selectAuthIsConfigured } from '@/features/auth';
 import {
+  COMMUNITY_TOOLS,
+  DISCORD_URL,
+  DROP_FINDER_URL,
   ESR_CHANGELOG_URL,
   ESR_DOCS_URL,
   GITHUB_URL,
@@ -33,7 +43,13 @@ import { TAB_ACTIVE, TAB_BASE, TAB_INACTIVE } from './navTabClasses';
 const EXTERNAL_LINKS = [
   { key: 'esr-docs', href: ESR_DOCS_URL, label: 'ESR Documentation' },
   { key: 'changelog', href: ESR_CHANGELOG_URL, label: 'ESR Changelog' },
+  { key: 'drop-finder', href: DROP_FINDER_URL, label: 'Drop Finder' },
+  { key: 'discord', href: DISCORD_URL, label: 'ESR Discord' },
 ] as const;
+
+const DROPDOWN_LINK_CLASS = 'flex w-full cursor-pointer items-center justify-between gap-2';
+const MOBILE_EXTERNAL_LINK_CLASS =
+  'flex items-center gap-1 rounded-md px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground';
 
 /** GitHub icon (lucide Github is deprecated, using simple-icons SVG path) */
 function GitHubIcon({ className }: { readonly className?: string }) {
@@ -145,20 +161,25 @@ export function Header() {
         <div className="flex shrink-0 items-center gap-1">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="hidden md:inline-flex" aria-label="ESR documentation links" title="ESR links">
+              <Button variant="ghost" size="icon" className="hidden md:inline-flex" aria-label="ESR and community links" title="ESR links">
                 <BookOpen className="size-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
               {EXTERNAL_LINKS.map((link) => (
                 <DropdownMenuItem key={link.key} asChild>
-                  <a
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex w-full cursor-pointer items-center justify-between gap-2"
-                  >
+                  <a href={link.href} target="_blank" rel="noopener noreferrer" className={DROPDOWN_LINK_CLASS}>
                     {link.label}
+                    <ExternalLink className="size-3" />
+                  </a>
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Community tools</DropdownMenuLabel>
+              {COMMUNITY_TOOLS.map((tool) => (
+                <DropdownMenuItem key={tool.key} asChild>
+                  <a href={tool.href} target="_blank" rel="noopener noreferrer" className={DROPDOWN_LINK_CLASS}>
+                    {tool.label}
                     <ExternalLink className="size-3" />
                   </a>
                 </DropdownMenuItem>
@@ -221,14 +242,15 @@ export function Header() {
             </Accordion>
             <div className="mt-2 border-t pt-2">
               {EXTERNAL_LINKS.map((link) => (
-                <a
-                  key={link.key}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 rounded-md px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
+                <a key={link.key} href={link.href} target="_blank" rel="noopener noreferrer" className={MOBILE_EXTERNAL_LINK_CLASS}>
                   {link.label}
+                  <ExternalLink className="size-3" />
+                </a>
+              ))}
+              <p className="px-4 pt-2 text-xs font-medium text-muted-foreground">Community tools</p>
+              {COMMUNITY_TOOLS.map((tool) => (
+                <a key={tool.key} href={tool.href} target="_blank" rel="noopener noreferrer" className={MOBILE_EXTERNAL_LINK_CLASS}>
+                  {tool.label}
                   <ExternalLink className="size-3" />
                 </a>
               ))}
