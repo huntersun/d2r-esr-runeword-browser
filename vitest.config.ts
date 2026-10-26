@@ -1,15 +1,10 @@
 import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import babel from '@rolldown/plugin-babel';
 import path from 'path';
 
 export default defineConfig({
-  plugins: [
-    react({
-      babel: {
-        plugins: ['babel-plugin-react-compiler'],
-      },
-    }),
-  ],
+  plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
   test: {
     environment: 'jsdom',
     globals: true,
@@ -18,14 +13,14 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@/components': path.resolve(__dirname, './src/components'),
-      '@/core': path.resolve(__dirname, './src/core'),
-      '@/features': path.resolve(__dirname, './src/features'),
-      '@/utils': path.resolve(__dirname, './src/utils'),
-      '@/lib': path.resolve(__dirname, './src/lib'),
-      '@/data': path.resolve(__dirname, './src/data'),
-      '@': path.resolve(__dirname, './src'),
-      '@public': path.resolve(__dirname, './public'),
+      '@/components': path.resolve(import.meta.dirname, './src/components'),
+      '@/core': path.resolve(import.meta.dirname, './src/core'),
+      '@/features': path.resolve(import.meta.dirname, './src/features'),
+      '@/utils': path.resolve(import.meta.dirname, './src/utils'),
+      '@/lib': path.resolve(import.meta.dirname, './src/lib'),
+      '@/data': path.resolve(import.meta.dirname, './src/data'),
+      '@': path.resolve(import.meta.dirname, './src'),
+      '@public': path.resolve(import.meta.dirname, './public'),
     },
   },
 });

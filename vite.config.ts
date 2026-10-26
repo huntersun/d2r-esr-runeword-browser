@@ -1,11 +1,12 @@
 import { defineConfig, type Plugin } from 'vite'
-import react from '@vitejs/plugin-react'
+import react, { reactCompilerPreset } from '@vitejs/plugin-react'
+import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
 /** Dev only: full page reload when `npm run guide:watch` rewrites public/guide/ (static files are not part of HMR). */
 function guideReload(): Plugin {
-  const guideDir = path.resolve(__dirname, './public/guide')
+  const guideDir = path.resolve(import.meta.dirname, './public/guide')
   return {
     name: 'guide-reload',
     apply: 'serve',
@@ -24,24 +25,22 @@ function guideReload(): Plugin {
 export default defineConfig(({ mode }) => ({
   base: mode === 'production' ? '/d2r-esr-runeword-browser/' : '/',
   plugins: [
-    react({
-      babel: {
-        plugins: ['babel-plugin-react-compiler'],
-      },
-    }),
+    react(),
+    // React Compiler via Babel (plugin-react 6 no longer takes a `babel` option itself)
+    babel({ presets: [reactCompilerPreset()] }),
     tailwindcss(),
     guideReload(),
   ],
   resolve: {
     alias: {
-      '@/components': path.resolve(__dirname, './src/components'),
-      '@/core': path.resolve(__dirname, './src/core'),
-      '@/features': path.resolve(__dirname, './src/features'),
-      '@/utils': path.resolve(__dirname, './src/utils'),
-      '@/lib': path.resolve(__dirname, './src/lib'),
-      '@/data': path.resolve(__dirname, './src/data'),
-      '@': path.resolve(__dirname, './src'),
-      '@public': path.resolve(__dirname, './public'),
+      '@/components': path.resolve(import.meta.dirname, './src/components'),
+      '@/core': path.resolve(import.meta.dirname, './src/core'),
+      '@/features': path.resolve(import.meta.dirname, './src/features'),
+      '@/utils': path.resolve(import.meta.dirname, './src/utils'),
+      '@/lib': path.resolve(import.meta.dirname, './src/lib'),
+      '@/data': path.resolve(import.meta.dirname, './src/data'),
+      '@': path.resolve(import.meta.dirname, './src'),
+      '@public': path.resolve(import.meta.dirname, './public'),
     },
   },
   // Keep console.logs in production so users can see parsing progress
