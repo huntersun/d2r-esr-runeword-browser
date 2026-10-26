@@ -1,6 +1,7 @@
 import type { LootFilterData } from '../../hooks/useLootFilterData';
 import { idCustom, idsToValues, valuesToIds } from './customOptions';
 import { MultiPicker } from './MultiPicker';
+import { UniqueSetBrowserDialog } from './UniqueSetBrowserDialog';
 
 export interface UniqueOrSetPickerProps {
   readonly data: LootFilterData;
@@ -11,7 +12,8 @@ export interface UniqueOrSetPickerProps {
 
 /**
  * uniqueitems.txt / setitems.txt row ids. The list groups uniques and sets with their base item; a unique and
- * a set item can share an id, so a chip names both when they do.
+ * a set item can share an id, so a chip names both when they do. "Browse uniques and sets…" opens the uniques by base
+ * type and tier and the set items by set, with checkboxes.
  */
 export function UniqueOrSetPicker({ data, values, onChange, id }: UniqueOrSetPickerProps) {
   return (
@@ -29,6 +31,7 @@ export function UniqueOrSetPicker({ data, values, onChange, id }: UniqueOrSetPic
       addLabel="Add unique or set item"
       searchPlaceholder="Name, base item or id…"
       custom={idCustom('row')}
+      actions={<UniqueSetBrowserDialog values={values} onChange={onChange} />}
     />
   );
 }
