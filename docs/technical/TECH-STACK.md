@@ -7,7 +7,7 @@
 | React          | 19      | UI library                           |
 | React Compiler | Latest  | Automatic memoization & optimization |
 | TypeScript     | 5.9     | Type safety                          |
-| Vite           | 7       | Build tool & dev server              |
+| Vite           | 8       | Build tool & dev server              |
 
 ## UI & Styling
 
@@ -70,7 +70,7 @@ No external parsing libraries needed. DOMParser provides sufficient capability f
 
 | Technology          | Purpose                                    |
 | ------------------- | ------------------------------------------ |
-| Vitest 4            | Test runner and assertion library          |
+| Vitest 5            | Test runner and assertion library          |
 | @vitest/ui          | Visual UI for interactive testing          |
 | @vitest/coverage-v8 | Code coverage reporting                    |
 | jsdom               | DOM environment for browser API simulation |
