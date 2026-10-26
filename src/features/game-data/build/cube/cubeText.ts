@@ -102,11 +102,15 @@ function modNotes(mods: readonly CubeMod[]): string[] {
  * Output mods that are markers or counters rather than a bonus, by property code. The stat renderer shows several
  * of them: craftflag "*** Forged (Equipment) ***", craftflag2 "*** Forged (Jewel) ***", mercflag "*** Merc Only
  * Conversion ***", item-upgraded "*** Upgraded ***", weapon-mastery "Weapon Mastery Applied", sanctified-dummy
- * "Transmute to Sanctify Item", anointed_dummy / corrupted_dummy "Transmute to Anoint / Corrupt Item", mythicaldesc
- * (the mythical's description lines), soul-counter "Souls Remaining: -350", unusable-item "This item cannot be
- * equipped", and the stocker counters ("Anvil Stone 1", "Ruby -243", "Frozen Soul 50", "Ring Point -7"). Others
+ * "Transmute to Sanctify Item", anointed_dummy / corrupted_dummy "Transmute to Anoint / Corrupt Item", soul-counter
+ * "Souls Remaining: -350", unusable-item "This item cannot be equipped", and the stocker counters ("Anvil Stone 1", "Ruby -243", "Frozen Soul 50", "Ring Point -7"). Others
  * render nothing (no description function): tinkerflag2, meldflag, randomize, kill-ledger-*, ascendancy-tier-*, the
  * *-cap stats; they are listed anyway so a later descfunc does not surface them. `sock` is written as "N sockets".
+ * `mythicaldesc` is not a marker: its param names a description line the item gains in game (Tyrael's Might "You get
+ * strength bonuses from dexterity instead of strength", "Primordial Soulstones Captured: N/10", the Kill Ledger's
+ * hints), so it is shown like a bonus. A negative one (-1) removes the line it names (the Kill Ledger swaps its hint
+ * for the next tier's, Tyrael's Might drops "Transmute to upgrade"), so it is hidden. bundleEnhance.ts keeps its own
+ * list, which hides them all.
  */
 const HIDDEN_MODS = new Set([
   'sock',
@@ -120,7 +124,6 @@ const HIDDEN_MODS = new Set([
   'sanctified-dummy',
   'anointed_dummy',
   'corrupted_dummy',
-  'mythicaldesc',
   'soul-counter',
   'unusable-item',
   'randomize',
@@ -130,6 +133,11 @@ const HIDDEN_MOD_PATTERN = /^(?:kill-ledger-|ascendancy-tier-|(?:item|junk|xtal)
 
 export function isHiddenMod(code: string): boolean {
   return HIDDEN_MODS.has(code) || HIDDEN_MOD_PATTERN.test(code);
+}
+
+/** A mod that is not a bonus: a marker (isHiddenMod) or a mythical description line it removes */
+function isHiddenOutputMod(mod: CubeMod): boolean {
+  return isHiddenMod(mod.mod) || (mod.mod === 'mythicaldesc' && mod.max <= 0);
 }
 
 /** What describing an output reads: display names and the bonus text of its mods */
@@ -142,7 +150,7 @@ export interface DescribeOptions {
 
 /** The bonus lines of an output's mods through the game-data stat renderer ("+5 to Life"), markers left out */
 export function bonusLines(mods: readonly CubeMod[], esr: Pick<OutputTables, 'renderMods'>): string[] {
-  const shown = mods.filter((mod) => !isHiddenMod(mod.mod));
+  const shown = mods.filter((mod) => !isHiddenOutputMod(mod));
   return shown.length === 0 ? [] : esr.renderMods(shown);
 }
 

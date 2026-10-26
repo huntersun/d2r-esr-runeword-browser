@@ -652,7 +652,7 @@ describe('cube families', () => {
         output: 'The Kill Ledger with kill bonus 1 (All Resists +10)',
         note: null,
       },
-      // mythicaldesc (the book's description lines) is a marker: no bonus left to show
+      // A negative mythicaldesc removes the book's previous hint line: no bonus left to show
       { inputs: ['Kill Ledger (at least 5,000 kills)', '2× Perfect Gem'], output: 'The Kill Ledger with kill bonus 2', note: null },
     ]);
     // One row per boss in file order; a row without a bonus mod keeps the generic text
@@ -854,9 +854,11 @@ describe('output bonuses', () => {
   });
 
   it('knows the markers by code and pattern', () => {
-    for (const code of ['craftflag', 'tinkerflag2', 'mercflag', 'item-upgraded', 'sanctified-dummy', 'mythicaldesc', 'soul-counter']) {
+    for (const code of ['craftflag', 'tinkerflag2', 'mercflag', 'item-upgraded', 'sanctified-dummy', 'soul-counter']) {
       expect(isHiddenMod(code)).toBe(true);
     }
+    // The mythical description lines are what the item gains in game
+    expect(isHiddenMod('mythicaldesc')).toBe(false);
     for (const code of [
       'kill-ledger-tier-3',
       'ascendancy-tier-2',
@@ -920,7 +922,13 @@ describe.skipIf(!existsSync(ESR_DIR))('cube families against the ESR clone', () 
     expect(outputOf('Aura Forging', 'an3')).toBe('The same item (Level 10 Blessed Aim Aura When Equipped)');
     expect(outputOf('Merc Only Conversion', 'gwb')).toBe('The same item (+10 to Molten Focus, +10 to Glacial Focus, +10 to Static Focus)');
     expect(outputOf('All Skill Forging Set')).toBe('The same item (+1 to All Skills)');
-    expect(outputOf('Kill Ledger Tier 1')).toBe('The same item (All Resists +10)');
+    // mythicaldesc: the line the item gains is shown, the one it loses (-1) is not
+    expect(outputOf('Kill Ledger Tier 1')).toBe(
+      'The same item (Transmute with a Blemished Gem and at least 5000 kills for a bonus, All Resists +10)'
+    );
+    expect(outputOf('Tyrael Might Aura str to dex')).toMatch(
+      /^The same item \(You get dexterity bonuses from strength instead of dexterity, /
+    );
   });
 
   it('reads every shown cubemain bonus without renderer warnings', () => {

@@ -302,6 +302,14 @@ with the output bonuses unless the family hides them, `variants` = the cubemain 
 useitem/usetype/cloneitem, `bonus` lines, `details` such as "socketed items come out" for `rem`, "item level N" or "to
 <map>" for the `lvl=` qualifier, `level`), `conditions`, `qualities`).
 
+**Bonus lines** (`bonus` on recipe outputs, the parenthesis of a merged row's output) leave out the markers and
+counters of `isHiddenMod` (`cubeText.ts`: forging, tinkering and merc flags, dummies, soul and stocker counters, tier
+markers, caps). Mythical description lines (`mythicaldesc`, the param names a monstats `NameStr` string) are shown,
+as the item gains them in game: Tyrael's Might "You get strength bonuses from dexterity instead of strength", the
+Kill Ledger's next-milestone hint ("Transmute with 2 Perfect Gems and at least 50.000 kills for a bonus"); a negative
+one (-1) removes the line it names and is left out. ESR 3.2.24: 18 merged rows (12 Tyrael's Might, 6 Kill Ledger
+tiers) gain a line. The Enhance bundle keeps its own list (`bundleEnhance.ts`), which hides them.
+
 **Output item level** (`outputLevel` on merged rows, `level` on recipe outputs; `describeOutputLevel` in
 `cubeText.ts`): the `lvl` / `plvl` / `ilvl` columns (`b lvl` … and `c lvl` … for outputs b and c), not the `lvl=`
 qualifier: "Item level 99" (fixed), "Item level 60% of character level" (`plvl`), "Item level 100% of input item
