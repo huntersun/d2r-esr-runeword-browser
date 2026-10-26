@@ -1,4 +1,4 @@
-import { useId, useState, type KeyboardEvent } from 'react';
+import { useId, useState } from 'react';
 import { LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -7,7 +7,6 @@ import { GameDataError } from '@/features/game-data/components/GameDataError';
 import { GameDataLoading } from '@/features/game-data/components/GameDataLoading';
 import { BASE_TIERS } from '@/features/game-data/constants/bases';
 import { useGameData } from '@/features/game-data/hooks/useGameData';
-import { cn } from '@/lib/utils';
 import { getBaseBrowserModel } from '../../utils/baseBrowser';
 import {
   allCodes,
@@ -21,13 +20,14 @@ import {
 } from '../../utils/browserModel';
 import { getMiscBrowserModel, type MiscBrowserModel } from '../../utils/miscBrowser';
 import { BrowserGroupSection, TierBadge, TriCheckbox, type ToggleCodes } from './BrowserGroups';
+import { BrowserTabs, type BrowserTab as BrowserTabInfo } from './BrowserTabs';
 
 // `lootfilter` is the bundle the item picker already loads (one cached request per file).
 const BUNDLES = ['bases', 'types', 'lootfilter'] as const;
 
 type BrowserTab = 'bases' | 'misc';
 
-const TABS: readonly { readonly value: BrowserTab; readonly label: string; readonly noun: string }[] = [
+const TABS: readonly BrowserTabInfo<BrowserTab>[] = [
   { value: 'bases', label: 'Bases', noun: 'bases' },
   { value: 'misc', label: 'Misc', noun: 'misc items' },
 ];
@@ -38,66 +38,6 @@ interface ItemBrowserProps {
 }
 
 const sameList = (a: readonly string[], b: readonly string[]) => a.length === b.length && a.every((value, index) => value === b[index]);
-
-interface BrowserTabsProps {
-  readonly tab: BrowserTab;
-  readonly onChange: (tab: BrowserTab) => void;
-  readonly idPrefix: string;
-  /** Match counts per tab while searching. */
-  readonly counts: Readonly<Record<BrowserTab, number>> | null;
-}
-
-/** The Bases | Misc tab list (arrow keys, Home and End move between the tabs). */
-function BrowserTabs({ tab, onChange, idPrefix, counts }: BrowserTabsProps) {
-  const select = (next: BrowserTab) => {
-    onChange(next);
-    document.getElementById(`${idPrefix}-tab-${next}`)?.focus();
-  };
-  const onKeyDown = (event: KeyboardEvent) => {
-    const index = TABS.findIndex((candidate) => candidate.value === tab);
-    const target =
-      event.key === 'ArrowRight'
-        ? TABS[(index + 1) % TABS.length]
-        : event.key === 'ArrowLeft'
-          ? TABS[(index - 1 + TABS.length) % TABS.length]
-          : event.key === 'Home'
-            ? TABS[0]
-            : event.key === 'End'
-              ? TABS[TABS.length - 1]
-              : undefined;
-    if (target === undefined) return;
-    event.preventDefault();
-    select(target.value);
-  };
-  return (
-    <div role="tablist" aria-label="Item kinds" className="inline-flex rounded-md border bg-muted/40 p-0.5" onKeyDown={onKeyDown}>
-      {TABS.map((option) => {
-        const active = option.value === tab;
-        return (
-          <button
-            key={option.value}
-            id={`${idPrefix}-tab-${option.value}`}
-            type="button"
-            role="tab"
-            aria-selected={active}
-            aria-controls={`${idPrefix}-panel`}
-            tabIndex={active ? 0 : -1}
-            className={cn(
-              'rounded-sm px-3 py-1 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-              active ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
-            )}
-            onClick={() => {
-              onChange(option.value);
-            }}
-          >
-            {option.label}
-            {counts !== null && <span className="ml-1 tabular-nums">({counts[option.value]})</span>}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 interface BrowserFormProps {
   readonly bases: BrowserModel;
@@ -132,6 +72,8 @@ function ItemBrowserForm({ bases, misc, values, onApply, onCancel }: BrowserForm
       <div className="space-y-2 border-b px-4 pb-3 sm:px-6">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <BrowserTabs
+            tabs={TABS}
+            label="Item kinds"
             tab={tab}
             onChange={setTab}
             idPrefix={idPrefix}

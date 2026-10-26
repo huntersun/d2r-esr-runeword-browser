@@ -1,8 +1,9 @@
 import type { BaseItem } from '@/features/game-data/engine/schema';
 
 /**
- * The item browser's model, shared by the Bases and Misc tabs: groups → types → a grid of rows by named column
- * (Normal | Exceptional | Elite, Chipped … Perfect) or a plain list; plus search and selection helpers.
+ * The browsers' model, shared by the item browser's Bases and Misc tabs and the unique and set browser: groups → types
+ * → a grid of rows by named column (Normal | Exceptional | Elite, Chipped … Perfect), a list per column, or a plain
+ * list; plus search and selection helpers. The selection is a set of strings: item codes, or unique/set row ids.
  */
 
 export type BaseTier = BaseItem['tier'];
@@ -15,7 +16,12 @@ export interface BrowserColumn {
 }
 
 export interface BrowserItem {
+  /** The cell's key, and the one code it selects unless `codes` is given. */
   readonly code: string;
+  /** The codes the cell selects together (a unique merged from several rows: one id per row); default `[code]`. */
+  readonly codes?: readonly string[];
+  /** The small monospace text after the name; default `code`. */
+  readonly tag?: string;
   readonly name: string;
   /** The column this item counts toward (`typeCodes(type, key)`), or null for none. */
   readonly column: BrowserColumn | null;
@@ -23,6 +29,10 @@ export interface BrowserItem {
   readonly stats?: string;
   /** Socket caps per item level band, for a tooltip (bases only). */
   readonly sockets?: string;
+  /** A tooltip (when there are no sockets to show). */
+  readonly title?: string;
+  /** Why the cell cannot be ticked ("disabled in the game files"); such a cell counts toward no checkbox. */
+  readonly disabled?: string;
   /** Lowercased search text (name, code, type name + code…). */
   readonly search: string;
 }
@@ -36,15 +46,20 @@ export interface BrowserRow {
 export interface BrowserType {
   readonly code: string;
   readonly name: string;
-  /** `grid`: family rows by column plus extras; `list`: a plain list of items. */
-  readonly layout: 'grid' | 'list';
+  /** The small monospace text after the name; default `code`, none when empty. */
+  readonly tag?: string;
+  /**
+   * `grid`: family rows by column plus extras; `columns`: the items side by side by their column (each column a list)
+   * plus extras; `list`: a plain list of items.
+   */
+  readonly layout: 'grid' | 'columns' | 'list';
   readonly columns: readonly BrowserColumn[];
   readonly rows: readonly BrowserRow[];
   /** The items below a grid that sit in no family row (mythical bases, misc items outside a quality family). */
   readonly extras: readonly BrowserItem[];
   /** The column the extras share (Mythical), shown as a heading with a checkbox; null for none. */
   readonly extrasColumn: BrowserColumn | null;
-  /** The items of a `list` type. */
+  /** The items of a `list` type, or of a `columns` type (each with one of its columns). */
   readonly items: readonly BrowserItem[];
 }
 
@@ -59,12 +74,33 @@ export interface BrowserModel {
   readonly codes: readonly string[];
 }
 
+/** The codes a cell selects: none for a disabled cell, else `codes` or its own code. */
+export function itemCodes(item: BrowserItem): readonly string[] {
+  if (item.disabled !== undefined) return [];
+  return item.codes ?? [item.code];
+}
+
+/** The items of a `columns` type in display order: column by column, each in list order. */
+export function columnItems(type: BrowserType, columnKey: string): BrowserItem[] {
+  return type.items.filter((item) => item.column?.key === columnKey);
+}
+
+/** A type's cells in display order (rows, then the columns or the list, then the extras). */
+function displayItems(type: BrowserType): BrowserItem[] {
+  const items: BrowserItem[] = [];
+  for (const row of type.rows) for (const cell of row.cells) if (cell !== null) items.push(cell);
+  if (type.layout === 'columns') {
+    for (const column of type.columns) items.push(...columnItems(type, column.key));
+    items.push(...type.extras);
+  } else {
+    items.push(...type.extras, ...type.items);
+  }
+  return items;
+}
+
 /** Every code of a type in display order. */
 export function displayCodes(type: BrowserType): string[] {
-  const codes: string[] = [];
-  for (const row of type.rows) for (const cell of row.cells) if (cell !== null) codes.push(cell.code);
-  for (const item of [...type.extras, ...type.items]) codes.push(item.code);
-  return codes;
+  return displayItems(type).flatMap((item) => itemCodes(item));
 }
 
 // --- Search ---
@@ -99,10 +135,9 @@ export function filterBrowser(groups: readonly BrowserGroup[], query: string): r
 /** The codes of a type's (shown) items, optionally of one column only (by key). */
 export function typeCodes(type: BrowserType, columnKey?: string): string[] {
   if (columnKey === undefined) return displayCodes(type);
-  const codes: string[] = [];
-  for (const row of type.rows) for (const cell of row.cells) if (cell !== null && cell.column?.key === columnKey) codes.push(cell.code);
-  for (const item of [...type.extras, ...type.items]) if (item.column?.key === columnKey) codes.push(item.code);
-  return codes;
+  return displayItems(type)
+    .filter((item) => item.column?.key === columnKey)
+    .flatMap((item) => itemCodes(item));
 }
 
 export function groupCodes(group: BrowserGroup, columnKey?: string): string[] {
