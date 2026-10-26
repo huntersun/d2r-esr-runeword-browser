@@ -11,7 +11,7 @@ answers), §5 and §5.1 (owner decisions).
 | Path                | Screen                  | Notes                                                                                           |
 | ------------------- | ----------------------- | ----------------------------------------------------------------------------------------------- |
 | `/loot-filters`     | LootFilterLayout        | Frame for both pages: an "Under development" notice (like the guide's "Experimental" one)       |
-| `/loot-filters`     | LootFilterLibraryScreen | The library: New filter, Upload, Start from the ESR default filter; one card per filter         |
+| `/loot-filters`     | LootFilterLibraryScreen | The library: New filter, Upload, Start from Sully's QoL filter; one card per filter             |
 | `/loot-filters/:id` | LootFilterEditorScreen  | The editor; `?tab=rules\|styles\|settings\|json\|test` (default `rules`); unknown id: not found |
 
 Both routes skip the HTM "Loading data..." gate (`isStaticBundlePath` in `src/core/layouts/staticBundleRoutes.ts`, see
@@ -26,12 +26,17 @@ an `icons` folder next to the filter. In game, the Loot Filter section in Contro
 command `lootfilter` shows the plugin's state and problems, `lootfilter reload` reloads.
 
 Asset rules: a `sound` ending in `.wav`/`.mp3`/`.flac` is a file in `sounds\` (any other string is a sounds.txt name, a
-number its row); `icon.iconName` `goldstar` is the file `icons\goldstar.sprite`. The launcher's Import copies only the
-JSON, so a filter that uses sound or icon files does not play or draw them until the files sit next to it. The mod shipped
-the bundled ones (the nine mp3s in `public/loot-filters/sounds/`, `goldstar.sprite` and `goldstar.lowend.sprite`) beside
-its own `esr-default-filter.json` up to ESR 3.2.21; 3.2.22 removed them and the launcher now pulls curated filters live
-from their creators' GitHub repositories (`LootFilters/sources.json`), so players only get such files with a live filter; **Download .zip with sounds and icons** puts the filter and the bundled files it
-references into one archive to unzip into `LootFilters\` (see Library screen).
+number its row); `icon.iconName` `goldstar` is the file `icons\goldstar.sprite` (file names are case-insensitive on
+Windows: `gemp` loads `gemP.sprite`). The launcher's Import copies only the JSON, so a filter that uses sound or icon
+files does not play or draw them until the files sit next to it. The mod shipped the nine mp3s and
+`goldstar.sprite`/`goldstar.lowend.sprite` beside its own `esr-default-filter.json` up to ESR 3.2.21; 3.2.22 removed
+them and the launcher now pulls curated filters live from their creators' GitHub repositories
+(`LootFilters/sources.json`), so players only get such files with a live filter. The app bundles the files of Sully's
+QoL filter (github.com/Thisisnotsully/QoL-Filter, the filter every player gets that way), copied from his repository:
+the nine mp3s in `public/loot-filters/sounds/` and twelve icons in `public/loot-filters/icons/` (`charm`, `cube`, `gem`,
+`gem2`, `gemP`, `goldstar`, `map`, `Myth`, `redD`, `rune`, `scroll`, `star`; 512 px squares, `rune` 1080 px,
+`goldstar` 200 px), plus the mod's `goldstar.lowend.sprite`. **Download .zip with sounds and icons** puts the filter
+and the bundled files it references into one archive to unzip into `LootFilters\` (see Library screen).
 
 Troubleshooting (also in the library how-to): if a sound or icon does not work, check the `sounds`/`icons` folders next
 to the filter; if chat lines do not print, run `lootfilter` in the game console and read
@@ -117,10 +122,17 @@ Title, a short how-to (launcher import, `sounds`/`icons` folders, the zip downlo
   out the text notes (accepted trailing commas or block comments, comments between rules that the first edit drops),
   which the editor's problems chip and list show first. The entry name is
   the file's `title`, else the file name. A successful upload opens the editor, like New filter and the template.
-- **Start from the ESR default filter**: fetches `public/loot-filters/esr-default-filter.json` (a copy of the
-  `LootFilters/esr-default-filter.json` the mod shipped up to ESR 3.2.21, title "ESR default filter"; its rules and styles are Sully's QoL filter as
-  converted by the ESR author) and opens it as a `template` entry named "ESR default filter". Credit line: "Sully's QoL
-  filter, converted by the ESR author, bundled with permission".
+- **Start from Sully's QoL filter**: fetches `public/loot-filters/sullys-qol-filter.json` and opens it as a `template`
+  entry named "Sully's QoL Filter" (the file's title; the card's byline reads "Sully's QoL Filter by Sully"). The file
+  is `Sullys-QoL-Filter.json` v0.6.1 from github.com/Thisisnotsully/QoL-Filter (220 rules, 12 styles, 4 levels,
+  `soundVolume` 25, his `updateUrl` and `//` comments kept), the filter the ESR launcher pulls live since 3.2.22. Two
+  edits to his file, worth reporting to Sully: the trailing comma after the last rule is removed (strict JSON apart
+  from the comments), and the `9pm` in rule 61's `excludeItemCodes` is fixed to `9mp` (War Pick; `9pm` is no item code
+  and the validator warned about it). Credit line (`TEMPLATE_CREDIT` in `utils/template.ts`): "Sully's QoL filter
+  v0.6.1, the filter the ESR launcher ships live from github.com/Thisisnotsully/QoL-Filter; icons and sounds by Sully".
+  It replaced the ESR default filter (302 rules, an earlier conversion of the same filter the mod shipped as
+  `LootFilters/esr-default-filter.json` up to 3.2.21). The library how-to adds that every player already has Sully's
+  filter through the launcher.
 - One card per entry (newest first): name, title/author and rule count (a quick JSON read of the text, cached), last
   update, and Open, Download, Duplicate, Rename, Delete (with a confirm dialog). Empty state when the library is empty.
 - **Download** (`components/FilterDownloadMenu.tsx`, shared with the editor header): a plain button saving
@@ -130,7 +142,8 @@ Title, a short how-to (launcher import, `sounds`/`icons` folders, the zip downlo
   "and N more"). The zip (`<slug>.zip`) holds `<slug>.json` (the same text the plain download saves), `sounds/*.mp3` and
   `icons/*.sprite` for the referenced bundled files (`goldstar` brings `goldstar.lowend.sprite` along). The referenced
   files come from `utils/referencedAssets.ts` (rules and styles; `sound` values ending in `.wav`/`.mp3`/`.flac`, every
-  `icon.iconName`; matched case-insensitively against `utils/bundledAssets.ts`); the archive from `utils/zip.ts`, a
+  `icon.iconName`; matched case-insensitively against `utils/bundledAssets.ts` and written under the bundled file's
+  own name, so a rule's `gemp` puts `icons/gemP.sprite` in the zip); the archive from `utils/zip.ts`, a
   dependency-free stored-only ZIP writer (UTF-8 names, CRC-32). A failed fetch shows a toast "Could not download the
   sounds and icons" and saves nothing.
 
@@ -308,8 +321,8 @@ removes the key); `passthrough` is never patched. Sections:
   from: a file in the `sounds` folder next to the filter (the bundled ones from Sully's QoL) or a game sound by its
   sounds.txt name or row, which needs no file (sounds.txt is a table in the mod's game data); such a sound has no
   preview ("a game sound plays from the game's files").
-- **Minimap icon**: on/off (turning it on gives `{ iconName: 'goldstar', iconSize: 50 }`, as the mod's own filter
-  uses; the sprite's own size is 200 px), `iconName` (suggests `goldstar`), `iconSize` (4–256, blank = file size), tint
+- **Minimap icon**: on/off (turning it on gives `{ iconName: 'goldstar', iconSize: 50 }`; the sprite's own size is
+  200 px), `iconName` (suggests every bundled icon, `BUNDLED_ICONS`), `iconSize` (4–256, blank = file size), tint
   (alpha optional), sprite preview.
 - **Droplight**: on/off (`{}`), a beam colour or "the game's white beam".
 
@@ -322,8 +335,9 @@ not work in that context, gets a hint. Per-language texts are read-only ("multi-
 `ColorControl` is a native colour input + optional alpha slider + `[r, g, b(, a)]` readout + clear
 (`utils/colorValues.ts`).
 
-Previews: bundled assets are listed in `utils/bundledAssets.ts` (`public/loot-filters/sounds/*.mp3`,
-`public/loot-filters/icons/goldstar.sprite`). `useSoundPreview` plays one `Audio` at a time across the page and stops on
+Previews: bundled assets are listed in `utils/bundledAssets.ts` (the nine `public/loot-filters/sounds/*.mp3` and the
+twelve `public/loot-filters/icons/*.sprite`, names in the files' own case because the app's server is case-sensitive;
+an `iconName` in any case finds them). `useSoundPreview` plays one `Audio` at a time across the page and stops on
 unmount. `useBundledSprite` fetches and decodes a bundled sprite once per name; any other icon name offers a local
 `.sprite` picker. The canvas draws the first frame at `iconSize` (longer side) with the tint applied
 (`utils/tintSprite.ts`: RGB × colour/255, alpha × colour[3]/255); a decode error shows the decoder's message. A sounds.txt
@@ -397,7 +411,8 @@ research doc and the Test tab's note link here.
 - `{ethereal}` expands to `Ethereal` for ethereal items and to nothing otherwise.
 - `hideUnmatchedItems` hides an on-ground item no rule applied to.
 - Colour codes `ÿcN` to `ÿcV` use preview approximations (the guide gives no RGB for them).
-- `.sprite` icons: header layout and RGBA pixel order as observed in `goldstar.sprite`; only the first frame is drawn.
+- `.sprite` icons: header layout and RGBA pixel order as observed in `goldstar.sprite` (Sully's other eleven icons decode
+  the same way); only the first frame is drawn.
 - The serializer does not keep comments between rules (only the `//` lines before the object) and writes no trailing
   commas or block comments; the reader accepts both, as the plugin does (v1.5.3, from its disassembly). A warning says
   so when a file has them.
