@@ -1,0 +1,85 @@
+# Loot Filter: backlog of deferred items
+
+Requests and findings from the loot filter users (Discord, October 2026) that are **not built yet**, with the reason
+each one waits. The rule for this list: a feature goes in only when it depends on plugin behaviour the guide does not
+state and no one has verified in game, or when it needs a change outside this app (the plugin, the mod, another tool).
+Feature doc: [LOOT-FILTER.md](./LOOT-FILTER.md). Format reference:
+[ESR-LOOT-FILTER-GUIDE.md](../../builds-feature-docs/loot-filter/ESR-LOOT-FILTER-GUIDE.md). Plugin version these notes
+refer to: 1.5.3 (ESR 3.2.24, `d2rloader/plugins/d2rl-celestialrayone-loot-filter.dll`); the quoted messages are its
+own log strings.
+
+## Waiting for an in-game check
+
+### "Except items with…" control on hide rules
+
+**Request.** "Hide all magic weapons except those with Demon Damage." The user wrote `itemTypes: weap`, `quality:
+magic`, a stat check and `hideIfOtherConditionsFail`, which also hides uniques and rares: the hide-if-fail gate is only
+codes, types and location, every other condition (quality included) failing hides the item (guide, "How rules match";
+the plugin even warns "without itemCodes this hides every ground item that fails the rule").
+
+**Encoding that works in our evaluator.** A plain hide rule with the stat negated:
+
+```json
+{ "itemTypes": ["weap"], "quality": "magic", "itemStats": [{ "stat": "item_demondamage_percent", "op": "<", "value": 1 }], "hide": true }
+```
+
+Several exceptions: more checks in `itemStats` (hide unless demon OR enhanced damage); a hybrid that must have both
+stats: the inverted checks in `itemStatsAnyOf`. `between` cannot be inverted in one check.
+
+**Why it waits.** It relies on "a stat the item lacks compares as 0", an assumption in the "Verify in game" list of
+LOOT-FILTER.md. If the plugin instead fails the check on a missing stat, these rules hide nothing (fail open).
+**Test filter** for a volunteer: one rule `{ "itemTypes": ["weap"], "quality": "magic", "itemStats": [{ "stat":
+"item_demondamage_percent", "op": "<", "value": 1 }], "hide": true }`; drop or find a magic weapon without demon
+damage: hidden means the assumption holds.
+
+**Design when verified.** Stats section of a hide rule gets an "Except items with…" list: pick stat, op, value; the
+editor writes the inverted check (`>=`→`<`, `>`→`<=`, `==`→`!=`, `!=`→`==`) into `itemStats` ("except items with any
+of") or `itemStatsAnyOf` ("except items with all of"); `ruleSummary` renders `< 1` on a hide rule as "unless X ≥ 1";
+the affix browser's Apply offers the same inverted mode. Files: `components/rules/RuleEditor.tsx`,
+`conditions/StatCheckList.tsx`, `utils/statChecks.ts` (an `invertStatCheck` helper), `utils/ruleSummary.ts`,
+`HowRulesCombine.tsx`. Effort S–M.
+
+### Empty condition lists (`activeInLevels: []`)
+
+The level checkboxes write `activeInLevels: []` when every level is unticked ("no level" badge); our evaluator treats
+that as never active. The plugin logs "the list is empty" for an empty list and we do not know whether it then drops
+the key (rule active at every level) or switches the rule off. Until known, the validator warns about empty lists and
+the UI keeps writing them. Verify with a one-rule filter and `lootfilter` in the console.
+
+### Plugin tier of tier-less items
+
+Still open from round 2: the plugin's `tier` for rings, amulets, charms and jewels. `debug_log = true` prints
+`tier %d` per item in `d2rloader\logs\celestialrayone.loot-filter.log`.
+
+## Needs the plugin or the mod (requests for the mod author)
+
+Collected to forward together once the current implementation round is done.
+
+- **Per-rule enable flag.** The format has none; the editor encodes disabled rules in a sibling top-level
+  `disabledRules` array the plugin ignores ("unknown setting, ignored", one log line). An official
+  `"enabled": false` would remove the workaround.
+- **Hide unique/set items already in the Chronicle.** The Chronicle is the game's collection log (saved with the
+  shared stash). It is not exposed as player stats (no itemstatcost row), the plugin rejects D2RLAN's grail condition
+  ("grail conditions are not supported"), and ESR's chronicle-tracker plugin (3.2.22) already adds a "Not in
+  Chronicle" ground-label line. Ask for an `inChronicle: true/false` condition.
+- **Droplight on hidden items.** Users hide blue jewels and low runes but still see the beam. The beam is baked into
+  ESR's HD item models (`data/hd/items/**.json`, entity `droplight`: all 92 runes, jewels through the perfect diamond
+  model, charms, coupons, maps, keys; 625 item codes), not a filter action. `hide` removes the label and pickability
+  only, and `droplight` takes `{ "color": [r, g, b] }` or `{}`, nothing that switches a beam off. Ask for the model
+  beam to be suppressed on hidden items, or a launcher toggle.
+- **Treasure goblins on the minimap.** Every condition and action of the plugin is about items; goblins are monsters
+  (`monstats.txt` treasuregoblin*). Needs a monster-marker plugin, not a filter feature.
+- **Orphan rune row.** `misc.txt` row 424 "Hu Rune" (`r48`, name string `r32` = Fu Rune) is used by no treasure class,
+  cube recipe, runeword or gems.txt row. The app greys it out as "never drops".
+- **Unidentified items.** Whether the plugin sees stats and `uniqueOrSetId` of unidentified ground items decides how
+  far stat and unique/set conditions reach for rares and uniques on the ground.
+
+## Decided against or parked
+
+- **Preserving `//` comments between rules.** Sully's filter has section comments inside the rules array; the
+  serializer keeps only the leading comment block. The editor now warns on upload that they are dropped on the first
+  edit. Preserving positions would need the JSONC reader to attach comments to rules (M, fragile with hand edits).
+- **Listing the Vessel of Souls transform bases** (`m44` and 27 other non-spawnable mythical weapons) on the Bases
+  tab with a badge. "Add item" takes them; the dialog hint explains why they are not listed.
+- **Affix browser writing the picked affix's minimum roll.** Prefix, suffix and automagic values add up on the item,
+  so the generated check uses presence (`>= 1`); the user edits the number.
