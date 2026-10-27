@@ -64,7 +64,13 @@ removed patch/config changes a guide fact: `grep -ln esr-loader content/guide/no
 
 1. `git diff --stat public/game-data public/guide`.
 2. Compare the summary's count deltas and warnings with the old manifest. A new warning is a red flag: explain it or
-   investigate before continuing.
+   investigate before continuing. Baseline at 3.2.24 (11 warnings, all genuine ESR data): six `bases:` lines (Scissors
+   Suwayyah and Hunter's Guise outside their tier family, the three Mythical Amulet/Ring/Jewel name strings, the
+   dropped `cx1`–`cx3` duplicates), three `affixes:` lines for the unknown item type `voib` (allowlisted in the
+   integrity test), `skilldetails: unknown skill in oskill "Axe Swarm"` and one `crafting:` shadowed cubemain row.
+   Warning classes added since: `affix stats: property … is not mapped` (a new properties.txt func; the affix browser
+   cannot list that affix's stat), `lootfilter: duplicate item code` / `has unknown base code`, `cube: guide family … has
+no section` and the `areas:` lines listed under `areas.json` below.
 3. Spot-check the changed bundles. Each array element is one JSON line, so changed entries are the `+`/`-` lines of
    `git diff -U0`. List them by name, e.g.:
    `git diff -U0 public/game-data/runewords.json | node -e "require('fs').readFileSync(0,'utf8').split('\n').filter(l=>/^[+-] {2,}\{/.test(l)).forEach(l=>{const o=JSON.parse(l.slice(1).trim().replace(/,$/,''));console.log(l[0],o.name??o.key)})"`
@@ -84,6 +90,33 @@ removed patch/config changes a guide fact: `grep -ln esr-loader content/guide/no
      items; `vanillaIcons` can only grow when the vanilla art folder is present. New files under `public/game-data/icons/`
      are expected; list any new unique/set/base that got no icon (`generate-item-icons.ts` prints "no art" lines) so the
      owner can ask the mod author for the missing art. `skillIcons` = the icon keys of skilldetails.json (325 at 3.2.24).
+     Then the bundles added or extended in v1.35.0–v1.41.0:
+   - `lootfilter.json`: its ids are **row numbers** — `uniques` / `sets` ids are uniqueitems.txt / setitems.txt rows
+     (one id space, 1390 / 270 at 3.2.24), `stats` ids are itemstatcost rows (926), `areas` ids are levels.txt ids
+     (215) — and every player's filter plus the bundled template stores them. A row inserted mid-table shifts every id
+     after it silently. Compare the id → name maps with the committed bundle and report any shift as a finding (the
+     affected rules in players' filters start matching other items):
+     `node -e "const {execSync}=require('child_process');const o=JSON.parse(execSync('git show HEAD:public/game-data/lootfilter.json'));const n=require('./public/game-data/lootfilter.json');for(const k of ['uniques','sets','stats','areas']){const m=new Map(o[k].map(e=>[e.id,e.name]));for(const e of n[k])if(m.has(e.id)&&m.get(e.id)!==e.name)console.log(k,e.id,JSON.stringify(m.get(e.id)),'->',JSON.stringify(e.name));console.log(k,o[k].length,'->',n[k].length)}"`
+     The integrity test also pins the `drops` flag (`r48` "Hu Rune" is the only spawnable item that never drops: no
+     gems.txt row), `reqLvl > 0` on every unique and set row, and the `disabled` uniques (ids 0 The Perfect Cello and
+     690–695 the Rupture charms; no disabled set item). A release that re-enables or disables rows, or adds a rune
+     row, fails the test: explain it with the table diff and update the pins.
+   - `affixes.json`: `counts.affixes*` as before; the `stats` list (148 stats at 3.2.24) and per-affix `stats` feed the
+     loot-filter affix browser, so the "affix stats: property … is not mapped" warning means a new properties.txt func
+     the mapper does not know — report it as a follow-up (`build/affixStats.ts`).
+   - `cube.json`: `counts.cubeFamilies` (62), `cubeRawRecipes` (441), `cubeFallbackFamilies` (9) and `cubeFallbackRows`
+     (41). Fallback families (`other:` ids) collect the rows no family regex matched: when they grow, a cubemain
+     `description` changed its shape, the same finding as step 6 below (the regexes live in
+     `src/features/game-data/build/cube/cubeFamilies.ts`). `cubeHidden*` move with the enhance / trap / stocker rows.
+     The page shows every stat condition with a known `op` (3, 15, 16, 17, 18 as ESR uses them) and skips unknown ops
+     silently: list the `op` values of added cubemain rows (`cut -f` on the table diff) and report a new one.
+   - `areas.json` (v1.35.0, levels.txt): `counts.areas` (197), `areasMaps` (57), `areasMapZones` (20),
+     `areasUniqueMaps` (1), `areasHiddenPrepZones` (17), `areasUniquesMinsThenMaxes` (61: older rows whose unique-pack
+     columns are read mins then maxes). Warnings `areas: … is tier N but its LevelGroup says tier M`, `… unique packs
+have min > max read pairwise and mins then maxes` and `… VisN names unknown level` are new row data to explain.
+     The integrity test pins the five map tiers at 4 zones each on the 100 / 102 / 104 / 106 / 108 ladder, The Hidden
+     Vault as the only unique map, the five town names (waypoint, no level) and Blood Moor as id 2: a new tier, zone
+     or unique map fails it, and the patch notes should say why.
 4. The app reads the docs-data version live from `d2rloader/metadata.json` (`metadata.modVersion`, raw GitHub) and
    compares it with the manifest's `esrVersion`: check that the clone's `d2rloader/metadata.json` says the new version.
    If the author forgot to bump it, every user will see "Docs data is ESR <old>; game-file data is ESR <new>" in amber
@@ -103,10 +136,22 @@ removed patch/config changes a guide fact: `grep -ln esr-loader content/guide/no
    has 3 rows whose rune ranges are read from the rows. `legendary-consumables` (enhancement-order) shows the Halo as
    "The same item + A copy of the item (Branded)". A block that grew to the 12-row cap or lost its generic rows is a
    finding to report, not to hide.
-7. The Drop Finder (`https://easternsunresurrected.com/drop-finder.html`, linked under every `::source` block and by
-   `dropfinder:` links) is not in the clone, so the diff cannot see it move:
-   `curl -sS -o /dev/null -w '%{http_code}\n' https://easternsunresurrected.com/drop-finder.html` must print 200
-   (warning only when offline).
+7. Three things the app links or bundles are not in the clone, so the diff cannot see them move (all warning-only
+   when offline):
+   - The Drop Finder (`https://easternsunresurrected.com/drop-finder.html`, linked under every `::source` block and by
+     `dropfinder:` links) and the Frame Table (`https://easternsunresurrected.com/ias-calculator.html`, the header's
+     official links; not linked from the site's own navigation, so it can vanish unnoticed):
+     `curl -sS -o /dev/null -w '%{http_code}\n' <url>` must print 200 for both.
+   - Sully's QoL filter, the loot-filter template (`public/loot-filters/sullys-qol-filter.json`, the file the ESR
+     launcher pulls live from github.com/Thisisnotsully/QoL-Filter since 3.2.22). Diff the bundled copy with upstream:
+     `curl -sS https://raw.githubusercontent.com/Thisisnotsully/QoL-Filter/main/Sullys-QoL-Filter.json | diff - public/loot-filters/sullys-qol-filter.json`.
+     A newer upstream version is a follow-up ("refresh the template to vX"; the copy is verbatim, `TEMPLATE_CREDIT` in
+     `src/features/loot-filter/utils/template.ts` names the version, `docs/features/LOOT-FILTER.md` describes it; its
+     sounds and icons must stay bundled, `referencedAssets.test.ts`). Then check that the bundled copy still matches
+     the regenerated data: `validate.test.ts` runs without the game-data reference, so build one and validate:
+     `node --experimental-strip-types -e "import('./src/features/loot-filter/engine/reference.ts').then(async r=>{const v=await import('./src/features/loot-filter/engine/validate.ts');const p=await import('./src/features/loot-filter/engine/parse.ts');const fs=require('fs');const ref=r.buildLootFilterReference(JSON.parse(fs.readFileSync('public/game-data/lootfilter.json','utf8')),JSON.parse(fs.readFileSync('public/game-data/types.json','utf8')));console.log(v.validateLootFilter(p.parseLootFilter(fs.readFileSync('public/loot-filters/sullys-qol-filter.json','utf8')).filter,ref))})"`
+     must print `[]`; a diagnostic names a rule whose code, id or stat the new data no longer has (or, after an id
+     shift, now means another item) — report it, do not edit the copy.
 
 ## 4. Guide
 
@@ -173,8 +218,12 @@ commit attribution rules; pre-commit hooks run Prettier/ESLint. Never push.
 - **Integrity test fails** (`src/features/game-data/bundleIntegrity.test.ts` expects fixed counts such as 369 weapons /
   255 armors, 1067 tier codes, spot codes like `p01` normal / `m01` mythical, and compares the committed
   `skilldetails.json`, `tiers.json` and icon indexes with a fresh build from the clone): if the release diff explains the
-  new count, propose updating the expected numbers (and the counts in `docs/features/GAME-DATA.md`, `SKILLS.md`,
-  `UNIQUE-ITEMS.md`); otherwise investigate. A mismatch between committed and regenerated skill icons or item icons
+  new count, propose updating the expected numbers (and the counts in the docs: `grep -rln '3\.2\.<old>' docs` lists
+  the pages that quote the old version's numbers — `GAME-DATA.md`, `LOOT-FILTER.md`, `SKILLS.md`, `UNIQUE-ITEMS.md`,
+  `CORE-DATA.md`, `technical/DATA-MODELS.md`, `technical/NAVIGATION.md` at 3.2.24; the `docs/research` pages are
+  historical and stay); otherwise investigate. Besides the counts, the test pins loot-filter rows (`r48` never drops,
+  disabled unique ids 0 and 690–695), the areas shape (4 zones per tier, the 100–108 ladder, The Hidden Vault, the
+  five towns) and the cube family list (every family keeps at least one row): see step 3.3 for what each means. A mismatch between committed and regenerated skill icons or item icons
   means a generator was not rerun: `npm run game-data:icons` (needs the vanilla art folder) and
   `npm run game-data:skill-icons`.
 - **Other game-data tests fail** (name oracle, runeword matching): compare with the HTM fixtures; a renamed item in the
