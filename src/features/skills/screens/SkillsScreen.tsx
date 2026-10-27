@@ -1,43 +1,40 @@
-import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { CopyLinkButton } from '@/components/CopyLinkButton';
 import { ExternalLink } from '@/components/ExternalLink';
 import { FilterPanel } from '@/components/FilterPanel';
 import { PageShell } from '@/components/PageShell';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
-import { db } from '@/core/db';
 import { useDebouncedFilterValue } from '@/core/hooks/useDebouncedFilterValue';
 import { FRAME_TABLE_URL } from '@/core/navigation/navConfig';
 import { buildShareUrl } from '@/core/utils/filterUrlParams';
-import { normaliseItemName } from '@/core/utils/itemName';
 import { EnhanceSearch, Pills } from '@/features/game-data/components/EnhanceParts';
 import { GameDataError } from '@/features/game-data/components/GameDataError';
 import { GameDataLoading } from '@/features/game-data/components/GameDataLoading';
 import type { SkillDetail } from '@/features/game-data/engine/schema';
 import { useGameData } from '@/features/game-data/hooks/useGameData';
-import { cn } from '@/lib/utils';
+import { SkillClassTrees } from '../components/SkillClassTrees';
 import { SkillDetailCard } from '../components/SkillDetailCard';
-import { SkillTile, type SkillTileMark } from '../components/SkillTile';
-import { SkillTreeTab } from '../components/SkillTreeTab';
+import { SkillTile } from '../components/SkillTile';
+import { SkillTreesLayout } from '../components/SkillTreesLayout';
+import { useDetailScroll } from '../hooks/useDetailScroll';
+import { useMythicalNames } from '../hooks/useMythicalNames';
 import {
   buildSkillsView,
   disambiguation,
   duplicateNames,
   encodeSkillsState,
   ITEM_SKILLS,
-  prerequisiteChain,
   readSkillsState,
   searchSkills,
+  selectionMarks,
   SKILLS_ROUTE,
   type SkillsState,
   type SkillsView,
+  type SkillTileMark,
 } from '../utils/skills';
 
 const SKILL_FILES = ['skills', 'skilldetails'] as const;
 const SEARCH_DEBOUNCE_MS = 250;
-/** Tailwind `lg`: the detail card sits next to the trees from here on */
-const WIDE_QUERY = '(min-width: 1024px)';
 
 export function SkillsScreen() {
   const gameData = useGameData(SKILL_FILES);
@@ -64,37 +61,18 @@ function SkillsBrowser({ view }: { readonly view: SkillsView }) {
     },
     SEARCH_DEBOUNCE_MS
   );
-  // Uniques the HTM mythicals page lists link there; until the HTM data is in IndexedDB they link to Uniques
-  const mythicalNames = useLiveQuery(async () => {
-    const items = await db.mythicalUniques.toArray();
-    return new Set(items.map((item) => normaliseItemName(item.name)));
-  });
-  const mythicals = mythicalNames ?? new Set<string>();
+  const mythicals = useMythicalNames();
 
   const selected = state.skill === null ? undefined : view.byId.get(state.skill);
-  const chain = state.skill === null ? new Set<string>() : prerequisiteChain(view, state.skill);
-  const markOf = (id: string): SkillTileMark => {
-    if (id === state.skill) return 'selected';
-    if (chain.has(id)) return 'prerequisite';
-    if (state.skill !== null && view.byId.get(id)?.reqSkills?.includes(state.skill) === true) return 'dependent';
-    return null;
-  };
-  const detailRef = useRef<HTMLDivElement>(null);
-  // On narrow screens the card is below the trees: bring it into view after a tap (not on page load)
-  const pendingScroll = useRef(false);
+  const markOf = selectionMarks(view, state.skill);
+  const { ref: detailRef, requestScroll } = useDetailScroll(state.skill);
   const select = (id: string) => {
     const detail = view.byId.get(id);
     if (detail === undefined) return;
-    pendingScroll.current = true;
+    requestScroll();
     commitSearch('');
     update({ skill: id, view: detail.cls ?? ITEM_SKILLS, tab: detail.page ?? state.tab, search: '' });
   };
-  useEffect(() => {
-    if (!pendingScroll.current || state.skill === null) return;
-    pendingScroll.current = false;
-    if (window.matchMedia(WIDE_QUERY).matches) return;
-    detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, [state.skill]);
 
   const cls = view.classes.find((entry) => entry.code === state.view);
   const results = search.trim() === '' ? null : searchSkills(view, search);
@@ -163,47 +141,23 @@ function SkillsBrowser({ view }: { readonly view: SkillsView }) {
         />
       </FilterPanel>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
-        <div className="min-w-0 space-y-4">
-          {results !== null ? (
-            <SearchResults view={view} results={results} onSelect={select} />
-          ) : cls !== undefined ? (
-            <>
-              {/* Narrow screens: one tab at a time, like in game */}
-              <div className="lg:hidden">
-                <Pills
-                  label="Skill tab"
-                  options={cls.tabs.map((tab) => ({ value: String(tab.page), label: tab.name }))}
-                  value={String(state.tab)}
-                  onChange={(value) => {
-                    update({ tab: Number(value) }, true);
-                  }}
-                />
-              </div>
-              <div className="grid gap-3 lg:grid-cols-3">
-                {cls.tabs.map((tab) => (
-                  <SkillTreeTab
-                    key={tab.page}
-                    tab={tab}
-                    markOf={markOf}
-                    onSelect={select}
-                    className={cn(tab.page !== state.tab && 'hidden lg:block')}
-                  />
-                ))}
-              </div>
-            </>
-          ) : (
-            <ItemSkills view={view} markOf={markOf} onSelect={select} />
-          )}
-        </div>
-        <aside className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
-          {detailCard ?? (
-            <p className="hidden rounded-lg border border-dashed p-4 text-sm text-muted-foreground lg:block">
-              Pick a skill to see its details and the items that grant it.
-            </p>
-          )}
-        </aside>
-      </div>
+      <SkillTreesLayout aside={detailCard} placeholder="Pick a skill to see its details and the items that grant it.">
+        {results !== null ? (
+          <SearchResults view={view} results={results} onSelect={select} />
+        ) : cls !== undefined ? (
+          <SkillClassTrees
+            cls={cls}
+            tab={state.tab}
+            onTabChange={(tab) => {
+              update({ tab }, true);
+            }}
+            markOf={markOf}
+            onSelect={select}
+          />
+        ) : (
+          <ItemSkills view={view} markOf={markOf} onSelect={select} />
+        )}
+      </SkillTreesLayout>
       <ScrollToTopButton />
     </div>
   );

@@ -1,7 +1,8 @@
 // Pure helpers for the structured skill tree allocation (`build_data.skillPoints`, skills.json ids).
 // Owner decision: no point budget, no level or prerequisite rules; the UI only counts and shows.
 
-import type { SkillClassTree, SkillInfo, SkillsBundle } from '@/features/game-data/engine/schema';
+import type { SkillClassTree, SkillsBundle } from '@/features/game-data/engine/schema';
+import type { SkillClassView, SkillsView } from '@/features/skills/utils/skills';
 import { asLevel } from '../buildData';
 import { LEVEL_MAX, SKILL_POINTS_MAX } from '../constants';
 
@@ -19,6 +20,11 @@ export interface SkillPointTotals {
 /** The class tree for a build's class display name ("Paladin"), or undefined (no class, unknown class, no bundle). */
 export function classTree(bundle: SkillsBundle | undefined, characterClass: string): SkillClassTree | undefined {
   return bundle?.classes.find((tree) => tree.name === characterClass);
+}
+
+/** The Skills page view (icon tiles, details) of a build's class display name, or undefined (no view, unknown class). */
+export function classView(view: SkillsView | undefined, characterClass: string): SkillClassView | undefined {
+  return view?.classes.find((cls) => cls.name === characterClass);
 }
 
 /** The character level cap: the bundle's `maxLevel`, else LEVEL_MAX. */
@@ -70,12 +76,6 @@ export function skillsForClass(skillPoints: SkillPoints, tree: SkillClassTree | 
 export function skillsOutsideClass(skillPoints: SkillPoints, tree: SkillClassTree | undefined): string[] {
   const ids = treeIds(tree);
   return Object.keys(skillPoints).filter((id) => !ids.has(id));
-}
-
-/** Display names of a skill's prerequisites (the id when it is not in the tree). */
-export function prerequisiteNames(skill: SkillInfo, tree: SkillClassTree): string[] {
-  const names = new Map(tree.tabs.flatMap((tab) => tab.skills.map((entry) => [entry.id, entry.name] as const)));
-  return skill.reqSkills.map((id) => names.get(id) ?? id);
 }
 
 /** Display name of a stored id across every class tree of the bundle (the id itself when not found). */

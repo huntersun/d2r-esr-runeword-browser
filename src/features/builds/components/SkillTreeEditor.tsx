@@ -6,6 +6,7 @@ import type { CharacterClass } from '../constants';
 import { useSkillTree } from '../hooks/useSkillTree';
 import {
   classTree,
+  classView,
   clearSkillPoints,
   levelCap,
   parseLevelText,
@@ -15,7 +16,7 @@ import {
   skillsOutsideClass,
   type SkillPoints,
 } from '../utils/skillTree';
-import { SkillTreeGrid } from './SkillTreeGrid';
+import { BuildSkillTrees } from './BuildSkillTrees';
 
 interface SkillTreeEditorProps {
   readonly characterClass: CharacterClass | '';
@@ -40,14 +41,15 @@ export function SkillTreeEditor({
   const maxLevel = levelCap(skillData.bundle);
   const levelInvalid = levelText.trim() !== '' && parseLevelText(levelText) === undefined;
   const tree = characterClass !== '' ? classTree(skillData.bundle, characterClass) : undefined;
+  const cls = characterClass !== '' ? classView(skillData.view, characterClass) : undefined;
   const totals = skillPointTotals(skillPoints, tree);
   const outside = tree !== undefined ? skillsOutsideClass(skillPoints, tree) : [];
   const outsidePoints = outside.reduce((sum, id) => sum + (skillPoints[id] ?? 0), 0);
   const classPoints = totals.total - outsidePoints;
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-      <div className="flex shrink-0 flex-col gap-1">
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1">
         <Label htmlFor="build-level" className="text-xs text-muted-foreground">
           Level
         </Label>
@@ -70,7 +72,7 @@ export function SkillTreeEditor({
         {levelInvalid && <p className="text-xs text-destructive">1–{maxLevel}</p>}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
+      <div className="flex min-w-0 flex-col gap-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="text-xs text-muted-foreground">Skill tree</span>
           {tree !== undefined && (
@@ -101,7 +103,7 @@ export function SkillTreeEditor({
           <p className="text-sm text-muted-foreground">Skill tree unavailable</p>
         ) : skillData.status !== 'ready' ? (
           <Skeleton className="h-5 w-48" />
-        ) : tree === undefined ? (
+        ) : tree === undefined || cls === undefined ? (
           <p className="text-sm text-muted-foreground">No skill tree for {characterClass} in the current game data.</p>
         ) : (
           <>
@@ -123,11 +125,13 @@ export function SkillTreeEditor({
                 </Button>
               </div>
             )}
-            <SkillTreeGrid
-              // Remount on a class change so the tab selection starts on the new class's first tab.
+            <BuildSkillTrees
+              // Remount on a class change so the selection and the tab start afresh on the new class.
               key={tree.code}
-              tree={tree}
+              view={skillData.view}
+              cls={cls}
               skillPoints={skillPoints}
+              tabCounts={totals.byTab}
               disabled={disabled}
               onChange={(id, points) => {
                 onSkillPointsChange(setSkillPoints(skillPoints, id, points));

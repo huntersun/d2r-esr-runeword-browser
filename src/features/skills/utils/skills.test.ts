@@ -15,6 +15,7 @@ import {
   prerequisiteChain,
   readSkillsState,
   searchSkills,
+  selectionMarks,
   skillContext,
   skillPageUrl,
 } from './skills';
@@ -124,6 +125,16 @@ describe('search and tree relations', () => {
     expect([...prerequisiteChain(view, 'Meteor')]).toEqual(['Fire Ball', 'Fire Bolt']);
     expect(dependents(view, 'Fire Bolt').map((skill) => skill.id)).toEqual(['Fire Ball']);
     expect(dependents(view, 'Rift Shot')).toEqual([]);
+  });
+
+  it('marks the selected skill, its prerequisite chain and its direct dependents', () => {
+    const markOf = selectionMarks(view, 'Fire Ball');
+    expect(markOf('Fire Ball')).toBe('selected');
+    expect(markOf('Fire Bolt')).toBe('prerequisite');
+    expect(markOf('Meteor')).toBe('dependent');
+    expect(markOf('Teleport')).toBeNull();
+    expect(selectionMarks(view, 'Meteor')('Fire Bolt')).toBe('prerequisite');
+    expect(selectionMarks(view, null)('Fire Ball')).toBeNull();
   });
 
   it('names the class and tab', () => {

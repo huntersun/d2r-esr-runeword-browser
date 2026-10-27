@@ -90,7 +90,7 @@ export function BuildDetailScreen() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   // UI-only tab choice; falls back to Player when the chosen tab isn't available for this build.
   const [tab, setTab] = useState<DetailTab>('player');
-  // skills.json is only fetched when the build has a skill allocation to draw.
+  // skills.json + skilldetails.json are only fetched when the build has a skill allocation to draw.
   const skillData = useSkillTree(detailData !== null && hasSkillPoints(detailData.skillPoints));
 
   useEffect(() => {
@@ -388,10 +388,10 @@ export function BuildDetailScreen() {
               <section className="flex flex-col gap-4">
                 <SectionHeader title="Skills" />
                 {level !== null && <p className="text-sm font-medium">Level {level}</p>}
+                {hasSkillText && <p className="whitespace-pre-wrap text-sm">{skills}</p>}
                 {hasSkillPoints(skillPoints) && (
                   <SkillTreeDisplay characterClass={build.class} skillPoints={skillPoints} skillData={skillData} />
                 )}
-                {hasSkillText && <p className="whitespace-pre-wrap text-sm">{skills}</p>}
               </section>
             </TabsContent>
           )}

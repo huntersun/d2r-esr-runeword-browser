@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
 import type { SkillDetail, SkillGrant } from '@/features/game-data/engine/schema';
@@ -35,10 +35,12 @@ interface SkillDetailCardProps {
   readonly onSelect: (id: string) => void;
   readonly onClose: () => void;
   readonly className?: string;
+  /** Rendered right after the header (the builds pages' point controls / counter) */
+  readonly children?: ReactNode;
 }
 
 /** Everything the files say about one skill: scalars, description, synergies and the items that grant it. */
-export function SkillDetailCard({ view, skill, mythicals, onSelect, onClose, className }: SkillDetailCardProps) {
+export function SkillDetailCard({ view, skill, mythicals, onSelect, onClose, className, children }: SkillDetailCardProps) {
   const unlocks = dependents(view, skill.id);
   const facts = [
     skill.cls === null ? null : `Required level ${String(skill.reqLevel)}`,
@@ -66,6 +68,8 @@ export function SkillDetailCard({ view, skill, mythicals, onSelect, onClose, cla
           <X className="size-4" />
         </button>
       </header>
+
+      {children}
 
       <ul className="flex flex-wrap gap-1.5">
         {facts.map((fact) => (

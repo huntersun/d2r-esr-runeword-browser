@@ -1,15 +1,16 @@
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { describe, expect, it } from 'vitest';
-import type { SkillClassTree, SkillsBundle } from '@/features/game-data/engine/schema';
+import type { SkillClassTree, SkillDetailsBundle, SkillsBundle } from '@/features/game-data/engine/schema';
+import { buildSkillsView } from '@/features/skills/utils/skills';
 import { CHARACTER_CLASSES, LEVEL_MAX } from '../constants';
 import {
   classTree,
+  classView,
   clearSkillPoints,
   hasSkillPoints,
   levelCap,
   parseLevelText,
-  prerequisiteNames,
   setSkillPoints,
   skillName,
   skillPointTotals,
@@ -18,6 +19,9 @@ import {
 } from './skillTree';
 
 const bundle = JSON.parse(readFileSync(resolve(__dirname, '../../../../public/game-data/skills.json'), 'utf-8')) as SkillsBundle;
+const details = JSON.parse(
+  readFileSync(resolve(__dirname, '../../../../public/game-data/skilldetails.json'), 'utf-8')
+) as SkillDetailsBundle;
 
 const skill = (id: string, row: number, col: number, reqSkills: string[] = []) => ({
   id,
@@ -74,6 +78,19 @@ describe('skills.json against the builds model', () => {
     expect(classTree(bundle, 'Monk')).toBeUndefined();
     expect(classTree(undefined, 'Paladin')).toBeUndefined();
   });
+
+  it('finds the Skills page view of every class by display name, with the same skills as the tree', () => {
+    const view = buildSkillsView(bundle, details);
+    for (const name of CHARACTER_CLASSES) {
+      const cls = classView(view, name);
+      const tree = classTree(bundle, name);
+      expect(cls?.code).toBe(tree?.code);
+      expect(cls?.tabs.map((tab) => tab.cells.map((cell) => cell.detail.id))).toEqual(tree?.tabs.map((tab) => tab.skills.map((s) => s.id)));
+    }
+    expect(classView(view, 'Monk')).toBeUndefined();
+    expect(classView(view, '')).toBeUndefined();
+    expect(classView(undefined, 'Paladin')).toBeUndefined();
+  });
 });
 
 describe('skillPointTotals', () => {
@@ -128,11 +145,6 @@ describe('skillsForClass / skillsOutsideClass', () => {
 });
 
 describe('names and helpers', () => {
-  it('names prerequisites, falling back to the id', () => {
-    const vigor = tree.tabs[2]?.skills[1];
-    expect(vigor && prerequisiteNames(vigor, tree)).toEqual(['Prayer name', 'Gone']);
-  });
-
   it('names a stored id from any class tree, else the id', () => {
     expect(skillName(bundle, 'Summon Goatman')).toBe('Summon Goatman');
     expect(skillName(bundle, 'No Such Skill')).toBe('No Such Skill');

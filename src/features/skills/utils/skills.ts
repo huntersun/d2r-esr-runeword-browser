@@ -59,20 +59,18 @@ export interface SkillsView {
  */
 export function buildSkillsView(trees: SkillsBundle, details: SkillDetailsBundle): SkillsView {
   const byId = new Map(details.skills.map((skill) => [skill.id, skill]));
-  const classes = trees.classes.map(
-    (cls): SkillClassView => ({
-      code: cls.code,
-      name: cls.name,
-      tabs: cls.tabs.map((tab) => ({
-        page: tab.page,
-        name: tab.name,
-        cells: tab.skills.flatMap((skill) => {
-          const detail = byId.get(skill.id);
-          return detail === undefined ? [] : [{ detail, row: skill.row, col: skill.col }];
-        }),
-      })),
-    })
-  );
+  const classes = trees.classes.map((cls): SkillClassView => ({
+    code: cls.code,
+    name: cls.name,
+    tabs: cls.tabs.map((tab) => ({
+      page: tab.page,
+      name: tab.name,
+      cells: tab.skills.flatMap((skill) => {
+        const detail = byId.get(skill.id);
+        return detail === undefined ? [] : [{ detail, row: skill.row, col: skill.col }];
+      }),
+    })),
+  }));
   const itemSkills = details.skills
     .filter((skill) => skill.cls === null)
     .sort((a, b) => a.name.localeCompare(b.name, 'en') || a.id.localeCompare(b.id, 'en'));
@@ -116,6 +114,24 @@ export function searchSkills(view: SkillsView, search: string): SkillDetail[] {
     const name = normaliseItemName(skill.name);
     return words.every((word) => name.includes(word));
   });
+}
+
+/** How a tile is drawn against the selection: the skill itself, one of its prerequisites, or a skill it unlocks */
+export type SkillTileMark = 'selected' | 'prerequisite' | 'dependent' | null;
+
+/**
+ * The tile marks of a selection: the selected skill, its prerequisite chain (amber in the UI) and the skills it unlocks
+ * directly (sky blue); every tile is unmarked while nothing is selected.
+ */
+export function selectionMarks(view: SkillsView, selected: string | null): (id: string) => SkillTileMark {
+  if (selected === null) return () => null;
+  const chain = prerequisiteChain(view, selected);
+  return (id) => {
+    if (id === selected) return 'selected';
+    if (chain.has(id)) return 'prerequisite';
+    if (view.byId.get(id)?.reqSkills?.includes(selected) === true) return 'dependent';
+    return null;
+  };
 }
 
 /** The prerequisites of a skill, transitively (the in-game arrows), as ids */
