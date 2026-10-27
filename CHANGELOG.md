@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.41.2](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.41.1...v1.41.2) (2026-10-27)
+
+### Chores
+
+* **loot-filter:** refresh the template to sully's qol filter v0.6.2 ([07da354](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/07da3549e48d126a812722a75cb3ff1bbbf131a2))
+
 ## [1.41.1](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.41.0...v1.41.1) (2026-10-26)
 
 ### Documentation
