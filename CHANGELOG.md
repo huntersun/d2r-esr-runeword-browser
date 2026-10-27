@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.42.0](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.41.2...v1.42.0) (2026-10-27)
+
+### Features
+
+* **builds:** draw the skill tree like the Skills page ([5ac3fc2](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/5ac3fc20e5217ee55869e52a6312d8850df921a0))
+* **builds:** merge the icon skill tree (feat/build-skill-tree-icons) ([23ea43a](https://github.com/istvan-panczel/d2r-esr-runeword-browser/commit/23ea43a90917bbb7517f0a57df9b27c13e5b4f15))
+
 ## [1.41.2](https://github.com/istvan-panczel/d2r-esr-runeword-browser/compare/v1.41.1...v1.41.2) (2026-10-27)
 
 ### Chores
