@@ -26,11 +26,13 @@ Two bundles under `public/game-data/` (see [Game Data](./GAME-DATA.md)):
 | File                | Built by                          | Used for                                                    |
 | ------------------- | --------------------------------- | ----------------------------------------------------------- |
 | `skills.json`       | `build/bundleSkills.ts`           | Tree layout (tabs, row / column), also the builds feature   |
-| `skilldetails.json` | `build/bundleSkillDetails.ts`     | Details per skill and the granting items (this page only)   |
+| `skilldetails.json` | `build/bundleSkillDetails.ts`     | Details per skill and the granting items (also builds)      |
 | `icons/skills/*`    | `scripts/generate-skill-icons.ts` | 64 px WebP cels cropped from the mod's HD skill icon sheets |
 
-The details are a sibling bundle so `skills.json`, which every builds page loads, stays small (31 KB). Both are
-generated in one run and joined by skill id in the browser (`utils/skills.ts` `buildSkillsView`).
+The details are a sibling bundle so `skills.json` (the trees, level cap and names the builds model validates against)
+stays small (31 KB). Both are generated in one run and joined by skill id in the browser (`utils/skills.ts`
+`buildSkillsView`). The builds pages (a build's Skills tab, the create / edit form) load both too, only when they draw
+a tree (`builds/hooks/useSkillTree.ts`), and reuse this page's tiles, layout and detail card.
 
 ### skilldetails.json
 
@@ -139,13 +141,21 @@ src/features/game-data/build/bundleSkillDetails.ts   builder (+ readGrantSources
 src/features/game-data/build/skillIcons.ts           sheet listing, icon keys, cel crop
 scripts/generate-skill-icons.ts                      CLI: crop + WebP + --check
 src/features/skills/
-  screens/SkillsScreen.tsx      loads skills + skilldetails, URL state, layout, search, item skills
-  components/SkillTreeTab.tsx   one tab grid
-  components/SkillTile.tsx      one tile
-  components/SkillDetailCard.tsx details + Granted by
-  components/SkillIcon.tsx      icon <img> with a reserved square
-  utils/skills.ts               view model, URL state, search, grant texts, item links
+  screens/SkillsScreen.tsx         loads skills + skilldetails, URL state, search, item skills
+  components/SkillTreesLayout.tsx  the two-column layout: trees (or what replaces them) + sticky detail column
+  components/SkillClassTrees.tsx   one class: tab pills (below lg) + the three SkillTreeTab cards (side by side from lg)
+  components/SkillTreeTab.tsx      one tab grid (optional point count in the title)
+  components/SkillTile.tsx         one tile (optional corner badge, dimmed state)
+  components/SkillDetailCard.tsx   details + Granted by (optional slot after the header)
+  components/SkillIcon.tsx         icon <img> with a reserved square
+  hooks/useDetailScroll.ts         scrolls the card into view after a tap below lg
+  hooks/useMythicalNames.ts        HTM mythical names from IndexedDB (item links)
+  utils/skills.ts                  view model, URL state, search, selection marks, grant texts, item links
 ```
+
+The builds feature imports the components, hooks and utils by deep path (`@/features/skills/components/SkillTile`);
+`index.ts` only exports the lazy route screen. The builds-specific parts (point badges, the point controls in the
+card's slot, local selection state) live in `src/features/builds/components/BuildSkillTrees.tsx`.
 
 Tests: `build/bundleSkillDetails.test.ts` and `build/skillIcons.test.ts` (fixture rows), `bundleIntegrity.test.ts`
 (committed bundle vs. trees, counts, Fire Bolt / Teleport / Rift Shot examples, one icon file per key),
