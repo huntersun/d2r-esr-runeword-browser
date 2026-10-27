@@ -1,12 +1,12 @@
 // Sully's QoL Filter, converted from Sullys-QoL-Filter.lua (D2RLAN).
 // Its sound files go in the sounds folder next to this file: gong.mp3, map.mp3, mid.mp3,
 // mythical.mp3, other.mp3, t5_map.mp3, tink.mp3, unique.mp3.
-// volume can be adjusted on line 19 "soundVolume": XX, where XX is a number between 0-100; By default set to 50
+// volume can be adjusted on line 19 "soundVolume": XX, where XX is a number between 0-100; By default set to 25
 {
   "formatVersion": 1,
   "title": "Sully's QoL Filter",
   "author": "Sully",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Sully's D2RLAN QoL filter - Full conversion in progress.",
   "updateUrl": "https://raw.githubusercontent.com/Thisisnotsully/QoL-Filter/refs/heads/main/Sullys-QoL-Filter.json",
   "filterLevels": [
@@ -282,6 +282,17 @@
     },
 
     // Gold and low-value items
+    {
+      "itemCodes": ["gld"],
+      "itemStats": [{"stat": 14, "op": ">=", "value": 500000}],
+      "chatMessage": "ÿc9** Large Gold Stack **",
+      "sound": "other.mp3",
+      "labelBackground": [255, 215, 150, 242],
+      "replaceName": "ÿc6500k+",
+      "namePrefix": "ÿc2$$",
+      "nameSuffix": "ÿc2$$",
+      "labelBorder": {"color": [0, 0, 0, 255], "width": 1}
+    },
     {"itemCodes": ["gld"], "itemStats": [{"stat": 14, "op": "<=", "value": 1}], "hide": true},
     {
       "itemCodes": ["gld"],
