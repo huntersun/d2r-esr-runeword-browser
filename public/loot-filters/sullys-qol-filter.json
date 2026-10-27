@@ -6,7 +6,7 @@
   "formatVersion": 1,
   "title": "Sully's QoL Filter",
   "author": "Sully",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Sully's D2RLAN QoL filter - Full conversion in progress.",
   "updateUrl": "https://raw.githubusercontent.com/Thisisnotsully/QoL-Filter/refs/heads/main/Sullys-QoL-Filter.json",
   "filterLevels": [

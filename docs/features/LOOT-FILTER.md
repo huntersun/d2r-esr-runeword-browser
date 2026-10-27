@@ -80,7 +80,7 @@ to the filter; if chat lines do not print, run `lootfilter` in the game console 
   reads them, but downloads are written without them", "Block comments (/\* _/) were accepted (first at line N); …
   they are not kept", and "N comments inside the file (section notes between rules) are dropped on the first edit; only
   the comment lines before the opening brace are kept" (every `//` or `/_ \*/`after the opening brace).`open`stores
-them in`editor.textNotes`(none for`template`entries: the shipped template's section comments are ours) and`replaceFilter`takes the applied text's. They are not sticky:`flushEditor` clears them when it writes the model back,
+  them in`editor.textNotes`(none for`template`entries: the shipped template's section comments are ours) and`replaceFilter`takes the applied text's. They are not sticky:`flushEditor` clears them when it writes the model back,
   because the written text no longer has what they describe (so after the first edit they go with the debounced save).
 - Patches are shallow: an `undefined` value removes the key, and a patched key is also dropped from the object's
   `passthrough` (so a wrong-shaped original does not reappear on download). `setNotifications` and `setQualityColors`
@@ -158,12 +158,11 @@ Title, a short how-to (launcher import, `sounds`/`icons` folders, the zip downlo
   the file's `title`, else the file name. A successful upload opens the editor, like New filter and the template.
 - **Start from Sully's QoL filter**: fetches `public/loot-filters/sullys-qol-filter.json` and opens it as a `template`
   entry named "Sully's QoL Filter" (the file's title; the card's byline reads "Sully's QoL Filter by Sully"). The file
-  is `Sullys-QoL-Filter.json` v0.6.1 from github.com/Thisisnotsully/QoL-Filter (220 rules, 12 styles, 4 levels,
-  `soundVolume` 25, his `updateUrl` and `//` comments kept), the filter the ESR launcher pulls live since 3.2.22. Two
-  edits to his file, worth reporting to Sully: the trailing comma after the last rule is removed (strict JSON apart
-  from the comments), and the `9pm` in rule 61's `excludeItemCodes` is fixed to `9mp` (War Pick; `9pm` is no item code
-  and the validator warned about it). Credit line (`TEMPLATE_CREDIT` in `utils/template.ts`): "Sully's QoL filter
-  v0.6.1, the filter the ESR launcher ships live from github.com/Thisisnotsully/QoL-Filter; icons and sounds by Sully".
+  is `Sullys-QoL-Filter.json` v0.6.2 from github.com/Thisisnotsully/QoL-Filter, verbatim (220 rules, 12 styles, 4
+  levels, `soundVolume` 25, his `updateUrl` and `//` comments kept), the filter the ESR launcher pulls live since
+  3.2.22. Our v0.6.1 copy had patched a trailing comma after the last rule and a `9pm` typo (War Pick is `9mp`); Sully
+  fixed both in v0.6.2 on 2026-10-26, so the copy needs no edits. Credit line (`TEMPLATE_CREDIT` in
+  `utils/template.ts`): "Sully's QoL filter v0.6.2, the filter the ESR launcher ships live from github.com/Thisisnotsully/QoL-Filter; icons and sounds by Sully".
   It replaced the ESR default filter (302 rules, an earlier conversion of the same filter the mod shipped as
   `LootFilters/esr-default-filter.json` up to 3.2.21). The library how-to adds that every player already has Sully's
   filter through the launcher.

@@ -52,6 +52,17 @@ condition ("empty list: the game logs 'the list is empty'…", done) and the UI 
 Still open from round 2: the plugin's `tier` for rings, amulets, charms and jewels. `debug_log = true` prints
 `tier %d` per item in `d2rloader\logs\celestialrayone.loot-filter.log`.
 
+## Announced format changes to watch
+
+### Stat formulas (announced 2026-10-26, not released)
+
+The mod author announced "mathematical formulas support for stats": rules will filter by stat values through
+formulas, which "will not work on unidentified items". No guide, schema or plugin update exists yet (ESR 3.2.24 plugin
+1.5.3, guide PDF unchanged). When it ships: read the new guide, extend `StatCheck` (today `value` is a number or
+`[low, high]`; a formula is presumably a string) so the parser does not move such checks to `passthrough` with an error,
+show them read-only or with a text field, and make the evaluator report "formula: not evaluated" instead of guessing.
+Until then a filter with formulas opens with a wrong-shape diagnostic on that condition and the Test tab ignores it.
+
 ## Needs the plugin or the mod (requests for the mod author)
 
 Collected to forward together once the current implementation round is done.
@@ -63,11 +74,13 @@ Collected to forward together once the current implementation round is done.
   shared stash). It is not exposed as player stats (no itemstatcost row), the plugin rejects D2RLAN's grail condition
   ("grail conditions are not supported"), and ESR's chronicle-tracker plugin (3.2.22) already adds a "Not in
   Chronicle" ground-label line. Ask for an `inChronicle: true/false` condition.
-- **Droplight on hidden items.** Users hide blue jewels and low runes but still see the beam. The beam is baked into
-  ESR's HD item models (`data/hd/items/**.json`, entity `droplight`: all 92 runes, jewels through the perfect diamond
-  model, charms, coupons, maps, keys; 625 item codes), not a filter action. `hide` removes the label and pickability
-  only, and `droplight` takes `{ "color": [r, g, b] }` or `{}`, nothing that switches a beam off. Ask for the model
-  beam to be suppressed on hidden items, or a launcher toggle.
+- **Droplight on hidden items: answered upstream (2026-10-27).** Users hide blue jewels and low runes but still see
+  the beam, which is baked into ESR's HD item models (`data/hd/items/**.json`, entity `droplight`: all runes, jewels,
+  charms, coupons, maps, keys; 625 item codes), not a filter action; `hide` removes only the label and pickability.
+  The mod author told Sully he will remove the hard-coded droplights from every item, so a future ESR version has no
+  default beams and filters add them back with the `droplight` action. Sully plans a droplight pass over his filter
+  (jackpot and "tink" items first). To do here when that ships: refresh the template from his repo, and say in the
+  Droplight section's hint that items have no beam unless a rule adds one.
 - **Treasure goblins on the minimap.** Every condition and action of the plugin is about items; goblins are monsters
   (`monstats.txt` treasuregoblin\*). Needs a monster-marker plugin, not a filter feature.
 - **Orphan rune row.** `misc.txt` row 424 "Hu Rune" (`r48`, name string `r32` = Fu Rune) is used by no treasure class,
